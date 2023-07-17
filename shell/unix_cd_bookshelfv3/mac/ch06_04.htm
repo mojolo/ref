@@ -1,0 +1,858 @@
+<html><head><title>Packaging Tools (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="part3.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.4. Packaging Tools</h2>
+
+<p><a name="mosxgeeks-IDXTERM-449" /> <a name="mosxgeeks-IDXTERM-450" />The following packaging options come with
+Mac OS X.
+</p>
+
+<dl>
+<a name="IXT-6-629" /><dt><i>PackageMaker</i></dt>
+<dd>
+Found in <em class="filename">/Developer/Applications</em></tt>, PackageMaker
+can be used to create packages that are bundles consisting of all the
+items that the Mac OS X Installer
+(<em class="filename">/Applications/Utilities</em></tt>) needs to perform an
+installation. PackageMaker can also create metapackages, which can be
+used to install multiple packages at the same time.
+</p>
+</dd>
+
+
+
+<a name="IXT-6-630" /><a name="IXT-6-631" /><dt><i><em class="filename">gnutar</em></tt> and <em class="filename">gzip</em></tt></i></dt>
+<dd>
+The Unix tape archive tools (<em class="filename">tar</em> and
+<em class="filename">gnutar</em>; <em class="filename">gnutar</em> is preferred
+because it can handle longer pathnames) are used to bundle the
+directories and resources for distribution. GNU Zip
+(<em class="filename">gzip</em>) is used to compress the tar archives to
+make file sizes as small as possible. Using these tools is generally
+the simplest way to copy a collection of files from one machine to
+another.
+</p>
+</dd>
+
+
+
+<a name="IXT-6-632" /><dt><i>Disk Copy</i></dt>
+<dd>
+One of the easiest ways to distribute an application is to use Disk
+Copy (<em class="filename">/Applications/Utilities</em></tt>) to create a disk
+image. You can use Disk Copy to create a double-clickable archive,
+which mounts as a disk image on the user's desktop.
+From there, the user can choose to mount the disk image each time the
+application is run, copy the application to the hard drive (usually
+to the <em class="filename">/Applications </em></tt>directory), or burn the
+image to a CD.
+</p>
+</dd>
+
+</dl>
+
+<p>Each of these tools will be discussed separately in the sections that
+follow.
+</p>
+
+<a name="mosxgeeks-CHP-6-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">6.4.1. Using PackageMaker</h3>
+
+<p><a name="mosxgeeks-IDXTERM-451" />Apple's <a name="mosxgeeks-IDXTERM-452" />native format for packaging
+and distributing software is PackageMaker. Packages created with
+PackageMaker have a <em class="filename">.pkg </em></tt>extension. When a user
+double-clicks on a package, the Installer application
+(<em class="filename">/Applications/Utilities</em></tt>) is invoked and the
+installation process begins. These packages are bundles that contain
+all of the items the Installer needs.
+</p>
+
+<p>You can also use PackageMaker to create
+<em class="filename">metapackages</em></tt> for installing multiple packages.
+Metapackages, or bundles, contain meta-information, files, and
+libraries associated with a given application. Packages can also
+contain multiple versions of an application; typically, both Mac OS X
+and Classic versions.
+</p>
+
+<p>PackageMaker documentation is available in the Help Viewer at
+<em class="filename">/Developer/Documentation/DeveloperTools/PackageMaker/PackageMaker.help</em></tt>.
+</p>
+
+<p>The basic components of a package are:</p>
+
+<ul><li>
+<p>A bill of materials (<em class="filename">.bom</em></tt>) binary file that
+describes the contents of the package. You can view the contents of a
+bill of materials with the <em class="filename">lsbom</em></tt> command.
+</p>
+</li><li>
+<p>An information file (<em class="filename">.info</em></tt>) that contains the
+information entered in the GUI application PackageMaker when the
+package was created.
+</p>
+</li><li>
+<p>An archive file (<em class="filename">.pax</em></tt>) that contains the
+complete set of files to be installed by the package. (This archive
+file can be compressed, giving it a <em class="filename">.pax.gz
+</em></tt>extension.) This is similar to a <em class="filename">tar
+</em></tt>archive.
+</p>
+</li><li>
+<p>A size calculation file (<em class="filename">.sizes</em></tt>) that lists the
+sizes of the compressed and uncompressed software.
+</p>
+</li><li>
+<p>Resources that the installer uses during the installation, such as
+<em class="filename">README</em></tt> files, license agreements, and pre- and
+post-install scripts. These resources are typically not installed;
+instead, they are used only during the installation process.
+</p>
+</li></ul>
+<a name="mosxgeeks-CHP-6-SECT-4.1.1" /><div class="sect3">
+<h3 class="sect3">6.4.1.1. Setting up the directory</h3>
+
+<p><a name="mosxgeeks-IDXTERM-453" />To demonstrate how to create a
+package, we'll use the <em class="filename">hellow.c</em></tt>
+and <em class="filename">hellow.1</em></tt> examples shown earlier in this
+chapter (in <a href="ch06_02.htm#mosxgeeks-CHP-6-EX-1">Example 6-1</a> and <a href="ch06_02.htm#mosxgeeks-CHP-6-EX-2">Example 6-2</a>). 
+</p>
+
+<p>PackageMaker expects you to set up the files using a directory
+structure that mirrors your intended installation. So, if you plan to
+install <em class="filename">hellow</em></tt> into
+<em class="filename">/usr/bin</em></tt>, and <em class="filename">hellow.1</em></tt> into
+<em class="filename">/usr/share/man/man1</em></tt>, you'll
+need to create the appropriate subdirectories under your working
+directory.
+</p>
+
+<p>Suppose that your <em class="filename">hellow</em></tt> project resides in
+<em class="filename">~/src/hellow</em></tt>. To keep things organized, you can
+create a subdirectory called <em class="filename">stage</em></tt> that contains
+the installation directory. In that case, you'd want
+to place the <em class="filename">hellow</em></tt> binary in
+<em class="filename">~/src/hellow/stage/bin</em></tt> and the
+<em class="filename">hellow.1</em></tt> manpage in
+<em class="filename">~/src/hellow/stage/share/man/man1</em></tt>. The makefile
+shown in <a href="ch06_04.htm#mosxgeeks-CHP-6-EX-4">Example 6-4</a> compiles
+<em class="filename">hellow.c</em></tt>, creates the <em class="filename">stage</em></tt>
+directory and its subdirectories, and copies the distribution files
+into those directories when you run the command <em class="filename">make
+prep</em></tt>.
+</p>
+
+<a name="mosxgeeks-CHP-6-EX-4" /><div class="example">
+<h4 class="objtitle">Example 6-4. makefile for hellow  </h4>
+<blockquote><pre class="code">hellow:
+        cc -o hellow hellow.c
+
+prep: hellow
+        mkdir -p stage/bin
+        mkdir -p stage/share/man/man1
+        cp hellow stage/bin/
+        cp hellow.1 stage/share/man/man1/</pre></blockquote>
+</div>
+
+<a name="ch06-19-fm2xml" /><blockquote><b>WARNING:</b> 
+The directories you create in the <em class="filename">stage</em></tt>
+directory should have the same permissions as the directories into
+which you are installing the package. If your
+<em class="filename">umask</em></tt> is set so that the permissions are not
+right, use <em class="filename">chmod</em></tt> in your makefile to correct the
+permissions after you create the staging directories.
+</p>
+</blockquote>
+
+<p>To get started, you need only <em class="filename">hellow.c</em></tt>,
+<em class="filename">hellow.1</em></tt>, and <em class="filename">makefile</em></tt>.
+When you run the command <em class="filename">make prep</em></tt>, it compiles
+the program and copies the files to their locations in the
+<em class="filename">stage</em></tt> directory. After that,
+you're ready to launch PackageMaker and bundle up
+the application.
+</p>
+
+</div>
+
+<a name="mosxgeeks-CHP-6-SECT-4.1.2" /><div class="sect3">
+<h3 class="sect3">6.4.1.2. Creating the package</h3>
+
+<p>Run PackageMaker and set the options as appropriate for your package.
+<a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-2">Figure 6-2</a> through <a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-6">Figure 6-6</a>
+show the settings for the <em class="filename">hellow</em></tt> sample. The
+options are as follows:
+</p>
+
+<dl>
+<dt><i>Description tab</i></dt>
+<dd>
+Contains items that describe the package so the person installing the
+package can find its name and version.
+</p>
+
+
+<dl>
+<dt><i>Title</i></dt>
+<dd>
+The title, or name, of the package.</p>
+</dd>
+
+
+
+<dt><i>Version</i></dt>
+<dd>
+The version number of the package.</p>
+</dd>
+
+
+
+<dt><i>Description</i></dt>
+<dd>
+A description of the package.</p>
+</dd>
+
+
+
+<dt><i>Delete Warning</i></dt>
+<dd>
+A custom warning message to display when a user removes the package.
+Mac OS X does not have a utility to uninstall a package, though.
+</p>
+
+
+<a name="mosxgeeks-CHP-6-FIG-2" /><div class="figure"><img src="figs/mud_0602.gif" alt="Figure 6-2" width="431" /></div><h4 class="objtitle">Figure 6-2. PackageMaker's Description tab</h4>
+</dd>
+
+</dl>
+</dd>
+
+
+<dt><i>Files tab</i></dt>
+<dd>
+Contains information related to file locations and compression.</p>
+
+
+<dl>
+<dt><i>Root</i></dt>
+<dd>
+This option indicates where PackageMaker can find the top-level
+staging directory.
+</p>
+</dd>
+
+
+
+<dt><i>Compress Archive</i></dt>
+<dd>
+You should leave this option enabled, since it makes the package
+smaller.
+</p>
+
+
+<a name="mosxgeeks-CHP-6-FIG-3" /><div class="figure"><img src="figs/mud_0603.gif" alt="Figure 6-3" width="431" /></div><h4 class="objtitle">Figure 6-3. PackageMaker's Files tab</h4>
+</dd>
+
+</dl>
+</dd>
+
+
+<dt><i>Resources tab</i></dt>
+<dd>
+Specifies the location of extra resources.</p>
+
+
+<dl>
+<dt><i>Resources </i></dt>
+<dd>
+The Resources directory contains files, such as
+<em class="filename">README</em></tt> files, that are used by the installer but
+aren't installed on the disk. See PackageMaker help
+for details.
+</p>
+
+
+<a name="mosxgeeks-CHP-6-FIG-4" /><div class="figure"><img src="figs/mud_0604.gif" alt="Figure 6-4" width="431" /></div><h4 class="objtitle">Figure 6-4. PackageMaker's Resources tab</h4>
+</dd>
+
+</dl>
+</dd>
+
+
+
+<dt><i>Info tab</i></dt>
+<dd>
+Specifies miscellaneous package options.</p>
+
+
+<dl>
+<dt><i>Default Location</i></dt>
+<dd>
+This option indicates the default target location for the package.</p>
+</dd>
+
+
+
+<dt><i>Restart Action</i></dt>
+<dd>
+If this option is set to Required Restart, the system must be
+rebooted when the installation is finished. Other options include No
+Restart Required, Recommended Restart, and Shutdown Required.
+</p>
+</dd>
+
+
+
+<dt><i>Authorization Action</i></dt>
+<dd>
+Set this option to Root Authorization if the user needs to supply
+authentication to install the package. (This escalates the
+user's privileges to <em class="filename">root</em></tt>
+temporarily.) Other options include No Authorization Required and
+Admin Authorization (if the user needs only to
+<em class="emphasis">be</em></tt> an Admin user, but does not need to escalate
+privileges). If the package will be installed into a protected
+directory (such as <em class="filename">/usr</em></tt>), you should use Root
+Authorization.
+</p>
+</dd>
+
+
+
+<dt><i>Allows Back Rev.</i></dt>
+<dd>
+This option allows the user to install an older version of the
+package over a newer one.
+</p>
+</dd>
+
+
+
+<dt><i>Install Fat</i></dt>
+<dd>
+This option supports multiple architecture binaries.</p>
+</dd>
+
+
+
+<dt><i>Relocatable</i></dt>
+<dd>
+This option allows the user to choose an alternate location for the
+installed files.
+</p>
+</dd>
+
+
+
+<dt><i>Required</i></dt>
+<dd>
+This option implies that certain packages (when installed as part of
+a larger install) are required.
+</p>
+</dd>
+
+
+
+<dt><i>Root Volume Only</i></dt>
+<dd>
+This option requires that the user install the package on the current
+root volume (the volume from which you booted Mac OS X).
+</p>
+</dd>
+
+
+
+<dt><i>Update Installed Languages Only</i></dt>
+<dd>
+When you update a package, this option will only update the currently
+installed localization projects.
+</p>
+</dd>
+
+
+
+<dt><i>Overwrite Permissions</i></dt>
+<dd>
+If the installer overwrites an existing file or directory, this
+option will cause it to change the permissions to match what
+PackageMaker found in the staging area.
+</p>
+
+
+<a name="mosxgeeks-CHP-6-FIG-5" /><div class="figure"><img src="figs/mud_0605.gif" alt="Figure 6-5" width="431" /></div><h4 class="objtitle">Figure 6-5. PackageMaker's Info tab</h4>
+</dd>
+
+</dl>
+</dd>
+
+
+
+<dt><i>Version tab</i></dt>
+<dd>
+Specifies detailed version information.</p>
+
+
+<dl>
+<dt><i>Display name </i></dt>
+<dd>
+The name of the package to use when reporting its version</p>
+</dd>
+
+
+
+<dt><i>Identifier </i></dt>
+<dd>
+A unique package name</p>
+</dd>
+
+
+
+<dt><i>Get-Info string </i></dt>
+<dd>
+The version number to use when inspecting the package in the Finder
+with Get Info
+</p>
+</dd>
+
+
+
+<dt><i>Short version </i></dt>
+<dd>
+An abbreviated version number</p>
+</dd>
+
+
+
+<dt><i>Version: Major</i></dt>
+<dd>
+A major version number (the <em class="emphasis">1</em> in 1.0)</p>
+</dd>
+
+
+
+<dt><i>Version: Minor </i></dt>
+<dd>
+A minor version number (the <em class="emphasis">0</em></tt> in 1.0)</p>
+
+
+<a name="mosxgeeks-CHP-6-FIG-6" /><div class="figure"><img src="figs/mud_0606.gif" alt="Figure 6-6" width="431" /></div><h4 class="objtitle">Figure 6-6. PackageMaker's Version tab</h4>
+</dd>
+
+</dl>
+</dd>
+
+</dl>
+
+<p>After you have filled in the package settings, select Tools
+<img src="figs/U2192.gif" alt="Figure " /> Create Package to create the
+<em class="filename">.pkg</em></tt> file. To install it, double-click on the
+file and install as you would any other Mac OS<a name="IXTR3-649" /> X<a name="IXTR3-650" />
+package.<a name="IXTR3-651" /> 
+</p>
+
+</div>
+</div>
+<a name="mosxgeeks-CHP-6-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">6.4.2. Using GNU tar</h3>
+
+<p><a name="mosxgeeks-IDXTERM-457" />For
+<a name="mosxgeeks-IDXTERM-458" />Unix-based <a name="mosxgeeks-IDXTERM-459" />software <a name="mosxgeeks-IDXTERM-460" />that does not involve
+resource forks or creator types, <em class="filename">gnutar</em></tt> and
+<em class="filename">gzip </em></tt>can be used to create a
+<em class="filename">.tar.gz</em></tt> or <em class="filename">.tgz</em></tt> tarball.
+This type of tarball preserves paths, permissions, and symbolic
+links. It also supports authentication and compresses well. Tools to
+uncompress the tarball are available for many platforms.
+</p>
+
+<p>The automated creation of such a tarball can be worked into the same
+<em class="filename">makefile</em></tt> that is used to build the software.
+Preservation of resource forks is tricky, but possible, in this
+method. For example, the following command preserves Macintosh
+resource forks (where <em class="filename">foo/</em></tt> is a directory):
+</p>
+
+<blockquote><pre class="code">gnutar -pczf foo.tgz foo/</pre></blockquote>
+
+<p>Every good tarball has a single top-level directory that contains
+everything else. You should not create tarballs that dump their
+contents into the current directory. To install software packaged
+this way, you can use the following command:
+</p>
+
+<blockquote><pre class="code">gnutar -pxzf foo.tgz </pre></blockquote>
+
+<p>This simply unpacks the tarball into the file and directory structure
+that existed prior to packaging. Basically, it reverses the packing
+step. This method can be used to simply write files to the
+appropriate places on the system, such as
+<em class="filename">/usr/local/bin</em></tt>,
+<em class="filename">/usr/local/lib</em></tt>,
+<em class="filename">/usr/local/man</em></tt>,
+<em class="filename">/usr/local/include</em></tt>, and so on.
+</p>
+
+<a name="ch06-25-fm2xml" /><blockquote><b>WARNING:</b> 
+When creating packages, you should keep your package contents out of
+<a name="IXT-6-633" />directories such as
+<em class="filename">/etc</em></tt>, <em class="filename">/usr/bin</em></tt>,
+<em class="filename">/usr/lib</em></tt>, <em class="filename">/usr/include</em></tt>, or
+any top-level directory reserved for the operating system, since you
+have no way of knowing what a future software update or Mac OS X
+upgrade will include. For example, the Fink project stays out of Mac
+OS X's way by keeping most of its files in
+<em class="filename">/sw</em></tt><a name="IXT-6-634" />. We suggest that you use
+<em class="filename">/usr/local</em></tt><a name="IXT-6-635" />
+<a name="IXT-6-636" /> for the packages that you
+compile.
+</p>
+</blockquote>
+
+<p>This packaging method can also be arranged so that the unpacking is
+done first in a temporary directory. The user can then run an install
+script that relocates the package contents to their final
+destination. This approach is usually preferred, since the
+<em class="filename">install </em></tt>script could be designed to do some
+basic checking of dependencies, the existence of destination
+directories, the recataloging of libraries, etc. You could also
+include an <em class="filename">uninstall</em></tt> script with your
+distribution.
+</p>
+
+<p>The disadvantages of the
+<a name="IXT-6-637" />
+<a name="IXT-6-638" />
+<a name="IXT-6-639" />tarball method of
+distributing software are:
+</p>
+
+<ul><li>
+<p>There is no built-in mechanism for keeping track of which files go
+where.
+</p>
+</li><li>
+<p>There is no built-in method for uninstalling the software. </p>
+</li><li>
+<p>It is difficult to list what software is installed and how the
+installed files depend on each other or on other libraries.
+</p>
+</li><li>
+<p>There is no checking of dependencies and prerequisite software prior
+to the installation.
+</p>
+</li></ul>
+<p>These tasks could be built into <em class="filename">install</em></tt> and
+<em class="filename">uninstall</em></tt> scripts, but there is no inherently
+uniform, consistent, and coherent method for accomplishing these
+tasks when multiple software packages are installed in this manner.
+Fortunately, more sophisticated methods of packaging, distributing,
+and maintaining software on Unix systems have been devised, such as
+Red Hat's RPM, Debian's
+<em class="filename">dpkg</em></tt><a name="IXTR3-652" />, and<a name="IXTR3-653" />
+Apple's<a name="IXTR3-654" />
+PackageMaker.<a name="IXTR3-655" /> 
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-6-SECT-4.3" /><div class="sect2">
+<h3 class="sect2">6.4.3. Disk Images</h3>
+
+<p><a name="mosxgeeks-IDXTERM-472" />Many applications in Mac OS X do not
+require a special installer. Often, they can be installed by simply
+dragging the application's folder or icon to a
+convenient location in the directory structure, usually the
+<em class="filename">/Applications</em></tt><a name="IXT-6-640" /> folder. Applications
+that are distributed this way are typically packaged as a
+<em class="filename">disk image</em></tt>. A disk image is a file that, when
+double-clicked, creates a virtual volume that is mounted on the
+user's desktop, as shown in <a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-7">Figure 6-7</a>. 
+</p>
+<a name="mosxgeeks-CHP-6-FIG-7" /><div class="figure"><img src="figs/mud_0607.gif" alt="Figure 6-7" width="409" /></div><h4 class="objtitle">Figure 6-7. A disk image and its mounted volume</h4>
+
+<a name="mosxgeeks-CHP-6-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Inside Applications</h4>
+
+<p>Actually, an application <em class="emphasis">is</em></tt> a folder with the
+extension <em class="filename">.app</em></tt><a name="IXT-6-641" />, which is typically hidden from the
+user. This folder contains all of the
+<a name="IXT-6-642" />application's resources.
+To view the contents of an application bundle, Control-click on the
+application icon and select Show Package Contents from the pop-up
+menu. This will open the application's
+<em class="filename">Contents</em></tt> folder in the Finder.
+</p>
+</td></tr></table><p></blockquote>
+
+
+
+<a name="ch06-29-fm2xml" /><blockquote><b>TIP:</b> 
+You can turn a <a name="IXT-6-643" />Java application into a
+<em class="filename">.app</em></tt> with <em class="emphasis">MRJAppBuilder</em></tt>
+(<em class="filename">/Developer/Applications</em></tt>). Since Mac OS X comes
+with Java, you can place your Java application on a disk image,
+secure in the knowledge that any Mac OS X user can double-click on
+the application to launch it.<a name="mosxgeeks-IDXTERM-477" />
+</p>
+</blockquote>
+
+<p>Disk images can be created either using Disk Copy
+(<em class="filename">/Applications/Utilities</em></tt>) or via the command
+line (described later). There are two types of disk images. One is a
+<em class="emphasis">dual fork</em></tt> disk image with an
+<em class="filename">.img</em></tt> extension, and the other is a
+<em class="emphasis">single fork</em></tt> disk image with a
+<em class="filename">.dmg</em></tt> extension. A dual fork disk image requires
+additional (MacBinary) encoding in order for it to be transferred
+across networks. The single fork version is preferred for
+distributing software in Mac OS X, as it requires no additional
+encoding.
+</p>
+
+<p>The Unix command <em class="filename">df</em></tt> will reveal a disk image as
+a mounted volume, and it will appear in the
+<em class="filename">/Volumes</em></tt> directory. When you are done with the
+mounted volume, it can be ejected to unmount it. This is accomplished
+by clicking on the volume (in <a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-7">Figure 6-7</a>, the
+mounted volume is named Fink 0.4.0a Installer) to select it and going
+to File <img src="figs/U2192.gif" alt="Figure " /> Eject (<img src="figs/command.gif" alt="Figure " />-E).
+You could also drag the mounted volume to the Trash.
+</p>
+
+
+<a name="ch06-31-fm2xml" /><blockquote><b>TIP:</b> 
+If you've used earlier versions of the Mac OS,
+you're probably familiar with the Put Away command
+(<img src="figs/command.gif" alt="Figure " />-Y); however, that command no longer
+exists for Mac OS X. Instead, you must use Eject to unmount a disk
+image.
+</p>
+</blockquote>
+
+<a name="mosxgeeks-CHP-6-SECT-4.3.1" /><div class="sect3">
+<h3 class="sect3">6.4.3.1. Creating a disk image with Disk Copy</h3>
+
+<p>To create a disk image using Disk Copy, perform the following steps:</p>
+
+<ol><li>
+<p>Launch Disk Copy (<em class="filename">/Applications/Utilities</em></tt>).</p>
+</li><li>
+<p>Select File <img src="figs/U2192.gif" alt="Figure " /> New <img src="figs/U2192.gif" alt="Figure " /> Blank Image.
+Disk Copy prompts you for a name, location, size (the maximum size is
+limited by available disk space), volume name, format, and encryption
+options, as shown in <a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-8">Figure 6-8</a>. If you choose to
+enable encryption, Disk Copy will prompt you for a passphrase.
+</p>
+<a name="mosxgeeks-CHP-6-FIG-8" /><div class="figure"><img src="figs/mud_0608.gif" alt="Figure 6-8" width="361" /></div><h4 class="objtitle">Figure 6-8. Creating a new blank image with Disk Copy</h4>
+</li>
+<li>
+<p>Name the new image "My Disk Image"
+and choose the Desktop as the location. Set the Volume Name to
+"SampleVol" and click Create. The
+new image will be created as <em class="filename">My Disk Image.dmg</em></tt>
+and mounted as SampleVol.
+</p>
+</li><li>
+<p>Double-click on the disk icon to open the empty volume in a Finder
+window, as shown in <a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-9">Figure 6-9</a>.
+</p>
+<a name="mosxgeeks-CHP-6-FIG-9" /><div class="figure"><img src="figs/mud_0609.gif" alt="Figure 6-9" width="431" /></div><h4 class="objtitle">Figure 6-9. A blank disk image, ready to be loaded up with files</h4>
+</li>
+<li>
+<p>Select File <img src="figs/U2192.gif" alt="Figure " /> New Finder Window (or
+<img src="figs/command.gif" alt="Figure " />-N) to open a new Finder window, where
+you can select the files you want to place in the disk image, as
+shown in <a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-10">Figure 6-10</a>.
+</p>
+<a name="mosxgeeks-CHP-6-FIG-10" /><div class="figure"><img src="figs/mud_0610.gif" alt="Figure 6-10" width="431" /></div><h4 class="objtitle">Figure 6-10. Copying a file to the disk image</h4>
+</li>
+<li>
+<p>To copy the files to the mounted volume, select and then drag the
+items into the empty SampleVol window.
+</p>
+</li><li>
+<p>Once you've placed the files into the disk image,
+eject this disk (<img src="figs/command.gif" alt="Figure " />-E, or drag SampleVol
+to the Trash).
+</p>
+</li><li>
+<p>Return to the Disk Copy application, select File <img src="figs/U2192.gif" alt="Figure " />
+Convert Image, locate the disk image file in the Convert Image
+window, and click on the Convert button, as shown in <a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-11">Figure 6-11</a>. 
+</p>
+<a name="mosxgeeks-CHP-6-FIG-11" /><div class="figure"><img src="figs/mud_0611.gif" alt="Figure 6-11" width="361" /></div><h4 class="objtitle">Figure 6-11. Choosing the image to convert</h4>
+</li>
+<li>
+<p>The Convert Image window will change. Enter either a new name or the
+same name in the Save As field, and then select read-only from the
+Image Format pull-down menu, as shown in <a href="ch06_04.htm#mosxgeeks-CHP-6-FIG-12">Figure 6-12</a>. (You can also compress the disk image from
+this selection.)
+</p>
+<a name="mosxgeeks-CHP-6-FIG-12" /><div class="figure"><img src="figs/mud_0612.gif" alt="Figure 6-12" width="360" /></div><h4 class="objtitle">Figure 6-12. Converting an image</h4>
+</li>
+<li>
+<p>Click the Convert button. If you've given the disk
+image the same filename as the original image you created, an alert
+window will appear, asking you to confirm whether or not you want to
+replace the older file with the new one. Click Replace to finish the
+process.
+</p>
+</li><li>
+<p>Quit Disk Copy (<img src="figs/command.gif" alt="Figure " />-Q).<a name="IXTR3-656" />
+</p>
+</li></ol>
+</div>
+
+<a name="mosxgeeks-CHP-6-SECT-4.3.2" /><div class="sect3">
+<h3 class="sect3">6.4.3.2. Creating a disk image from the command line</h3>
+
+<p>The following example illustrates how to create a disk image at the
+<a name="IXT-6-644" />command line.
+</p>
+
+<a name="ch06-34-fm2xml" /><blockquote><b>WARNING:</b> 
+To avoid accidentally wiping out a physical disk, make sure you are
+logged in as an unprivileged user when you use these commands. Do not
+log in as <em class="filename">root</em></tt> or use <em class="filename">sudo</em></tt>.
+</p>
+</blockquote>
+
+<ol><li>
+<p>Change (<em class="emphasis">cd</em></tt> ) to the directory where you want to
+create the disk image:
+</p>
+<blockquote><pre class="code">cd ~/Documents</pre></blockquote>
+</li>
+<li>
+<p>Create the disk image of a given size (10 MB in this example) using
+<em class="filename">hdiutil</em></tt>:
+</p>
+<blockquote><pre class="code">hdiutil create -megabytes 10 Sample.dmg -layout NONE</pre></blockquote>
+</li>
+<li>
+<p>Associate the disk image with a device without actually mounting it:</p>
+<blockquote><pre class="code">hdid -nomount Sample.dmg </pre></blockquote>
+
+<p>This attaches the image to the system under an unused device, such as
+<em class="filename">/dev/disk2</em></tt>. (<em class="filename">hdid</em></tt> will
+report the device, or you can use <em class="filename">hdiutil info
+</em></tt>to see all of the attached images.)
+</p>
+</li><li>
+<p>Format the disk as HFS+ with <em class="filename">newfs_hfs</em></tt>. (Replace
+<tt><em class="replaceable"><tt>REAL_DEVICE</tt></em></tt> with the actual device used,
+such as <em class="filename">/dev/disk2.</em></tt>) Be careful with this
+command--if you run it on your hard drive, it could wipe out
+your disk.
+</p>
+<blockquote><pre class="code">newfs_hfs -v SampleVol /dev/<tt><em class="replaceable"><tt>REAL_DEVICE</tt></em></tt></pre></blockquote>
+</li>
+<li>
+<p>Detach the newly formatted device: </p>
+<blockquote><pre class="code">hdiutil eject /dev/<tt><em class="replaceable"><tt>REAL_DEVICE</tt></em></tt></pre></blockquote>
+</li>
+<li>
+<p>Mount the writable image as a volume. Since you named it SampleVol
+when you issued the <em class="filename">newfs_hfs</em></tt> command, it will
+appear on the desktop as SampleVol:
+</p>
+<blockquote><pre class="code">hdid Sample.dmg</pre></blockquote>
+</li>
+<li>
+<p>Use the Finder or command-line tools to write to the volume
+SampleVol. It will appear on your desktop and will be available in
+<em class="filename">/Volumes/SampleVol</em></tt>.
+</p>
+</li><li>
+<p>When you are done writing to the volume, you can eject it in the
+Finder, using one of the methods described earlier.
+</p>
+</li><li>
+<p>Copy the disk image to a compressed, read-only image named
+<em class="filename">Ready4Dist.dmg</em></tt>:
+</p>
+<blockquote><pre class="code">hdiutil convert -format UDZO Sample.dmg -o Ready4Dist.dmg</pre></blockquote>
+</li>
+</ol>
+
+<p>Whenever you want to mount this volume again, you can double-click
+the file <em class="filename">Ready4Dist.dmg</em></tt> in the finder. Note that
+the writable disk image <em class="filename">Sample.dmg</em></tt> is not
+destroyed in this process.
+</p>
+
+<p>There were several names involved with that last example, so
+here's a refresher:
+</p>
+
+<dl>
+<dt><i><em class="filename">Sample.dmg</em></tt></i></dt>
+<dd>
+A writable 10 MB disk image created in Step 2.</p>
+</dd>
+
+
+
+<dt><i><em class="filename">/dev/disk2</em></tt>, <em class="filename">/dev/</em></tt><tt><em class="replaceable"><tt>REAL_DEVICE</tt></em></tt></i></dt>
+<dd>
+The system device under which you attached
+<em class="filename">Sample.dmg</em></tt> in Step 3.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">SampleVol</em></tt></i></dt>
+<dd>
+The volume name you gave to the disk image when you formatted this in
+Step 4.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">Ready4Dist.dmg</em></tt></i></dt>
+<dd>
+A read-only, compressed copy of <em class="filename">Sample.dmg</em></tt>,
+created in Step 9. Since it's a copy, it has the
+same volume name as <em class="filename">Sample.dmg</em></tt>: SampleVol.
+</p>
+</dd>
+
+</dl>
+
+</div>
+</div>
+<a name="mosxgeeks-CHP-6-SECT-4.4" /><div class="sect2">
+<h3 class="sect2">6.4.4. Distributing Your Image</h3>
+
+<p>Once you've created a disk image, you can share it
+with the world. Put the image up on a web server or FTP server for
+others to enjoy, share it on your iDisk, or burn it to a CD using
+Disk Copy (select File <img src="figs/U2192.gif" alt="Figure " /> Burn<a name="IXTR3-657" />
+Image).<a name="IXTR3-658" /> <a name="IXTR3-659" /> 
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="part3.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.3. GNU-Darwin</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">III. Beyond the User Space</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,187 @@
+<html><head><title>Using sed and awk Together (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">2.5. Using sed and awk Together</h2>
+
+<p>
+<a name="ch02.toget1" />
+<a name="ch02.toget2" />
+In UNIX, pipes can be used to pass the output from one program as
+input to the next program.  Let's look at a few examples that combine
+sed and awk to produce a report.  The sed script that replaced the
+postal abbreviation of a state with its full name is general enough
+that it might be used again as a script file named
+<b class="emphasis-bold">nameState</b>:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat nameState</b></tt>
+s/ CA/, California/
+s/ MA/, Massachusetts/
+s/ OK/, Oklahoma/
+s/ PA/, Pennsylvania/
+s/ VA/, Virginia/</pre></blockquote>
+
+<p>Of course, you'd want to handle all states, not just five, and if you
+were running it on documents other than mailing lists, you should make
+sure that it does not make unwanted replacements.</p>
+
+<p>The output for this program, using the input file
+<em class="filename">list</em>, is the same as we have already seen.  In
+the next example, the output produced by <b class="emphasis-bold">nameState</b>
+is piped to an awk program that extracts the name of the state from
+each record.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f nameState list | awk -F, '{ print $4 }'</b></tt>
+ Massachusetts
+ Virginia
+ Oklahoma
+ Pennsylvania
+ Massachusetts
+ Virginia
+ California
+ Massachusetts</pre></blockquote>
+
+<p>The awk program is processing the output produced by the sed script.
+Remember that the sed script replaces the abbreviation with a comma
+and the full name of the state.  In effect, it splits the third field
+containing the city and state into two fields.  "$4" references the
+fourth field.</p>
+
+<p>What we are doing here could be done completely in sed, but probably
+with more difficulty and less generality.  Also, since awk allows you
+to replace the string you match, you could achieve this result
+entirely with an awk script.</p>
+
+<p>While the result of this program is not very useful, it could
+be passed to <b class="emphasis-bold">sort | uniq -c</b>, which would sort the states
+into an alphabetical list with a count of the number of occurrences
+of each state.</p>
+
+<p>Now we are
+going to do something more interesting.  We want to produce a report
+that sorts the names by state and lists the name of the state followed
+by the name of each person residing in that state.  The following
+example shows the <b class="emphasis-bold">byState</b> program.</p>
+
+<blockquote><pre class="code">#! /bin/sh
+awk -F, '{ 
+	print $4 ", " $0 
+	}' $* | 
+sort |
+awk -F, '
+$1 == LastState { 
+      print "\t" $2
+}
+$1 != LastState { 
+      LastState = $1
+      print $1
+      print "\t" $2
+}'</pre></blockquote>
+
+<p>This shell script has three parts.  The program invokes awk to produce
+input for the <b class="emphasis-bold">sort</b> program and then invokes awk
+again to test the sorted input and determine if the name of the state
+in the current record is the same as in the previous record.  Let's see
+the script in action:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f nameState list | byState</b></tt>
+ California
+	 Amy Wilde
+ Massachusetts
+	 Eric Adams
+	 John Daggett
+	 Sal Carpenter
+ Oklahoma
+	 Orville Thomas
+ Pennsylvania
+	 Terry Kalkas
+ Virginia
+	 Alice Ford
+	 Hubert Sims</pre></blockquote>
+
+<p>The names are sorted by state.  This is a typical example of using
+awk to generate a report from structured data.</p>
+
+<p>To examine how the <b class="emphasis-bold">byState</b> program works, let's
+look at each part separately.  It's designed to read input
+from the <b class="emphasis-bold">nameState</b> program and expects "$4" to be
+the name of the state.  Look at the output produced by the first
+line of the program:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f nameState list | awk -F, '{ print $4 ", " $0 }'</b></tt>
+ Massachusetts, John Daggett, 341 King Road, Plymouth, Massachusetts
+ Virginia, Alice Ford, 22 East Broadway, Richmond, Virginia
+ Oklahoma, Orville Thomas, 11345 Oak Bridge Road, Tulsa, Oklahoma
+ Pennsylvania, Terry Kalkas, 402 Lans Road, Beaver Falls, Pennsylvania
+ Massachusetts, Eric Adams, 20 Post Road, Sudbury, Massachusetts
+ Virginia, Hubert Sims, 328A Brook Road, Roanoke, Virginia
+ California, Amy Wilde, 334 Bayshore Pkwy, Mountain View, California
+ Massachusetts, Sal Carpenter, 73 6th Street, Boston, Massachusetts</pre></blockquote>
+
+<p>
+<a name="IXT-2-265427" />
+The <b class="emphasis-bold">sort</b> program, by default, sorts lines in
+alphabetical order, looking at characters from left to right.  In
+order to sort records by state, and not names, we insert the state as
+a sort key at the beginning of the record.  Now the
+<b class="emphasis-bold">sort</b> program can do its work for us.  (Notice that
+using the <b class="emphasis-bold">sort</b> utility saves us from having to
+write sort routines inside awk.)</p>
+
+<p>The second time awk is invoked we perform a programming task.  The
+script looks at the first field of each record (the state) to
+determine if it is the same as in the previous record.  If it is not
+the same, the name of the state is printed followed by the person's
+name.  If it is the same, then only the person's name is printed.</p>
+
+<blockquote><pre class="code">$1 == LastState { 
+      print "\t" $2
+}
+$1 != LastState { 
+      LastState = $1
+      print $1
+      print "\t" $2 
+}'</pre></blockquote>
+
+<p>There are a few significant things here, including
+assigning a variable, testing the first field of each
+input line to see if it contains a variable string, and printing
+a tab to align the output data.  Note that we don't have to assign
+to a variable before using it (because awk variables are initialized
+to the empty string).  This is a small script, but you'll see the same
+kind of routine used to compare index entries in a much larger
+indexing program in <a href="ch12_01.htm">Chapter 12, "Full-Featured Applications"</a>.  However, for now,
+don't worry too much about understanding what each statement is
+doing. Our point here is to give you an overview of what sed and
+awk can do.</p>
+
+<p>In this chapter, we have covered the basic operations of sed and awk.
+We have looked at important command-line options and introduced you to
+scripting.  In the next chapter, we are going to look at regular
+expressions, something both programs use to match patterns in the
+input.</p>
+
+<a name="IXT-2-265428" />
+<a name="IXT-2-265429" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2.4. Using awk</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3. Understanding Regular Expression Syntax</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

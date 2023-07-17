@@ -1,0 +1,473 @@
+<html><head><title>Functions (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 9. Functions</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch09_01.htm#sect1">Arithmetic Functions</a><br />
+<a href="ch09_02.htm">String Functions</a><br />
+<a href="ch09_03.htm">Writing Your Own Functions</a><br /></p></div><p>A function is a self-contained computation that accepts a number of
+arguments as input and returns some value.
+Awk has a number of built-in functions
+in two groups:  arithmetic and string functions.  
+Awk also provides
+user-defined functions, which allow you to expand upon
+the built-in functions by writing your own.</p><div class="sect1"><a name="sedawk-ch-9-sect-1" />
+<h2 class="sect1"><a name="sect1" />9.1. Arithmetic Functions</h2>
+
+<p>
+<a name="ch09.fun1" />
+<a name="ch09.fun2" />
+<a name="ch09.fun4" />
+Nine of the built-in functions
+can be classified as arithmetic functions.
+Most of them take a numeric argument and return
+a numeric value.  <a href="ch09_01.htm#sedawk-ch-9-tab-1">Table 9.1</a> summarizes
+these arithmetic functions.</p>
+
+<a name="sedawk-ch-9-tab-1" /><h4 class="objtitle">Table 9.1. awk's Built-In Arithmetic Functions</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Awk Function</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><b class="emphasis-bold">cos</b>(<em class="emphasis">x</em>)</td>
+<td>Returns cosine of <em class="emphasis">x</em> (<em class="emphasis">x</em> is in radians).</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">exp</b>(<em class="emphasis">x</em>)</td>
+<td>Returns <em class="emphasis">e</em> to the power <em class="emphasis">x</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">int</b>(<em class="emphasis">x</em>)</td>
+<td>Returns truncated value of <em class="emphasis">x</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">log</b>(<em class="emphasis">x</em>)</td>
+<td>Returns natural logarithm (base-<em class="emphasis">e</em>) of <em class="emphasis">x</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">sin</b>(<em class="emphasis">x</em>)</td>
+<td>Returns sine of <em class="emphasis">x</em> (<em class="emphasis">x</em> is in radians).</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">sqrt</b>(<em class="emphasis">x</em>)</td>
+<td>Returns square root of <em class="emphasis">x</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">atan2</b>(<em class="emphasis">y</em>,<em class="emphasis">x</em>)</td>
+
+<td>Returns arctangent of <em class="emphasis">y</em>/<em class="emphasis">x</em> in the range -<img src="figs/pi.gif" alt="Figure " /> to <img src="figs/pi.gif" alt="Figure " />.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">rand</b>()</td>
+<td>Returns pseudo-random number <em class="emphasis">r</em>, where 0 &lt;= <em class="emphasis">r</em> &lt; 1.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">srand</b>(<em class="emphasis">x</em>)</td>
+<td><p>Establishes new seed for <b class="emphasis-bold">rand()</b>.  If no seed is specified, 
+uses time of day. Returns the old seed.</p></td>
+</tr>
+
+
+</table><p>
+
+<a name="sedawk-ch-9-sect-1.1" /><div class="sect2">
+<h3 class="sect2">9.1.1. Trigonometric Functions</h3>
+
+<p>
+<a name="IXT-9-266070" />
+<a name="IXT-9-266071" />
+<a name="IXT-9-266072" />
+<a name="IXT-9-266073" />
+The trigonometric functions <b class="emphasis-bold">cos()</b>
+and <b class="emphasis-bold">sin()</b> work the same way, taking a single argument
+that is the size of an angle in radians and returning
+the cosine or sine for that angle.  (To convert from degrees
+to radians, multiply the number by <img src="figs/pi.gif" alt="Figure " />/180.) 
+The trigonometric function <b class="emphasis-bold">atan2()</b> 
+takes two arguments and returns the arctangent of their quotient.
+The expression</p>
+
+<blockquote><pre class="code">atan2(0, -1)</pre></blockquote>
+
+<p>produces <img src="figs/pi.gif" alt="Figure " />.</p>
+
+<p>
+<a name="IXT-9-266074" />
+<a name="IXT-9-266075" />
+The function <b class="emphasis-bold">exp()</b> uses the natural
+exponential, which is also known as base-<em class="emphasis">e</em>
+exponentiation.  The expression</p>
+
+<blockquote><pre class="code">exp(1)</pre></blockquote>
+
+<p>
+<a name="IXT-9-266076" />
+returns the natural number 2.71828, the base of the natural
+logarithms, referred to as <em class="emphasis">e</em>.  
+Thus, <b class="emphasis-bold">exp</b>(<em class="emphasis">x</em>) is <em class="emphasis">e</em> to the <em class="emphasis">x</em>-th power.</p>
+
+<p>
+<a name="IXT-9-266077" />
+<a name="IXT-9-266078" />
+The <b class="emphasis-bold">log()</b> function gives the inverse of the <b class="emphasis-bold">exp()</b>
+function, the natural logarithm of <em class="emphasis">x</em>.
+The <b class="emphasis-bold">sqrt()</b> function takes a single argument and returns
+the (positive) square root of that argument.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-9-sect-1.2" /><div class="sect2">
+<h3 class="sect2">9.1.2. Integer Function</h3>
+
+<p>
+<a name="IXT-9-266079" />
+<a name="IXT-9-266080" />
+<a name="IXT-9-266081" />
+The <b class="emphasis-bold">int()</b> function truncates a numeric value by removing
+digits to the right of the decimal point.
+Look at the following two statements:</p>
+
+<blockquote><pre class="code">print 100/3
+print int(100/3)</pre></blockquote>
+
+<p>The output from these statements is shown below:</p>
+
+<blockquote><pre class="code">33.3333
+33</pre></blockquote>
+
+<p>The <b class="emphasis-bold">int()</b> function simply truncates; 
+it does not round up or down.
+(Use the <b class="emphasis-bold">printf</b> format "%.0f" to perform 
+rounding.)<a href="#FOOTNOTE-57">[57]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-57" /><p> [57]The way <b class="emphasis-bold">printf</b> does rounding is
+discussed in <a href="appb_01.htm">Appendix B, "Quick Reference
+for awk"</a>.</p>
+
+</blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-9-sect-1.3" /><div class="sect2">
+<h3 class="sect2">9.1.3. Random Number Generation</h3>
+
+<p>
+<a name="ch09.rand1" />
+<a name="ch09.rand2" />
+<a name="ch09.rand3" />
+<a name="ch09.rand4" />
+<a name="ch09.rand5" />
+The <b class="emphasis-bold">rand()</b> function generates a pseudo-random floating-point
+number between 0 and 1.  The <b class="emphasis-bold">srand()</b> function sets the seed
+or starting point for random number generation.  If <b class="emphasis-bold">srand()</b> is
+called without an argument, it uses the time of day to generate
+the seed.  With an argument <em class="emphasis">x</em>, <b class="emphasis-bold">srand()</b> uses <em class="emphasis">x</em> as
+the seed.</p>
+
+<p>If you don't call <b class="emphasis-bold">srand()</b> at all, awk acts as if <b class="emphasis-bold">srand()</b>
+had been called with a constant argument before your program
+started,  causing you to get the same starting point every time
+you run your program.
+This is useful if you want reproducible behavior for testing, but
+inappropriate if you really do want your program to behave
+differently every time.
+Look at the following script:</p>
+
+<blockquote><pre class="code"># rand.awk -- test random number generation
+BEGIN {
+	print rand()
+	print rand()
+	srand()
+	print rand()
+	print rand()
+}</pre></blockquote>
+
+<p>We print the result of the <b class="emphasis-bold">rand()</b> function twice,
+and then call the <b class="emphasis-bold">srand()</b> function before printing
+the result of the <b class="emphasis-bold">rand()</b> function two more times.
+Let's run the script.</p>
+
+<blockquote><pre class="code">$<tt class="userinput"><b> awk -f rand.awk</b></tt>
+0.513871
+0.175726
+0.760277
+0.263863</pre></blockquote>
+
+<p>Four random numbers are generated.
+Now look what happens when we run the program again:</p>
+
+<blockquote><pre class="code">$<tt class="userinput"><b> awk -f rand.awk</b></tt>
+0.513871
+0.175726
+0.787988
+0.305033</pre></blockquote>
+
+<p>The first two "random" numbers are identical to the numbers
+generated in the previous run of the program while the last
+two numbers are different.
+The last two numbers are different because we provided
+the <b class="emphasis-bold">rand()</b> function with a new seed.</p>
+
+<p>The return value of the <b class="emphasis-bold">srand()</b> function is the seed it was using. 
+This can be used to keep track of sequences of random numbers,
+and re-run them if needed.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-9-sect-1.4" /><div class="sect2">
+<h3 class="sect2">9.1.4. Pick 'em</h3>
+
+<p>To show how to use <b class="emphasis-bold">rand()</b>, 
+we'll look at a script that implements a "quick-pick" for a lottery game.  
+This script, named <b class="emphasis-bold">lotto</b>, picks <em class="emphasis">x</em> 
+numbers from a series of numbers 1 to <em class="emphasis">y</em>.
+Two arguments can be supplied on the command line: how many numbers to pick
+(the default is 6) and the highest number in the series (the default
+is 30).  
+Using the default values for <em class="emphasis">x</em> and <em class="emphasis">y</em>, the script generates 
+six unique random numbers between 1 and 30.
+The numbers are sorted for readability from lowest to highest
+and output.
+Before looking at the script itself, let's run the program:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lotto</b></tt>
+Pick 6 of 30
+9 13 25 28 29 30
+$ <tt class="userinput"><b>lotto 7 35</b></tt>
+Pick 7 of 35
+1 6 9 16 20 22 27</pre></blockquote>
+
+<p>The first example uses the default values to print six random numbers
+from 1 to 30.  The second example prints seven random numbers out
+of 35.</p>
+
+<p>The full <b class="emphasis-bold">lotto</b> script is fairly complicated, so before looking
+at the entire script, let's look at a smaller script that
+generates a single random number in a series:</p>
+
+<blockquote><pre class="code">awk -v TOPNUM=$1 '
+# pick1 - pick one random number out of y 
+# main routine
+BEGIN {
+# seed random number using time of day 
+	srand() 
+# get a random number
+	select = 1 + int(rand() * TOPNUM)
+# print pick
+	print select
+}'</pre></blockquote>
+
+<p>The shell script expects a single argument from the command line
+and this is passed into the program as "TOPNUM=$1,"
+using the <span class="option">-v</span> option.
+All the action happens in the <b class="emphasis-bold">BEGIN</b> procedure. Since there are
+no other statements in the program, awk exits when the <b class="emphasis-bold">BEGIN</b>
+procedure is done.</p>
+
+<p>The main routine first calls the <b class="emphasis-bold">srand()</b> function
+to seed the random number generator.  Then we get a
+random number by calling the <b class="emphasis-bold">rand()</b> function:</p>
+
+<blockquote><pre class="code">select = 1 + int(rand() * TOPNUM)</pre></blockquote>
+
+<p>It might be helpful to see this expression broken up
+so each part of it is obvious.</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<th>Statement</th>
+<th>Result</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">print r = rand()</tt></td>
+<td>0.467315</td>
+</tr>
+
+<tr>
+<td><tt class="literal">print r * TOPNUM</tt></td>
+<td>14.0195</td>
+</tr>
+
+<tr>
+<td><tt class="literal">print int(r * TOPNUM)</tt></td>
+<td>14</td>
+</tr>
+
+<tr>
+<td><tt class="literal">print 1 + int(r * TOPNUM)</tt></td>
+<td>15</td>
+</tr>
+
+
+</table><p>
+<p>Because the <b class="emphasis-bold">rand()</b> function returns a number between 0 and 1,
+we multiply it by <b class="emphasis-bold">TOPNUM</b> to get a number between 0 and
+<b class="emphasis-bold">TOPNUM</b>.  We then truncate the number to remove the fractional
+values and then add 1 to the number.  The latter is necessary
+because <b class="emphasis-bold">rand()</b> could return 0.  In this example, the
+random number that is generated is 15.
+You could use this program to print any single number, such
+as picking a number between 1 and 100.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>pick1 100</b></tt>
+83</pre></blockquote>
+
+<p>The <b class="emphasis-bold">lotto</b> script must "pick one" multiple times.  Basically,
+we need to set up a <b class="emphasis-bold">for</b> loop to execute the <b class="emphasis-bold">rand()</b>
+function as many times as needed.  One
+of the reasons this is difficult is that we have to
+worry about duplicates.  In other words, it is possible
+for a number to be picked again; therefore we have to
+keep track of the numbers already picked.</p>
+
+<p>Here's the <b class="emphasis-bold">lotto</b> script:</p>
+
+<blockquote><pre class="code">awk -v NUM=$1 -v TOPNUM=$2 '
+# lotto - pick x random numbers out of y 
+# main routine
+BEGIN {
+# test command line args; NUM = $1, how many numbers to pick 
+# 	              TOPNUM = $2, last number in series
+	if (NUM &lt;= 0) 
+		NUM = 6
+	if (TOPNUM &lt;= 0) 
+		TOPNUM = 30
+# print "Pick x of y"
+	printf("Pick %d of %d\n", NUM, TOPNUM) 
+# seed random number using time and date; do this once
+	srand() 
+# loop until we have NUM selections
+	for (j = 1; j &lt;= NUM; ++j) {
+		# loop to find a not-yet-seen selection
+		do {
+			select = 1 + int(rand() * TOPNUM)
+		} while (select in pick)
+		pick[select] = select
+	}
+# loop through array and print picks.
+	for (j in pick) 
+		printf("%s ", pick[j])
+	printf("\n")
+}'</pre></blockquote>
+
+<p>Unlike the previous program, this one looks for two command-line
+arguments, indicating <em class="emphasis">x</em> numbers out of
+<em class="emphasis">y</em>.  The main routine looks to see if these
+numbers were supplied and if not, assigns default values.</p>
+
+<p>There is only one array, <b class="emphasis-bold">pick</b>, for holding the random numbers that
+are selected. Each number is guaranteed to be in the desired range,
+because the result of <b class="emphasis-bold">rand()</b> (a value between 0 and 1) is
+multiplied by <b class="emphasis-bold">TOPNUM</b> and then truncated.
+The heart of the script is a loop that occurs <b class="emphasis-bold">NUM</b> times
+to assign <b class="emphasis-bold">NUM</b> elements to the <b class="emphasis-bold">pick</b> array.</p>
+
+<p>To get a new non-duplicate random number, we
+use an inner loop that generates selections
+and tests to see if they are in the <b class="emphasis-bold">pick</b> array.
+(Using the <b class="emphasis-bold">in</b> operator is much faster than looping through the
+array comparing subscripts.)
+While <b class="emphasis-bold">(select in pick)</b>, the corresponding element
+has been found already, so the
+selection is a duplicate and we reject the selection.  
+If it is not true that <b class="emphasis-bold">select in pick</b>, then 
+we assign <b class="emphasis-bold">select</b> to an element of the <b class="emphasis-bold">pick</b> array.
+This will make
+future <b class="emphasis-bold">in</b> tests
+return true, causing the <b class="emphasis-bold">do</b> loop to continue.</p>
+
+<p>Finally, the program loops through the <b class="emphasis-bold">pick</b> array and
+prints the elements.
+This version of the <b class="emphasis-bold">lotto</b> script leaves one thing out.
+See if you can tell what it is if we run it again:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lotto 7 35</b></tt>
+Pick 7 of 35
+5 21 9 30 29 20 2</pre></blockquote>
+
+<p>That's right, the numbers are not sorted.  We'll
+defer showing the code for the sort routine
+until we discuss user-defined functions.  While it's not
+necessary to have written the sorting code as a function,
+it makes a lot of sense.  One reason is that you
+can tackle a more generalized problem and retain
+the solution for use in other programs.  Later 
+on, we will write a 
+function that sorts the elements of an array.</p>
+
+<p>Note that the <b class="emphasis-bold">pick</b> array isn't ready for sorting, since its
+indices are the same as its values, not numbers in order.
+We would have to set up a separate array for sorting by our sort
+function:</p>
+
+<blockquote><pre class="code"># create a numerically indexed array for sorting
+i = 1
+for (j in pick)
+	sortedpick[i++] = pick[j]</pre></blockquote>
+
+<p>The <b class="emphasis-bold">lotto</b> program is set up to do everything in the <b class="emphasis-bold">BEGIN</b> block.
+No input is processed. 
+You could, however,
+revise this script to read a list of names from a file and
+for each name generate a "quick-pick."</p>
+
+<a name="IXT-9-266082" />
+<a name="IXT-9-266083" />
+<a name="IXT-9-266084" />
+<a name="IXT-9-266085" />
+<a name="IXT-9-266086" />
+</div>
+
+
+
+
+<a name="IXT-9-266087" />
+<a name="IXT-9-266088" />
+<a name="IXT-9-266089" />
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.6. System Variables That Are Arrays</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.2. String Functions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

@@ -1,0 +1,185 @@
+<html><head><title>Passing Parameters Into a Script (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.10. Passing Parameters Into a Script</h2>
+
+<p>
+<a name="ch07.param1" />
+<a name="ch07.param2" />
+<a name="ch07.param3" />
+One of the more confusing subtleties of programming in awk
+is passing parameters into a script. 
+A parameter assigns a value to a variable that can be accessed
+within the awk script.
+The variable can be set on
+the command line, after the script and before the filename.</p>
+
+<blockquote><pre class="code">awk 'script' var=value inputfile</pre></blockquote>
+
+<p>Each parameter must be interpreted as a single argument.  Therefore,
+spaces are not permitted on either side of the equal sign.
+Multiple parameters can be passed this way.
+For instance, if you wanted to define the variables 
+<b class="emphasis-bold">high</b> and <b class="emphasis-bold">low</b>
+from the command line, you could invoke awk as follows:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f scriptfile high=100 low=60 datafile</b></tt></pre></blockquote>
+
+<p>Inside the script, these two variables are available and can be
+accessed as any awk variable.
+If you were to put this script in a shell script wrapper, then
+you could pass the shell's command-line arguments as values.  
+(The shell makes available command-line arguments in the 
+positional variables--$1 for the first parameter, $2 for
+the second, and so on.)<a href="#FOOTNOTE-52">[52]</a>
+For instance, look at the shell script version of the previous command:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-52" /><p> [52]Careful! Don't confuse
+the shell's parameters with awk's field variables.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">awk -f scriptfile "high=$1" "low=$2" datafile</pre></blockquote>
+
+<p>If this shell script were named <b class="emphasis-bold">awket</b>, it could be invoked
+as:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awket 100 60</b></tt></pre></blockquote>
+
+<p>"100" would be $1 and passed as the value assigned to the variable <b class="emphasis-bold">high</b>.</p>
+
+<p>In addition, environment variables or the output of 
+a command can be passed as the value of a variable.
+Here are two examples:</p>
+
+<blockquote><pre class="code">awk '{ ... }' directory=$cwd file1 ...
+awk '{ ... }' directory=`pwd` file1 ...</pre></blockquote>
+
+<p>"$cwd" returns the value of the variable <b class="emphasis-bold">cwd</b>, the current working directory
+(<b class="emphasis-bold">csh</b> only).  The second example uses backquotes to
+execute the <b class="emphasis-bold">pwd</b> command and assign its result to
+the variable <b class="emphasis-bold">directory</b> (this is more
+portable).</p>
+
+<p>You can also use command-line parameters to define system
+variables, as in the following example:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk '{ print NR, $0 }' OFS='. ' names</b></tt>
+1. Tom 656-5789
+2. Dale 653-2133
+3. Mary 543-1122
+4. Joe 543-2211</pre></blockquote>
+
+<p>The output field separator is redefined to be a period followed
+by a space.</p>
+
+<p>
+<a name="IXT-7-266003" />
+An important restriction 
+on command-line parameters is that they are not available in 
+the <b class="emphasis-bold">BEGIN</b> procedure.  That is, they are not available
+until <em class="emphasis">after</em> the first line of input is read.
+Why?  Well, here's the confusing part. 
+A parameter passed from the command line
+is treated as though it were a filename.  The assignment does not
+occur until the parameter, if it were a filename, is actually
+evaluated.</p>
+
+<p>Look at the following script that sets a variable <span class="option">n</span>
+as a command-line parameter.</p>
+
+<blockquote><pre class="code">awk  'BEGIN { print n }
+{
+if (n == 1) print "Reading the first file"
+if (n == 2) print "Reading the second file"
+}' n=1 test n=2 test2</pre></blockquote>
+
+<p>There are four command-line parameters:  "n=1," "test," "n=2,"
+and "test2".  
+Now, if you remember that a <b class="emphasis-bold">BEGIN</b> procedure is "what we do
+before processing input," you'll understand why the reference
+to <span class="option">n</span> in the <b class="emphasis-bold">BEGIN</b> procedure returns nothing.  So the <b class="emphasis-bold">print</b>
+statement will print a blank line.  If
+the first parameter were a file and not a
+variable assignment, the file would not be opened until
+the <b class="emphasis-bold">BEGIN</b> procedure had been executed.</p>
+
+<p>The variable <span class="option">n</span> is given
+an initial value of 1 from the first parameter.
+The second parameter supplies the name of the file.
+Thus, for each line in <em class="filename">test</em>, the conditional "n == 1"
+will be true.  After the input is exhausted from <em class="filename">test</em>,
+the third parameter is evaluated, and it
+sets <b class="emphasis-bold">n</b> to 2.  Finally, the fourth parameter supplies
+the name of a second file.
+Now the conditional "n == 2" in the main procedure will be
+true.</p>
+
+<p>One consequence of the way parameters are evaluated is
+that you cannot use the <b class="emphasis-bold">BEGIN</b> procedure to
+test or verify parameters that are supplied on the command line.  
+They are available only after a line of input has been read.
+You can get around this limitation by composing the rule "NR == 1" and
+using its procedure to verify the assignment.
+Another way is to test the command-line parameters 
+in the shell script before invoking awk.</p>
+
+<p>
+<a name="IXT-7-266004" />
+POSIX awk provides a solution to the problem of defining parameters
+before any input is read.  The <span class="option">-v</span> option<a href="#FOOTNOTE-53">[53]</a>
+specifies variable assignments that you want to take place
+before executing the <b class="emphasis-bold">BEGIN</b> procedure (i.e., before the first line
+of input is read.) 
+The <span class="option">-v</span> option must be specified before a command-line script.
+For instance, the following command uses the <span class="option">-v</span> option
+to set the record separator for multiline records.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-53" /><p> [53]The <span class="option">-v</span> option was not part of the original (1987) version of nawk
+(still used on SunOS 4.1.x systems and some System V Release 3.x
+systems).
+It was added in 1989 after Brian Kernighan of Bell Labs, the GNU awk
+authors, and the authors of MKS awk agreed on a
+way to set variables on the command line that would be available
+inside the <b class="emphasis-bold">BEGIN</b> block. It is now part of the POSIX specification
+for awk.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">$ awk -F"\n" -v RS="" '{ print }' phones.block</pre></blockquote>
+
+<p>A separate <span class="option">-v</span> option is required for each variable assignment
+that is passed to the program.</p>
+
+<p>Awk also provides the system variables 
+<b class="emphasis-bold">ARGC</b> and <b class="emphasis-bold">ARGV</b>, 
+which will be familiar to C programmers.  Because
+this requires an understanding of arrays, we will discuss this
+feature in <a href="ch08_01.htm">Chapter 8, "Conditionals, Loops, and Arrays"</a>.</p>
+
+<a name="IXT-7-266005" />
+<a name="IXT-7-266006" />
+<a name="IXT-7-266007" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.9. Formatted Printing</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.11. Information Retrieval</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

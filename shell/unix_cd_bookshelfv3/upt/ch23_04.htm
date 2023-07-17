@@ -1,0 +1,130 @@
+<html><head><title>Some Gotchas with Job Control (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch23_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">23.4. Some Gotchas with Job Control</h2>
+
+<ol><li>
+<p><a name="IXT-23-5556" />If <a name="IXT-23-5557" />you're using Bourne-type
+shells, you have to watch out for putting a series of commands
+separated by <b class="emphasis-bold">semicolons</b> (<a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a>) into the background. These shells put only
+the last command on the line into the background, but wait for the
+first.
+</p>
+
+<p>An easy way to test this is with the following command line, which
+waits for 15 seconds, then does an <i class="command">ls</i>:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sleep 15; ls &amp;</b></tt></pre></blockquote>
+
+<p>In Bourne-like shells, you won't get your prompt
+back until the <b class="emphasis-bold">sleep</b> (<a href="ch25_09.htm#upt3-CHP-25-SECT-9">Section 25.9</a>) command has finished.
+</p>
+
+<p>With Bourne-type shells, the proper way to put a series of commands
+into the background is to group them with parentheses:
+</p>
+
+<p><tt class="literal">( )</tt> <a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>(sleep 15; ls)&amp;</b></tt></pre></blockquote>
+
+<p>This may strike you as a defect, but in fact, it's a
+sign of the greater precision of Bourne shell syntax, which makes it
+somewhat exasperating for interactive use but much better for
+programming.
+</p>
+</li>
+
+<li>
+<p>It doesn't make any sense to run an interactive
+program such as an editor in the background. For example, if you type
+this from the C shell:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>vi &amp;</b></tt>
+[1] 3071</pre></blockquote>
+
+<p>you'll get a message like the following:</p>
+
+<blockquote><pre class="code">[1]  + Stopped (tty output) vi</pre></blockquote>
+
+<p><i class="command">vi</i> can be active only in the foreground. However,
+it does make sense to have <b class="emphasis-bold">vi</b>
+<b class="emphasis-bold">stopped</b> (<a href="ch23_01.htm#upt3-CHP-23-SECT-1">Section 23.1</a>) in the background.
+</p>
+
+<p><a name="IXT-23-5558" />If you are
+running <i class="command">vi</i> or any other interactive program, you
+can quickly get back to the shell by typing CTRL-z to stop the
+program. The shell will take control of your terminal and print
+another shell prompt.
+</p>
+
+<p><b class="emphasis-bold">Stopping vi</b> (<a href="ch23_06.htm#upt3-CHP-23-SECT-6">Section 23.6</a>) is more efficient than using its <b class="emphasis-bold">shell escape mechanism</b> (<a href="ch17_21.htm#upt3-CHP-17-SECT-21">Section 17.21</a>), since it lets you go back to your original
+shell rather than starting a new one. Simply type
+<tt class="literal">fg</tt> to get back to where you were in editing.
+</p>
+</li>
+
+<li>
+<p><a name="IXT-23-5559" /><a name="IXT-23-5560" />We have had the
+misfortune to share a system with new users who were overenthusiastic
+in their use of background processes, rather like the man who loved
+loving so much he sought many lovers. Because each background process
+is competing for the same resources, running many of them can be a
+drain on the system, and everything takes longer for everyone. We
+knew people who thought that if they ran three
+<i class="command">troff</i> processes at once, they'd
+get their three files formatted faster than if they did them one
+after another. Boy, were they mistaken.<a href="#FOOTNOTE-68">[68]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-68" /><p> [68]In the old
+days, Unix systems gave all processes to a single CPU. Modern Unix
+systems can have multiple CPUs. On these systems, you may be able to
+do several jobs almost as quickly as one.</p> </blockquote>
+</li>
+
+<li>
+<p>If you use the Bourne shell, any background processes you have
+running will normally be terminated when you log out. To avoid this,
+use the <b class="emphasis-bold">nohup</b> (<a href="ch23_10.htm#upt3-CHP-23-SECT-10">Section 23.10</a>) <a name="IXT-23-5561" /><a name="IXT-23-5562" />command.
+</p>
+</li>
+
+<li>
+<p>Not all processes are created equal. Unix maintains a
+<a name="IXT-23-5563" /><a name="IXT-23-5564" /> <a name="IXT-23-5565" />queue of processes
+ordered by priority. Foreground processes, such as a user typing a
+command at a prompt, often receive higher priority than background
+processes. However, you may want to run background processes at an
+even lower priority, by using <b class="emphasis-bold">nice</b>
+(<a name="IXT-23-5566" /> <a name="IXT-23-5567" /><a href="ch26_05.htm#upt3-CHP-26-SECT-5">Section 26.5</a>). This is
+a relatively painless way of being kind to other users -- and
+making your foreground job run faster -- though it will make your
+background tasks take a little longer.
+</p>
+</li></ol>
+<p><em class="emphasis">--TOR and DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch23_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">23.3. Using jobs Effectively</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">23.5. The "Current Job" Isn't Always What You Expect</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

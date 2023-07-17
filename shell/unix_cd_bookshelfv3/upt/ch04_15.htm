@@ -1,0 +1,122 @@
+<html><head><title>External Commands Send Signals to Set Variables (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.15. External Commands Send Signals to Set Variables</h2>
+
+<p><a name="IXT-4-6861" /><a name="IXT-4-6862" /><a name="IXT-4-6863" />The <b class="emphasis-bold">Bourne
+shell's</b><a name="IXT-4-6864" />
+<b class="emphasis-bold">trap</b> (<a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>)
+will run one or more commands when the shell gets a <b class="emphasis-bold">signal</b> (<a href="ch24_10.htm#upt3-CHP-24-SECT-10">Section 24.10</a>)
+(usually, from the <i class="command">kill</i> command). The shell will
+run any command, including commands that set shell variables. For
+instance, the shell could reread a configuration file; <a href="ch24_13.htm#upt3-CHP-24-SECT-13">Section 24.13</a> shows that. Or it could set a new
+<em class="emphasis">PS1</em> prompt variable that's
+updated any time an external command (like another shell script or a
+<b class="emphasis-bold">cron</b> <b class="emphasis-bold">job</b> (<a href="ch25_02.htm#upt3-CHP-25-SECT-2">Section 25.2</a>)) sends the
+shell a signal. There are lots of possibilities.
+</p>
+
+<p>This trick takes over signal 5 (SIGTRAP), which usually
+isn't used. When the shell gets signal 5, a
+<i class="command">trap</i> runs a command to get the date and time, then
+resets the prompt. A <b class="emphasis-bold">background</b>
+(<a href="ch23_02.htm#upt3-CHP-23-SECT-2">Section 23.2</a>) job springs this trap once a minute.
+So, every minute, after you type any command, your prompt will
+change.
+</p>
+
+<p>You can use any command's output in your prompt
+(possibly with some editing, probably with <b class="emphasis-bold">sed</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) or
+<b class="emphasis-bold">expr</b> (<a href="ch36_21.htm#upt3-CHP-36-SECT-21">Section 36.21</a>)): count the number of users, show the
+<b class="emphasis-bold">load average</b> (<a href="ch26_04.htm#upt3-CHP-26-SECT-4">Section 26.4</a>), whatever. Newer shells, like
+<i class="command">bash</i>, can run a command <b class="emphasis-bold">in
+backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) each time the
+prompt is displayed -- <a href="ch04_10.htm#upt3-CHP-4-SECT-10">Section 4.10</a> has an
+example. But, to have an external command update a shell variable at
+any random time, this <i class="command">trap</i> trick is still the
+best.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: date-	prompt.sh</p>
+
+<p>Now on to the specific example of putting <a name="IXT-4-6865" />date and time in the old Bourne
+shell's prompt. <a name="IXT-4-6866" /><a name="IXT-4-6867" />If
+your system's <i class="command">date</i> command
+doesn't understand date formats (like
+<tt class="literal">+%a</tt>), get one that does. Put these lines in your
+<em class="filename">.profile</em> file (or just type them in at a Bourne
+shell prompt):
+</p>
+
+<blockquote><pre class="code"># Put date and time in prompt; update every 60 seconds:
+trap 'PS1=`date "+%a %D %H:%M%n"`\
+$\ ' 5
+while :</pre></blockquote>
+
+<p><tt class="literal">:</tt> <a href="ch36_06.htm#upt3-CHP-36-SECT-6">Section 36.6</a></p>
+
+<blockquote><pre class="code">do
+    sleep 60
+    kill -5 $$
+done &amp;
+promptpid=$!</pre></blockquote>
+
+<p>Now, every minute after you type a command, your prompt will change:</p>
+
+<blockquote><pre class="code">Thu 06/20/02 02:33
+$ <tt class="userinput"><b>cc bigprog.c</b></tt>
+undefined symbol                first referenced in file
+xputc                               bigprog.o
+ld fatal: Symbol referencing errors.
+Thu 06/20/02 02:34
+$ <tt class="userinput"><b>ls</b></tt>
+bigprog.c
+bigprog.o
+Thu 06/20/02 02:35
+$</pre></blockquote>
+
+<p>The prompt format is up to you. This example makes a <b class="emphasis-bold">two-line prompt</b> (<a href="ch03_07.htm#upt3-CHP-3-SECT-7">Section 3.7</a>)
+<a name="IXT-4-6868" />with
+backslashes (<tt class="literal">\</tt>) to protect the newline and space
+from the <i class="command">trap</i>; a single-line prompt might be
+easier to design. The manual page for <i class="command">date</i> lists
+what you can put in the prompt.
+</p>
+
+<p>This setup starts a <b class="emphasis-bold">while</b> <b class="emphasis-bold">loop</b> (<a href="ch35_15.htm#upt3-CHP-35-SECT-15">Section 35.15</a>) in the
+background. <a name="IXT-4-6869" />The <em class="emphasis">promptpid</em>
+variable holds the <b class="emphasis-bold">process ID number</b>
+(<a name="IXT-4-6870" /><a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>) of the background shell. Before you log out,
+you should <b class="emphasis-bold">kill</b> (<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>) the loop. You can type the command:
+</p>
+
+<blockquote><pre class="code">kill $promptpid</pre></blockquote>
+
+<p>at a prompt or put it in a file that's <b class="emphasis-bold">executed when you log out</b> (<a href="ch04_18.htm#upt3-CHP-4-SECT-18">Section 4.18</a>). 
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.14. dirs in Your Prompt: Better Than $cwd</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.16. Preprompt, Pre-execution, and Periodic Commands</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

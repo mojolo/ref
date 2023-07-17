@@ -1,0 +1,77 @@
+<html><head><title>Why You Can't Kill a Zombie (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.19. Why You Can't Kill a Zombie</h2>
+
+<p>Processes in your <em class="emphasis">ps</em> output that are in the
+&lt;exiting&gt; or Z status are called zombies.
+</p>
+
+<p><a name="IXT-24-5422" />You cannot kill
+zombies; they are already dead.
+</p>
+
+<p>"What is a zombie?" I hear you ask.
+"Why should a dead process stay
+around?"
+</p>
+
+<p><a name="IXT-24-5423" />Dead processes stick
+around for two principal reasons. The lesser of these is that they
+provide a sort of "context" for
+<a name="IXT-24-5424" />closing
+<b class="emphasis-bold">open file descriptors</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>) and shutting down other resources (memory,
+swap space, and so forth). This generally happens immediately, and
+the process remains only for its major purpose: to
+<a name="IXT-24-5425" />hold on to its name and <b class="emphasis-bold">exit status</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>).
+</p>
+
+<p><a name="IXT-24-5426" /><a name="IXT-24-5427" /><a name="IXT-24-5428" />A process is named by its
+<em class="emphasis">process ID</em> or PID. Each process also has
+associated with it a <em class="emphasis">parent process ID</em>. The
+parent PID, or PPID, is the PID of the process that created it via
+<b class="emphasis-bold">fork</b> (<a href="ch24_02.htm#upt3-CHP-24-SECT-2">Section 24.2</a>);
+if that particular process has since vanished, the parent PID is 1
+(the PID of <b class="emphasis-bold">init</b> (<a href="ch24_02.htm#upt3-CHP-24-SECT-2">Section 24.2</a>)). While the original parent is around, it can
+remember the PIDs of its children. These PIDs cannot be reused until
+the parent knows the children are done. The parent can also get a
+single byte of <b class="emphasis-bold">status</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>) from each child. The
+<em class="emphasis">wait</em> system call looks for a zombie child, then
+"collects" it, making its PID
+available and returning that status. The <a name="IXT-24-5429" /><i class="command">init</i>(8) program is
+always waiting, so that once a parent exits, <i class="command">init</i>
+will collect all its children as they exit and promptly ignore each
+status.
+</p>
+
+<p>So, to get rid of a zombie, you must wait for it. If you have already
+done so or if the process' PPID is 1, the process is
+almost certainly stuck in a device driver close routine, and if it
+remains that way forever, the driver has a bug.
+</p>
+
+<p> <em class="emphasis">-- CT</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.18. Cleaning Up an Unkillable Process</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.20. The Process Chain to Your Window</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

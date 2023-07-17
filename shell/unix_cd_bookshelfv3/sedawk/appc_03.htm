@@ -1,0 +1,322 @@
+<html><head><title>Documentation for masterindex (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appc_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">C.3. Documentation for masterindex</h2>
+
+<p>
+<a name="IXT-C-265283" />
+This documentation, and the notes that follow, are by Dale Dougherty.</p>
+
+<div class="refentry"><table width="515" border="0" cellpadding="5"><tr><td align="left"><font size="+1"><b>masterindex</b></font></td><td align="right"><i>indexing program for single and multivolume indexing.</i></td></tr></table><hr width="515" size="3" noshade="true" align="left" color="black" /><table width="515" border="0" cellpadding="5"><tr><td align="left"><pre>masterindex [-master [volume]]  [-page] [-screen] [filename..]</pre></td><td align="right" /></tr></table><h4 class="refsect1">Description</h4>
+
+<p><b class="emphasis-bold">masterindex</b> generates a formatted index based 
+on structured index entries output by <b class="emphasis-bold">troff</b>.
+Unless you redirect output, it comes to the screen.</p>
+
+<h4 class="refsect1">Options</h4>
+
+<p><span class="option"><i>-m</i></span> or <span class="option"><i>-master</i></span>
+indicates that you are
+compiling a multivolume index.  The index entries for each volume
+should be in a single file and the filenames should be listed in
+sequence.  If the first file is not the first volume, then specify the
+volume number as a separate argument.  The volume number is converted
+to a roman numeral and prepended to all the page numbers of entries
+in that file.</p>
+
+<p><span class="option"><i>-p</i></span> or <span class="option"><i>-page</i></span> produces a listing of
+index entries for each page number.  It can be used to proof the
+entries against hardcopy.</p>
+
+<p><span class="option"><i>-s</i></span> or <span class="option"><i>-screen</i></span> specifies that the
+unformatted index will be viewed on the "screen".  The default is to
+prepare output that contains <b class="emphasis-bold">troff</b> macros for
+formatting.</p>
+
+<h4 class="refsect1">Files</h4>
+
+<blockquote class="simplelist">
+<p><em class="filename">/work/bin/masterindex</em></p>
+<p><em class="filename">/work/bin/page.idx</em></p>
+<p><em class="filename">/work/bin/pagenums.idx</em></p>
+<p><em class="filename">/work/bin/combine.idx</em></p>
+<p><em class="filename">/work/bin/format.idx</em></p>
+<p><em class="filename">/work/bin/rotate.idx</em></p>
+<p><em class="filename">/work/bin/romanum</em></p>
+<p><em class="filename">/work/macros/current/indexmacs</em></p>
+</blockquote>
+
+<h4 class="refsect1">See Also</h4>
+
+<p>Note that these programs require "nawk" (new awk): <b class="emphasis-bold">nawk (1),</b> and <b class="emphasis-bold">sed (1V)</b>.</p>
+
+<h4 class="refsect1">Bugs</h4>
+
+<p>The new index program is modular, invoking a series of smaller programs. 
+This should allow me to connect different modules to implement
+new features as well as isolate and fix problems more easily.
+Index entries should not contain any
+<b class="emphasis-bold">troff</b> font changes.  The program does not handle them.
+Roman numerals greater than eight will not be sorted
+properly, thus imposing a limit of an eight-book index.  (The sort
+program will sort the roman numerals 110 in the following order: I,
+II, III, IV, IX, V, VI, VII, VIII, X.)</p>
+
+</div>
+<a name="sedawk-app-c-sect-3.1" /><div class="sect2">
+<h3 class="sect2">C.3.1. Background Details</h3>
+
+<p>Tim O'Reilly recommends <em class="citetitle">The Joy of Cooking</em>
+(JofC) index as an ideal index.  I examined the JofC
+index quite thoroughly and set out to write a new indexing program
+that duplicated its features.  I did not wholly duplicate the
+JofC format, but this could be done fairly easily if
+desired.  Please look at the JofC index yourself to
+examine its features.</p>
+
+<p>I also tried to do a few other things to improve on the previous index
+program and provide more support for the person coding
+the index.</p>
+</div>
+
+
+
+
+<a name="sedawk-app-c-sect-3.2" /><div class="sect2">
+<h3 class="sect2">C.3.2. Coding Index Entries</h3>
+
+<p>This section describes the coding of index entries in the document
+file.  We use the .XX macro for placing index entries in a file.  The
+simplest case is:</p>
+
+<blockquote><pre class="code">.XX "entry"</pre></blockquote>
+
+<p>If the entry consists of primary and secondary sort keys, then we can
+code it as:</p>
+
+<blockquote><pre class="code">.XX "primary, secondary"</pre></blockquote>
+
+<p>A comma delimits the two keys.  We also have a .XN macro for
+generating "See" references without a page number.  It is specified
+as:</p>
+
+<blockquote><pre class="code">.XN "entry (See anotherEntry)"</pre></blockquote>
+
+<p>While these coding forms continue to work as they have,
+<b class="emphasis-bold">masterindex</b> provides greater flexibility by
+allowing three levels of keys: primary, secondary, and tertiary.  You'd
+specify the entry like so:</p>
+
+<blockquote><pre class="code">.XX "primary: secondary; tertiary"</pre></blockquote>
+
+<p>Note that the comma is not used as a delimiter.  A colon delimits the
+primary and secondary entry; the semicolon delimits the secondary and
+tertiary entry.  This means that commas can be a part of a key using
+this syntax.  Don't worry, though, you can continue to use a comma to
+delimit the primary and secondary keys.  (Be aware that the first
+comma in a line is converted to a colon, if no colon delimiter is
+found.)  I'd recommend that new books be coded using the above syntax,
+even if you are only specifying a primary and secondary key.</p>
+
+<p>Another feature is automatic rotation of primary and secondary keys if
+a tilde (~) is used as the delimiter.  So the following entry:</p>
+
+<blockquote><pre class="code">.XX "cat~command"</pre></blockquote>
+
+<p>is equivalent to the following two entries:</p>
+
+<blockquote><pre class="code">.XX "cat command"
+.XX "command: cat"</pre></blockquote>
+
+<p>You can think of the secondary key as a classification (command,
+attribute, function, etc.) of the primary entry.  Be careful not to
+reverse the two, as "command cat" does not make much sense.  To use a
+tilde in an entry, enter "~~".</p>
+
+<p>I added a new macro, .XB, that is the same as .XX except that the page
+number for this index entry will be output in bold to indicate that it
+is the most significant page number in a range.  Here is an example:</p>
+
+<blockquote><pre class="code">.XB "cat command"</pre></blockquote>
+
+<p>When <b class="emphasis-bold">troff</b> processes the index entries, it outputs
+the page number followed by an asterisk.  This is how it appears when
+output is seen in screen format.  When coded for
+<b class="emphasis-bold">troff</b> formatting, the page number is surrounded by
+the bold font change escape sequences.  (By the way, in the
+JofC index, I noticed that they allowed having the same page
+number in roman and in bold.)  Also, this page number will not be
+combined in a range of consecutive numbers.</p>
+
+<p>One other feature of the JofC index is that the very first
+secondary key appears on the same line with the primary key.  The old
+index program placed any secondary key on the next line.  The one
+advantage of doing it the JofC way is that entries containing
+only one secondary key will be output on the same line and look much
+better.  Thus, you'd have "line justification, definition of" rather
+than having "definition of" indented on the next line.  The next
+secondary key would be indented.  Note that if the primary key exists
+as a separate entry (it has page numbers associated with it), the page
+references for the primary key will be output on the same line and the
+first secondary entry will be output on the next line.</p>
+
+<p>To reiterate, while the syntax of the three-level entries is
+different, this index entry is perfectly valid:</p>
+
+<blockquote><pre class="code">.XX "line justification, definition of"</pre></blockquote>
+
+<p>It also produces the same result as:</p>
+
+<blockquote><pre class="code">.XX "line justification: definition of"</pre></blockquote>
+
+<p>(The colon disappears in the output.)  Similarly, you could write an
+entry, such as</p>
+
+<blockquote><pre class="code">.XX "justification, lines, defined"</pre></blockquote>
+
+<p>or</p>
+
+<blockquote><pre class="code">.XX "justification: lines, defined"</pre></blockquote>
+
+<p>where the comma between "lines" and "defined" does not serve as a
+delimiter but is part of the secondary key.</p>
+
+<p>The previous example could be written as an entry with three levels:</p>
+
+<blockquote><pre class="code">.XX "justification: lines; defined"</pre></blockquote>
+
+<p>where the semicolon delimits the tertiary key.  The semicolon is
+output with the key, and multiple tertiary keys may follow immediately
+after the secondary key.</p>
+
+<p>The main thing, though, is that page numbers are collected for
+all primary, secondary, and tertiary keys.  Thus, you could have
+output such as:</p>
+
+<blockquote><pre class="code">justification  4-9
+    lines 4,6; defined, 5</pre></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-app-c-sect-3.3" /><div class="sect2">
+<h3 class="sect2">C.3.3. Output Format</h3>
+
+<p>One thing I wanted to do that our previous program did not do is
+generate an index without the <b class="emphasis-bold">troff</b> codes.
+<b class="emphasis-bold">masterindex</b> has three output modes:
+<b class="emphasis-bold">troff</b>, <b class="emphasis-bold">screen</b>, and
+<b class="emphasis-bold">page</b>.</p>
+
+<p>The default output is intended for processing by
+<b class="emphasis-bold">troff</b> (via <b class="emphasis-bold">fmt</b>).  It contains
+macros that are defined in
+<em class="emphasis">/work/macros/current/indexmacs</em>.  These macros
+should produce the same index format as before, which was largely done
+directly through <b class="emphasis-bold">troff</b> requests.  Here are a few
+lines off the top:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>masterindex ch01</b></tt>
+.so /work/macros/current/indexmacs
+.Se "" "Index"
+.XC
+.XF A "A"
+.XF 1 "applications, structure of  2;  program  1"
+.XF 1 "attribute, WIN_CONSUME_KBD_EVENTS  13"
+.XF 2 "WIN_CONSUME_PICK_EVENTS  13"
+.XF 2 "WIN_NOTIFY_EVENT_PROC  13"
+.XF 2 "XV_ERROR_PROC  14"
+.XF 2 "XV_INIT_ARGC_PTR_ARGV  5,6"</pre></blockquote>
+
+<p>The top two lines should be obvious.  The .XC macro produces
+multicolumn output.  (It will print out two columns for smaller
+books.  It's not smart enough to take arguments specifying the width
+of columns, but that should be done.)  The .XF macro has three
+possible values for its first argument.  An "A" indicates that the
+second argument is a letter of the alphabet that should be output as a
+divider.  A "1" indicates that the second argument contains a primary
+entry.  A "2" indicates that the entry begins with a secondary entry,
+which is indented.</p>
+
+<p>When invoked with the <span class="option">-s</span> argument, the program
+prepares the index for viewing on the screen (or printing as an ASCII
+file).  Again, here are a few lines:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>masterindex -s ch01</b></tt>
+		A
+applications, structure of  2;  program  1
+attribute, WIN_CONSUME_KBD_EVENTS  13
+  WIN_CONSUME_PICK_EVENTS  13
+  WIN_NOTIFY_EVENT_PROC  13
+  XV_ERROR_PROC  14
+  XV_INIT_ARGC_PTR_ARGV  5,6
+  XV_INIT_ARGS  6
+  XV_USAGE_PROC  6</pre></blockquote>
+
+<p>Obviously, this is useful for quickly proofing the index.  The third
+type of format is also used for proofing the index.  Invoked using
+<span class="option">-p</span>, it provides a page-by-page listing of the index
+entries.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>masterindex -p ch01</b></tt>
+Page 1
+        structure of XView applications
+        applications, structure of; program
+        XView applications
+        XView applications, structure of
+        XView interface
+        compiling XView programs
+        XView, compiling programs
+Page 2
+        XView libraries</pre></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-app-c-sect-3.4" /><div class="sect2">
+<h3 class="sect2">C.3.4. Compiling a Master Index</h3>
+
+<p>A multivolume master index is invoked by specifying the
+<span class="option">-m</span> option.  Each set of index entries for a
+particular volume must be placed in a separate file.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>masterindex -m -s book1 book2 book3</b></tt>
+xv_init() procedure  II: 4; III: 5
+XV_INIT_ARGC_PTR_ARGV attribute  II: 5,6
+XV_INIT_ARGS attribute  I: 6</pre></blockquote>
+
+<p>Files must be specified in consecutive order.  If the first file is
+not Volume 1, you can specify the number as an argument.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>masterindex -m 4 -s book4 book5 </b></tt></pre></blockquote>
+</div>
+
+
+
+
+<a name="IXT-C-265284" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appc_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">C.2. Listing of masterindex Shell Script</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">Index</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

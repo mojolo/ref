@@ -1,0 +1,119 @@
+<html><head><title>nom: List Files That Don't Match a Wildcard (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">33.8. nom: List Files That Don't Match a Wildcard</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: nom</p>
+
+<p><a name="IXT-33-3894" />The
+<i class="command">nom</i> (no match)
+<a name="IXT-33-3895" /><a name="IXT-33-3896" /><a name="IXT-33-3897" />script
+takes filenames (usually expanded by the shell) from its command
+line. It outputs all filenames in the current directory that
+<em class="emphasis">don't</em> match. As <a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a> shows, some shells have an
+operator -- <tt class="literal">!</tt> or
+<tt class="literal">^</tt> -- that works like <i class="command">nom</i>,
+but other shells don't. Here are some examples of
+<i class="command">nom</i>:
+</p>
+
+<ul><li>
+<p>To get the names of all files that
+<em class="emphasis">don't</em> end with
+<em class="emphasis">.ms</em>:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>nom *.ms</b></tt></pre></blockquote>
+</li>
+<li>
+<p>To edit all files whose names don't have any
+lowercase letters, use <b class="emphasis-bold">command
+substitution</b> (<a href="ch27_14.htm#upt3-CHP-27-SECT-14">Section 27.14</a>):
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>vi `nom *[a-z]*`</b></tt></pre></blockquote>
+</li>
+<li>
+<p>To copy all files to a subdirectory named <em class="filename">Backup</em>
+(except <em class="filename">Backup</em> itself):
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cp `nom Backup` Backup</b></tt></pre></blockquote>
+</li></ul>
+<p>Here's the script:</p>
+
+<p><tt class="literal">trap</tt> <a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>, <tt class="literal">case</tt> <a href="ch35_11.htm#upt3-CHP-35-SECT-11">Section 35.11</a>, <tt class="literal">$*</tt> <a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>, <tt class="literal">comm</tt> <a href="ch11_08.htm#upt3-CHP-11-SECT-8">Section 11.8</a></p>
+
+<blockquote><pre class="code">#! /bin/sh
+temp=/tmp/NOM$$
+stat=1     # Error exit status (set to 0 before normal exit)
+trap 'rm -f $temp; exit $stat' 0 1 2 15
+
+# Must have at least one argument, and all have to be in current directory:
+case "$*" in
+"") echo Usage: `basename $0` pattern 1&gt;&amp;2; exit ;;
+*/*)    echo "`basename $0` quitting: I can't handle '/'s." 1&gt;&amp;2; exit ;;
+esac
+
+# ls gives sorted file list. -d=don't enter directories, -1=one name/line.
+ls -d ${1+"$@"} &gt; $temp   # Get filenames we don't want to match
+ls -1 | comm -23 - $temp  # Compare to current dir; output names we want
+stat=0</pre></blockquote>
+
+<p>The<b class="emphasis-bold"> -d option</b> (<a href="ch08_05.htm#upt3-CHP-8-SECT-5">Section 8.5</a>) tells <i class="command">ls</i> to list the names
+of any directories, not their contents. The <b class="emphasis-bold">${1+"$@"}</b> (<a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a>) works
+around a problem in some Bourne shells. You can remove the
+<span class="option">-1</span> option on the script's
+<tt class="literal">ls</tt> command line if your version of
+<i class="command">ls</i> lists one filename per line by default; almost
+all versions of <i class="command">ls</i> do that when
+they're writing into a pipe. Note that
+<i class="command">nom</i> doesn't know about files
+whose names begin with a dot (.); you can change that if
+you'd like by adding the <tt class="literal">ls</tt>
+<tt class="literal">-A</tt> option (uppercase letter
+"A", which isn't
+on all versions of <i class="command">ls</i>).
+</p>
+
+<p><a name="IXT-33-3898" />Finally, if
+you've got a shell with process substitution, such
+as <i class="command">bash</i>, which is what we use below, you can
+rewrite <i class="command">nom</i> without the temporary file and the
+<i class="command">trap</i>:
+</p>
+
+<blockquote><pre class="code">#!/bin/bash
+# Must have at least one argument, and all have to be in current directory:
+case "$*" in
+"")  echo Usage: `basename $0` pattern 1&gt;&amp;2; exit ;;
+*/*) echo "`basename $0` quitting: I can't handle '/'s." 1&gt;&amp;2; exit ;;
+esac
+
+# ls gives sorted file list. -d=don't enter directories, -1=one name/line.
+# Compare current directory with names we don't want; output names we want:
+comm -23 &lt;(ls -1) &lt;(ls -d "$@")</pre></blockquote>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-3903" /> <a name="IXTR3-3904" /> <a name="IXTR3-3905" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">33.7. Getting a List of Nonmatching Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34. The sed Stream Editor</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,108 @@
+<html><head><title>Printing Over Samba (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch45_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch45_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">45.9. Printing Over Samba</h2>
+
+<p><a name="IXT-45-1793" /><a name="IXT-45-1794" /> <a name="IXT-45-1795" /><a name="IXT-45-1796" />Samba provides SMB networking to Unix
+boxes; in English, that means it allows Unix machines to share disks
+and printers with Windows machines and vice versa. <a href="ch49_01.htm">Chapter 49</a> details Samba; here we'll
+talk a bit about tricks for printing over Samba, since
+it's so useful and parts of it are fairly arcane.
+</p>
+
+<a name="upt3-CHP-45-SECT-9.1" /><div class="sect2">
+<h3 class="sect2">45.9.1. Printing to Unix Printers from Windows</h3>
+
+<p><a name="IXT-45-1797" /><a name="IXT-45-1798" />This is the easy one.
+<a name="IXT-45-1799" />Simply configure your printer normally
+using <em class="filename">printcap</em>, then set this in your
+<em class="filename">smb.conf</em>:
+</p>
+
+<blockquote><pre class="code">    load printers = yes</pre></blockquote>
+
+<p>This tells Samba to read the <em class="filename">printcap</em> file and
+allow printing to any printer defined there. The default
+<tt class="literal">[printers]</tt> section automatically advertises all
+printers found and allows anyone with a valid login to print to them.
+You may want to make them browsable or printable by guest if
+you're not particularly worried about security on
+your network. Some Windows configurations will need guest access to
+browse, since they use a guest login to browse rather than your
+normal one; if you can't browse your Samba printers
+from your Windows client, try setting up guest access and see if that
+fixes it.
+</p>
+
+<p>If you want to get really fancy, current versions of Samba can
+support downloading printer drivers to clients, just like Windows
+printer servers do. Take a look at the
+<em class="filename">PRINTER_DRIVER2.txt</em> file in the Samba
+distribution for more about how to do this.
+</p>
+
+</div>
+<a name="upt3-CHP-45-SECT-9.2" /><div class="sect2">
+<h3 class="sect2">45.9.2. Printing to Windows Printers from Unix</h3>
+
+<p><a name="IXT-45-1800" /><a name="IXT-45-1801" /><a name="IXT-45-1802" />This one's a little
+more tricky. <i class="command">lpd</i> doesn't know how
+to print to a Windows printer directly, or how to talk to Samba.
+However, <i class="command">lpd</i><a name="IXT-45-1803" /><a name="IXT-45-1804" /> does know how to <b class="emphasis-bold">run files through a filter</b> (<a href="ch45_17.htm#upt3-CHP-45-SECT-17">Section 45.17</a>). So what we'll do is provide
+a filter that hands the file to Samba, and then send the print job
+right to <em class="filename">/dev/null</em>:
+</p>
+
+<blockquote><pre class="code">laserjet:remote SMB laserjet via Samba\
+    :lp=/dev/null:\
+    :sd=/var/spool/lpd/laser:\
+    :if=/usr/local/samba/bin/smbprint:</pre></blockquote>
+
+<p>Samba comes with a sample filter called
+<i class="command">smbprint</i><a name="IXT-45-1805" /><a name="IXT-45-1806" />;
+it's often installed in an examples directory and
+will need to be moved to somewhere useful before setting this up.
+<i class="command">smbprint</i> does exactly what we want; it takes the
+file and uses <i class="command">smbclient</i> to send it to the right
+printer.
+</p>
+
+<p>How does <i class="command">smbprint</i> know which printer to send it
+to? It uses a file called <em class="filename">.config</em> in the given
+spool directory, which looks something like this:
+</p>
+
+<blockquote><pre class="code">server=WINDOWS_SERVER
+service=PRINTER_SHARENAME
+password="password"</pre></blockquote>
+
+<p>The <i class="command">smbprint</i> script is reasonably well documented
+in its comments. Look through it and tweak it to fit your own needs.
+</p>
+
+<p> <em class="emphasis">-- DJPH</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch45_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch45_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">45.8. Printing Over a Network</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">45.10. Introduction to Typesetting</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

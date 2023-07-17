@@ -1,0 +1,209 @@
+<html><head><title>Key and Agent Problems (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch51_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch51_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">51.6. Key and Agent Problems</h2>
+
+<p><b class="emphasis-bold">Q:</b> <a name="upt3-IDXTERM-8024" /> <a name="upt3-IDXTERM-8025" /> <a name="upt3-IDXTERM-8026" /> <a name="upt3-IDXTERM-8027" />I generated a key with
+SSH1 and tried using it with another SSH1 client, such as NiftyTelnet
+SSH, F-Secure SSH Client, or SecureCRT, but the client complains that
+the key is in an invalid format.
+</p>
+
+<p><b class="emphasis-bold">A:</b> First, make sure you generated the key using
+<em class="emphasis">ssh-keygen1</em>, not
+<em class="emphasis">ssh-keygen2</em>. SSH1 and SSH2 keys
+aren't compatible.
+</p>
+
+<p>Next, make sure you transferred the key file using an appropriate
+file-transfer program. If you used FTP, confirm that the private key
+file was transferred in binary mode, or the copy will contain
+garbage. The public key file should be transferred in ASCII mode.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> I generated an SSH1 key and tried using it with SSH2, but it
+didn't work. (Or vice versa.)
+</p>
+
+<p><b class="emphasis-bold">A:</b> This is normal. SSH1 and SSH2 keys aren't compatible.</p>
+
+<p><b class="emphasis-bold">Q:</b> I specified a key manually, using -i or IdentityFile, but it never
+gets used!
+</p>
+
+<p><b class="emphasis-bold">A:</b> Are you running an agent? If so, -<em class="emphasis">i</em> and
+<tt class="literal">IdentityFile</tt> don't have any
+effect. The first applicable key in the agent takes precedence.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> Each time I run ssh-keygen, it overwrites my default identity file.</p>
+
+<p><b class="emphasis-bold">A:</b> Tell <em class="emphasis">ssh-keygen</em> to write its output to a
+different file. For <em class="emphasis">ssh-keygen</em> in SSH1 and
+OpenSSH, use the <em class="emphasis">-f</em> option. For
+<em class="emphasis">ssh-keygen2</em>, specify the filename as the last
+argument on the command line; no option is needed.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> Can I change the passphrase for a key without regenerating the key?</p>
+
+<p><b class="emphasis-bold">A:</b> Yes. For <em class="emphasis">ssh-keygen</em> in SSH1 and OpenSSH, use the
+<em class="emphasis">-N</em> option, and for
+<em class="emphasis">ssh-keygen2</em>, use the <em class="emphasis">-p</em>
+option.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> How do I generate a host key?</p>
+
+<p><b class="emphasis-bold">A:</b> Generate a key with an empty passphrase and install it in the correct
+location:
+</p>
+
+<blockquote><pre class="code"># SSH1, OpenSSH
+$ <tt class="userinput"><b>ssh-keygen -N '' -b 1024 -f /etc/ssh_host_key</b></tt>
+# SSH2 only
+$ <tt class="userinput"><b>ssh-keygen2 -P -b 1024 /etc/ssh2/hostkey</b></tt></pre></blockquote>
+
+<p><b class="emphasis-bold">Q:</b> Generating a key takes a long time.</p>
+
+<p><b class="emphasis-bold">A:</b> Yes it may, depending on the speed of your CPU and the number of bits
+you have requested. DSA keys tend to take longer than RSA keys.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> How many bits should I make my keys?</p>
+
+<p><b class="emphasis-bold">A:</b> We recommend at least 1024 bits for strong security.</p>
+
+<p><b class="emphasis-bold">Q:</b> What does oOo.oOo.oOo.oOo mean, as printed by ssh-keygen2?</p>
+
+<p><b class="emphasis-bold">A:</b> The manpage calls it a "progress
+indicator." We think it's an ASCII
+representation of a sine wave. Or the sound of a chattering gorilla.
+You can hide it with the <em class="emphasis">-q</em> flag.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> My ssh-agent isn't terminating after I log out.</p>
+
+<p><b class="emphasis-bold">A:</b> If you use the single-shell method to start an agent, this isnormal.
+You must terminate the agent yourself, either manually (bleah)or by
+including appropriate lines in <b class="emphasis-bold">your shell
+configuration files</b> (<a href="ch05_03.htm#upt3-CHP-5-SECT-3">Section 5.3</a>). If you
+use the subshell method, the agent automatically terminates when you
+log out(actually, when you <b class="emphasis-bold">exit the
+subshell</b>) (<a href="ch06_03.htm#upt3-CHP-6-SECT-3">Section 6.3</a>).
+</p>
+
+<p><b class="emphasis-bold">Q:</b> When I invoke ssh-add and type my passphrase, I get the error message
+"Could not open a connection to your authentication
+agent."
+</p>
+
+<p><b class="emphasis-bold">A:</b> Follow this debugging process.</p>
+
+<p>Make sure you are running an <em class="emphasis">ssh-agent</em> process:</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>/usr/bin/ps -ef | grep ssh-agent</b></tt>
+smith 22719     1  0 23:34:44 ?        0:00 ssh-agent</pre></blockquote>
+
+<p>If not, you need to run an agent before <em class="emphasis">ssh-add</em>
+will work.
+</p>
+
+<p>Check that the agent's environment variables are set:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>env | grep SSH</b></tt>
+SSH_AUTH_SOCK=/tmp/ssh-barrett/ssh-22719-agent
+SSH_AGENT_PID=22720</pre></blockquote>
+
+<p>If not, you probably ran <em class="emphasis">ssh-agent</em> incorrectly,
+like this:
+</p>
+
+<blockquote><pre class="code"># Wrong!
+$ <tt class="userinput"><b>ssh-agent</b></tt></pre></blockquote>
+
+<p>For the single-shell method, you must use <em class="emphasis">eval</em>
+with backquotes:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>eval `ssh-agent`</b></tt></pre></blockquote>
+
+<p>Or, for the subshell method, you must instruct
+<em class="emphasis">ssh-agent</em> to invoke a shell:
+</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>ssh-agent $SHELL</b></tt></pre></blockquote>
+
+<p>Make sure the agent points to a valid socket:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls -lF $SSH_AUTH_SOCK</b></tt>
+prwx-- -- --   1 smith   0 May 14 23:37 /tmp/ssh-smith/ssh-22719-agent|</pre></blockquote>
+
+<p>If not, your <em class="emphasis">SSH_AUTH_SOCK</em> variable might be
+pointing to an old socket from a previous invocation of
+<em class="emphasis">ssh-agent</em>, due to user error. Terminate and
+restart the agent properly.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> My per-account server configuration isn't taking
+effect.
+</p>
+
+<p><b class="emphasis-bold">A:</b> You might be confused about which versions of SSH use which files:</p>
+
+<blockquote class="simplelist">
+
+<p>SSH1, OpenSSH/1: <em class="filename">~/.ssh/authorized_keys</em></p>
+
+
+
+<p>SSH2: <em class="filename">~/.ssh2/authorization</em></p>
+
+
+
+<p>OpenSSH/2: <em class="filename">~/.ssh/authorized_keys2</em> (note this isn't in <em class="filename">~/.ssh2</em>)</p>
+
+</blockquote>
+
+<p>Remember that the <em class="emphasis">authorized_keys</em> and
+<em class="emphasis">authorized_keys2</em> files contains keys, whereas
+the SSH2 <em class="emphasis">authorization</em> file contains directives
+referring to other key files.
+</p>
+
+<p>You might have a typographical error in one of these files. Check the
+spelling of options, and remember to separate SSH1
+<em class="emphasis">authorized_keys</em> options with commas, not
+whitespace. For example:
+</p>
+
+<blockquote><pre class="code"># correct
+no-x11-forwarding,no-pty 1024 35 8697511247987525784866526224505...
+# INCORRECT (will silently fail)
+no-x11-forwarding no-pty 1024 35 8697511247987525784866526224505...
+# ALSO INCORRECT (note the extra space after "no-x11-forwarding,")
+no-x11-forwarding, no-pty 1024 35 8697511247987525784866526224505...</pre></blockquote>
+
+<p> <em class="emphasis">-- SP<a name="IXTR3-682" /> <a name="IXTR3-683" /> <a name="IXTR3-684" /> <a name="IXTR3-685" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch51_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch51_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">51.5. General and Authentication Problems</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">51.7. Server and Client Problems</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

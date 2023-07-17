@@ -1,0 +1,244 @@
+<html><head><title>Customizing Your Account (Learning the Unix Operating System, 5th Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Jerry Peek, John Strang and Grace Todino-Gonguet" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00261-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Unix Operating System, 5th Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning Unix" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.7. Customizing Your Account</h2>
+
+<p>
+
+<a name="lunix5-IDXTERM-459" />
+<a name="lunix5-IDXTERM-460" />
+<a name="lunix5-IDXTERM-461" />
+<a name="IXT-3-279847" />
+As we saw earlier, your home directory may have a hidden file called
+<em class="emphasis">.profile</em>.
+If it doesn't, there'll probably be one or more files named
+<em class="emphasis">.login</em>,
+<em class="emphasis">.cshrc</em>,
+<em class="emphasis">.tcshrc</em>,
+<em class="emphasis">.bashrc</em>,
+<em class="emphasis">.bash_profile</em>,
+or
+<em class="emphasis">.bash_login</em>.
+
+
+These files are <em class="emphasis">shell setup files</em>,
+and are the key to customizing your account.
+Shell setup files contain commands that are automatically executed
+when a new shell starts--especially when you log in.
+</p>
+
+<p>
+Let's take a look at these files.
+Go to your home directory, then use <b class="emphasis-bold">less</b>
+to display the file.
+<a name="IXT-3-279848" />
+Your <em class="emphasis">.profile</em> might look something like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PATH='/bin:/usr/bin:/usr/local/bin:'
+LESS='eMq'
+export PATH LESS
+/usr/games/fortune
+date
+umask 002
+</pre></blockquote>
+</p>
+
+<p><a name="IXT-3-279849" />
+A <em class="emphasis">.login</em> file could look like this:
+</p>
+
+<p><blockquote><pre class="code">
+set path = (/bin /usr/bin /usr/local/bin .)
+setenv LESS 'eMq'
+/usr/games/fortune
+date
+umask 002
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-3-279850" />
+As you can see, these sample setup files contain commands to print a
+"fortune" and the date--just what happened earlier when we logged in!
+(<em class="emphasis">/usr/games/fortune</em> is a useless but entertaining
+program that prints a randomly selected saying from its collection.
+<b class="emphasis-bold">fortune</b> isn't available on all systems.)
+</p>
+
+<p>
+But what are these other commands?
+</p>
+
+<ul>
+
+<li>
+<p>
+<a name="IXT-3-279851" />
+The line with <tt class="literal">PATH=</tt> or <tt class="literal">set path =</tt>
+tells the shell which directories to search for Unix programs.
+This saves you the trouble of typing the complete pathname for each program
+you run.
+(Notice that <em class="emphasis">/usr/games</em> isn't part of the path,
+so we had to use the absolute pathname to get our daily dose of wisdom
+from the <b class="emphasis-bold">fortune</b> program.)
+The <tt class="literal">export PATH</tt> is needed in the
+<em class="emphasis">.profile</em>, but not in
+<em class="emphasis">.login</em>.<a href="#FOOTNOTE-12">[12]</a>
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-12" /><p> [12]
+Some shells that read the <em class="emphasis">.profile</em> let you
+set a variable's value on the same line as the
+<b class="emphasis-bold">export</b> command, but not all do.
+Our two-step method for setting PATH works in all cases.
+</p>
+</blockquote>
+</li>
+
+<li>
+<p>
+<a name="IXT-3-279852" />
+The line with <tt class="literal">LESS=</tt> or <tt class="literal">setenv LESS</tt>
+tells the <b class="emphasis-bold">less</b> program which options you
+want to set every time you use it.
+This saves you the trouble of typing the options on every <b class="emphasis-bold">less</b> command line.
+The <tt class="literal">export LESS</tt> line is needed in the
+<em class="emphasis">.profile</em>, but not in <em class="emphasis">.login</em>.
+</p>
+</li>
+
+<li>
+<p>
+<a name="IXT-3-279853" />
+<a name="IXT-3-279854" />
+<a name="IXT-3-279855" />
+<a name="IXT-3-279856" />
+The <b class="emphasis-bold">umask</b> command sets the default file
+permissions assigned to all files you create.
+Briefly, a value of 022 sets the permissions <tt class="literal">rw-r--r--</tt>
+(read-write by owner, but read-only by everyone else),
+and 002 produces <tt class="literal">rw-rw-r--</tt>
+(read-write by owner and group, but read-only by everyone else).
+If this file is a program or a directory, both
+<b class="emphasis-bold">umask</b> settings also give
+execute (<tt class="literal">x</tt>) permission to all users.
+For more information, see one of the sources in
+<a href="ch08_01.htm#lunix5-CHP-8-SECT-1">Section 8.1</a> of <a href="ch08_01.htm">Chapter 8</a>.
+</p>
+</li>
+
+</ul>
+
+<p>
+You can change these files with a text editor, such as
+<b class="emphasis-bold">pico -w</b> (see
+<a href="ch04_03.htm#lunix5-CHP-4-SECT-3.2">Section 4.3.2</a> in <a href="ch04_01.htm">Chapter 4</a>).
+Don't use a word processor
+that breaks long lines or puts special nontext codes into the file.
+Any changes you make to those files will take effect the next time you
+log in (or, in some cases, when you start a new shell--such as
+opening a new terminal window in your window system).
+Unfortunately, it's not always easy to know which shell setup
+file you should change.<a href="#FOOTNOTE-13">[13]</a>
+And an editing mistake in your shell setup file can keep you from logging
+in to your account!
+We suggest that beginners get help from experienced users--and not
+make changes to these files at all if you're about to do some critical
+work with your account, unless there's some reason you have to make the
+changes immediately.
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-13" /><p> [13]
+Some files are read by <em class="emphasis">login shells</em>, and others by
+<em class="emphasis">nonlogin shells</em>.
+Some are read by <em class="emphasis">subshells</em>; others aren't.
+Some terminal windows open login shells; others don't.
+</p>
+</blockquote>
+
+<p>
+You can execute any of these programs from the command line, as well.
+In this case, the changes are in effect only until you close that window
+or log out.
+If your shell prompt has a <tt class="literal">$</tt> character in it, you'll
+probably use the syntax shown earlier in the <em class="emphasis">.profile</em>;
+if your shell prompt has a <tt class="literal">%</tt> or <tt class="literal">&gt;</tt>
+instead, the syntax in the <em class="emphasis">.login</em> is probably right.
+</p>
+
+<p>
+For example, to change the default options for
+<b class="emphasis-bold">less</b> so it will clear the terminal screen before it
+shows each new page of text, you'll want to add the
+<b class="emphasis-bold">-c</b> option to the LESS environment variable.
+The command you'd type at a shell prompt
+would look something like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>LESS='eMqc'</b></tt>
+$ <tt class="userinput"><b>export LESS</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+or like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+% <tt class="userinput"><b>setenv LESS 'eMqc'</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+(If you don't want some of the
+<b class="emphasis-bold">less</b> options we've shown,
+you could leave those letters out.)
+Unix has many other configuration commands to learn about;
+the sources listed in
+<a href="ch08_01.htm#lunix5-CHP-8-SECT-1">Section 8.1</a> of <a href="ch08_01.htm">Chapter 8</a>
+can help.
+</p>
+
+<p>
+Just as you can execute the setup commands from the command line,
+the converse is true: any command that you can execute from the
+command line can be executed automatically when you log in by placing it
+in your setup file.
+(Running interactive commands such as <b class="emphasis-bold">pine</b>
+from your setup file isn't a good idea, though.)
+
+<a name="IXTR3-52" />
+<a name="IXTR3-53" />
+<a name="IXTR3-54" />
+<a name="IXTR3-55" />
+<a name="IXTR3-56" />
+</p>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.6. Changing Your Password</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4. File Management</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

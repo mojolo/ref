@@ -1,0 +1,133 @@
+<html><head><title>Power Tools for Editing (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch00_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 1. Power Tools for Editing</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch01_01.htm#sect1">May You Solve Interesting Problems</a><br />
+<a href="ch01_02.htm">A Stream Editor</a><br />
+<a href="ch01_03.htm">A Pattern-Matching Programming Language</a><br />
+<a href="ch01_04.htm">Four Hurdles to Mastering sed and awk</a><br /></p></div><p>My wife won't let me buy a power saw.  She is afraid of an accident if
+I use one.  So I rely on a hand saw for a variety of weekend projects
+like building shelves.  However, if I made my living as a carpenter, I
+would have to use a power saw.  The speed and efficiency provided by
+power tools would be essential to being productive. [D.D.]</p><p>For people who create and modify text files, sed and awk are power
+tools for editing.  Most of the things that you can do with these
+programs can be done interactively with a text editor.  However, using
+sed and awk can save many hours of repetitive work in achieving the
+same result.</p><p>Sed and awk are peculiar and it takes time to learn them, but the
+capabilities they provide can repay the learning many times over,
+especially if text editing is a normal part of your trade.</p><div class="sect1"><a name="sedawk-ch-1-sect-1" />
+<h2 class="sect1"><a name="sect1" />1.1. May You Solve Interesting Problems</h2>
+
+<p>The primary motivation for learning sed and awk 
+is that they are useful for devising general solutions to text
+editing problems.<a href="#FOOTNOTE-6">[6]</a>
+For some people, myself included, the satisfaction of solving a
+problem is the difference between work and drudgery.  Given the choice
+of using <b class="emphasis-bold">vi</b> or sed to make a series of
+repeated edits over a number of files, I will choose sed, simply
+because it makes the problem more interesting to me.  I am refining a
+solution instead of repeating a series of keystrokes.  Besides, once I
+accomplish my task, I congratulate myself on being clever.  I feel
+like I have done a little bit of magic and spared myself some dull
+labor.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-6" /><p> [6]I suppose this section title
+is a combination of the ancient Chinese curse 
+"May you live in interesting times" and what Tim O'Reilly once said
+to me, that someone will solve a problem if he finds the problem
+interesting. [D.D.]</p>
+
+</blockquote>
+
+<p>Initially, using sed and awk will seem like the long way
+to accomplish a task.  After several attempts you may conclude
+that the task would have been easier to do manually.
+Be patient.  You not only have to learn how to use sed and awk but
+you also need to learn to recognize situations where using them
+pays off.  As you become more proficient, you will solve problems
+more quickly and solve a broader range of problems.</p>
+
+<p>You will also begin to see opportunities to find general solutions to
+specific problems.  There is a way of looking at a problem so you see
+it related to a class of problems.  Then you can devise a solution
+that can be reused in other situations.</p>
+
+<p>
+<a name="IXT-1-265285" />
+Let me give you an example (without showing any program code).  One of
+our books used a cross-referencing naming scheme in which the
+reference was defined and processed by our formatting software
+(<b class="emphasis-bold">sqtroff</b>).  In the text file, a reference to a
+chapter on error handling might be coded as follows:</p>
+
+<blockquote><pre class="code">\*[CHerrorhand]</pre></blockquote>
+
+<p>"CHerrorhand" is the name giving the reference and "\*[" and
+"]" are calling sequences that distinguish the reference from other
+text.  In a central file, the names used for cross references in the
+document are defined as <b class="emphasis-bold">sqtroff</b> strings.  For
+instance, "CHerrorhand" is defined to be "Chapter 16, Error Handling."
+(The advantage of using a symbolic cross-referencing scheme like this,
+instead of explicit referencing, is that if chapters are added or
+deleted or reordered, only the central file needs to be edited to
+reflect the new organization.)  When the formatting software processes
+the document, the references are properly resolved and expanded.</p>
+
+<p>The problem we faced was that we had to use the same files to create
+an online version of the book.  Because our <b class="emphasis-bold">sqtroff</b>
+formatting software would not be used, we needed some way to expand
+the cross references in the files.  In other words, we did not want
+files containing "\*[CHerrorhand]"; instead we wanted what
+"CHerrorhand" referred to.</p>
+
+<p>There were three possible ways to solve this problem:</p>
+
+<ol><li><p>Use a text editor to search for all references and replace
+each of them with the appropriate literal string.</p></li><li><p>Use sed to make the edits.  This is similar to making the edits manually,
+only faster.</p></li><li><p>Use awk to write a program that (a) reads the central file to
+make a list of reference names and their definitions, (b) reads
+the document searching for the reference calling sequence,
+and (c) looks up the name of the reference on the list and
+replaces it with its definition.</p></li></ol><p>The first method is obviously time-consuming (and not very
+interesting!).  The second method, using sed, has an advantage in that
+it creates a tool to do the job.  It is pretty simple to write a sed
+script that looks for "\*[CHerrorhand]" and replaces it with
+"Chapter 16, Error Handling" for instance.  The same script can be
+used to modify each of the files for the document.  The disadvantage
+is that the substitutions are hard-coded; that is, for each cross
+reference, you need to write a command that makes the replacement.
+The third method, using awk, builds a tool that works for
+<em class="emphasis">any</em> cross reference that follows this syntax.
+This script could be used to expand cross references in other books as
+well.  It spares you from having to compile a list of specific
+substitutions.  It is the most general solution of the three and
+designed for the greatest possible reuse as a tool.</p>
+
+<p>Part of solving a problem is knowing which tool to build.  There are
+times when a sed script is a better choice because the problem does
+not lend itself to, or demand, a more complex awk script.  You have to
+keep in mind what kinds of applications are best suited for sed and
+awk.</p>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch00_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">0.7. Comments and Questions</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.2. A Stream Editor</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

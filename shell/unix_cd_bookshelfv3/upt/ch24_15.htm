@@ -1,0 +1,162 @@
+<html><head><title>Killing Processes by Name? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.15. Killing Processes by Name?</h2>
+
+<p><a name="IXT-24-5383" /> <a name="IXT-24-5384" /><a name="IXT-24-5385" />This article discusses a particular
+version of <i class="command">kill</i> that has some problems. Your
+system may have a different <i class="command">kill</i> and, possibly, a
+version of <b class="emphasis-bold">killall</b> (<a href="ch24_16.htm#upt3-CHP-24-SECT-16">Section 24.16</a>) that doesn't seem to have as
+many problems. But this article is worth reading anyway for what it
+shows you about process names and the <i class="command">ps</i> command.
+It's good info to keep in mind when
+you're trying to kill processes in a hurry.
+</p>
+
+<p>On my Linux system, the <i class="command">kill</i>(1) manual page says I
+can send signals to processes either by PID numbers (as we showed in
+<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>) or by process names. To an old
+stick-in-the-mud Unix user like me, who's been
+killing processes by their <span class="acronym">PID</span>s for 20 years, this
+doesn't seem very appealing. But hey, even
+<em class="emphasis">I</em> appreciate some of the new things Unix and
+Linux can do! <tt class="literal">;-)</tt> So we're saying
+that, if my system is slow and I want to temporarily stop the two
+<i class="command">gcc</i> compiles I'm running in the
+background, I can just type:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>kill -STOP gcc</b></tt>
+[2]   Stopped            gcc -c bigprog.c sub1.c sub2.c ...
+[4]-  Stopped            gcc -o something something.c</pre></blockquote>
+
+<p>Not necessarily. This is not always as simple as it seems. For one,
+before you kill a process by name, you'd better be
+sure that there are no other processes by that name, owned by you,
+running at the same time -- unless you want to kill them too. That
+includes processes on other windows and <em class="emphasis">tty</em>s
+you're logged onto at the time; it also includes
+<i class="command">at</i>, <i class="command">cron</i>, or
+<i class="command">batch</i> jobs that are running somewhere else on the
+system. Second, the process name may not be what you think it is.
+Third, even if your <i class="command">kill</i>(1) manpage says that
+<i class="command">kill</i> can do this, your shell may have a built-in
+<i class="command">kill</i> that doesn't understand how
+to kill processes by name.
+</p>
+
+<p><a name="IXT-24-5386" /> <a name="IXT-24-5387" />For example, let's say I
+have a runaway shell script named <i class="command">cruncher</i>.
+I'm running it twice, and I want to kill both
+instances. Watch:
+</p>
+
+<p><tt class="literal">&amp;</tt> <a href="ch23_02.htm#upt3-CHP-23-SECT-2">Section 23.2</a></p>
+
+<blockquote><pre class="code">1$ <tt class="userinput"><b>cruncher &amp; cruncher &amp;</b></tt>
+[1] 21451
+[2] 21456
+2$ <tt class="userinput"><b>kill cruncher</b></tt>
+bash2: kill: cruncher: no such pid
+3$ <tt class="userinput"><b>type -all kill</b></tt>
+kill is a shell builtin
+kill is /bin/kill
+4$ <tt class="userinput"><b>/bin/kill cruncher</b></tt>
+kill: can't find process "cruncher"
+5$ <tt class="userinput"><b>jobs</b></tt>
+[1]-  Running                 cruncher &amp;
+[2]+  Running                 cruncher &amp;
+6$ <tt class="userinput"><b>kill %1</b></tt>
+[1]-  Terminated              cruncher
+7$ <tt class="userinput"><b>ps</b></tt>
+   ...
+21456 pts/1    00:01:25 cruncher
+8$ <tt class="userinput"><b>ps x</b></tt>
+21456 pts/1    S      1:33 sh /u/jerry/.bin/cruncher</pre></blockquote>
+
+<p><a name="IXT-24-5388" />In command 1, I put the two jobs in
+the background. In command 2, I try to kill them by name. But my
+shell, <i class="command">bash2</i>, is complaining "no
+such pid." Hmmm; it's using the
+shell's built-in <i class="command">kill</i>; the
+<i class="command">bash2</i> manpage seems to say that its
+<i class="command">kill</i> only understands PID numbers. So, in command
+3, I run <i class="command">type</i> -<span class="option">all</span> and find that
+the system <i class="command">kill</i> is <i class="command">/bin/kill</i>.
+In command 4, I give the process name again, but
+<i class="command">/bin/kill</i> can't find it. Say
+what? Typing <i class="command">jobs</i>, command 5, shows two
+<i class="command">cruncher</i>s running. <a name="IXT-24-5389" />And I can kill one of them by using
+its job number, in command 6. More confusing, running
+<i class="command">ps</i>, in command 7, also shows
+<i class="command">cruncher</i> running.
+</p>
+
+<p>The story ends at command 8, where I ran the <span class="acronym">BSD</span>
+version of <b class="emphasis-bold">ps</b> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>). It shows me what the default
+"friendly" System V-style
+<i class="command">ps</i> (in command 7) didn't: the
+complete command line is actually <tt class="literal">sh
+/u/jerry/.bin/cruncher</tt>. This is a shell script, so the
+script filename <em class="filename">cruncher</em>, with the
+executable's directory from the <b class="emphasis-bold">PATH</b> (<a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a>) prepended,
+is <b class="emphasis-bold">passed to a shell as an argument</b>
+(<a href="ch27_03.htm#upt3-CHP-27-SECT-3">Section 27.3</a>). So (whew): to kill these shell
+scripts, I should have typed <tt class="literal">kill sh</tt>. But do I
+really want to kill all running shells?
+</p>
+
+<p><a name="IXT-24-5390" />Another problem with killing
+a process by name is that a process can start a <b class="emphasis-bold">subprocess</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>) with
+a different name. For instance, if your <b class="emphasis-bold">make</b> (<a href="ch11_10.htm#upt3-CHP-11-SECT-10">Section 11.10</a>) job starts
+a <i class="command">gcc</i> compiler, and you type <tt class="literal">kill
+make</tt>, will that kill <i class="command">gcc</i> too?
+Maybe -- if the signal that <i class="command">make</i> gets is passed
+to its <a name="IXT-24-5391" />subprocesses (if its subprocesses
+haven't been <b class="emphasis-bold">disowned</b> (<a href="ch23_11.htm#upt3-CHP-23-SECT-11">Section 23.11</a>), for
+instance). But unless all "smart"
+versions of <i class="command">kill</i> are smarter than I think they
+are, they won't kill subprocesses with different
+names.
+</p>
+
+<p><a name="IXT-24-5392" />And don't think that you
+can just write an <b class="emphasis-bold">alias</b> (<a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>) to override your shell's
+<i class="command">kill</i> with <i class="command">/bin/kill</i>: if you do,
+you won't be able to use <b class="emphasis-bold">job
+control</b> (<a href="ch23_01.htm#upt3-CHP-23-SECT-1">Section 23.1</a>) numbers like
+<tt class="literal">%1</tt> because the external <i class="command">kill</i>
+doesn't have access to your shell's
+job table.
+</p>
+
+<p>My advice? It might be easier to use the old way -- running
+<i class="command">ps</i> to find the process(es) and kill by PID
+number -- or use a script like <b class="emphasis-bold">zap</b> (<a href="ch24_16.htm#upt3-CHP-24-SECT-16">Section 24.16</a>) instead.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.14. Killing All Your Processes</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.16. Kill Processes Interactively</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

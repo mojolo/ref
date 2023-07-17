@@ -1,0 +1,164 @@
+<html><head><title>Neatening Text with fmt (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.2. Neatening Text with fmt</h2>
+
+<p><a name="IXT-21-5644" /> <a name="IXT-21-5645" />One of <a name="IXT-21-5646" />the problems
+with <i class="command">fold</i><a name="IXT-21-5647" /> is that it breaks text at an arbitrary
+column position -- even if that position happens to be in the
+middle of a word. It's a pretty primitive utility,
+designed to keep long lines from printing off the edge of a line
+printer page, and not much more.
+</p>
+
+<p><i class="command">fmt</i> can do a better job because it thinks in terms
+of language constructs like <a name="IXT-21-5648" />paragraphs.
+<i class="command">fmt</i> wraps lines continuously, rather than just
+folding the long ones. It assumes that paragraphs end at blank lines.
+</p>
+
+<p>You can use <i class="command">fmt</i> for things like neatening lines of
+a mail message or a file that you're editing
+<b class="emphasis-bold">with</b> <b class="emphasis-bold">vi</b> (<a href="ch17_28.htm#upt3-CHP-17-SECT-28">Section 17.28</a>). (Emacs has
+its own built-in line-neatener.) It's also great for
+shell programming and almost any place you have lines that are too
+long or too short for your screen.
+</p>
+
+<p>To make this discussion more concrete, let's imagine
+that you have the following paragraph:
+</p>
+
+<blockquote><pre class="code">    Most people take their  Emo Phillips  for granted.  They figure, and not
+without some truth, that he is a God-given right and any government that
+considers   itself a democracy would naturally provide
+its citizens with this
+sort of access.  But what too many of this  Gap-wearing,
+Real World-watching generation  fail to realize
+is that our American
+forefathers, under  the  tutelage of Zog, the wizened master sage from
+Zeta-Reticuli, had to fight  not only   the godless and   effete British
+for our system of  self-determined government, but also  avoid the  terrors
+of hynpo-death  from the dark and
+unclean Draco-Repitilians.</pre></blockquote>
+
+<p>To prepare this text for printing, you'd like to
+have all the lines be about 60 characters wide and remove the extra
+space in the lines. Although you could format this text by hand, GNU
+<i class="command">fmt</i> can do this for you with the following command
+line:
+</p>
+
+<blockquote><pre class="code">% fmt -tuw 60 my_file</pre></blockquote>
+
+<p><a name="IXT-21-5649" />The <tt class="literal">-t</tt> option,
+short for <tt class="literal">--tagged-paragraph</tt> mode, tells
+<i class="command">fmt</i> to preserve the paragraph's
+initial indent but align the rest of the lines with the left margin
+of the second line. The <tt class="literal">-u</tt> option, short for
+<tt class="literal">--uniform-spacing</tt>, squashes all the inappropriate
+whitespace in the lines. The final option, <tt class="literal">-w</tt>,
+sets the width of the output in characters. Like most UNIX commands,
+<i class="command">fmt</i> sends its output to
+<em class="emphasis">stdout</em>. For our test paragraph,
+<i class="command">fmt</i> did this:
+</p>
+
+<blockquote><pre class="code">    Most people take their Emo Phillips for granted.
+They figure, and not without some truth, that he is a
+God-given right and any government that considers itself a
+democracy would naturally provide its citizens with this
+sort of access.  But what too many of this Gap-wearing,
+Real World-watching generation fail to realize is that
+our American forefathers, under the tutelage of Zog,
+the wizened master sage from Zeta-Reticuli, had to fight
+not only the godless and effete British for our system of
+self-determined government, but also avoid the terrors of
+hynpo-death from the dark and unclean Draco-Repitilians.</pre></blockquote>
+
+<p><a name="IXT-21-5650" />There is one
+subtlety to <i class="command">fmt</i> to be aware of:
+<i class="command">fmt</i> expects sentences to end with a period,
+question mark, or exclamation point followed by two spaces. If your
+document isn't marked up according to this
+convention, <i class="command">fmt</i> can't
+differentiate between sentences and abbreviations. This is a common
+"gotcha" that appears frequently on
+Usenet.
+</p>
+<a name="ch21-3-fm2xml" /><blockquote><b>WARNING:</b> 
+<a name="IXT-21-5651" />On at least one version of Unix,
+<i class="command">fmt</i> is a disk initializer (disk formatter)
+command. Don't run <em class="emphasis">that</em> command
+accidentally! Check your online manual page and see the
+<i class="command">fmt</i> equivalents that follow.
+</p>
+</blockquote>
+
+<p>There are a few different versions of <i class="command">fmt</i>, some
+fancier than others. In general, the program assumes the following:
+</p>
+
+<ul><li>
+<p>Paragraphs have blank lines between them.</p>
+</li><li>
+<p>If a line is indented, the indentation should be preserved.</p>
+</li><li>
+<p>The output lines should be about 70 characters wide. Some have a
+command-line option to let you set this. For example, <tt class="literal">fmt
+-132</tt> (or on some versions, <tt class="literal">fmt -l 132</tt>)
+would reformat your file to have lines with no more than 132
+characters on each.
+</p>
+</li><li>
+<p>It reads files or standard input. Lines will be written to standard
+output.
+</p>
+</li></ul>
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: fmt</p>
+
+<p><a name="IXT-21-5652" />The GNU
+<i class="command">fmt</i> is on the CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>]. There are also a couple of
+free versions available. Many versions of <i class="command">fmt</i> have
+options for other structured data. The <span class="option">-p</span><b class="emphasis-bold"> option</b> (<a href="ch21_04.htm#upt3-CHP-21-SECT-4">Section 21.4</a>)
+reformats program source code. (If your <i class="command">fmt</i>
+doesn't have <span class="option">-p</span>, the <b class="emphasis-bold">recomment</b> (<a href="ch21_04.htm#upt3-CHP-21-SECT-4">Section 21.4</a>)
+script uses standard <i class="command">fmt</i> with
+<i class="command">sed</i> to do the same thing.) The <span class="option">-s</span>
+option breaks long lines at whitespace but doesn't
+join short lines to form longer ones.
+</p>
+
+<p>Alternatively, you can <b class="emphasis-bold">make your own</b>
+(<a href="ch21_03.htm#upt3-CHP-21-SECT-3">Section 21.3</a>) simple (and a little slower) version
+with <i class="command">sed</i> and <i class="command">nroff</i>. If you want
+to get fancy (and use some <i class="command">nroff</i> and/or
+<i class="command">tbl</i> coding), this will let you do automatically
+formatted text tables, bulleted lists, and much more.
+</p>
+
+<p><em class="emphasis">--JP, TOR, and JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21. You Can't Quite Call This Editing</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.3. Alternatives to fmt</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,159 @@
+<html><head><title>Copying Directory Trees with cp -r (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.12. Copying Directory Trees with cp -r</h2>
+
+<p><i class="command">cp</i> has a <span class="option">-r</span> (recursive) flag,
+which copies all the files in a directory tree -- that is, all the
+files in a directory and its subdirectories.
+</p>
+
+<a name="ch10-3-fm2xml" /><blockquote><b>NOTE:</b> 
+One of our Unix systems has a <i class="command">cp</i> without a
+<span class="option">-r</span> option. But it also has an <b class="emphasis-bold">rcp</b> (<a name="IXT-10-6423" /><a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) command that <em class="emphasis">does</em> have
+<span class="option">-r</span>. <i class="command">rcp</i> can copy to any machine,
+not just remote machines. When I need <em class="emphasis">cp -r</em> on
+that host, I use <em class="emphasis">rcp -r</em>.
+</p>
+</blockquote>
+
+<p><em class="emphasis">cp -r</em> can be used in two ways. The first is much
+like normal copies; provide a list of files to copy and an existing
+directory into which to copy them. The <span class="option">-r</span> option
+just means that source directories will be copied as well as normal
+files. The second allows you to copy a single directory to another
+location.
+</p>
+
+<ul><li>
+<p>Here's how to do the copy shown in <a href="ch10_13.htm#upt3-CHP-10-FIG-1">Figure 10-1</a>. This copies the directory
+<em class="filename">/home/jane</em>, with all its files and
+subdirectories, and creates a subdirectory named
+<em class="filename">jane</em> in the <b class="emphasis-bold">current
+directory (.)</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>):
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cd /work/bkup</b></tt>
+% <tt class="userinput"><b>cp -r /home/jane .</b></tt></pre></blockquote>
+</li><li>
+<p>How can you copy the contents of the subdirectory called
+<em class="filename">data</em> and all its files (but not the subdirectory
+itself) into a duplicate directory named
+<em class="filename">data.bak</em>? First make sure that the destination
+directory doesn't exist. That's
+because if the last argument to <i class="command">cp</i> is a directory
+that already exists, the source directory will be copied to a
+subdirectory of the destination directory (i.e., it will become
+<em class="filename">data.bak/data</em> rather than just
+<em class="filename">data.bak</em>):
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cd /home/jane</b></tt>
+% <tt class="userinput"><b>cp -r data data.bak</b></tt></pre></blockquote>
+</li><li>
+<p>Use this to copy the subdirectories <em class="filename">Aug</em> and
+<em class="filename">Sep</em> and their files from the directory
+<em class="filename">/home/jim/calendar</em> into the current directory
+(.):
+</p>
+<p><tt class="literal">[..]*</tt> <a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a></p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cp -r /home/jim/calendar/[AS]* .</b></tt></pre></blockquote>
+
+<p>In many shells, if you wanted the <em class="filename">Oct</em> directory
+too, but not the file named <em class="filename">Output</em>, you can copy
+just the directories by using the handy <b class="emphasis-bold">curly
+brace operators</b> (<a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a>):
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cp -r /home/jim/calendar/{Aug,Sep,Oct} .</b></tt></pre></blockquote>
+</li></ul>
+
+<p>Some gotchas:</p>
+
+<ul><li>
+<p><b class="emphasis-bold">Symbolic and hard links</b> (<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>) <a name="IXT-10-6424" /><a name="IXT-10-6425" /><a name="IXT-10-6426" /><a name="IXT-10-6427" />are
+copied as files. That can be a good thing; if a symbolic link were
+not turned into a file along the way, the new symbolic link would
+point to the wrong place. It can be bad if the link pointed to a
+really big file; the copy can take up a lot of disk space that you
+didn't expect. (In <a href="ch10_13.htm#upt3-CHP-10-FIG-1">Figure 10-1</a>,
+notice that the symbolic link in
+<em class="filename">jane</em>'s home directory was
+converted to a file named <em class="filename">.setup</em> with a copy of
+the contents of <em class="filename">generic</em>.) This can be prevented
+by using the <span class="option">-d</span> option, if your
+<i class="command">cp</i> supports it.
+</p>
+</li>
+<li>
+<p>On many Unixes, the copy will be dated at the time you made the copy
+and may have its permissions set by your <i class="command">umask</i>. If
+you want the copy to have the original modification time and
+permissions, add the <span class="option">-p</span> option.
+</p>
+</li>
+<li>
+<p><em class="emphasis">cp -r</em> may go into an endless loop if you try to
+copy a directory into itself. For example, let's say
+you're copying everything from the current directory
+into an existing subdirectory named <em class="filename">backup</em>, like
+this:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cp -r * backup</b></tt></pre></blockquote>
+
+<p>Unless your <em class="emphasis">cp -r</em> is smart enough to scan for
+files before it starts copying, it will create
+<em class="filename">backup/backup</em>, and
+<em class="filename">backup/backup/backup</em>, and so on. To avoid that,
+replace the <tt class="literal">*</tt> wildcard with other
+less-"wild" wildcards.
+</p>
+</li><li>
+<p><em class="emphasis">cp -r</em> doesn't deal well with
+special files. Most platforms support a <span class="option">-R</span> option
+instead, which correctly handles device files and the like. GNU
+<i class="command">cp</i> has <span class="option">-a</span> as a recommended option
+for normal recursive copying; it combines <span class="option">-R</span> with
+<span class="option">-d</span> and <span class="option">-p</span>, as described earlier.
+</p>
+</li></ul>
+
+<p>Note that directories can be copied to another machine using the same
+basic syntax with <i class="command">rcp</i> and <i class="command">scp</i>.
+The only difference is that remote files have
+<em class="replaceable"><tt>hostname</tt></em>: in front of them; note that
+remote files can be used either as source or destination. Relative
+pathnames for remote files are always relative to your home directory
+on the remote machine.
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>scp -r mydata bigserver:backups</b></tt>
+% <tt class="userinput"><b>scp -r bass:/export/src/gold-20020131 .</b></tt></pre></blockquote>
+
+<p><i class="command">scp</i> and <i class="command">rcp</i> use the same
+syntax; <i class="command">scp</i> uses <b class="emphasis-bold">SSH</b> (<a href="ch46_06.htm#upt3-CHP-46-SECT-6">Section 46.6</a>) to do its
+copying, while <i class="command">rcp</i> uses unencrypted connections.
+</p>
+
+<p><em class="emphasis">--DJPH and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.11. One More Way to Do It</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.13. Copying Directory Trees with tar and Pipes</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

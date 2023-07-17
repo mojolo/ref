@@ -1,0 +1,166 @@
+<html><head><title>Domain Name Service (DNS) (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch46_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch46_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">46.9. Domain Name Service (DNS)</h2>
+
+<p><a name="upt3-IDXTERM-7459" /> <a name="upt3-IDXTERM-7460" /> <a name="upt3-IDXTERM-7461" />Usually,
+<a name="IXT-46-559" />when you want to refer to
+a machine, you want to use its <em class="emphasis">hostname</em>, rather
+than having to remember its <b class="emphasis-bold">IP
+address</b> (<a name="IXT-46-560" /><a name="IXT-46-561" /><a href="ch46_01.htm#upt3-CHP-46-SECT-1">Section 46.1</a>).
+However, IP only understands IP addresses, not hostnames, so some
+mapping from hostname to IP address is necessary.
+<em class="filename">/etc/hosts</em><a name="IXT-46-562" /> provides a simple mapping from
+hostname to IP address, but it has the disadvantage of being local to
+your machine. It would be impossible to maintain an
+<em class="filename">/etc/hosts</em> file that actually reflected the
+constantly changing reality of the Internet. (In fact, historically,
+<em class="filename">/etc/hosts</em> was a list of every single machine on
+the Internet, downloaded regularly from a central source. This system
+broke down when the number of hosts on the Internet surpassed a few
+hundred.)
+</p>
+
+<p><a name="IXT-46-563" />The
+Domain Name Service (DNS) is a specification for a loosely
+coordinated, distributed database mapping host names to IP addresses.
+Generally, it's implemented by the
+<a name="IXT-46-564" /> <a name="IXT-46-565" />Berkeley Internet Name
+Daemon (<i class="command">bind</i>), running on hundreds of hosts. Each
+DNS server has authority over a small piece of the database, and
+coordination is accomplished through delegation. The <em class="emphasis">root
+servers</em><a name="IXT-46-566" /> <a name="IXT-46-567" /> know which DNS servers have authority
+over the <em class="emphasis">top-level domains</em> (TLDs), such as
+<tt class="literal">.com</tt>, <tt class="literal">.net</tt>,
+<tt class="literal">.org</tt>, and so forth. Each of those DNS servers
+knows which DNS server has authority over each subdomain, and so on.
+DNS servers also cache information, so that a full, time-intensive
+search through the large distributed database isn't
+necessary every time you want to access a host's IP
+address.
+</p>
+
+<p>DNS also stores other records, including <a name="IXT-46-568" />Mail Exchanger (MX) records for routing
+<b class="emphasis-bold">mail</b> (<a href="ch46_08.htm#upt3-CHP-46-SECT-8">Section 46.8</a>).
+<a name="IXT-46-569" />MTAs use MX records when resolving where to
+send an email by looking up MX records on the domain for which the
+email is destined. Typically a DNS administrator creates an address
+record for
+<tt class="literal">mail.</tt><em class="replaceable"><tt>domain.com</tt></em>, points
+it at a machine configured to catch mail for
+<em class="replaceable"><tt>domain.com</tt></em>, and then adds an MX record
+pointing to <tt class="literal">mail</tt>.<em class="replaceable">domain.com
+</em>on each host within
+<em class="replaceable"><tt>domain.com</tt></em>.
+</p>
+
+<p>DNS can affect you in a few obvious ways. The first is that you might
+need to diagnose problems if for some reason your machine
+can't look up hostnames.
+<i class="command">host</i><a name="IXT-46-570" /> is a simple tool for making DNS queries.
+<em class="emphasis">host hostname.domain.com</em> will return the IP
+address for <tt class="literal">hostname.domain.com</tt>. While
+<i class="command">host</i> can do slightly more complicated queries, I
+recommend <b class="emphasis-bold">dig</b>
+(<a name="IXT-46-571" /><a href="ch46_03.htm#upt3-CHP-46-SECT-3">Section 46.3</a>) for anything more complicated than a quick
+query. <i class="command">whois</i><a name="IXT-46-572" /> can show you registration information
+for a domain; comparing this information to a <i class="command">dig</i>
+on that domain can tell you if your <a name="IXT-46-573" /> <a name="IXT-46-574" />DNS cache is stale (or if the root
+servers haven't been updated):
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>whois oreilly.com</b></tt>
+...
+Registrant:
+O'Reilly &amp; Associates (OREILLY6-DOM)
+   101 Morris Street
+   Sebastopol, CA 95472
+   US
+
+   Domain Name: OREILLY.COM
+...
+   Record last updated on 20-Mar-2002.
+   Record expires on 28-May-2003.
+   Record created on 27-May-1997.
+   Database last updated on 28-Mar-2002 15:33:00 EST.
+
+   Domain servers in listed order:
+
+   NS.OREILLY.COM               209.204.146.21
+   NS1.SONIC.NET                208.201.224.11
+
+% <tt class="userinput"><b>dig oreilly.com ns</b></tt>
+...
+;; ANSWER SECTION:
+oreilly.com.            3h42m10s IN NS  ns2.sonic.net.
+oreilly.com.            3h42m10s IN NS  ns.oreilly.com.
+oreilly.com.            3h42m10s IN NS  ns1.sonic.net.
+...</pre></blockquote>
+
+<p>You might also want to set up a local DNS cache by configuring
+<i class="command">bind</i><a name="IXT-46-575" /> <a name="IXT-46-576" /> to resolve only. (You can also use
+<i class="command">dnscache</i>, available at <a href="http://cr.yp.to/djbdns.html">http://cr.yp.to/djbdns.html</a>.) To do this,
+make sure you have <i class="command">bind</i> installed and then put
+these lines into your
+<em class="filename">named.conf</em><a name="IXT-46-577" /> <a name="IXT-46-578" />:
+</p>
+
+<blockquote><pre class="code">options {
+    ...
+    allow-query { localnets; };
+    allow-transfer { none; };
+    allow-recursion { localnets; };
+    ...
+}
+zone "." {
+        type hint;
+        file "named.root";
+};
+
+zone "0.0.127.IN-ADDR.ARPA" {
+        type master;
+        file "localhost.rev";
+};</pre></blockquote>
+
+<p>This allows machines on your local network to query this
+<i class="command">bind</i> and will look up queries for them (which is
+what <tt class="literal">allow-recursion</tt> means). It also provides the
+normal basic root servers list (necessary for <i class="command">bind</i>
+to do full DNS queries for its clients) and the reverse lookup for
+127.0.0.1/localhost. 
+</p>
+
+<p>If you need to run your own DNS server, you'll want
+to configure <i class="command">bind</i> to be authoritative for your
+domain or domains. An example is beyond the scope of this book,
+though; refer to the <i class="command">bind</i> documentation or to
+O'Reilly's <em class="citetitle">DNS and
+Bind</em>.
+</p>
+
+<p> <em class="emphasis">-- DJPH<a name="IXTR3-631" /> <a name="IXTR3-632" /> <a name="IXTR3-633" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch46_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch46_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">46.8. Mail -- SMTP, POP, and IMAP</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">46.10. Dynamic Host Configuration Protocol </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

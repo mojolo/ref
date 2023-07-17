@@ -1,0 +1,145 @@
+<html><head><title>Other Statements That Affect
+Flow Control (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.3. Other Statements That Affect
+Flow Control</h2>
+
+<p>The <b class="emphasis-bold">if</b>, <b class="emphasis-bold">while</b>,
+<b class="emphasis-bold">for</b>, and <b class="emphasis-bold">do</b> statements allow you
+to change the normal flow through a procedure.  In this section, we
+look at several other statements that also affect a change in flow
+control.</p>
+
+<p>
+<a name="IXT-8-266028" />
+<a name="IXT-8-266029" />
+There are two statements that affect the flow control of a loop,
+<b class="emphasis-bold">break</b> and <b class="emphasis-bold">continue</b>.  The
+<b class="emphasis-bold">break</b> statement, as you'd expect, breaks out of the
+loop, such that no more iterations of the loop are performed.  The
+<b class="emphasis-bold">continue</b> statement stops the current iteration
+before reaching the bottom of the loop and starts a new iteration at
+the top.</p>
+
+<p>Consider what happens in the following program fragment:</p>
+
+<blockquote><pre class="code">for ( x = 1; x &lt;= NF; ++x )
+	if ( y == $x ) {
+		print x, $x
+		break
+	}
+print</pre></blockquote>
+
+<p>A loop is set up to examine each field of the current input record.
+Each time through the loop, the value of <b class="emphasis-bold">y</b> is
+compared to the value of a field referenced as <b class="emphasis-bold">$x</b>.
+If the result is true, we print the field number and its value and
+then break from the loop.  The next statement to be executed is
+<b class="emphasis-bold">print</b>.  The use of <b class="emphasis-bold">break</b> means
+that we are interested only in the first match on a line and that we
+don't want to loop through the rest of the fields.</p>
+
+<p>Here's a similar example using the <b class="emphasis-bold">continue</b> statement:</p>
+
+<blockquote><pre class="code">for ( x = 1; x &lt;= NF; ++x ) {
+	if ( x == 3 ) 
+		continue
+	print x, $x
+}</pre></blockquote>
+
+<p>This example loops through the fields of the current input record,
+printing the field number and its value.  However (for some reason),
+we want to avoid printing the third field.  The conditional statement
+tests the counter variable and if it is equal to 3, the
+<b class="emphasis-bold">continue</b> statement is executed.  The
+<b class="emphasis-bold">continue</b> statement passes control back to the top
+of the loop where the counter variable is incremented again.  It
+avoids executing the <b class="emphasis-bold">print</b> statement for that
+iteration.  The same result could be achieved by simply re-writing the
+conditional to execute <b class="emphasis-bold">print</b> as long as
+<b class="emphasis-bold">x</b> is not equal to 3.  The point is that you can use
+the <b class="emphasis-bold">continue</b> statement to avoid hitting the bottom
+of the loop on a particular iteration.</p>
+
+<p>
+<a name="IXT-8-266030" />
+<a name="IXT-8-266031" />
+There are two statements that affect the main input loop,
+<b class="emphasis-bold">next</b> and <b class="emphasis-bold">exit</b>.  The
+<b class="emphasis-bold">next</b> statement causes the next line of input to be
+read and then resumes execution at the top of the script.<a href="#FOOTNOTE-55">[55]</a> 
+This allows you to avoid applying other procedures on the current
+input line.  A typical use of the <b class="emphasis-bold">next</b> statement is
+to continue reading input from a file, ignoring the other actions in
+the script until that file is exhausted.  The system variable
+<b class="emphasis-bold">FILENAME</b> provides the name of the current input
+file.  Thus, a pattern can be written:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-55" /><p> [55]Some awks don't allow you to use <b class="emphasis-bold">next</b> from 
+within a user-defined function; Caveat emptor.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">FILENAME == "acronyms" {
+	<i class="lineannotation">action</i>
+	next
+}
+{ print }</pre></blockquote>
+
+<p>This causes the action to be performed for each line in the file
+<em class="filename">acronyms</em>.  After the action is performed, the
+next line of input is read.  Control does not pass to the
+<b class="emphasis-bold">print</b> statement until the input is taken from a
+different source.</p>
+
+<p>The <b class="emphasis-bold">exit</b> statement exits the main input loop and
+passes control to the <b class="emphasis-bold">END</b> rule, if there is one.
+If the <b class="emphasis-bold">END</b> rule is not defined, or the
+<b class="emphasis-bold">exit</b> statement is used in the
+<b class="emphasis-bold">END</b> rule, then the script terminates.  We used the
+<b class="emphasis-bold">exit</b> statement earlier in the
+<b class="emphasis-bold">factorial</b> program to exit after reading one line of
+input.</p>
+
+<p>An <b class="emphasis-bold">exit</b> statement can take an expression as an
+argument.  The value of this expression will be returned as the exit
+status of awk.  If the expression is not supplied, the exit status is
+0.  If you supply a value to an initial <b class="emphasis-bold">exit</b>
+statement, and then call <b class="emphasis-bold">exit</b> again from the
+<b class="emphasis-bold">END</b> rule without a value, the first value is
+used. For example:</p>
+
+<blockquote><pre class="code">awk '{
+	...
+	exit 5
+}
+END { exit }'</pre></blockquote>
+
+<p>Here, the exit status from awk will be 5.</p>
+
+<p>You will come across examples that use these flow-control statements
+in upcoming sections.</p>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.2. Looping</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.4. Arrays</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

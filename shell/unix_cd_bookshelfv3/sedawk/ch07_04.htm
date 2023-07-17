@@ -1,0 +1,155 @@
+<html><head><title>Pattern Matching (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.4. Pattern Matching</h2>
+
+<p>
+<a name="ch07.patt" />
+The "Hello, world" program does not demonstrate the power of
+pattern-matching rules.  In this section, we look at a number of
+small, even trivial examples that nonetheless demonstrate this central
+feature of awk scripts.</p>
+
+<p>
+<a name="IXT-7-265813" />
+When awk reads an input line, it attempts to match each
+pattern-matching rule in a script.  Only the lines matching the
+particular pattern are the object of an action.  If no action is
+specified, the line that matches the pattern is printed (executing the
+<b class="emphasis-bold">print</b> statement is the default action).  Consider
+the following script:</p>
+
+<blockquote><pre class="code">/^$/ { print "This is a blank line." }</pre></blockquote>
+
+<p>This script reads: <em class="emphasis">if the input line is blank, then print
+"This is a blank line."</em> The pattern is written as a
+regular expression that identifies a blank line.  The action, like
+most of those we've seen so far, contains a single
+<b class="emphasis-bold">print</b> statement.</p>
+
+<p>If we place this script in a file named <em class="filename">awkscr</em>
+and use an input file named <em class="filename">test</em> that contains
+three blank lines, then the following command executes the script:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f awkscr test</b></tt>
+This is a blank line.
+This is a blank line.
+This is a blank line.</pre></blockquote>
+
+<p>(From this point on, we'll assume that our scripts are placed in a
+separate file and invoked using the <span class="option">-f</span> command-line
+option.)  The result tells us that there are three blank lines in
+<em class="filename">test</em>.  This script ignores lines that are not
+blank.</p>
+
+<p>Let's add several new rules to the script.  This script is now going
+to analyze the input and classify it as an integer, a string, or a
+blank line.</p>
+
+<blockquote><pre class="code"># test for integer, string or empty line.
+/[0-9]+/    { print "That is an integer" }
+/[A-Za-z]+/ { print "This is a string" }
+/^$/        { print "This is a blank line." }</pre></blockquote>
+
+<p>
+<a name="IXT-7-265814" />
+<a name="IXT-7-265815" />
+<a name="IXT-7-265816" />
+The general idea is that if a line of input matches any of these
+patterns, the associated <b class="emphasis-bold">print</b> statement will be
+executed.  The + metacharacter is part of the extended set of regular
+expression metacharacters and means "one or more."  Therefore, a line
+containing a sequence of one or more digits will be considered an
+integer.  Here's a sample run, taking input from standard input:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f awkscr</b></tt>
+<tt class="userinput"><b>4</b></tt>
+That is an integer
+<tt class="userinput"><b>t</b></tt>
+This is a string
+<tt class="userinput"><b>4T</b></tt>
+That is an integer
+This is a string
+<tt class="userinput"><b>RETURN</b></tt>
+This is a blank line.
+<tt class="userinput"><b>44</b></tt>
+That is an integer
+<tt class="userinput"><b>CTRL-D</b></tt>
+$</pre></blockquote>
+
+<p>Note that input "4T" was identified as both an integer and a string.
+A line can match more than one rule.  You can write a stricter rule
+set to prevent a line from matching more than one rule.  You can also
+write actions that are designed to skip other parts of the script.</p>
+
+<p>We will be exploring the use of pattern-matching rules throughout
+this chapter.</p>
+
+<a name="sedawk-ch-7-sect-4.1" /><div class="sect2">
+<h3 class="sect2">7.4.1. Describing Your Script</h3>
+
+<p>
+<a name="IXT-7-265817" />
+<a name="IXT-7-265818" />
+<a name="IXT-7-265819" />
+Adding comments as you write the script is a good practice.  A comment
+begins with the "#" character and ends at a newline.  Unlike sed, awk
+allows comments anywhere in the script.</p>
+
+<blockquote><b>NOTE:</b> 
+ 
+If you are supplying your awk program on the command
+line, rather than putting it in a file, do not use a single quote
+anywhere in your program.  The shell would interpret it and become
+confused.</p>
+</blockquote>
+
+<p>As we begin writing scripts, we'll use comments to describe
+the action:</p>
+
+<blockquote><pre class="code">#  blank.awk -- Print message for each blank line.
+/^$/ { print "This is a blank line." }</pre></blockquote>
+
+<p>This comment offers the name of the script,
+<b class="emphasis-bold">blank.awk</b>, and briefly describes what the script
+does.  A particularly useful comment for longer scripts is one that
+identifies the expected structure of the input file.  For instance, in
+the next section, we are going to look at writing a script that reads
+a file containing names and phone numbers.  The introductory comments
+for this program should be:</p>
+
+<blockquote><pre class="code"># blocklist.awk -- print name and address in block form.
+# fields: name, company, street, city, state and zip, phone</pre></blockquote>
+
+<p>It is useful to embed this information in the script because the
+script won't work unless the structure of the input file corresponds
+to that expected by the person who wrote the script.</p>
+</div>
+
+
+
+
+<a name="IXT-7-265820" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.3. Awk's Programming Model</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.5. Records and Fields</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

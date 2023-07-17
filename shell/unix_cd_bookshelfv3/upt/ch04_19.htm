@@ -1,0 +1,99 @@
+<html><head><title>Stop Accidental Bourne-Shell Logouts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.19. Stop Accidental Bourne-Shell Logouts</h2>
+
+<p><a name="IXT-4-6905" /><a name="IXT-4-6906" />It's pretty
+easy to type one too many CTRL-d characters and log out of a Bourne
+shell without meaning to. The <a name="IXT-4-6907" /> <a name="IXT-4-6908" />C shell has an
+<em class="emphasis">ignoreeof</em> shell variable that
+won't let you log out with CTRL-d. So do the
+<a name="IXT-4-6909" /> <a name="IXT-4-6910" />Korn shell and
+<i class="command">bash</i>; use <tt class="literal">set -o</tt>
+<tt class="literal">ignoreeof</tt>.
+</p>
+
+<p>Here's a different sort of solution for the Bourne
+shell. When you end the shell, it asks if you're
+sure. If you don't answer yes, a new shell is
+started to replace your old one.
+</p>
+
+<p>First, make <b class="emphasis-bold">a file like the C
+shell's .logout</b> that will be read when
+your Bourne shell exits (<a href="ch04_18.htm#upt3-CHP-4-SECT-18">Section 4.18</a>). Save your
+<b class="emphasis-bold">tty</b> (<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>)
+name in an <b class="emphasis-bold">environment variable</b>
+(<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>), too -- you'll
+need it later:
+</p>
+
+<p><tt class="literal">trap</tt> <a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a></p>
+
+<blockquote><pre class="code">TTY=`tty`; export TTY
+trap '. $HOME/.sh_logout; exit' 0</pre></blockquote>
+
+<p><a name="IXT-4-6911" />(Your system
+may need <tt class="literal">$LOGDIR</tt> instead of
+<tt class="literal">$HOME</tt>.) Put the following lines in your new
+<em class="filename">.sh_logout</em> file:
+</p>
+
+<p><tt class="literal">exec &lt;</tt> <a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a>,
+<tt class="literal">case</tt> <a href="ch35_11.htm#upt3-CHP-35-SECT-11">Section 35.11</a>,
+<tt class="literal">exec</tt> <a href="ch24_02.htm#upt3-CHP-24-SECT-2">Section 24.2</a>,
+<tt class="literal">-sh</tt> <a href="ch03_19.htm#upt3-CHP-3-SECT-19">Section 3.19</a></p>
+
+<blockquote><pre class="code">exec &lt; $TTY
+echo "Do you really want to log out? \c"
+read ans
+case "$ans" in
+[Yy]*) ;;
+*)  exec $HOME/bin/-sh ;;
+esac</pre></blockquote>
+
+<p>The last line uses some trickery to start a new <b class="emphasis-bold">login shell</b> (<a href="ch03_19.htm#upt3-CHP-3-SECT-19">Section 3.19</a>).
+The shell <b class="emphasis-bold">closes your tty</b> (<a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a>) before reading your
+<em class="filename">.sh_logout</em> file; the <tt class="literal">exec &lt;
+$TTY</tt> reconnects the shell's standard input
+to your terminal.
+</p>
+
+<p>Note that if your system is <em class="emphasis">very</em> slow, you may
+not get the reminder message for a couple of
+seconds -- consequently, you might forget that
+it's coming and walk away. That
+hasn't been a problem where I've
+tested this. If it is for you, though, replace the
+<tt class="literal">read</tt> <tt class="literal">ans</tt> with a program like
+<i class="command">grabchars</i> that times out and gives a default
+answer after a while. There may be some Bourne shells that need other
+tricks -- and others that don't need these
+tricks -- but this should give you an idea of what to do.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.18. Running Commands at Bourne/Korn Shell Logout</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5. Getting the Most out of Terminals, xterm, and X Windows</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

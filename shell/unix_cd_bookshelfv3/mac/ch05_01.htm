@@ -1,0 +1,550 @@
+<html><head><title>Libraries, Headers, and Frameworks (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 5. Libraries, Headers, and Frameworks</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch05_01.htm#sect1">Header Files</a><br />
+<a href="ch05_02.htm">The System Library: libSystem</a><br />
+<a href="ch05_03.htm">Shared Libraries Versus Loadable Modules</a><br />
+<a href="ch05_04.htm">Library Versions</a><br />
+<a href="ch05_05.htm">Creating and Linking Static Libraries</a><br />
+<a href="ch05_06.htm">Prebinding</a><br />
+<a href="ch05_07.htm">Interesting and Important Libraries</a><br /></p></div><p>In this chapter, we discuss the linking phase of building Unix-based
+software under Mac OS X. In particular, we discuss header files in
+Mac OS X and libraries.
+</p><div class="sect1"><a name="mosxgeeks-CHP-5-SECT-1" />
+<h2 class="sect1"><a name="sect1" />5.1. Header Files</h2>
+
+<p><a name="mosxgeeks-IDXTERM-340" />There are two types of header files in Mac
+OS X.
+</p>
+
+<dl>
+<dt><i>Ordinary header files</i></dt>
+<dd>
+These header files are inserted into source code by a preprocessor
+prior to compilation. Ordinary header files have a <em class="emphasis">.h</em></tt>
+<a name="IXT-5-530" />extension.
+</p>
+</dd>
+
+
+
+<dt><i>Precompiled header files</i></dt>
+<dd>
+<a name="IXT-5-531" />These header files have a <em class="emphasis">.p</em>
+<a name="IXT-5-532" />extension.
+</p>
+</dd>
+
+</dl>
+
+<p>Header files serve four functions:</p>
+
+<ul><li>
+<p>	They contain C declarations.</p>
+</li><li>
+<p>	They contain macro definitions.</p>
+</li><li>
+<p>	They provide for conditional compilation.</p>
+</li><li>
+<p>They provide line control when combining multiple source files into a
+single file that is subsequently compiled.
+</p>
+</li></ul>
+
+<a name="ch05-4-fm2xml" /><blockquote><b>TIP:</b> 
+The mechanism for enabling strict <em class="emphasis">POSIX.1</em>
+compliance is built into the system header files. The
+preprocessor variables <tt class="literal">_ANSI_SOURCE</tt>, <tt class="literal">_
+_STRICT_ANSI_ _</tt>, and <tt class="literal">_POSIX_SOURCE</tt> are
+supported.
+</p>
+</blockquote>
+
+<p>Unix developers will find the ordinary header files familiar, since
+they follow the BSD convention. The C preprocessor directive
+<tt class="literal">#include</tt><a name="IXT-5-533" /> includes a header file in a C source
+file. There are essentially three forms of this syntax:
+</p>
+
+<dl>
+<dt><tt class="literal">#include &lt;</tt><tt><em class="replaceable">headername</em></tt><tt class="literal">.h&gt;</tt></dt>
+<dd>
+This form is used when the header file is located in the directory
+<em class="emphasis">/usr/include</em></tt>.
+</p>
+</dd>
+
+
+
+<dt><tt class="literal">#include &lt;</tt><tt><em class="replaceable">directory/headername</em></tt><tt class="literal">.h&gt;</tt></dt>
+<dd>
+This form is used when the header file is located in the directory
+<em class="emphasis">/usr/include/</em><em class="replaceable"><tt>directory</tt></em>,
+where <em class="replaceable"><tt>directory</tt></em> is a subdirectory of
+<em class="emphasis">/usr/include</em>.
+</p>
+</dd>
+
+
+
+<dt><tt class="literal">#include "</tt><tt><em class="replaceable">headername</em></tt><tt class="literal">.h"</tt></dt>
+<dd>
+This form is used when the header file is located in a user or
+nonstandard directory. The form should either be in the same
+directory as the source file you are compiling or in a directory
+specified by <em class="emphasis">cc</em></tt>'s
+-<em class="emphasis">I</em></tt><tt><em class="replaceable"><tt>directory</tt></em></tt> switch.
+</p>
+</dd>
+
+</dl>
+
+<p>You can use <tt class="literal">#include</tt>, followed by a macro, which,
+when expanded, must be in one of the aforementioned forms.
+</p>
+
+<p>As noted in the previous chapter, frameworks in Mac OS X are common
+when you step outside of the BSD portions of the operating system.
+You must use <tt class="literal">#import</tt><a name="IXT-5-534" /> <a name="IXT-5-535" /> instead of <tt class="literal">#include</tt>
+when working with a framework. To include a framework header file in
+Objective-C code, use the following format:
+</p>
+
+<blockquote><pre class="code">#import &lt;<tt><em class="replaceable"><tt>frameworkname</em></tt>/<tt><em class="replaceable">headerfilename</tt></em></tt>.h&gt;</pre></blockquote>
+
+<p>where <tt><em class="replaceable"><tt>frameworkname</tt></em></tt> is the name of the
+framework without the extension and
+<tt><em class="replaceable"><tt>headerfilename</tt></em></tt> is the name of the header
+file. For example, the included declaration for a Cocoa application
+would look like:
+</p>
+
+<blockquote><pre class="code">#import &lt;Cocoa/Cocoa.h&gt;</pre></blockquote>
+
+<p>When preprocessing header files or any preprocessor directives, the
+following three actions are always taken:
+</p>
+
+<ul><li>
+<p>	Comments are replaced by a single space.</p>
+</li><li>
+<p>Any backslash line continuation escape symbol is removed and the line
+following it is joined with the current line. For example:
+</p>
+
+<blockquote><pre class="code">#def\
+ine \
+NMAX 2000</pre></blockquote>
+
+<p>is processed as:</p>
+
+<blockquote><pre class="code">#define NMAX 2000</pre></blockquote>
+</li>
+<li>
+<p>Any predefined macro name is replaced with its expression. In Mac OS
+X, there are both standard ANSI C predefined macros, as well as
+several predefined macros specific to Mac OS X. For example,
+<tt class="literal">_ _APPLE_CC_ _</tt> is replaced by an integer that
+represents the compiler's version number.
+</p>
+</li></ul>
+<p>The following rules must be kept in mind:</p>
+
+<ul><li>
+<p>The preprocessor does not recognize comments or macros placed between
+the <tt class="literal">&lt;</tt> and <tt class="literal">&gt;</tt> in an
+<tt class="literal">#include</tt> directive.
+</p>
+</li><li>
+<p>Comments placed within string constants are regarded as part of the
+string constant and are not recognized as C comments.
+</p>
+</li><li>
+<p>If ANSI trigraph preprocessing is enabled with <em class="emphasis">cc
+-trigraph</em></tt>, you must not use a backslash continuation
+escape symbol within a trigraph sequence, or the trigraph will not be
+interpreted correctly. ANSI trigraphs are three-character sequences
+that represent characters that may not be available on older
+terminals. For example, <tt class="literal">??&lt;</tt> translates to
+<tt class="literal">{</tt>. ANSI trigraphs are a rare occurrence these
+days.
+</p>
+</li></ul>
+<a name="mosxgeeks-CHP-5-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">5.1.1. Precompiled Header Files</h3>
+
+<p>Mac OS X's Developer Tools support and provide
+extensive documentation on building and using
+<a name="IXT-5-536" />precompiled header files. This section
+highlights a few of the issues that may be of interest to Unix
+developers new to Mac OS X when it comes to working with precompiled
+headers.
+</p>
+
+<p>Precompiled header files are binary files that have been generated
+from ordinary C header files and that have been preprocessed and
+parsed using <em class="emphasis">cpp-precomp</em></tt>. When such a
+precompiled header is created, both macros and declarations present
+in the corresponding ordinary header file are sorted, resulting in a
+faster compile time, a reduced symbol table size, and consequently,
+faster lookup. Precompiled header files are given a
+<em class="emphasis">.p</em></tt> extension and are produced from ordinary
+header files that end with a <em class="emphasis">.h</em></tt> extension. There
+is no risk that a precompiled header file will get out of sync with
+the <em class="emphasis">.h</em></tt> file, because the compiler checks the
+timestamp of the actual header file.
+</p>
+
+<p>When using precompiled header files, you should not refer to the
+<em class="emphasis">.p</em></tt> version of the name, but rather to the
+<em class="emphasis">.h</em></tt> version in the <tt class="literal">#include</tt>
+directive. If a precompiled version of the header file is available,
+it will be used automatically; otherwise, the real header file
+(<em class="emphasis">.h</em></tt>) will be used. So, to include
+<em class="emphasis">foo.p</em></tt>, you would specify
+<em class="emphasis">foo.h</em></tt>. The fact that <em class="emphasis">cc</em></tt> is
+using a precompiled header is totally hidden from you.
+</p>
+
+<p>In addition to checking the timestamp, the preprocessor also checks
+whether or not the current context is the same as the context in
+which the precompilation was performed. For the precompiled header to
+be used, the timestamp would need to indicate that the modification
+time of the <em class="emphasis">.p</em></tt> version is more recent than the
+<em class="emphasis">.h</em></tt> version, and therefore, that the contexts
+must be equivalent. The context is the amalgamation of all defines
+(<tt class="literal">#define</tt>) in place at the time you compile a
+program. If the defines are different the next time you include the
+<em class="emphasis">.h</em></tt> file, <em class="emphasis">cpp-precomp</em></tt> will
+regenerate the <em class="emphasis">.p</em></tt> file based on the current set
+of defines.
+</p>
+
+<p>Mac OS X system headers are precompiled. For example,
+<em class="emphasis">AppKit.p</em></tt>, <em class="emphasis">Cocoa.p</em></tt>,
+<em class="emphasis">mach.p</em></tt>, and other precompiled header files are
+stored in <em class="emphasis">/System/Library/Frameworks</em></tt>. You can
+create your own precompiled header files using the <em class="emphasis">cc
+-precomp</em></tt> compile driver flag. For example, the following
+command illustrates this process in its simplest, context-independent
+form:
+</p>
+
+<blockquote><pre class="code">cc -precomp header.h -o header.p</pre></blockquote>
+
+<p>If there is context dependence--for example, some conditional
+compilation--the <em class="emphasis">-Dsymbol</em></tt> flag is used. In
+this case, the command to build a precompiled header file (with the
+<em class="emphasis">FOO</em></tt> symbol defined) would be:
+</p>
+
+<blockquote><pre class="code">cc -precomp -DFOO header.h -o header.p</pre></blockquote>
+
+<p>For more details on building and using precompiled header files, as
+well as using the <em class="emphasis">cpp-precomp</em></tt> preprocessor, read
+the documentation stored in <a name="IXT-5-537" /><em class="emphasis">/Developer/Documentation/DeveloperTools/Preprocessor/</em></tt>.
+</p>
+
+<a name="ch05-5-fm2xml" /><blockquote><b>WARNING:</b> 
+Although the <a name="IXT-5-538" /><em class="emphasis">cpp-precomp</em></tt> and the
+standard <a name="IXT-5-539" />
+<a name="IXT-5-540" />GNU <em class="emphasis">cpp</em></tt>
+preprocessors are similar in function, there are several
+incompatibilities. For this reason, you will find it is often
+necessary to use the -<em class="emphasis">no-cpp-precomp</em></tt>
+<a name="IXT-5-541" />switch when porting Unix-based software
+to Mac OS X.
+</p>
+</blockquote>
+
+<p>A complete list of precompiled headers can be found in the
+<em class="filename">phase1.precompList</em></tt> and
+<em class="filename">phase2.precompList</em></tt> files, located in
+<em class="emphasis">/System/Library/SystemResources/PrecompLists</em></tt>.
+<a href="ch05_01.htm#mosxgeeks-CHP-5-TABLE-1">Table 5-1</a> lists the contents of the files.
+</p>
+
+<a name="mosxgeeks-CHP-5-TABLE-1" /><h4 class="objtitle">Table 5-1. Precompiled header files as listed in phase1.precompList and phase2.precompList </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Precompiled headers</p>
+</th>
+<th>
+<p>Filesystem location</p>
+</th>
+</tr>
+
+
+<tr>
+<td colspan="NaN">
+<p><em class="emphasis"><b>phase1.precompList</b></em></tt></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">libc.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/usr/include</em></tt></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">unistd.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/usr/include</em></tt></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">mach.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/usr/include/mach</em></tt></p>
+</td>
+</tr>
+<tr>
+<td colspan="NaN">
+<p><em class="emphasis"><b>phase2.precompList</b></em></tt></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">CoreServices.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/CoreServices.framework/Versions/A/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">CoreServices.pp</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/CoreServices.framework/Versions/A/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">ApplicationServices.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">ApplicationServices.pp</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">Carbon.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/Carbon.framework/Versions/A/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">Carbon.pp</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/Carbon.framework/Versions/A/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">Foundation.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/Foundation.framework/Versions/C/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">Foundation.pp</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/Foundation.framework/Versions/C/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">AppKit.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/AppKit.framework/Versions/C/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">AppKit.pp</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/AppKit.framework/Versions/C/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">Cocoa.p</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/Cocoa.framework/Versions/A/Headers</em></tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">Cocoa.pp</em></tt></p>
+</td>
+<td>
+<p><em class="emphasis">/System/Library/Frameworks/Cocoa.framework/Versions/A/Headers</em></tt>
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>Although the filenames in <em class="filename">phase1.precompList</em></tt> and
+<em class="filename">phase2.precompList</em></tt> are listed as
+<em class="filename">filename.p</em></tt> (for example,
+<em class="filename">libc.p</em></tt>), the actual file used depends on the
+compiler version. For example, <em class="emphasis">gcc3</em></tt> will use
+<em class="filename">libc-gcc3.p</em></tt>. (Mac OS X 10.2 does not ship with
+precompiled heaeder files for <em class="emphasis">gcc2</em></tt>.)
+</p>
+
+
+<a name="ch05-7-fm2xml" /><blockquote><b>TIP:</b> 
+The <em class="filename">.pp</em></tt> files referred to in
+<em class="filename">phase2.precompList</em></tt> are not present on the
+system, but the <em class="emphasis">gcc3</em></tt> versions can be generated
+by running <em class="emphasis">sudo fixPrecomps -gcc3all</em></tt>.
+</p>
+</blockquote>
+
+<a name="mosxgeeks-CHP-5-SECT-1.1.1" /><div class="sect3">
+<h3 class="sect3">5.1.1.1. PFE precompilation</h3>
+
+<p>The <em class="emphasis">gcc3</em></tt> compiler supports an alternative
+precompilation mechanism called <a name="IXT-5-542" /> <a name="IXT-5-543" />Persistent Front End
+(PFE). This mechanism offers the same performance benefits as
+<a name="IXT-5-544" /><em class="emphasis">cpp-precomp</em></tt>,
+but supports C++ and Objective-C++. (<em class="emphasis">cpp-precomp</em></tt>
+does not support either language.) To precompile a header file with
+PFE, compile the header, specifying the
+ <em class="emphasis">-- dump-pch</em></tt> switch with the name of the
+output file. You'll also need to supply the language
+with the <em class="emphasis">-x</em></tt> switch (see <a href="ch04_02.htm#mosxgeeks-CHP-4-SECT-2.3">Section 4.2.3</a>): 
+</p>
+
+<blockquote><pre class="code">gcc -x c --dump-pch header.pfe header.h</pre></blockquote>
+
+<p>Then, you can compile <em class="emphasis">main.c</em></tt> using the
+ <em class="emphasis">-- load-pch</em></tt> switch, supplying the name of
+the precompiled file:
+</p>
+
+<blockquote><pre class="code">gcc --load-pch header.pfe main.c -o main</pre></blockquote>
+
+<p><a href="ch05_01.htm#mosxgeeks-CHP-5-EX-1">Example 5-1</a> shows
+<em class="emphasis">header.h</em></tt><a name="IXT-5-545" />, and <a href="ch05_01.htm#mosxgeeks-CHP-5-EX-2">Example 5-2</a> shows
+<em class="emphasis">main.c</em></tt><a name="IXT-5-546" />.
+</p>
+
+<a name="mosxgeeks-CHP-5-EX-1" /><div class="example">
+<h4 class="objtitle">Example 5-1. The header.h file  </h4><a name="IXT-5-547" />
+<blockquote><pre class="code">/* header.h: a trivial header file. */
+
+#define x 100</pre></blockquote>
+</div>
+
+<a name="mosxgeeks-CHP-5-EX-2" /><div class="example">
+<h4 class="objtitle">Example 5-2. The main.c application </h4><a name="IXT-5-548" />
+<blockquote><pre class="code">/* main.c: a simple program that includes header.h. */
+
+#include &lt;stdio.h&gt;
+#include "header.h"
+
+int main( )
+{
+  printf("%d\n", x);
+  return 0;
+}</pre></blockquote>
+</div>
+
+</div>
+</div>
+<a name="mosxgeeks-CHP-5-SECT-1.2" /><div class="sect2">
+<h3 class="sect2">5.1.2. malloc.h</h3>
+
+<p><em class="emphasis">make</em></tt> <a name="IXT-5-549" />may fail in compiling some types of Unix
+software if it cannot find <em class="emphasis">malloc.h</em></tt>. Software
+designed for older Unix systems may expect to find this header file
+in <em class="emphasis">/usr/include</em></tt>; however,
+<em class="emphasis">malloc.h</em></tt> is not present in this directory. The
+set of <tt class="literal">malloc( )</tt> function prototypes is actually
+found in <em class="emphasis">stdlib.h</em></tt>. For portability, your
+programs should include <em class="emphasis">stdlib.h</em></tt> instead of
+<em class="emphasis">malloc.h</em></tt>. (This is the norm; systems that
+require you to use <em class="emphasis">malloc.h</em></tt> are the rare
+exception these days.) GNU <em class="emphasis">autoconf</em></tt> will detect
+systems that require <em class="emphasis">malloc.h</em></tt> and define the
+<tt class="literal">HAVE_MALLOC_H</tt> macro. If you do not use GNU
+<em class="emphasis">autoconf</em></tt>, you will need to detect this case on
+your own and set the macro accordingly. You can handle such cases
+with this code:
+</p>
+
+<blockquote><pre class="code">#include &lt;stdlib.h&gt;
+#ifdef HAVE_MALLOC_H
+#include &lt;malloc.h&gt;
+#endif</pre></blockquote>
+
+<p>For a list of libraries that come with Mac OS X, see <a href="ch05_07.htm#mosxgeeks-CHP-5-SECT-7">Section 5.7</a>, later in this chapter.<a name="IXTR3-593" />
+</p>
+
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.3. Architectural Issues</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.2. The System Library: libSystem</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

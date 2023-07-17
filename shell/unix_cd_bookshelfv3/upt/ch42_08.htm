@@ -1,0 +1,97 @@
+<html><head><title>cgi (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch42_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch42_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">42.8. cgi</h2>
+
+<p>Python provides the <tt class="literal">cgi</tt> module for writing
+<a name="IXT-42-2431" /><a name="IXT-42-2432" /><a name="IXT-42-2433" /><a name="IXT-42-2434" />CGI
+scripts. Much of the grunt work of writing a CGI script is in dealing
+with parsing the parameters handed to the script by the web server.
+The <tt class="literal">cgi</tt> module deals with all of those details and
+more.
+</p>
+
+<a name="ch42-3-fm2xml" /><blockquote><b>NOTE:</b> 
+To use the <tt class="literal">cgi</tt> module, use
+<tt class="literal">import</tt> <tt class="literal">cgi</tt> rather than
+<tt class="literal">from</tt> <tt class="literal">cgi</tt>
+<tt class="literal">import*</tt>. The <tt class="literal">cgi</tt> module defines
+a lot of symbols (many for backwards compatibility) that you
+don't want polluting your namespace.
+</p>
+</blockquote>
+
+<p>When you write a new script, consider adding the line:</p>
+
+<blockquote><pre class="code">import cgitb; cgitb.enable( )</pre></blockquote>
+
+<p>This activates a special exception handler that will display detailed
+reports in the web browser if any errors occur. If
+you'd rather not show the guts of your program to
+users of your script, you can have the reports saved to files
+instead, with a line like this:
+</p>
+
+<blockquote><pre class="code">import cgitb; cgitb.enable(display=0, logdir="/tmp")</pre></blockquote>
+
+<p>It's very helpful to use this feature during script
+development. The reports produced by <tt class="literal">cgitb</tt> provide
+information that can save you a lot of time tracking down bugs. You
+can always remove the <tt class="literal">cgitb</tt> line later when you
+have tested your script and are confident that it works correctly.
+</p>
+
+<p>To get to information submitted to the CGI script, instantiate a
+<tt class="literal">FieldStorage</tt> object:
+</p>
+
+<blockquote><pre class="code">form = cgi.FieldStorage( )</pre></blockquote>
+
+<p>The FieldStorage object acts much like a dictionary of CGI
+information; it implements the methods <tt class="literal">has_key( )</tt>
+and <tt class="literal">keys( )</tt> and can be accessed using the
+<tt class="literal">[ ]</tt> operator. For instance, the following code
+(which assumes that the <tt class="literal">Content-Type</tt>: header and
+blank line have already been printed) checks that the fields
+<tt class="literal">name</tt> and <tt class="literal">addr</tt> are both set to a
+non-empty string:
+</p>
+
+<blockquote><pre class="code">form = cgi.FieldStorage( )
+if not (form.has_key("name") and form.has_key("addr")):
+    print "&lt;H1&gt;Error&lt;/H1&gt;"
+    print "Please fill in the Name and Address fields."
+    return
+print "&lt;p&gt;Name: %s&lt;/p&gt;" % form["name"].value
+print "&lt;p&gt;Address: %s&lt;/p&gt;" % form["addr"].value
+...further form processing here...</pre></blockquote>
+
+<p>The <tt class="literal">cgi</tt> module also supports ways to deal with
+multiple-selection form elements and uploaded files.
+</p>
+
+<p> <em class="emphasis">-- DJPH</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch42_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch42_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">42.7. htmllib and HTMLParser</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">42.9. mod_python</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

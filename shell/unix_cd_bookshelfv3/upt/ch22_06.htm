@@ -1,0 +1,164 @@
+<html><head><title>Miscellaneous sort Hints (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch22_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch22_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">22.6. Miscellaneous sort Hints</h2>
+
+<p>Here is a grab bag of useful, if not exactly interesting,
+<i class="command">sort</i> features. The utility will actually do quite
+a bit, if you let it.
+</p>
+
+<a name="upt3-CHP-22-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">22.6.1. Dealing with Repeated Lines</h3>
+
+<p><a name="IXT-22-1549" /><a name="IXT-22-1550" /><em class="emphasis">sort
+-u</em><a name="IXT-22-1551" /> <a name="IXT-22-1552" /> sorts
+the file and eliminates duplicate lines. It's more
+powerful than <b class="emphasis-bold">uniq</b> (<a href="ch21_20.htm#upt3-CHP-21-SECT-20">Section 21.20</a>) because:
+</p>
+
+<ul><li>
+<p>It sorts the file for you; <i class="command">uniq</i> assumes that the
+file is already sorted and won't do you any good if
+it isn't.
+</p>
+</li><li>
+<p>It is much more flexible. <em class="emphasis">sort -u</em> considers
+lines "unique" if the <b class="emphasis-bold">sort fields</b> (<a href="ch22_02.htm#upt3-CHP-22-SECT-2">Section 22.2</a>)
+you've selected match. So the lines
+don't even have to be (strictly speaking) unique;
+differences outside of the sort fields are ignored.
+</p>
+</li></ul>
+<p>In return, there are a few things that <i class="command">uniq</i> does
+that <i class="command">sort</i> won't do -- such as
+print only those lines that aren't repeated, or
+count the number of times each line is repeated. But on the whole, I
+find <em class="emphasis">sort -u</em> more useful.
+</p>
+
+<p>Here's one idea for using <em class="emphasis">sort
+-u</em>. When I was writing a manual, I often needed to make
+tables of error messages. The easiest way to do this was to
+<i class="command">grep</i> the source code for
+<em class="emphasis">printf</em> statements, write some <b class="emphasis-bold">Emacs</b> (<a href="ch19_01.htm#upt3-CHP-19-SECT-1">Section 19.1</a>) macros to
+eliminate junk that I didn't care about, use
+<em class="emphasis">sort -u</em> to put the messages in order and get rid
+of duplicates, and write some more Emacs macros to format the error
+messages into a table. All I had to do then was write the
+descriptions.
+</p>
+
+</div>
+<a name="upt3-CHP-22-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">22.6.2. Ignoring Blanks</h3>
+
+<p><a name="IXT-22-1553" /><a name="IXT-22-1554" />One important option (that
+I've mentioned a number of times) is
+<span class="option">-b</span>; this tells <i class="command">sort</i> to ignore
+extra whitespace at the beginning of each field. This is absolutely
+essential; otherwise, your sorts will have rather strange results. In
+my opinion, <span class="option">-b</span> should be the default. But they
+didn't ask me.
+</p>
+
+<p>Another thing to remember about <span class="option">-b</span>: it works only if
+you explicitly specify which fields you want to sort. By itself,
+<em class="emphasis">sort -b</em> is the same as <i class="command">sort</i>:
+whitespace characters are counted. I call this a bug,
+don't you?
+</p>
+
+</div>
+<a name="upt3-CHP-22-SECT-6.3" /><div class="sect2">
+<h3 class="sect2">22.6.3. Case-Insensitive Sorts</h3>
+
+<p><a name="IXT-22-1555" /><a name="IXT-22-1556" />If you don't care about
+the difference between uppercase and lowercase letters, invoke
+<i class="command">sort</i> with the <span class="option">-f</span> (case-fold)
+option. This folds lowercase letters into uppercase. In other words,
+it treats all letters as uppercase.
+</p>
+
+</div>
+<a name="upt3-CHP-22-SECT-6.4" /><div class="sect2">
+<h3 class="sect2">22.6.4. Dictionary Order</h3>
+
+<p><a name="IXT-22-1557" /><a name="IXT-22-1558" />The <span class="option">-d</span> option tells
+<i class="command">sort</i> to ignore all characters except for letters,
+digits, and whitespace. In particular, <em class="emphasis">sort -d</em>
+ignores punctuation.
+</p>
+
+</div>
+<a name="upt3-CHP-22-SECT-6.5" /><div class="sect2">
+<h3 class="sect2">22.6.5. Month Order</h3>
+
+<p><a name="IXT-22-1559" /> <a name="IXT-22-1560" />The <span class="option">-M</span> option tells
+<i class="command">sort</i> to treat the first three nonblank characters
+of a field as a three-letter month abbreviation and to sort
+accordingly. That is, JAN comes before FEB, which comes before MAR.
+This option isn't available on all versions of Unix.
+</p>
+
+</div>
+<a name="upt3-CHP-22-SECT-6.6" /><div class="sect2">
+<h3 class="sect2">22.6.6. Reverse Sort</h3>
+
+<p><a name="IXT-22-1561" /> <a name="IXT-22-1562" />The <span class="option">-r</span> option tells
+<i class="command">sort</i> to
+"reverse" the order of the sort;
+i.e., Z comes before A, 9 comes before 1, and so on.
+You'll find that this option is really useful. For
+example, imagine you have a program running in the background that
+records the number of free blocks in the filesystem at midnight each
+night. Your log file might look like this:
+</p>
+
+<blockquote><pre class="code">Jan 1 2001:  108 free blocks
+Jan 2 2001:  308 free blocks
+Jan 3 2001: 1232 free blocks
+Jan 4 2001:   76 free blocks
+...</pre></blockquote>
+
+<p>The script below finds the smallest and largest number of free blocks
+in your log file:
+</p>
+<p><tt class="literal">head</tt> <a href="ch12_12.htm#upt3-CHP-12-SECT-12">Section 12.12</a></p>
+<blockquote><pre class="code">#!/bin/sh
+echo "Minimum free blocks"
+sort -t: +1nb  logfile | head -1
+
+echo "Maximum free blocks"
+sort -t: +1nbr logfile | head -1</pre></blockquote>
+
+<p>It's not profound, but it's an
+example of what you can do.<a name="IXTR3-1579" /> 
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch22_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch22_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">22.5. Alphabetic and Numeric Sorting</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">22.7. lensort: Sort Lines by Length</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

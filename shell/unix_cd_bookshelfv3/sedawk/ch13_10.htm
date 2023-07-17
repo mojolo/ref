@@ -1,0 +1,387 @@
+<html><head><title>m1--Simple Macro Processor (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="appa_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.10. m1--Simple Macro Processor</h2>
+
+<p><em class="emphasis">Contributed by Jon Bentley</em></p>
+
+<p>
+<a name="ch13.g" />
+The <b class="emphasis-bold">m1</b> program is a "little brother" to the <b class="emphasis-bold">m4</b> macro
+processor found on UNIX systems.
+It was originally published in the article
+<em class="citetitle">m1: A Mini Macro Processor</em>, in <em class="citetitle">Computer Language</em>, June 1990,
+Volume 7, Number 6, pages 47-61.
+This program was brought to my attention by
+Ozan Yigit.
+Jon Bentley kindly sent me his current version of the program, as
+well as an early draft of his article (I was having trouble getting a
+copy of the published one). A PostScript version of this paper is included
+with the example programs, available from O'Reilly's FTP server (see
+the Preface).
+I wrote these introductory notes, and the program notes below. [A.R.]</p>
+
+<p>A macro processor copies its input to its output, while
+performing several jobs. The tasks are:</p>
+
+<ol><li><p>Define and expand macros. Macros have two parts, a name and a body.
+All occurrences of
+a macro's name are replaced with the macro's body.</p></li><li><p>Include files.  Special include directives in a data file are replaced
+with the contents of the named file.  Includes can usually be nested,
+with one included file including another. Included files are processed
+for macros.</p></li><li><p>Conditional text inclusion and exclusion. Different parts of the text
+can be included in the final output, often based upon whether a
+macro is or isn't defined.</p></li><li><p>Depending on the macro processor, comment lines can appear that
+will be removed from the final output.</p></li></ol><p>If you're a C or C++ programmer, you're already familiar with the built-in
+preprocessor in those languages.
+UNIX systems have a general-purpose macro processor
+called <b class="emphasis-bold">m4</b>.  This is a powerful program, but somewhat difficult
+to master, since macro definitions are processed for expansion
+at definition time, instead of at expansion time. <b class="emphasis-bold">m1</b> is considerably
+simpler than <b class="emphasis-bold">m4</b>, making it much easier to learn and to use.</p>
+
+<p>Here is Jon's first cut at
+a very simple macro processor.
+All it does is define and expand macros.
+We can call it <b class="emphasis-bold">m0a</b>.
+In this and the following programs, the
+"at" symbol (@) distinguishes lines that are directives,
+and also indicates the presence of macros that should be expanded.</p>
+
+<blockquote><pre class="code">/^@define[ \t]/ {
+	name = $2
+	$1 = $2 = ""; sub(/^[ \t]+/, "")
+	symtab[name] = $0
+	next
+}
+{
+	for (i in symtab)
+		gsub("@" i "@", symtab[i])
+	print
+}</pre></blockquote>
+
+<p>This version looks for lines beginning with "@define." This keyword is
+$1 and the macro name is taken to be $2. The rest of the line becomes
+the body of the macro. The next input line is then fetched using <b class="emphasis-bold">next</b>.
+The second rule simply loops through all the defined macros, performing
+a global substitution of each macro with its body in the input line, and
+then printing the line.
+Think about the tradeoffs in this version of simplicity versus
+program execution time.</p>
+
+<p>The next version (<b class="emphasis-bold">m0b</b>) adds file inclusion:</p>
+
+<blockquote><pre class="code">function dofile(fname) {
+	while (getline &lt;fname &gt; 0) {
+		if (/^@define[ \t]/) {		# @define name value
+			name = $2
+			$1 = $2 = ""; sub(/^[ \t]+/, "")
+			symtab[name] = $0
+		} else if (/^@include[ \t]/)	# @include filename
+			dofile($2)
+		else {				# Anywhere in line @name@
+			for (i in symtab)
+				gsub("@" i "@", symtab[i])
+			print
+		}
+	}
+	close(fname)
+}
+BEGIN {
+	if (ARGC == 2)
+		dofile(ARGV[1])
+	else
+		dofile("/dev/stdin")
+}</pre></blockquote>
+
+<p>Note the way <b class="emphasis-bold">dofile()</b> is called recursively to handle nested
+include files.</p>
+
+<p>With all of that introduction out of the way, here is the full-blown
+<b class="emphasis-bold">m1</b> program.</p>
+
+<blockquote><pre class="code">#! /bin/awk -f
+# NAME
+#
+# m1
+#
+# USAGE
+#
+# awk -f m1.awk [file...]
+#
+# DESCRIPTION
+#
+# M1 copies its input file(s) to its output unchanged except as modified by
+# certain "macro expressions."  The following lines define macros for
+# subsequent processing:
+#
+#     @comment Any text
+#     @@                     same as @comment
+#     @define name value
+#     @default name value    set if name undefined
+#     @include filename
+#     @if varname            include subsequent text if varname != 0
+#     @unless varname        include subsequent text if varname == 0
+#     @fi                    terminate @if or @unless
+#     @ignore DELIM          ignore input until line that begins with DELIM
+#     @stderr stuff          send diagnostics to standard error
+#
+# A definition may extend across many lines by ending each line with
+# a backslash, thus quoting the following newline.
+#
+# Any occurrence of @name@ in the input is replaced in the output by
+# the corresponding value.
+#
+# @name at beginning of line is treated the same as @name@.
+#
+# BUGS
+#
+# M1 is three steps lower than m4.  You'll probably miss something
+# you have learned to expect.
+#
+# AUTHOR
+#
+# Jon L. Bentley, jlb@research.bell-labs.com
+#
+
+function error(s) {
+	print "m1 error: " s | "cat 1&gt;&amp;2"; exit 1
+}
+
+function dofile(fname,  savefile, savebuffer, newstring) {
+	if (fname in activefiles)
+		error("recursively reading file: " fname)
+	activefiles[fname] = 1
+	savefile = file; file = fname
+	savebuffer = buffer; buffer = ""
+	while (readline() != EOF) {
+		if (index($0, "@") == 0) {
+			print $0
+		} else if (/^@define[ \t]/) {
+			dodef()
+		} else if (/^@default[ \t]/) {
+			if (!($2 in symtab))
+				dodef()
+		} else if (/^@include[ \t]/) {
+			if (NF != 2) error("bad include line")
+			dofile(dosubs($2))
+		} else if (/^@if[ \t]/) {
+			if (NF != 2) error("bad if line")
+			if (!($2 in symtab) || symtab[$2] == 0)
+				gobble()
+		} else if (/^@unless[ \t]/) {
+			if (NF != 2) error("bad unless line")
+			if (($2 in symtab) &amp;&amp; symtab[$2] != 0)
+				gobble()
+		} else if (/^@fi([ \t]?|$)/) { # Could do error checking here
+		} else if (/^@stderr[ \t]?/) { 
+			print substr($0, 9) | "cat 1&gt;&amp;2"
+		} else if (/^@(comment|@)[ \t]?/) {
+		} else if (/^@ignore[ \t]/) { # Dump input until $2
+			delim = $2
+			l = length(delim)
+			while (readline() != EOF)
+				if (substr($0, 1, l) == delim)
+					break
+		} else {
+			newstring = dosubs($0)
+			if ($0 == newstring || index(newstring, "@") == 0)
+				print newstring
+			else
+				buffer = newstring "\n" buffer
+		}
+	}
+	close(fname)
+	delete activefiles[fname]
+	file = savefile
+	buffer = savebuffer
+}
+
+# Put next input line into global string "buffer"
+# Return "EOF" or "" (null string)
+
+function readline(  i, status) {
+	status = ""
+	if (buffer != "") {
+		i = index(buffer, "\n")
+		$0 = substr(buffer, 1, i-1)
+		buffer = substr(buffer, i+1)
+	} else {
+		# Hume: special case for non v10: if (file == "/dev/stdin")
+		if (getline &lt;file &lt;= 0)
+			status = EOF
+	}
+	# Hack: allow @Mname at start of line w/o closing @
+	if ($0 ~ /^@[A-Z][a-zA-Z0-9]*[ \t]*$/)
+		sub(/[ \t]*$/, "@")
+	return status
+}
+
+function gobble(  ifdepth) {
+	ifdepth = 1
+	while (readline() != EOF) {
+		if (/^@(if|unless)[ \t]/)
+			ifdepth++
+		if (/^@fi[ \t]?/ &amp;&amp; --ifdepth &lt;= 0)
+			break
+	}
+}
+
+function dosubs(s,  l, r, i, m) {
+	if (index(s, "@") == 0)
+		return s
+	l = ""	# Left of current pos; ready for output
+	r = s	# Right of current; unexamined at this time
+	while ((i = index(r, "@")) != 0) {
+		l = l substr(r, 1, i-1)
+		r = substr(r, i+1)	# Currently scanning @
+		i = index(r, "@")
+		if (i == 0) {
+			l = l "@"
+			break
+		}
+		m = substr(r, 1, i-1)
+		r = substr(r, i+1)
+		if (m in symtab) {
+			r = symtab[m] r
+		} else {
+			l = l "@" m
+			r = "@" r
+		}
+	}
+	return l r
+}
+
+function dodef(fname,  str, x) {
+	name = $2
+	sub(/^[ \t]*[^ \t]+[ \t]+[^ \t]+[ \t]*/, "")  # OLD BUG: last * was +
+	str = $0
+	while (str ~ /\\$/) {
+		if (readline() == EOF)
+			error("EOF inside definition")
+		x = $0
+		sub(/^[ \t]+/, "", x)
+		str = substr(str, 1, length(str)-1) "\n" x
+	}
+	symtab[name] = str
+}
+
+BEGIN {	EOF = "EOF"
+	if (ARGC == 1)
+		dofile("/dev/stdin")
+	else if (ARGC &gt;= 2) {
+		for (i = 1; i &lt; ARGC; i++)
+			dofile(ARGV[i])
+	} else
+		error("usage: m1 [fname...]")
+}</pre></blockquote>
+
+<a name="sedawk-ch-13-sect-0.0.0.10" /><div class="sect2">
+<h3 class="sect2">13.10.1. Program Notes for m1</h3>
+
+<p>The program is nicely modular, with an <b class="emphasis-bold">error()</b> function
+similar to the one presented in <a href="ch11_01.htm">Chapter 11, "A Flock of awks"</a>, and each task cleanly
+divided into separate functions.</p>
+
+<p>The main program occurs in the <b class="emphasis-bold">BEGIN</b> procedure at the bottom.
+It simply processes either standard input, if there are no arguments,
+or all of the files named on the command line.</p>
+
+<p>The high-level processing happens in the <b class="emphasis-bold">dofile()</b> function, which
+reads one line at a time, and decides what to do with each line. The <b class="emphasis-bold">activefiles</b> array keeps track of open files.
+The variable <b class="emphasis-bold">fname</b> indicates the current file to read data from.
+When an "@include" directive is seen, <b class="emphasis-bold">dofile()</b> simply calls itself
+recursively on the new file, as in <b class="emphasis-bold">m0b</b>.
+Interestingly, the included filename is first processed for macros.
+Read this function carefully--there are some nice tricks here.</p>
+
+<p>The <b class="emphasis-bold">readline()</b> function manages the "pushback." After expanding
+a macro, macro processors examine the newly created text for any additional
+macro names.  Only after all expanded text has been processed and
+sent to the output does the program get a fresh line of input.</p>
+
+<p>The <b class="emphasis-bold">dosubs()</b> function actually performs the macro substitution.
+It processes the line left-to-right, replacing macro names with their
+bodies. The rescanning of the new line is left to the higher-level
+logic that is jointly managed by <b class="emphasis-bold">readline()</b> and <b class="emphasis-bold">dofile()</b>.
+This version is considerably more efficient than the brute-force
+approach used in the <b class="emphasis-bold">m0</b> programs.</p>
+
+<p>Finally, the <b class="emphasis-bold">dodef()</b> function handles the defining of macros.
+It saves the macro name from $2, and then uses <b class="emphasis-bold">sub()</b> to remove
+the first two fields.
+The new value of $0 now contains just (the first line of) the macro body.
+The <em class="citetitle">Computer Language</em> article explains that <b class="emphasis-bold">sub()</b> is used
+on purpose, in order to preserve whitespace in the macro body.
+Simply assigning the empty string to $1 and $2 would rebuild the record,
+but with all occurrences of whitespace collapsed into single occurrences
+of the value of <b class="emphasis-bold">OFS</b> (a single blank).
+The function then proceeds to gather the rest of the macro body, indicated
+by lines that end with a "\".
+This is an additional improvement over <b class="emphasis-bold">m0</b>: macro bodies can be
+more than one line long.</p>
+
+<p>The rest of the program is concerned with conditional inclusion or
+exclusion of text; this part is straightforward. What's nice is that
+these conditionals can be nested inside each other.</p>
+
+<p><b class="emphasis-bold">m1</b> is a very nice start at a macro processor.  You might want to
+think about how you could expand upon it; for instance, by allowing
+conditionals to have an "@else" clause; processing the command line
+for macro definitions; "undefining" macros, and the other sorts of
+things that macro processors usually do.</p>
+
+<p>Some other extensions suggested by Jon Bentley are:</p>
+
+<ol><li><p>Add "@shell DELIM shell line here," which would read input lines
+up to "DELIM," and send the expanded output through a pipe to the
+given shell command.</p></li><li><p>Add commands "@longdef" and "@longend." These commands would define
+macros with long bodies, i.e., those that extend over more than one
+line, simplifying the logic in <b class="emphasis-bold">dodoef()</b>.</p></li><li><p>Add "@append MacName MoreText," like ".am" in <b class="emphasis-bold">troff</b>.
+This macro in <b class="emphasis-bold">troff</b> appends text to an already defined macro.
+In <b class="emphasis-bold">m1</b>, this would allow you to add on to the body of an
+already defined macro.</p></li><li><p>Avoid the V10 <em class="filename">/dev/stdin</em> special file.
+The Bell Labs UNIX systems<a href="#FOOTNOTE-90">[90]</a>
+have a special file actually named <em class="filename">/dev/stdin</em>,
+that gives you access to standard input.
+It occurs to me that the use of <b class="emphasis-bold">"-"</b> would do the trick, quite
+portably.  This is also not a real issue if you use gawk or the Bell
+Labs awk, which interpret the special file name <em class="filename">/dev/stdin</em>
+internally (see <a href="ch11_01.htm">Chapter 11</a>).</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-90" /><p> [90]And some other UNIX systems, as well.</p>
+
+</blockquote></li></ol><p>As a final note, Jon often makes use of awk in two of his
+books, <em class="citetitle">Programming Pearls</em>, and 
+<em class="citetitle">More Programming Pearls--Confessions of a Coder</em> (both published by Addison-Wesley).
+These books are both excellent reading.</p>
+</div>
+
+
+
+
+<a name="IXT-13-266396" />
+<a name="IXT-13-266397" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="appa_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.9. transpose--Perform a Matrix Transposition</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">A. Quick Reference for sed</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,184 @@
+<html><head><title>The Process Chain to Your Window (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.20. The Process Chain to Your Window</h2>
+
+<p><a name="upt3-IDXTERM-3677" /> <a name="upt3-IDXTERM-3678" />Almost <a name="upt3-IDXTERM-3679" /> <a name="upt3-IDXTERM-3680" /> <a name="upt3-IDXTERM-3681" /> <a name="upt3-IDXTERM-3682" />everything we
+cover in this book works as well from an old-style, full-screen
+terminal as it does from an terminal window (like
+<i class="command">xterm</i>) under the <b class="emphasis-bold">X Window
+System</b> (<a href="ch01_22.htm#upt3-CHP-1-SECT-22">Section 1.22</a>). Actually, a lot of
+it works on an old printing teletype, too! In all of those cases,
+you're interacting with a Unix shell. This article
+covers things you should know about using a shell from an X window.
+We'll talk specifically about the X11R6
+<i class="command">xterm</i> client, but this generally applies to any
+window with a shell inside of it -- like GNOME terminal. This is a
+guided tour, so it helps to be at a workstation or other X display.
+If you can't take the tour, please scan through and
+look for the points I make along the way.
+</p>
+
+<p>If you don't have an <i class="command">xterm</i> window
+open, open one (by clicking on an icon, choosing a menu entry, or
+however you usually do it). We'll call this the
+"first window." Find its <b class="emphasis-bold">tty</b> (<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>). Next, in
+this first window, <b class="emphasis-bold">set an environment
+variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) with a unique name
+and any value you want. You might call it
+<em class="emphasis">FAVCOLOR</em> and set the value to
+<em class="emphasis">purple</em>. Then, in that same window, type
+<tt class="literal">cd /tmp</tt> to change your current directory to
+<em class="emphasis">/tmp</em>. Finally, type <tt class="literal">xterm -rv
+-sb</tt> (with <em class="emphasis">no</em> <tt class="literal">&amp;</tt>
+after its name); this should open a second <i class="command">xterm</i>
+window. Here's what that first
+<i class="command">xterm</i> should look like (we'll
+show C shell syntax here):
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tty</b></tt>
+/dev/pts/1
+% <tt class="userinput"><b>setenv FAVCOLOR purple</b></tt>
+% <tt class="userinput"><b>cd /tmp</b></tt>
+% <tt class="userinput"><b>xterm -rv -sb</b></tt>
+<i class="lineannotation">   (cursor sits here; there's no shell prompt)</i></pre></blockquote>
+
+<p>When your new second <i class="command">xterm</i> pops open, it should be
+in reverse video (swapped foreground/background colors, the
+<span class="option">-rv</span> option) to make it easy to identify, with a
+scrollbar too. In it, type <tt class="literal">tty</tt> to get its
+<em class="emphasis">tty</em> number, which will be different from the
+previous <i class="command">xterm</i>'s. Run <b class="emphasis-bold">env or printenv</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>), and you should see the special environment
+variable (like <em class="emphasis">FAVCOLOR</em>) that you set. Type
+<tt class="literal">pwd</tt>; the current directory should be
+<em class="emphasis">/tmp</em>.<a href="#FOOTNOTE-77">[77]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-77" /><p> [77]If your <b class="emphasis-bold">setup files assume you're in your home
+directory</b> (<a href="ch03_07.htm#upt3-CHP-3-SECT-7">Section 3.7</a>), you may have
+some problems.</p> </blockquote>
+
+<p>If you've managed to follow this twisty series of
+steps, you've started a chain of <b class="emphasis-bold">processes</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>).
+</p>
+
+<p>You can see that chain of processes by typing the command
+<a name="IXT-24-5430" /><b class="emphasis-bold">ps aux or ps
+-ef</b> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>). You should get lines
+something like these:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tty</b></tt>
+/dev/pts/3
+% <tt class="userinput"><b>ps -ef</b></tt>
+UID        PID  PPID  C STIME TTY          TIME CMD
+jpeek      675     1  0 May13 ?        00:00:14 xterm
+jpeek      681   675  0 May13 pts/1    00:00:00 zsh
+jpeek    14850   681  0 15:58 pts/1    00:00:00 xterm -rv -sb
+jpeek    14852 14850  0 15:58 pts/3    00:00:00 zsh
+jpeek    14992 14852  0 16:07 pts/3    00:00:00 ps -ef</pre></blockquote>
+
+<p>This is the chain of processes that led to the second window.
+Let's start from the bottom and work up. From the
+<tt class="literal">ps -ef</tt> command,<a href="#FOOTNOTE-78">[78]</a> you'll see that the
+<i class="command">ps</i> command itself had PID (process ID) 14992; its
+parent's PID (PPID) was 14852. So the process that
+started the <i class="command">ps</i> process is the shell running in
+that window: in my case, a Z shell, <tt class="literal">zsh</tt>, with PID
+14852. Notice that both of these processes are running on the same
+<b class="emphasis-bold">tty</b> (<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>)
+named <tt class="literal">pts/3</tt>. That's a way to find
+all the processes in a particular window: check the tty name. This
+<i class="command">zsh</i> is the shell running in this particular
+<i class="command">xterm</i>. When you exit the shell (by typing CTRL-d
+or <i class="command">exit</i>), the window will close too -- but
+don't try that yet! Instead, find the parent of the
+shell; it's the <i class="command">xterm</i> process,
+which is running on -- are you surprised? -- another tty,
+<tt class="literal">pts/1</tt>. This makes sense, because you started
+<em class="emphasis">xterm</em> from another window, the first window.
+There's a shell running in the first window too;
+it's the <i class="command">zsh</i> with PID 681. The
+parent of the first window's shell is, yes, another
+<i class="command">xterm</i>, PID 675. And its parent has PID 1; this is
+<b class="emphasis-bold">init</b> (<a href="ch24_02.htm#upt3-CHP-24-SECT-2">Section 24.2</a>),
+the "grandparent" of all processes
+on your system.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-78" /><p> [78]Note that, if your
+system's process ID numbers have
+"recycled" and started over from 1,
+the <i class="command">ps</i> command may not have the highest
+number.</p> </blockquote>
+
+<p>Your window system may not work quite this way. The parent of the
+top-level <i class="command">xterm</i> might not be
+<i class="command">init</i>. Also, an <i class="command">xterm</i> could be
+owned by <em class="emphasis">root</em> instead of by you. Still, you
+should have a "chain" of processes,
+something like the one I described, on your system.
+</p>
+
+<p>Why did we go through all this? One reason is so
+you'll know how to track the processes that lead to
+an <i class="command">xterm</i> -- and to know what to look for if you
+have to <b class="emphasis-bold">kill</b>
+(<a name="IXT-24-5431" /><a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>) a hung window or a process in a window.
+It's also to show that the environment from a parent
+window (here, the first window) -- the current directory,
+environment variables, and so on -- is passed to the child window
+(here, the second window). Finally, it's to show
+what happens when you <a name="IXT-24-5432" /><a name="IXT-24-5433" /><a name="IXT-24-5434" />close a window by exiting the shell:
+the shell terminates, so its parent <i class="command">xterm</i> process
+terminates too.
+</p>
+
+<p>So what happens to a shell running in a window if you close the
+window by clicking the "X" box on
+the window frame or by choosing the <em class="emphasis">close</em> or
+<em class="emphasis">destroy</em> commands in the window manager? The
+<i class="command">xterm</i> gets a <b class="emphasis-bold">signal</b> (<a href="ch24_10.htm#upt3-CHP-24-SECT-10">Section 24.10</a>), and the
+system hopes that it dies. But it may <em class="emphasis">not</em> die,
+and the process may stay around. Instead of trusting the window
+manager to kill a window and the processes in it, I tend to use
+<i class="command">ps</i> so I know for sure that all the processes are
+gone. Knowing the stuff we've looked at here lets me
+identify a window and its processes.
+</p>
+
+<p>But let's not kill things! Instead, in the second
+window, type <i class="command">exit</i> at the prompt. The window should
+go away. And, in the first window, you should have a new prompt. (If
+you had started the second <i class="command">xterm</i> in the <b class="emphasis-bold">background</b> (<a href="ch23_02.htm#upt3-CHP-23-SECT-2">Section 23.2</a>), you
+could have kept working in the first window while the second window
+ran, too. <a name="IXT-24-5435" /><a name="IXT-24-5436" /><a name="IXT-24-5437" /><a name="IXT-24-5438" />But watch out for the
+<i class="command">zsh</i> and <i class="command">ksh</i> options named
+<em class="emphasis">bg_nice</em> and <em class="emphasis">bgnice</em>,
+respectively, which run background commands at lower priority. You
+probably don't want your new windows to run at low
+priority, so be sure that option isn't <a name="IXTR3-5473" /> <a name="IXTR3-5474" />set.)<a name="IXTR3-5475" /> <a name="IXTR3-5476" /> <a name="IXTR3-5477" /> <a name="IXTR3-5478" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.19. Why You Can't Kill a Zombie</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.21. Terminal Windows Without Shells</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

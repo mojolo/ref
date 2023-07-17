@@ -1,0 +1,268 @@
+<html><head><title>Programming Assistance (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.9. Programming Assistance</h2>
+
+<p>
+<a name="ch10.prog1" />
+<a name="ch10.prog2" />
+<a name="ch10.prog3" />
+<em class="emphasis">elvis</em>' programming assistance capabilities are described in this section.</p>
+
+<a name="vi6-ch-10-sect-9.1" /><div class="sect2">
+<h3 class="sect2">10.9.1. Edit-Compile Speedup</h3>
+
+<p>
+<a name="IXT-10-281546" />
+<a name="IXT-10-281547" />
+<a name="IXT-10-281548" />
+<em class="emphasis">elvis</em> provides commands that make it easier
+to stay within the editor while working on a program. You can recompile
+a single file, rebuild your entire program, and work through compiler
+errors one at a time.
+The <em class="emphasis">elvis</em> commands are summarized in
+<a href="ch10_09.htm#vi6-ch-10-tab-10">Table 10.10</a>.</p>
+
+<a name="vi6-ch-10-tab-10" /><h4 class="objtitle">Table 10.10. elvis Program Development Commands</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Command</th>
+<th>Option</th>
+<th>Function</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">cc</tt>[<tt class="literal">!</tt>] [<em class="replaceable"><tt>args</tt></em>]</td>
+<td><tt class="literal">ccprg</tt></td>
+<td><p><em class="emphasis" />Run the C compiler. Useful for
+<a name="IXT-10-281549" />
+<a name="IXT-10-281550" />
+recompiling an individual file.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">mak</tt>[<tt class="literal">e</tt>][<tt class="literal">!</tt>] [<em class="replaceable"><tt>args</tt></em>]</td>
+<td><tt class="literal">makeprg</tt></td>
+<td><p><em class="emphasis" />Recompile everything that
+<a name="IXT-10-281551" />
+<a name="IXT-10-281552" />
+needs recompiling (usually via <tt class="literal">make</tt>(1)).</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">er</tt>[<tt class="literal">rlist</tt>][<tt class="literal">!</tt>] [<em class="replaceable"><tt>file</tt></em>]</td>
+<td>&nbsp;</td>
+<td><p><em class="emphasis" />Move to the next error's
+<a name="IXT-10-281553" />
+location.</p></td>
+</tr>
+
+
+</table><p>
+
+<p>The <tt class="literal">cc</tt> command recompiles an individual source
+file. You run it from the colon command line. For
+example, if you are editing the file <em class="filename">hello.c</em>,
+and you type <tt class="literal">:cc</tt>, <em class="emphasis">elvis</em> will
+compile <em class="filename">hello.c</em> for you.</p>
+
+<p>If you supply additional arguments to the <tt class="literal">:cc</tt>
+command, those arguments will be passed on to the C compiler.
+In this case, you need to supply <em class="emphasis">all</em> the
+arguments, including the filename.</p>
+
+<p>The <tt class="literal">:cc</tt> command works by executing
+the text of the <tt class="literal">ccprg</tt> option.
+The default value is <tt class="literal">"cc ($1?$1:$2)"</tt>.
+<em class="emphasis">elvis</em> sets <tt class="literal">$2</tt> to the name
+of the current source file, and <tt class="literal">$1</tt> to the
+arguments you give to the <tt class="literal">:cc</tt> command.
+The value of <tt class="literal">ccprg</tt> thus uses your arguments
+if they are present; otherwise, it just passes the current file's
+name to the system <tt class="literal">cc</tt> command.
+(You can, of course, change <tt class="literal">ccprg</tt> to suit your taste.)</p>
+
+<p>Similarly, the <tt class="literal">:make</tt> command is intended to
+recompile everything that needs recompiling. It does this by executing
+the contents of the <tt class="literal">makeprg</tt> option, which
+by default is <tt class="literal">"make $1"</tt>.
+Thus, you could type <tt class="literal">:make hello</tt> to make just
+the <em class="emphasis">hello</em> program, or just <tt class="literal">:make</tt>
+to make everything.</p>
+
+<p><em class="emphasis">elvis</em> captures the output of the
+compile or <em class="emphasis">make</em>, and looks for things that look
+like filenames and line numbers. When it finds likely candidates, it
+treats them as such, and moves to the location of the first error.
+The <tt class="literal">:errlist</tt> command moves to each successive
+error location, in turn.
+<em class="emphasis">elvis</em> displays the error message text in the
+status line as you move to each location.</p>
+
+<p>If you supply a <em class="emphasis">filename</em> argument to
+<tt class="literal">:errlist</tt>, <em class="emphasis">elvis</em> will load
+a fresh batch of error messages from that file, and move to the
+location of the first error.</p>
+
+<p>The <em class="emphasis">vi</em> mode command <tt class="literal">*</tt> (asterisk)
+is equivalent to <tt class="literal">:errlist</tt>. This is more convenient
+to use when you have a lot of errors to step through.</p>
+
+<p>Finally, one really nice feature is that <em class="emphasis">elvis</em>
+compensates for changes in the file.
+As you add or delete lines, <em class="emphasis">elvis</em> keeps track,
+so that when you go to the next error, you end up on the correct
+line, which is not necessarily the one
+with the same absolute line number as
+in the compiler's error message.
+</p>
+</div>
+
+
+
+
+<a name="vi6-ch-10-sect-9.2" /><div class="sect2">
+<h3 class="sect2">10.9.2. Syntax Highlighting</h3>
+
+<p>
+<a name="IXT-10-281554" />
+<a name="IXT-10-281555" />
+<a name="IXT-10-281556" />
+<a name="IXT-10-281557" />
+<a name="IXT-10-281558" />
+<a name="IXT-10-281559" />
+<a name="IXT-10-281560" />
+To cause <em class="emphasis">elvis</em> to do syntax highlighting, use
+the <tt class="literal">:display syntax</tt> command.
+This is a per-window command.
+(The other <em class="emphasis">elvis</em> display modes are
+described in
+<a href="ch10_10.htm#vi6-ch-10-sect-10.1">Section 10.10.1</a>.)
+<em class="emphasis">elvis</em> displays text in up to six different fonts:
+<em class="emphasis">normal</em>,
+<em class="emphasis">bold</em>,
+<em class="emphasis">italic</em>,
+<em class="emphasis">underlined</em>,
+<em class="emphasis">emphasized</em>,
+and
+<em class="emphasis">fixed</em>.
+(These can
+be abbreviated to a single letter.) The syntax display modes use
+the following options to associate fonts with various parts of the syntax:</p>
+
+<ul><li><p><tt class="literal">commentfont</tt>: The font (<em class="emphasis">normal</em>,
+<a name="IXT-10-281561" />
+<em class="emphasis">italic</em>, etc.) to use for programming language
+comments</p></li><li><p><tt class="literal">functionfont</tt>: The font to use for identifiers
+that are function names
+<a name="IXT-10-281562" /></p></li><li><p><tt class="literal">keywordfont</tt>: The font to use for programming language
+keywords
+<a name="IXT-10-281563" /></p></li><li><p><tt class="literal">prepfont</tt>: The font to use for C and C++
+preprocessor directives
+<a name="IXT-10-281564" /></p></li><li><p><tt class="literal">stringfont</tt>: The font to use for string constants
+<a name="IXT-10-281565" />
+(such as <tt class="literal">"Don't panic!"</tt> in Awk)</p></li><li><p><tt class="literal">variablefont</tt>: The font to use for variables,
+<a name="IXT-10-281566" />
+fields, and so on</p></li><li><p><tt class="literal">otherfont</tt>: The font to use for things that don't
+<a name="IXT-10-281567" />
+fall into the other categories but that should not be displayed
+in the normal font (e.g., type names defined with the C
+<tt class="literal">typedef</tt> keyword)</p></li></ul><p>The description of each language's comments, functions, keywords,
+etc., is stored in the <em class="filename">elvis.syn</em>
+file. This file comes with a number of specifications in it already.
+As an example, here is the syntax specification for Awk:</p>
+
+<?troff-ps-indent 0?><blockquote><pre class="code"># Awk.  This is actually for Thompson Automation's AWK compiler, which is
+# somewhat beefier than the standard AWK interpreter.
+language tawk awk
+extension .awk
+keyword BEGIN BEGINFILE END ENDFILE INIT break continue do else for function
+keyword global if in local next return while
+comment #
+function (
+string "
+regexp /
+useregexp (,~
+other allcaps</pre></blockquote>
+
+<?troff-ps-indent .25i?><p>The format is mostly self-explanatory, and is fully
+documented in the <em class="emphasis">elvis</em> online documentation.</p>
+
+<p>The reason <em class="emphasis">elvis</em> associates fonts with different
+parts of a file's syntax is its ability to print files as they're
+shown on the screen (see the discussion of the <tt class="literal">:lpr</tt>
+command in
+<a href="ch10_10.htm#vi6-ch-10-sect-10.1">Section 10.10.1</a>).</p>
+
+<p>In addition to specifying the font to use for each kind of item,
+you can associate a color with each kind of font (<em class="emphasis">normal</em>,
+<em class="emphasis">italic</em>, and so on).
+This is done with the <tt class="literal">:color</tt> command.</p>
+
+<p>On a non-bitmapped display such as the Linux console, all of the
+fonts map into the one used by the console driver.
+This makes it rather difficult to distinguish <em class="emphasis">normal</em>
+from <em class="emphasis">italic</em>, for example.
+However, on some displays (such as the Linux console), you
+can still change the color of the different fonts.
+If you have a Linux system with <em class="emphasis">elvis</em>, use it
+to edit a convenient C source file, and then issue the following
+commands:</p>
+
+<blockquote><pre class="code">:display syntax
+:color normal white
+:color bold yellow
+:color emphasized green
+:color italic cyan
+:color fixed red</pre></blockquote>
+
+<p>Your screen will change to highlight C keywords in yellow,
+comments in 
+
+ light blue,
+preprocessor directives in green,
+and character and string constants in red.
+We regret that we can't reproduce the effect here in print. <img src="figs/ct.smiley.gif" alt="Figure " /></p>
+
+<p>In <em class="emphasis">elvis</em>, the syntax colors are per-window
+attributes. You can change the color for the italic font in one
+window, and it will not affect the color for the italic font in
+another window. This is true even if both windows are showing
+the same file.</p>
+
+<p>Syntax coloring makes program editing much more interesting
+and lively. But you have to be careful in your choice of colors!</p>
+</div>
+
+
+
+
+<a name="IXT-10-281568" />
+<a name="IXT-10-281569" />
+<a name="IXT-10-281570" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.8. Improved Editing Facilities</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.10. Interesting Features</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,193 @@
+<html><head><title>Build Strings with { } (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch28_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">28.4. Build Strings with { }</h2>
+
+<p><a name="upt3-IDXTERM-4167" /> <a name="upt3-IDXTERM-4168" /> <a name="upt3-IDXTERM-4169" /> <a name="upt3-IDXTERM-4170" />I've been finding
+more and more uses for the <tt class="literal">{}</tt> pattern-expansion
+characters in <i class="command">csh</i><a name="IXT-28-4550" /><a name="IXT-28-4551" /> <a name="IXT-28-4552" />,
+<i class="command">tcsh</i>, <i class="command">zsh</i>, and
+<i class="command">bash</i><a name="IXT-28-4553" />. They're similar
+to <b class="emphasis-bold">*, ?, and [ ]</b> (<a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a>), but they don't match
+filenames the way that <tt class="literal">*</tt>, <tt class="literal">?</tt>,
+and <tt class="literal">[ ]</tt> do. You can give them arbitrary text (not
+just filenames) to expand -- that
+"expand-anything" ability is what
+makes them so useful.
+</p>
+
+<p>Here are some examples to get you thinking:</p>
+
+<ul><li>
+<p>To fix a typo in a filename (change <em class="filename">fixbold5.c</em>
+<em class="filename">fixbold6.c</em>):</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>mv fixbold{5,6}.c</b></tt></pre></blockquote>
+<p>To see what the shell will do with <tt class="literal">{}</tt>, add
+<b class="emphasis-bold">echo</b> (<a href="ch27_05.htm#upt3-CHP-27-SECT-5">Section 27.5</a>)
+before the <i class="command">mv</i>:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo mv fixbold{5,6}.c</b></tt>
+mv fixbold5.c fixbold6.c</pre></blockquote>
+</li>
+<li>
+<p>To copy <em class="filename">filename</em> to
+<em class="filename">filename.bak</em> without retyping
+<em class="filename">filename</em>:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cp filename{,.bak}</b></tt></pre></blockquote>
+</li>
+<li>
+<p><a name="IXT-28-4554" />To print files from other directory(s)
+without retyping the whole pathname:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>lpr /usr3/hannah/training/{ed,vi,mail}/lab.{ms,out}</b></tt></pre></blockquote>
+<p>That would give <b class="emphasis-bold">lpr</b> (<a href="ch45_02.htm#upt3-CHP-45-SECT-2">Section 45.2</a>) all of these files:
+</p>
+<blockquote><pre class="code">/usr3/hannah/training/ed/lab.ms
+/usr3/hannah/training/ed/lab.out
+/usr3/hannah/training/vi/lab.ms
+/usr3/hannah/training/vi/lab.out
+/usr3/hannah/training/mail/lab.ms
+/usr3/hannah/training/mail/lab.out</pre></blockquote>
+
+<p>...in one fell swoop!</p>
+</li><li>
+<p>To edit ten new files that don't exist yet:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>vi /usr/foo/file{a,b,c,d,e,f,g,h,i,j}</b></tt></pre></blockquote>
+<p>That would make <em class="filename">/usr/foo/filea</em>,
+<em class="filename">/usr/foo/fileb</em>, ...
+<em class="filename">/usr/foo/filej</em>. Because the files
+don't exist before the command starts, the wildcard
+<tt class="literal">vi</tt> <tt class="literal">/usr/foo/file[a-j]</tt> <b class="emphasis-bold">would not work</b> (<a href="ch28_03.htm#upt3-CHP-28-SECT-3">Section 28.3</a>).
+</p>
+</li><li>
+<p>An easy way to step through three-digit numbers 000, 001, ..., 009,
+010, 011, ..., 099, 100, 101, ... 299 in the C shell is:
+</p>
+<p><tt class="literal">foreach</tt> <a href="ch28_09.htm#upt3-CHP-28-SECT-9">Section 28.9</a></p>
+<blockquote><pre class="code">foreach n ({0,1,2}{0,1,2,3,4,5,6,7,8,9}{0,1,2,3,4,5,6,7,8,9})
+   ...<i class="lineannotation">Do whatever with the number $n</i>...
+end</pre></blockquote>
+<p>Yes, <i class="command">csh</i> also has built-in arithmetic, but its
+<tt class="literal">@</tt> operator <a name="IXT-28-4555" />can't make numbers
+with leading zeros. This nice trick shows that the
+<tt class="literal">{}</tt> operators are good for more than just
+filenames.
+</p>
+</li><li>
+<p>In <i class="command">zsh</i>, <tt class="literal">{}</tt> also understands
+<tt class="literal">..</tt><a name="IXT-28-4556" /><a name="IXT-28-4557" /> as an integer-range operator.
+So you could generate the 300 numbers in the previous example with
+<tt class="literal">{000..299}</tt>. The leading <tt class="literal">00</tt>
+tells <i class="command">zsh</i> to pad all output numbers to three
+digits with leading zeros.
+</p>
+
+<p>If you give the range in reverse order, like
+<tt class="literal">{299..0}</tt>, <i class="command">zsh</i> will output the
+integers in descending order: 299, 298, and so on, down to 1 and 0.
+</p>
+</li><li>
+<p><a name="IXT-28-4558" />To send a <b class="emphasis-bold">mail</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) message to
+multiple recipients where a part of each email address is repeated:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>mail -s "Link to me" webmaster@{foo,bar,baz}.com &lt; msgfile</b></tt></pre></blockquote>
+</li>
+<li>
+<p><a name="IXT-28-4559" />If you're using a
+graphical email program (not the command-line <i class="command">mail</i>
+program shown above), and you're sending an email
+message to lots of people at the same host, it can be a pain to type
+the same hostname over and over in the
+"To:" line. Let the
+shell's <tt class="literal">{}</tt> operators do the dirty
+work! Use <i class="command">echo</i> to output the addresses. (Note the
+comma (,) after each address.) Then copy all of them -- except the
+final comma -- with your mouse, and paste them into the GUI mail
+program:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo {jane,joe,jill,john,jean}@foo.org,</b></tt>
+jane@foo.org, joe@foo.org, jill@foo.org, john@foo.org, jean@foo.org,</pre></blockquote>
+</li>
+<li>
+<p><a name="IXT-28-4560" />To
+create sets of subdirectories:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>mkdir man</b></tt>
+% <tt class="userinput"><b>mkdir man/{man,cat}{1,2,3,4,5,6,7,8}</b></tt>
+% <tt class="userinput"><b>ls -F man</b></tt>
+cat1/   cat3/   cat5/   cat7/   man1/   man3/   man5/   man7/
+cat2/   cat4/   cat6/   cat8/   man2/   man4/   man6/   man8/</pre></blockquote>
+</li>
+<li>
+<p>Here's how to
+<a name="IXT-28-4561" /> <a name="IXT-28-4562" /><a name="IXT-28-4563" />copy the remote files
+<em class="filename">file1.c</em>, <em class="filename">file12.c</em>,
+<em class="filename">file45.c</em>, and <em class="filename">file77.c</em> from
+the subdirectory <em class="filename">foo</em> on the remote host
+<em class="emphasis">remulac</em> to the local system. Your local shell
+expands the strings (into <tt class="literal">remulac:foo/file1.c</tt>,
+<tt class="literal">remulac:foo/file12.c</tt>, etc.) and passes them to
+<b class="emphasis-bold">scp</b> (<a href="ch29_14.htm#upt3-CHP-29-SECT-14">Section 29.14</a>): 
+</p>
+<p><tt class="literal">.</tt> <a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a></p>
+<blockquote><pre class="code">% <tt class="userinput"><b>scp remulac:foo/file{1,12,45,77}.c .</b></tt></pre></blockquote>
+</li>
+
+<li>
+<p><a name="IXT-28-4564" /><a name="IXT-28-4565" /><a name="IXT-28-4566" />Here are two ways to
+print 10 copies of the file <em class="filename">project_report</em> if
+your <b class="emphasis-bold">lpr</b> (<a name="IXT-28-4567" /><a href="ch45_02.htm#upt3-CHP-45-SECT-2">Section 45.2</a>) command
+doesn't have a <span class="option">-#10</span> option. We
+showed the first way in the first two editions of this book. Dimi
+Shahbaz sent us the second one: 9 commas give 10 filenames. (Thanks,
+Dimi!) Both of them work on all the shells I tried:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>lpr project_repor{t,t,t,t,t,t,t,t,t,t}</b></tt>
+% <tt class="userinput"><b>lpr project_report{,,,,,,,,,}</b></tt></pre></blockquote>
+<p>Of course, this doesn't just work for
+<i class="command">lpr</i> or filenames. Remember that the shell expands
+the list of strings, so you can use these tricks anywhere you use
+<tt class="literal">{}</tt>.
+</p>
+</li></ul>
+<p>In <i class="command">bash</i>, the
+<i class="command">complete-into-braces</i> editor command (which is
+bound to the <tt class="literal">M-{</tt> key sequence by default in Emacs
+mode) expands a string into a list of matching filenames in braces.
+For example:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls pr*</b></tt>
+prog1.c   prog2.c   program1.c   program2.c
+$ <tt class="userinput"><b>cc pr </b></tt>META{
+$ cc pr{og1.c,og2.c,ogram1.c,orgram2.c}</pre></blockquote>
+
+<p>Then you can edit the brace expression.</p>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-4740" /> <a name="IXTR3-4741" /> <a name="IXTR3-4742" /> <a name="IXTR3-4743" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch28_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">28.3. Use Wildcards to Create Files?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">28.5. String Editing (Colon) Operators</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

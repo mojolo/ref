@@ -1,0 +1,2267 @@
+<html><head><title>String Operators (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.5. String Operators</h2>
+
+<p>
+
+<a name="korn2-IDXTERM-801" />
+The curly-brace syntax allows for the shell's <em class="emphasis">string operators</em>.
+String operators allow you to manipulate values of
+variables in various useful ways without having to write full-blown
+programs or resort to external Unix utilities.
+You can do a lot with string-handling operators even if
+you haven't yet mastered the programming features
+we'll see in later chapters.
+</p>
+
+<p>In particular, string operators let you
+do the following:
+</p>
+
+<ul>
+
+<li><p>
+Ensure that variables exist (i.e., are defined and have non-null values)
+</p></li>
+
+<li><p>
+Set default values for variables
+</p></li>
+
+<li><p>
+Catch errors that result from variables not being set
+</p></li>
+
+<li><p>
+Remove portions of variables' values that match patterns
+</p></li>
+</ul>
+<a name="korn2-CHP-4-SECT-5.1" /><div class="sect2">
+<h3 class="sect2">4.5.1. Syntax of String Operators</h3>
+
+<p>
+<a name="korn2-IDXTERM-802" />
+The basic idea behind the syntax of string operators
+is that special characters that denote operations are inserted
+between the variable's name and the right curly brace.
+Any argument that the operator may need is inserted to the operator's right.
+</p>
+
+<p>
+The first group of string-handling operators tests
+for the existence of variables and allows substitutions of
+default values under certain conditions.  These
+are listed in
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-2">Table 4-2</a>.
+</p>
+
+<a name="korn2-CHP-4-TABLE-2" /><h4 class="objtitle">Table 4-2. Substitution operators</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Operator</th>
+<th>Substitution</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">${</tt><em class="replaceable"><tt>varname</em><tt class="literal">:-</tt><em class="replaceable">word</tt></em><tt class="literal">}</tt></td>
+<td><p>
+If <em class="emphasis">varname</em> exists and isn't null, return its value;
+otherwise return <em class="emphasis">word</em>.
+</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Purpose</b>:</td>
+<td><p>
+Returning a default value if the variable is undefined.
+</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Example</b>:</td>
+<td><p>
+<tt class="literal">${count:-0}</tt> evaluates to 0 if
+<tt class="literal">count</tt> is undefined.
+</p></td>
+</tr>
+
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td></tr>
+
+<tr>
+<td><tt class="literal">${</tt><em class="replaceable"><tt>varname</em><tt class="literal">:=</tt><em class="replaceable">word</tt></em><tt class="literal">}</tt></td>
+<td><p>
+If <em class="emphasis">varname</em> exists and isn't null, return its value;
+otherwise set it to <em class="emphasis">word</em> and then return its value.<a href="#FOOTNOTE-55">[55]</a>
+</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Purpose</b>:</td>
+<td><p>
+Setting a variable to a default value if it is undefined.
+</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Example</b>:</td>
+<td><p>
+<tt class="literal">${count:=0}</tt> sets <tt class="literal">count</tt> to 0 if it is undefined.
+</p></td>
+</tr>
+
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td></tr>
+
+<tr>
+<td><tt class="literal">${</tt><em class="replaceable"><tt>varname</em><tt class="literal">:?</tt><em class="replaceable">message</tt></em><tt class="literal">}</tt></td>
+<td><p>
+If <em class="emphasis">varname</em> exists and isn't null, return its value;
+otherwise print <em class="replaceable"><tt>varname</tt></em><tt class="literal">:</tt>
+<em class="replaceable"><tt>message</tt></em>,
+and abort the current command or script.
+Omitting <em class="emphasis">message</em> produces the default message
+<tt class="literal">parameter null or not set</tt>.
+Note, however, that interactive shells do not abort.
+</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Purpose</b>:</td>
+<td><p>
+Catching errors that result from variables being undefined.
+</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Example</b>:</td>
+<td><p>
+<tt class="literal">${count:?"undefined!"}</tt>
+prints <tt class="literal">count: undefined!</tt>
+and exits if <tt class="literal">count</tt> is undefined.
+</p></td>
+</tr>
+
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td></tr>
+
+<tr>
+<td><tt class="literal">${</tt><em class="replaceable"><tt>varname</em><tt class="literal">:+</tt><em class="replaceable">word</tt></em><tt class="literal">}</tt></td>
+<td><p>
+If <em class="emphasis">varname</em> exists and isn't null,
+return <em class="emphasis">word</em>;
+otherwise return null.
+</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Purpose</b>:</td>
+<td><p>
+Testing for the existence of a variable.
+</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Example</b>:</td>
+<td><p>
+<tt class="literal">${count:+1}</tt> returns 1 (which could mean
+"true") if <tt class="literal">count</tt> is defined.
+</p></td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-55" /><p> [55]
+<a name="IXT-4-287492" />
+<a name="IXT-4-287493" />
+<a name="IXT-4-287494" />
+Pascal, Modula, and Ada programmers may find it helpful to recognize the
+similarity of this to the assignment operators in those languages.
+</p>
+</blockquote>
+
+<p>
+<a name="korn2-IDXTERM-806" />
+<a name="korn2-IDXTERM-807" />
+
+The colon (<tt class="literal">:</tt>) in each of these operators is actually optional.
+If the colon is omitted, then change "exists and isn't null"
+to "exists" in each definition, i.e., the
+operator tests for existence only.
+
+</p>
+
+<p>
+The first two of these operators are ideal for setting defaults for
+command-line arguments in case the user omits them.  We'll actually use
+all four in
+<a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-1">Task 4-1</a>,
+which is our first programming task.
+<a name="IXTR3-173" />
+</p>
+
+<a name="korn2-CHP-4-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 4-1</h4>
+
+<p>
+<a name="IXT-4-287495" />
+
+You have a large album collection, and you want to write some
+software to keep track of it.  Assume that you have a file of data on
+how many albums you have by each artist.  Lines in the file look
+like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+14	Bach, J.S.
+1	Balachander, S.
+21	Beatles
+6	Blakey, Art
+</pre></blockquote>
+</p>
+
+<p>
+Write a program that prints the <em class="emphasis">N</em> highest lines,
+i.e., the <em class="emphasis">N</em> artists
+by whom you have the most albums.  The default for <em class="emphasis">N</em> should be 10.
+The program should take one argument for the name of the input file
+and an optional second argument for how many lines to print.
+</p>
+
+</td></tr></table><p></blockquote>
+
+<p>
+By far the best approach to this type of script is to
+use built-in Unix utilities, combining them with I/O redirectors
+and pipes.  This is the classic "building-block" philosophy
+of Unix that is another reason for its great popularity with
+programmers.  The building-block technique lets us write a first
+version of the script that is only one line long:
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+sort -nr "$1" | head -${2:-10}
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-4-287496" />
+<a name="IXT-4-287497" />
+
+
+Here is how this works:
+the <em class="emphasis">sort</em>(1) program sorts the data in the file whose name
+is given as the first argument (<tt class="literal">$1</tt>).
+(The double quotes allow for spaces or other unusual characters in file names, and also
+prevent wildcard expansion.)
+The <em class="emphasis">-n</em> option tells <em class="emphasis">sort</em>
+to interpret the first word on each line as a number
+(instead of as a character string);
+the <em class="emphasis">-r</em> tells it to reverse the comparisons, so as to sort in
+descending order.
+</p>
+
+<p>
+The output
+of <em class="emphasis">sort</em> is piped into the <em class="emphasis">head</em>(1) utility,
+which, when
+given the argument -<em class="emphasis">N</em>,
+prints the first <em class="emphasis">N</em> lines of its input on
+the standard output.  The expression <tt class="literal">-${2:-10}</tt> evaluates to a dash
+(<tt class="literal">-</tt>)
+followed by the second argument, if it is given, or to <tt class="literal">10</tt> if it's not;
+notice that the variable in this expression is <tt class="literal">2</tt>, which is
+the second positional parameter.
+</p>
+
+<p>
+Assume the script we want to write is called <em class="emphasis">highest</em>.
+Then if the user types
+<tt class="literal">highest myfile</tt>, the line that actually runs is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+sort -nr myfile | head -10
+</pre></blockquote>
+</p>
+
+<p>
+Or if the user types <tt class="literal">highest myfile 22</tt>, the line that runs is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+sort -nr myfile | head -22
+</pre></blockquote>
+</p>
+
+<p>
+Make sure you understand how the <tt class="literal">:-</tt> string operator provides
+a default value.
+</p>
+
+<p>
+This is a perfectly good, runnable script -- but it has a few
+problems.  First, its one line is a bit cryptic.  While this
+isn't much of a problem for such a tiny script, it's not
+wise to write long, elaborate scripts in this manner.  A few minor
+changes makes the code more readable.
+</p>
+
+<p>
+<a name="IXT-4-287498" />
+<a name="IXT-4-287499" />
+<a name="IXT-4-287500" />
+<a name="IXT-4-287501" />
+
+First, we can add
+comments to the code; anything between # and the end of
+a line is a comment.  At minimum,
+the script should start with a few comment lines that indicate
+what the script does and the arguments it accepts.  Next, we
+can improve the variable names by assigning the values of the
+positional parameters to regular variables with mnemonic names.
+Last, we can add blank lines to space things out; blank lines,
+like comments, are ignored.  Here is a more readable version:
+</p>
+
+<p>
+<blockquote><pre class="code">
+#	highest filename [howmany]
+#
+#	Print howmany highest-numbered lines in file filename.
+#	The input file is assumed to have lines that start with
+#	numbers.  Default for howmany is 10.
+
+filename=$1
+
+howmany=${2:-10}
+sort -nr "$filename" | head -$howmany
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-174" />
+<a name="IXTR3-175" />
+<a name="IXTR3-176" />
+
+The square brackets around <tt class="literal">howmany</tt> in the comments
+adhere to the convention in Unix documentation
+that square brackets denote optional arguments.
+</p>
+
+<p>
+The changes we just made improve the code's readability but not how it runs.
+What if the user invoked the script without any arguments?
+Remember that positional parameters default to null if they aren't
+defined.  If there are no arguments, then <tt class="literal">$1</tt>
+and <tt class="literal">$2</tt> are both null.  The variable
+<tt class="literal">howmany</tt> (<tt class="literal">$2</tt>) is set up to
+default to 10, but there is no default for <tt class="literal">filename</tt>
+(<tt class="literal">$1</tt>).  The result would be that this command runs:
+</p>
+
+<p>
+<blockquote><pre class="code">
+sort -nr | head -10
+</pre></blockquote>
+</p>
+
+<p>
+As it happens, if <em class="emphasis">sort</em> is called without a filename argument,
+it expects input to come from standard input, e.g.,
+a pipe (|) or a user's keyboard.  Since it doesn't have the pipe,
+it will expect the keyboard.  This means that the script will appear to hang!
+Although you could always type CTRL-D or
+CTRL-C to get out of the script, a naive
+user might not know this.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-819" />
+<a name="korn2-IDXTERM-820" />
+Therefore we need to make sure that the user supplies at least
+one argument.  There are a few ways of doing this; one of them
+involves another string operator.  We'll replace the line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+filename=$1
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+with:
+</p>
+
+<p>
+<blockquote><pre class="code">
+filename=${1:?"filename missing."}
+</pre></blockquote>
+</p>
+
+<p>
+This causes two things to happen if a user invokes the
+script without any arguments: first, the shell prints
+the somewhat unfortunate message to the standard error output:
+</p>
+
+<p>
+<blockquote><pre class="code">
+highest: line 1: : filename missing.
+</pre></blockquote>
+</p>
+
+<p>
+Second, the script exits without running the remaining code.
+</p>
+
+<p>
+With a somewhat "kludgy" modification, we can
+get a slightly better error message.  Consider this code:
+</p>
+
+<p>
+<blockquote><pre class="code">
+filename=$1
+filename=${filename:?"missing."}
+</pre></blockquote>
+</p>
+
+<p>
+This results in the message:
+</p>
+
+<p>
+<blockquote><pre class="code">
+highest: line 2: filename: filename missing.
+</pre></blockquote>
+</p>
+
+<p>
+(Make sure you understand why.)  Of course, there are ways of printing
+whatever message is desired; we'll find out how in <a href="ch05_01.htm">Chapter 5</a>.
+<a name="IXTR3-177" />
+<a name="IXTR3-178" />
+<a name="IXTR3-179" />
+</p>
+
+<p>
+Before we move on, we'll look more closely at the two remaining
+operators in
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-2">Table 4-2</a>
+and see how we can incorporate them into
+our task solution.
+
+
+The <tt class="literal">:=</tt> operator does roughly the
+same thing as <tt class="literal">:-</tt>, except that it has the side effect
+of setting the
+value of the variable to the given word if the variable doesn't exist.
+</p>
+
+<p>
+
+Therefore we would like to use <tt class="literal">:=</tt> in our script in place of <tt class="literal">:-</tt>,
+but we can't; we'd be trying to set the
+value of a positional parameter, which is not allowed.  But
+if we replaced:
+</p>
+
+<p>
+<blockquote><pre class="code">
+howmany=${2:-10}
+</pre></blockquote>
+</p>
+
+<p>
+with just:
+</p>
+
+<p>
+<blockquote><pre class="code">
+howmany=$2
+</pre></blockquote>
+</p>
+
+<p>
+and moved the substitution down to the actual command line (as we
+did at the start), then we could use the <tt class="literal">:=</tt> operator:
+</p>
+
+<p>
+<blockquote><pre class="code">
+sort -nr "$filename" | head -${howmany:=10}
+</pre></blockquote>
+</p>
+
+<p>
+Using <tt class="literal">:=</tt> has the added benefit of setting the value of <tt class="literal">howmany</tt>
+to 10 in case we need it afterwards in later versions of the script.
+<a name="IXTR3-180" />
+<a name="IXTR3-181" />
+<a name="IXTR3-182" />
+<a name="IXTR3-183" />
+
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+
+
+The final substitution operator is <tt class="literal">:+</tt>.  Here is how we can use it
+in our example:  let's say we want to give the user the option of
+adding a header line to the script's output.  If he types
+the option <em class="emphasis">-h</em>, the output will be preceded by the line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+ALBUMS  ARTIST
+</pre></blockquote>
+</p>
+
+<p>
+Assume further that this option ends up in the variable <tt class="literal">header</tt>,
+i.e., <tt class="literal">$header</tt> is <tt class="literal">-h</tt> if the option is set or null if not.
+(Later we see how to do this without disturbing the other
+positional parameters.)
+</p>
+
+<p>
+The expression:
+</p>
+
+<p>
+<blockquote><pre class="code">
+${header:+"ALBUMS  ARTIST\n"}
+</pre></blockquote>
+</p>
+
+<p>
+yields null if the variable <tt class="literal">header</tt> is null
+or <tt class="literal">ALBUMS  ARTIST\n</tt> if it is non-null.
+
+This means that we can put the line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+print -n ${header:+"ALBUMS  ARTIST\n"}
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-4-287502" />
+<a name="IXT-4-287503" />
+
+right before the command line that does the actual work.
+The <em class="emphasis">-n</em> option to <em class="emphasis">print</em>
+causes it <em class="emphasis">not</em> to print a newline after printing its
+arguments.  Therefore this <em class="emphasis">print</em> statement prints
+nothing -- not even a blank line -- if
+<tt class="literal">header</tt> is null; otherwise it prints the header line
+and a newline (<tt class="literal">\n</tt>).
+<a name="IXTR3-184" />
+<a name="IXTR3-185" />
+<a name="IXTR3-186" />
+
+</p>
+</div>
+
+
+
+
+<a name="korn2-CHP-4-SECT-5.2" /><div class="sect2">
+<h3 class="sect2">4.5.2. Patterns and Regular Expressions</h3>
+
+<p>
+<a name="korn2-IDXTERM-833" />
+
+We'll continue refining our solution to <a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-1">Task 4-1</a> later in this chapter.
+The next type of string operator is used to match portions of a
+variable's string value against <em class="emphasis">patterns</em>.
+Patterns, as we saw in <a href="ch01_01.htm">Chapter 1</a>, are strings that can contain
+wildcard characters (<tt class="literal">*</tt>, <tt class="literal">?</tt>,
+and <tt class="literal">[]</tt> for character sets and ranges).
+</p>
+
+<p>
+<a name="IXT-4-287504" />
+<a name="IXT-4-287505" />
+<a name="IXT-4-287506" />
+<a name="IXT-4-287507" />
+
+Wildcards have been standard features of all Unix shells going
+back (at least) to the Version 6 Thompson shell.<a href="#FOOTNOTE-56">[56]</a>
+But the Korn shell is the first shell to add to their capabilities.
+<a name="korn2-IDXTERM-838" />
+It adds a set of operators, called <em class="emphasis">regular expression</em>
+(or <em class="emphasis">regexp</em> for short) operators, that give it
+much of the string-matching power of advanced Unix utilities like
+<em class="emphasis">awk</em>(1), <em class="emphasis">egrep</em>(1) (extended
+<em class="emphasis">grep</em>(1)), and the Emacs editor,
+albeit with a different syntax.  These capabilities go beyond those that
+you may be used to in other Unix utilities like <em class="emphasis">grep</em>,
+<em class="emphasis">sed</em>(1), and <em class="emphasis">vi</em>(1).
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-56" /><p> [56]
+The Version 6 shell was written by Ken Thompson.
+Stephen Bourne wrote the Bourne shell for Version 7.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-4-287508" />
+
+Advanced Unix users will find the Korn shell's regular expression
+capabilities useful for script writing, although they
+border on overkill.  (Part of the problem is the inevitable
+syntactic clash with the shell's myriad other special characters.)
+Therefore we won't go into great detail about regular expressions here.
+For more comprehensive information, the "very last word"
+on practical regular expressions in Unix is
+<em class="emphasis">Mastering Regular Expressions</em>,
+by Jeffrey E. F. Friedl.
+A more gentle introduction may found in
+the second edition of
+<em class="emphasis">sed &amp; awk</em>,
+by Dale Dougherty and Arnold Robbins.
+Both are published by O'Reilly &amp; Associates.
+If you are already comfortable with <em class="emphasis">awk</em> or <em class="emphasis">egrep</em>, you
+may want to skip the following introductory section and go to
+<a href="ch04_05.htm#korn2-CHP-4-SECT-5.2.3">Section 4.5.2.3</a>, later in this chapter,
+where we explain the shell's regular expression mechanism by
+comparing it with the syntax used in those two utilities.
+Otherwise, read on.
+</p>
+
+<a name="korn2-CHP-4-SECT-5.2.1" /><div class="sect3">
+<h3 class="sect3">4.5.2.1. Regular expression basics</h3>
+
+<p>
+Think of regular expressions as strings that match patterns
+more powerfully than the standard shell wildcard schema.
+Regular expressions began as an idea in theoretical computer
+science, but they have found their way into many nooks and crannies of
+everyday, practical computing.  The syntax used to represent them
+may vary, but the concepts are very much the same.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-840" />
+A shell regular expression can contain regular characters, standard
+wildcard characters, and additional
+operators that are more powerful than wildcards.  Each such operator
+has the form <em class="emphasis">x</em>(<em class="emphasis">exp</em>),
+where <em class="emphasis">x</em> is the particular
+operator and <em class="emphasis">exp</em> is any regular expression (often simply
+a regular string).  The operator determines how many occurrences
+of <em class="emphasis">exp</em> a string that matches the pattern can contain.
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-3">Table 4-3</a> describes the shell's regular
+expression operators and their meanings.
+
+<a name="korn2-IDXTERM-841" />
+<a name="korn2-IDXTERM-842" />
+<a name="IXT-4-287509" />
+<a name="IXT-4-287510" />
+<a name="IXT-4-287511" />
+<a name="IXT-4-287512" />
+<a name="IXT-4-287513" />
+<a name="IXT-4-287514" />
+<a name="IXT-4-287515" />
+<a name="IXT-4-287516" />
+<a name="IXT-4-287517" />
+
+</p>
+
+<a name="korn2-CHP-4-TABLE-3" /><h4 class="objtitle">Table 4-3. Regular expression operators</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Operator</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">*(</tt><em class="replaceable"><tt>exp</tt></em><tt class="literal">)</tt></td>
+<td>0 or more occurrences of <em class="emphasis">exp</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">+(</tt><em class="replaceable"><tt>exp</tt></em><tt class="literal">)</tt></td>
+<td>1 or more occurrences of <em class="emphasis">exp</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">?(</tt><em class="replaceable"><tt>exp</tt></em><tt class="literal">)</tt></td>
+<td>0 or 1 occurrences of <em class="emphasis">exp</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">@(</tt><em class="replaceable"><tt>exp1</em><tt class="literal">|</tt><em class="replaceable">exp2</tt></em><tt class="literal">|...)</tt></td>
+<td><p>
+Exactly one of <em class="emphasis">exp1</em> or <em class="emphasis">exp2</em> or ...
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">!(</tt><em class="replaceable"><tt>exp</tt></em><tt class="literal">)</tt></td>
+<td><p>
+Anything that doesn't match <em class="emphasis">exp</em><a href="#FOOTNOTE-57">[57]</a>
+</p></td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-57" /><p> [57]
+Actually, <tt class="literal">!(</tt><em class="replaceable"><tt>exp</tt></em><tt class="literal">)</tt> is
+not a regular expression operator by the standard technical definition,
+although it is a handy extension.
+</p>
+</blockquote>
+
+<p>
+As shown for the
+<tt class="literal">@(</tt><em class="replaceable"><tt>exp1</em><tt class="literal">|</tt><em class="replaceable">exp2</tt></em><tt class="literal">|...)</tt>
+pattern,
+an <em class="emphasis">exp</em> within any of the Korn shell operators can be a series of
+<em class="emphasis">exp1</em>|<em class="emphasis">exp2</em>|... alternatives.
+</p>
+
+<p>
+A little-known alternative notation is to separate each <em class="emphasis">exp</em> with
+the ampersand character, <tt class="literal">&amp;</tt>.  In this case, <em class="emphasis">all</em>
+the alternative expressions must match.  Think of the <tt class="literal">|</tt> as meaning
+"or," while the <tt class="literal">&amp;</tt> means "and."
+(You can, in fact, use both of them in the same pattern list.  The
+<tt class="literal">&amp;</tt> has higher precedence, with the meaning
+"match this and that, OR match the next thing.")
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-4">Table 4-4</a> provides some example uses of the shell's
+regular expression operators.
+<a name="IXTR3-187" />
+</p>
+
+
+<a name="korn2-CHP-4-TABLE-4" /><h4 class="objtitle">Table 4-4. Regular expression operator examples</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Expression</th>
+<th>Matches</th>
+</tr>
+
+
+
+
+<tr>
+<td><em class="replaceable"><tt>x</tt></em></td>
+<td><em class="emphasis">x</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">*(</tt><em class="replaceable"><tt>x</tt></em><tt class="literal">)</tt></td>
+<td>Null string, <em class="emphasis">x</em>, <em class="emphasis">xx</em>, <em class="emphasis">xxx</em>, ...</td>
+</tr>
+
+<tr>
+<td><tt class="literal">+(</tt><em class="replaceable"><tt>x</tt></em><tt class="literal">)</tt></td>
+<td><em class="emphasis">x</em>, <em class="emphasis">xx</em>, <em class="emphasis">xxx</em>, ...</td>
+</tr>
+
+<tr>
+<td><tt class="literal">?(</tt><em class="emphasis">x</em><tt class="literal">)</tt></td>
+<td>Null string, <em class="emphasis">x</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">!(</tt><em class="emphasis">x</em><tt class="literal">)</tt></td>
+<td>Any string except <em class="emphasis">x</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">@(</tt><em class="emphasis">x</em><tt class="literal">)</tt></td>
+<td><em class="emphasis">x</em> (see below)</td>
+</tr>
+
+
+</table><p>
+
+<p>
+Regular expressions are extremely useful when dealing with arbitrary
+text, as you already know if you have used <em class="emphasis">grep</em> or the
+regular-expression capabilities of any Unix editor.  They aren't
+nearly as useful for matching filenames and other simple
+types of information with which shell users typically work.
+Furthermore, most things you can do with the shell's regular
+expression operators can also be done (though possibly with more
+keystrokes and less efficiency) by piping the output of a shell
+command through <em class="emphasis">grep</em> or <em class="emphasis">egrep</em>.
+</p>
+
+<p>
+Nevertheless, here are a few examples of how shell regular
+expressions can solve filename-listing problems.  Some of
+these will come in handy in later chapters as pieces of solutions
+to larger tasks.
+</p>
+
+<ol>
+
+<li><p>
+<a name="IXT-4-287518" />
+
+The Emacs editor supports customization files whose names
+end in <em class="emphasis">.el</em> (for Emacs LISP) or <em class="emphasis">.elc</em> (for Emacs LISP Compiled).
+List all Emacs customization files in the current directory.
+</p></li>
+
+<li><p>
+
+In a directory of C source code, list all files that are not
+necessary.  Assume that "necessary" files end in <tt class="literal">.c</tt> or <tt class="literal">.h</tt> or
+are named <em class="emphasis">Makefile</em> or <em class="emphasis">README</em>.
+</p></li>
+
+<li><p>
+<a name="IXT-4-287519" />
+
+Filenames in the OpenVMS operating system
+end in a semicolon followed by a version
+number, e.g., <em class="emphasis">fred.bob;23</em>.  List all OpenVMS-style
+filenames in the current directory.
+</p></li>
+
+</ol>
+
+<p>
+Here are the solutions:
+</p>
+
+<ol>
+
+<li><p>
+<a name="IXT-4-287520" />
+<a name="IXT-4-287521" />
+In the first of these, we are looking for files that end in <em class="emphasis">.el</em>
+with an optional <em class="emphasis">c</em>.  The expression that matches this is
+<tt class="literal">*.el?(c)</tt>.
+</p></li>
+
+<li><p>
+<a name="IXT-4-287522" />
+<a name="IXT-4-287523" />
+
+The second example depends on the four standard subexpressions
+<tt class="literal">*.c</tt>,
+<tt class="literal">*.h</tt>,
+<tt class="literal">Makefile</tt>, and <tt class="literal">README</tt>.
+The entire expression is
+<tt class="literal">!(*.c|*.h|Makefile|README)</tt>, which matches anything
+that does not match any of the four possibilities.
+</p></li>
+
+<li><p>
+<a name="IXT-4-287524" />
+<a name="IXT-4-287525" />
+
+The solution to the third example starts with
+<tt class="literal">*\;</tt>, the shell
+wildcard <tt class="literal">*</tt> followed by a backslash-escaped semicolon.
+Then, we could use
+the regular expression <tt class="literal">+([0-9])</tt>,
+which matches one or more
+characters in the range <tt class="literal">[0-9]</tt>, i.e., one or more digits.
+This is almost correct (and probably close enough), but it doesn't
+take into account that the first digit cannot be 0.
+
+
+Therefore the correct expression is
+<tt class="literal">*\;[1-9]*([0-9])</tt>, which matches
+anything that ends with a semicolon, a digit from 1 to 9, and
+zero or more digits from 0 to 9.
+</p></li>
+</ol>
+
+<a name="korn2-IDXTERM-861" />
+</div>
+
+<a name="korn2-CHP-4-SECT-5.2.2" /><div class="sect3">
+<h3 class="sect3">4.5.2.2. POSIX character class additions</h3>
+
+<p>
+<a name="IXT-4-287526" />
+
+The POSIX standard formalizes the meaning of regular expression
+characters and operators.  The standard defines two classes of regular
+expressions: Basic Regular Expressions (BREs), which are the kind used
+by <em class="emphasis">grep</em> and <em class="emphasis">sed</em>,
+and Extended Regular Expressions, which are the kind used
+by <i class="command">egrep</i> and <em class="emphasis">awk</em>.
+</p>
+
+<p>
+In order to accommodate non-English environments, the POSIX standard
+enhanced the ability of character set ranges
+(e.g., <tt class="literal">[a-z]</tt>) to match characters not
+in the English alphabet.  For example, the French &#232; is an alphabetic
+character, but the typical character class <tt class="literal">[a-z]</tt> would not
+match it.
+Additionally,
+the standard provides for sequences of characters that should be
+treated as a single unit when matching and collating (sorting) string data.
+(For example, there are locales where the two
+characters <tt class="literal">ch</tt> are treated as
+a unit and must be matched and sorted that way.)
+</p>
+
+<p>
+POSIX also changed what had been common terminology. What we saw earlier
+in <a href="ch01_01.htm">Chapter 1</a> as a "range expression" is often called
+a "character class" in the Unix literature.  It is now
+called a "bracket expression" in the POSIX
+standard. Within bracket expressions, besides literal characters such as
+<tt class="literal">a</tt>, <tt class="literal">;</tt>, 
+and so on, you can also have additional components:
+</p>
+
+<dl>
+
+<dt><i>Character classes</i></dt>
+<dd>
+A POSIX character class consists of keywords bracketed by
+<tt class="literal">[:</tt> and <tt class="literal">:]</tt>. The
+keywords describe different classes of characters such as alphabetic
+characters, control characters, and so on (see <a href="ch04_05.htm#korn2-CHP-4-TABLE-5">Table 4-5</a>).
+</p></dd>
+
+
+<dt><i>Collating symbols</i></dt>
+<dd>
+A collating symbol is a multicharacter sequence that should be treated
+as a unit. It consists of the characters bracketed by
+<tt class="literal">[.</tt> and <tt class="literal">.]</tt>.
+</p></dd>
+
+
+<dt><i>Equivalence classes</i></dt>
+<dd>
+An equivalence class lists a set of characters that should be considered
+equivalent, such as <tt class="literal">e</tt> and
+<tt class="literal">&#232;</tt>.
+It consists of a named element from the locale,
+bracketed by <tt class="literal">[=</tt>
+and <tt class="literal">=]</tt>.
+</p></dd>
+
+</dl>
+
+<p>
+All three of these constructs must appear inside the square
+brackets of a bracket expression.  For example <tt class="literal">[[:alpha:]!]</tt> matches
+any single alphabetic character or the exclamation point; <tt class="literal">[[.ch.]]</tt>
+matches the collating element <tt class="literal">ch</tt> but does not match just the letter
+<tt class="literal">c</tt> or the letter <tt class="literal">h</tt>. In a French locale,
+<tt class="literal">[[=e=]]</tt> might match any of
+<tt class="literal">e</tt>, <tt class="literal">&#232;</tt>, 
+or <tt class="literal">&#233;</tt>. Classes and matching
+characters are shown in <a href="ch04_05.htm#korn2-CHP-4-TABLE-5">Table 4-5</a>.
+</p>
+
+<a name="korn2-CHP-4-TABLE-5" /><h4 class="objtitle">Table 4-5. POSIX character classes</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Class</th>
+<th>Matching characters</th>
+</tr>
+
+
+
+<tr>
+<td><tt class="literal">[:alnum:]</tt></td>
+<td>Alphanumeric characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:alpha:]</tt></td>
+<td>Alphabetic characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:blank:]</tt></td>
+<td>Space and tab characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:cntrl:]</tt></td>
+<td>Control characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:digit:]</tt></td>
+<td>Numeric characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:graph:]</tt></td>
+<td>Printable and visible (non-space) characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:lower:]</tt></td>
+<td>Lowercase characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:print:]</tt></td>
+<td>Printable characters (includes whitespace)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:punct:]</tt></td>
+<td>Punctuation characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:space:]</tt></td>
+<td>Whitespace characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:upper:]</tt></td>
+<td>Uppercase characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:xdigit:]</tt></td>
+<td>Hexadecimal digits</td>
+</tr>
+
+</table><p>
+
+<p>
+The Korn shell supports all of these features within its pattern
+matching facilities.  The POSIX character class names are the most
+useful, because they work in different locales.
+</p>
+
+<p>
+The following section compares Korn shell regular expressions to
+analogous features in <em class="emphasis">awk</em></tt> and <em class="emphasis">egrep</em></tt>.
+If you aren't familiar
+with these, skip to <a href="ch04_05.htm#korn2-CHP-4-SECT-5.3">Section 4.5.3</a>.
+</p>
+</div>
+
+
+<a name="korn2-CHP-4-SECT-5.2.3" /><div class="sect3">
+<h3 class="sect3">4.5.2.3. Korn shell versus awk/egrep regular expressions</h3>
+
+<p>
+
+<a name="korn2-IDXTERM-863" />
+<a name="korn2-IDXTERM-864" />
+<a name="korn2-IDXTERM-865" />
+
+
+
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-6">Table 4-6</a>
+is an expansion of
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-3">Table 4-3</a>: the middle column shows
+the equivalents in <em class="emphasis">awk</em></tt>/<em class="emphasis">egrep</em></tt> of the shell's regular
+expression operators.
+
+<a name="IXT-4-287527" />
+<a name="IXT-4-287528" />
+<a name="IXT-4-287529" />
+<a name="IXT-4-287530" />
+<a name="IXT-4-287531" />
+<a name="IXT-4-287532" />
+<a name="IXT-4-287533" />
+<a name="IXT-4-287534" />
+
+
+</p>
+
+<a name="korn2-CHP-4-TABLE-6" /><h4 class="objtitle">Table 4-6. Shell versus egrep/awk regular expression operators</h4><table border="1" cellpadding="3">
+
+
+
+
+
+<tr>
+<th>Korn shell</th>
+<th>egrep/awk</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">*(</tt><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">)</tt></td>
+<td><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">*</tt></td>
+<td>0 or more occurrences of <em class="emphasis">exp</em></tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">+(</tt><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">)</tt></td>
+<td><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">+</tt></td>
+<td>1 or more occurrences of <em class="emphasis">exp</em></tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">?(</tt><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">)</tt></td>
+<td><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">?</tt></td>
+<td>0 or 1 occurrences of <em class="emphasis">exp</em></tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">@(</tt><tt><em class="replaceable"><tt>exp1</em></tt><tt class="literal">|</tt><em class="emphasis">exp2</tt></em></tt><tt class="literal">|...)</tt></td>
+<td><tt><em class="replaceable"><tt>exp1</em></tt><tt class="literal">|</tt><tt><em class="replaceable">exp2</tt></em></tt><tt class="literal">|...</tt></td>
+<td><em class="emphasis">exp1</em></tt> or <em class="emphasis">exp2</em></tt> or ...</td>
+</tr>
+
+<tr>
+<td><tt class="literal">!(</tt><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">)</tt></td>
+<td>(none)</td>
+<td>Anything that doesn't match <em class="emphasis">exp</em></tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\</tt><tt><em class="replaceable"><tt>N</tt></em></tt></td>
+<td><tt class="literal">\</tt><tt><em class="replaceable"><tt>N</tt></em></tt> (grep)</td>
+<td><p>
+Match same text as matched by previous parenthesized subexpression
+number <em class="emphasis">N</em></tt>
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+These equivalents are close but not quite exact.
+Because the shell would interpret
+an expression like <tt class="literal">dave|fred|bob</tt>
+as a pipeline of commands, you must use <tt class="literal">@(dave|fred|bob)</tt>
+for alternates by themselves.
+</p>
+
+<p>
+<a name="IXT-4-287535" />
+
+The <em class="emphasis">grep</em></tt> command has a feature called <em class="emphasis">backreferences</em></tt>
+(or <em class="emphasis">backrefs</em></tt>, for short).  This facility provides a shorthand for repeating
+parts of a regular expression as part of a larger whole.  It works as follows:
+</p>
+
+<p>
+<blockquote><pre class="code">
+grep '\(abc\).*\1' file1 file2
+</pre></blockquote>
+</p>
+
+<p>
+This matches <em class="emphasis">abc</em></tt>, followed by any number of characters,
+followed again by <em class="emphasis">abc</em></tt>.
+Up to nine parenthesized sub-expressions may be referenced this way.
+The Korn shell provides an analogous capability.
+If you use one or more regular expression patterns within a full pattern, you
+can refer to previous ones using the <tt class="literal">\</tt><tt><em class="replaceable"><tt>N</tt></em></tt>
+notation as for <em class="emphasis">grep</em></tt>.
+</p>
+
+<p>
+For example:
+</p>
+
+<ul>
+
+<li><p>
+<tt class="literal">@(dave|fred|bob)</tt> matches <tt class="literal">dave</tt>,
+<tt class="literal">fred</tt>, or <tt class="literal">bob</tt>.
+</p></li>
+
+<li><p>
+<tt class="literal">@(*dave*&amp;*fred*)</tt> matches <tt class="literal">davefred</tt>,
+and
+<tt class="literal">freddave</tt>.
+(Notice the need for the <tt class="literal">*</tt> characters.)
+</p></li>
+
+<li><p>
+<tt class="literal">@(fred)*\1</tt> matches <tt class="literal">freddavefred</tt>,
+<tt class="literal">fredbobfred</tt>, and so on.
+</p></li>
+
+<li><p>
+<tt class="literal">*(dave|fred|bob)</tt> means,
+"0 or more occurrences
+of <tt class="literal">dave</tt>, <tt class="literal">fred</tt>, or <tt class="literal">bob</tt>".
+This expression matches strings like
+the null string, <tt class="literal">dave</tt>, <tt class="literal">davedave</tt>,
+<tt class="literal">fred</tt>, <tt class="literal">bobfred</tt>,
+<tt class="literal">bobbobdavefredbobfred</tt>, etc.
+</p></li>
+
+<li><p>
+<tt class="literal">+(dave|fred|bob)</tt> matches any of the above except the null string.
+</p></li>
+
+<li><p>
+<tt class="literal">?(dave|fred|bob)</tt> matches the null string,
+<tt class="literal">dave</tt>, <tt class="literal">fred</tt>, or <tt class="literal">bob</tt>.
+</p></li>
+
+<li><p>
+<tt class="literal">!(dave|fred|bob)</tt> matches anything except <tt class="literal">dave</tt>, <tt class="literal">fred</tt>, or
+<tt class="literal">bob</tt>.
+</p></li>
+</ul>
+
+<p>
+<a name="IXTR3-188" />
+<a name="IXTR3-189" />
+<a name="IXTR3-190" />
+
+</p>
+
+<p>
+<a name="IXT-4-287536" />
+<a name="IXT-4-287537" />
+<a name="IXT-4-287538" />
+<a name="IXT-4-287539" />
+<a name="IXT-4-287540" />
+<a name="IXT-4-287541" />
+<a name="IXT-4-287542" />
+
+It is worth reemphasizing that shell regular expressions can still
+contain standard shell wildcards. Thus, the shell wildcard <tt class="literal">?</tt>
+(match any single character) is equivalent to <tt class="literal">.</tt> in
+<em class="emphasis">egrep</em></tt> or <em class="emphasis">awk</em></tt>, and the shell's character set operator
+<tt class="literal">[</tt>...<tt class="literal">]</tt> is the same as in those utilities.<a href="#FOOTNOTE-58">[58]</a>
+
+<a name="IXTR3-191" />
+<a name="IXTR3-192" />
+
+For example, the expression <tt class="literal">+([[:digit:]])</tt> matches a number, i.e.,
+one or more digits.  The shell wildcard character <tt class="literal">*</tt> is equivalent
+to the shell regular expression <tt class="literal">*(?)</tt>.
+You can even nest the regular expressions:
+<tt class="literal">+([[:digit:]]|!([[:upper:]]))</tt> matches one or more digits or non-uppercase
+letters.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-58" /><p> [58]
+And, for that matter, the same as in
+<em class="emphasis">grep</em></tt>, <em class="emphasis">sed</em></tt>, <em class="emphasis">ed</em></tt>,
+<em class="emphasis">vi</em></tt>, etc. One notable difference is that the shell uses <tt class="literal">!</tt>
+inside <tt class="literal">[</tt>...<tt class="literal">]</tt> for
+negation, while the various utilities all use <tt class="literal">^</tt>.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-4-287543" />
+<a name="IXT-4-287544" />
+Two <em class="emphasis">egrep</em></tt> and <em class="emphasis">awk</em></tt> regexp operators do not have equivalents
+in the Korn shell:
+</p>
+
+<ul>
+
+<li><p>
+The beginning- and end-of-line operators <tt class="literal">^</tt> and <tt class="literal">$</tt>.
+</p></li>
+
+<li><p>
+The beginning- and end-of-word operators <tt class="literal">\&lt;</tt>
+and <tt class="literal">\&gt;</tt>.
+</p></li>
+</ul>
+
+<p>
+These are hardly necessary, since the Korn shell doesn't
+normally operate on text files and does parse strings into words itself.
+(Essentially, the <tt class="literal">^</tt> and <tt class="literal">$</tt> are implied
+as always being there. Surround a pattern with <tt class="literal">*</tt>
+characters to disable this.)
+Read on for even more features in the very latest version of <em class="emphasis">ksh</em></tt>.
+<a name="IXTR3-193" />
+<a name="IXTR3-194" />
+<a name="IXTR3-195" />
+
+</p>
+</div>
+
+<a name="korn2-CHP-4-SECT-5.2.4" /><div class="sect3">
+<h3 class="sect3">4.5.2.4. Pattern matching with regular expressions</h3>
+
+<p>
+<a name="korn2-IDXTERM-892" />
+<a name="korn2-IDXTERM-893" />
+
+Starting with <em class="emphasis">ksh93l</em></tt>, the shell provides a number
+of additional regular expression capabilities.
+We discuss them here separately, because your version of <em class="emphasis">ksh93</em></tt>
+quite likely doesn't have them,
+unless you download a <em class="emphasis">ksh93</em></tt> binary
+or build <em class="emphasis">ksh93</em></tt> from source.
+The facilities break down as follows.
+</p>
+
+
+
+<dl>
+
+<dt><i>New pattern matching operators</i></dt>
+<dd>
+Several new pattern matching facilities are available.
+They 
+are described briefly in <a href="ch04_05.htm#korn2-CHP-4-TABLE-7">Table 4-7</a>.
+More discussion follows after the table.
+</p></dd>
+
+
+<dt><i>Subpatterns with options</i></dt>
+<dd>
+Special parenthesized subpatterns may contain options that control
+matching within the subpattern or the rest of the expression.
+</p></dd>
+
+
+<dt><i>New [:word:] character class</i></dt>
+<dd>
+The character class <tt class="literal">[:word:]</tt> within a bracket
+expression matches any character that is "word constituent."
+This is basically any alphanumeric character or the underscore (_).
+</p></dd>
+
+
+<dt><i>Escape sequences recognized within subpatterns</i></dt>
+<dd>
+A number of escape sequences are recognized and treated specially
+within parenthesized expressions.
+</p></dd>
+
+
+</dl>
+
+
+<a name="korn2-CHP-4-TABLE-7" /><h4 class="objtitle">Table 4-7. New pattern matching operators in ksh93l and later</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Operator</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+
+<tr>
+<td><tt class="literal">{</tt><tt><em class="replaceable"><tt>N</em></tt><tt class="literal">}(</tt><tt><em class="replaceable">exp</tt></em></tt><tt class="literal">)</tt></td>
+<td>Exactly <em class="emphasis">N</em></tt> occurrences of <em class="emphasis">exp</em></tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">{</tt><tt><em class="replaceable"><tt>N</em></tt><tt class="literal">,</tt><tt><em class="replaceable">M</em></tt><tt class="literal">}(</tt><tt><em class="replaceable">exp</tt></em></tt><tt class="literal">)</tt></td>
+<td><p>
+Between <em class="emphasis">N</em></tt> and <em class="emphasis">M</em></tt>
+occurrences of <em class="emphasis">exp</em></tt>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">*-(</tt><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">)</tt></td>
+<td>0 or more occurrences of <em class="emphasis">exp</em></tt>, shortest match</td>
+</tr>
+
+<tr>
+<td><tt class="literal">+-(</tt><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">)</tt></td>
+<td>1 or more occurrences of <em class="emphasis">exp</em></tt>, shortest match</td>
+</tr>
+
+<tr>
+<td><tt class="literal">?-(</tt><tt><em class="replaceable"><tt>exp</tt></em></tt><tt class="literal">)</tt></td>
+<td>0 or 1 occurrences of <em class="emphasis">exp</em></tt>, shortest match</td>
+</tr>
+
+<tr>
+<td><tt class="literal">@-(</tt><tt><em class="replaceable"><tt>exp1</em></tt><tt class="literal">|</tt><tt><em class="replaceable">exp2</tt></em></tt><tt class="literal">|...)</tt></td>
+<td><p>
+Exactly one of <em class="emphasis">exp1</em></tt> or <em class="emphasis">exp2</em></tt> or ..., shortest match
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">{</tt><tt><em class="replaceable"><tt>N</em></tt><tt class="literal">}-(</tt><tt><em class="replaceable">exp</tt></em></tt><tt class="literal">)</tt></td>
+<td><p>
+Exactly <em class="emphasis">N</em></tt> occurrences
+of <em class="emphasis">exp</em></tt>, shortest match
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">{</tt><tt><em class="replaceable"><tt>N</em></tt><tt class="literal">,</tt><tt><em class="replaceable">M</em></tt><tt class="literal">}-(</tt><tt><em class="replaceable">exp</tt></em></tt><tt class="literal">)</tt></td>
+<td><p>
+Between <em class="emphasis">N</em></tt> and <em class="emphasis">M</em></tt> occurrences
+of <em class="emphasis">exp</em></tt>, shortest match
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+The first two operators in this table match facilities in <em class="emphasis">egrep</em></tt>(1),
+called <em class="emphasis">interval expressions</em></tt>.  They let you specify that you want
+to match exactly <em class="emphasis">N</em></tt> items, no more and no less, or that you want to
+match between <em class="emphasis">N</em></tt> and <em class="emphasis">M</em></tt> items.
+</p>
+
+<p>
+The rest of the operators perform shortest or "non-greedy" matching.
+Normally, regular expressions match the <em class="emphasis">longest</em></tt> possible text.
+A non-greedy match is one of the shortest possible text that matches.
+Non-greedy matching was first popularized by the <em class="emphasis">perl</em></tt> language.
+These operators work with the pattern matching and substitution operators described in the
+next section; we delay examples of greedy vs. non-greedy matching until there.
+Filename wildcarding effectively always does greedy matching.
+</p>
+
+<p>
+Within operations such as <tt class="literal">@(</tt>...<tt class="literal">)</tt>, you can provide a
+special subpattern that enables or disables options for case independent
+and greedy matching.  This subpattern has one of the following forms:
+
+<blockquote><pre class="code">
+~(+<tt><em class="replaceable"><tt>options</em></tt>:<tt><em class="replaceable">pattern list</tt></em></tt>)   <i class="lineannotation">Enable options</i>
+~(-<tt><em class="replaceable"><tt>options</em></tt>:<tt><em class="replaceable">pattern list</tt></em></tt>)   <i class="lineannotation">Disable options</i>
+</pre></blockquote>
+</p>
+
+<p>
+The <em class="emphasis">options</em></tt> are one or both of <tt class="literal">i</tt> for
+case-independent matching and <tt class="literal">g</tt> for greedy matching.
+If the <tt class="literal">:</tt><tt><em class="replaceable"><tt>pattern list</tt></em></tt> is omitted,
+the options apply to the rest of the enclosing pattern.  If provided, they
+apply to just that pattern list.
+Omitting the <em class="emphasis">options</em></tt> is possible, as well, but doing so doesn't
+really provide you with any new value.
+</p>
+
+<p>
+The bracket expression <tt class="literal">[[:word:]]</tt> is a shorthand
+for <tt class="literal">[[:alnum:]_]</tt>.  It is a notational convenience, but
+one that can increase program legiblity.
+</p>
+
+<p>
+Within parenthesized expressions, <em class="emphasis">ksh</em></tt> recognizes all
+the standard ANSI C escape sequences, and they have their usual meaning.
+(See <a href="ch07_03.htm#korn2-CHP-7-SECT-3.3.1">Section 7.3.3.1</a>, in
+<a href="ch07_01.htm">Chapter 7</a>.)
+Additionally, the escape sequences
+listed in <a href="ch04_05.htm#korn2-CHP-4-TABLE-8">Table 4-8</a>
+are recognized and can
+be used for pattern matching.
+</p>
+
+
+<a name="korn2-CHP-4-TABLE-8" /><h4 class="objtitle">Table 4-8. Regular expression escape sequences</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Escape sequence</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">\d</tt></td>
+<td>Same as <tt class="literal">[[:digit:]]</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\D</tt></td>
+<td>Same as <tt class="literal">[![:digit:]]</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\s</tt></td>
+<td>Same as <tt class="literal">[[:space:]]</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\S</tt></td>
+<td>Same as <tt class="literal">[![:space:]]</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\w</tt></td>
+<td>Same as <tt class="literal">[[:word:]]</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\W</tt></td>
+<td>Same as <tt class="literal">[![:word:]]</tt></td>
+</tr>
+
+
+</table><p>
+
+
+<p>
+Whew!  This is all fairly heady stuff.  If you
+feel a bit overwhelmed by it, don't worry.
+As you learn more about regular expressions and shell programming and
+begin to do more and more complex text processing tasks, you'll come to appreciate
+the fact that you can do all this <em class="emphasis">within the shell itself</em></tt>,
+instead of having to resort to external programs such as
+<em class="emphasis">sed</em></tt>, <em class="emphasis">awk</em></tt>, or <em class="emphasis">perl</em></tt>.
+<a name="IXTR3-196" />
+
+<a name="IXTR3-197" />
+<a name="IXTR3-198" />
+
+</p>
+
+</div>
+</div>
+
+<a name="korn2-CHP-4-SECT-5.3" /><div class="sect2">
+<h3 class="sect2">4.5.3. Pattern-Matching Operators</h3>
+
+<p>
+<a name="korn2-IDXTERM-897" />
+
+
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-9">Table 4-9</a>
+lists the Korn shell's pattern-matching operators.
+<a name="korn2-IDXTERM-898" />
+<a name="IXT-4-287545" />
+<a name="IXT-4-287546" />
+<a name="IXT-4-287547" />
+<a name="IXT-4-287548" />
+<a name="IXT-4-287549" />
+<a name="IXT-4-287550" />
+<a name="IXT-4-287551" />
+<a name="IXT-4-287552" />
+
+</p>
+
+<a name="korn2-CHP-4-TABLE-9" /><h4 class="objtitle">Table 4-9. Pattern-matching operators</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Operator</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">#</tt><tt><em class="replaceable">pattern</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+If the pattern matches the beginning of the variable's value,
+delete the shortest part that matches and return the rest.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">##</tt><tt><em class="replaceable">pattern</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+If the pattern matches the beginning of the variable's value,
+delete the longest part that matches and return the rest.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt>{<tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">%</tt><tt><em class="replaceable">pattern</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+If the pattern matches the end of the variable's value,
+delete the shortest part that matches and return the rest.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">%%</tt><tt><em class="replaceable">pattern</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+If the pattern matches the end of the variable's value,
+delete the longest part that matches and return the rest.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXTR3-199" />
+<a name="IXTR3-200" />
+</p>
+
+<p>
+These can be hard to remember, so here's a handy mnemonic
+device: <tt class="literal">#</tt> matches the front because number signs
+<em class="emphasis">precede</em></tt>
+numbers; <tt class="literal">%</tt> matches the rear because percent signs
+<em class="emphasis">follow</em></tt>
+numbers.
+Another mnemonic comes from the typical placement
+(in the U.S.A., anyway)
+of the <tt class="literal">#</tt> and <tt class="literal">%</tt> keys on the keyboard.
+Relative to each other,
+the <tt class="literal">#</tt> is on the left, and the <tt class="literal">%</tt> is
+on the right.
+</p>
+
+<p>
+The classic use for pattern-matching operators is in stripping
+components from pathnames, such as directory prefixes and filename suffixes.
+With that in mind,
+here is an example that shows how all of the operators work.
+Assume that the variable <tt class="literal">path</tt> has the value
+<tt class="literal">/home/billr/mem/long.file.name</tt>; then:
+</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<th>Expression</th>
+<th>Result</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">${path##/*/}</tt></td>
+<td><blockquote><pre class="code">                long.file.name</pre></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${path#/*/}</tt></td>
+<td><blockquote><pre class="code">      billr/mem/long.file.name</pre></blockquote></td>
+</tr>
+
+<tr>
+<td><tt class="literal">$path</tt></td>
+<td><tt class="literal">/home/billr/mem/long.file.name</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${path%.*}</tt></td>
+<td><tt class="literal">/home/billr/mem/long.file</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${path%%.*}</tt></td>
+<td><tt class="literal">/home/billr/mem/loang</tt></td>
+</tr>
+
+</table><p>
+
+<p>
+The two patterns used here are <tt class="literal">/*/</tt>, which matches anything between
+two slashes, and <tt class="literal">.*</tt>, which matches a dot followed by anything.
+</p>
+
+<p>
+Starting with <em class="emphasis">ksh93l</em></tt>, these operators automatically
+set the <tt class="literal">.sh.match</tt> array variable.  This is discussed
+in <a href="ch04_05.htm#korn2-CHP-4-SECT-5.7">Section 4.5.7</a>, later in this chapter.
+</p>
+
+<p>
+We will incorporate one of these operators into our next
+programming task, <a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-2">Task 4-2</a>.
+</p>
+
+<a name="IXT-4-287553" />
+<a name="korn2-CHP-4-SIDEBAR-2" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 4-2</h4>
+
+<p>
+<a name="IXT-4-287554" />
+
+
+You are writing a C compiler, and you want to use the Korn shell for
+your front-end.<a href="#FOOTNOTE-59">[59]</a>
+</p>
+
+<blockquote class="footnote">
+<a name="FOOTNOTE-59" /><p> [59]
+Don't laugh -- once upon a time, many Unix compilers had shell scripts as front-ends.
+</p>
+</blockquote></td></tr></table><p></blockquote><p>
+Think of a C compiler as a pipeline of data processing
+components. C source code is input to the beginning of the pipeline,
+and object code comes out of the end; there are several steps in between.
+The shell script's task, among many other things, is to control the
+flow of data through the components and designate output files.
+</p>
+
+<p>
+You need to write the part of the script that takes the name of the
+input C source file and creates from it the name of the output
+object code file. That is,
+you must take a filename ending in <tt class="literal">.c</tt>
+and create a filename that is similar except that it ends in <tt class="literal">.o</tt>.
+</p>
+
+<p>
+The task at hand is to strip the <tt class="literal">.c</tt> off the filename and
+append <tt class="literal">.o</tt>. A single shell statement does it:
+<a name="korn2-IDXTERM-911" />
+<a name="korn2-IDXTERM-912" />
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+objname=${filename%.c}.o
+</pre></blockquote>
+</p>
+
+<p>
+This tells the shell to look at the end of <tt class="literal">filename</tt>
+for <tt class="literal">.c</tt>. If there is a match, return
+<tt class="literal">$filename</tt> with the match deleted. So if
+<tt class="literal">filename</tt> had the value <tt class="literal">fred.c</tt>,
+the expression <tt class="literal">${filename%.c}</tt> would return
+<tt class="literal">fred</tt>. The <tt class="literal">.o</tt> is appended to make
+the desired <tt class="literal">fred.o</tt>, which is stored in the variable
+<tt class="literal">objname</tt>.
+</p>
+
+<p>
+<a name="IXT-4-287555" />
+
+If <tt class="literal">filename</tt> had an inappropriate value (without
+<tt class="literal">.c</tt>) such as <tt class="literal">fred.a</tt>, the
+above expression would evaluate to <tt class="literal">fred.a.o</tt>:
+since there was no match, nothing is deleted from the value of
+<tt class="literal">filename</tt>, and <tt class="literal">.o</tt> is appended
+anyway.   And, if <tt class="literal">filename</tt> contained more than one dot -- e.g.,
+if it were the <em class="emphasis">y.tab.c</em></tt> that is so infamous among
+compiler writers -- the expression would still produce the desired
+<em class="emphasis">y.tab.o</em></tt>.
+
+Notice that this would not be true if we used <tt class="literal">%%</tt> in the expression
+instead of <tt class="literal">%</tt>.
+<a name="IXTR3-201" />
+<a name="IXTR3-202" />
+<a name="IXTR3-203" />
+The former operator uses the longest match instead of the shortest,
+so it would match <tt class="literal">.tab.o</tt> and evaluate to
+<tt class="literal">y.o</tt> rather than <tt class="literal">y.tab.o</tt>. So the
+single <tt class="literal">%</tt> is correct in this case.
+</p>
+
+<p>
+A longest-match deletion would be preferable, however,
+for <a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-3">Task 4-3</a>.
+</p>
+
+<?troff .Nd 10?>
+
+<a name="korn2-CHP-4-SIDEBAR-3" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 4-3</h4>
+
+<p>
+<a name="IXT-4-287556" />
+
+You are implementing a filter that prepares a text file for
+printer output. You want to put the file's name -- without
+any directory prefix -- on the "banner" page.
+Assume that, in your script, you have the pathname of the file
+to be printed stored in the variable <tt class="literal">pathname</tt>.
+</p>
+
+</td></tr></table><p></blockquote>
+<a name="korn2-IDXTERM-918" />
+<a name="korn2-IDXTERM-919" />
+
+<p>
+Clearly the objective is to remove the directory prefix from the pathname.
+The following line does it:
+</p>
+
+<p>
+<blockquote><pre class="code">
+bannername=${pathname##*/}
+</pre></blockquote>
+</p>
+
+<p>
+This solution is similar to the first line in the examples shown before.
+If <tt class="literal">pathname</tt> were just a filename, the pattern <tt class="literal">*/</tt>
+(anything
+followed by a slash) would not match, and the value of the expression
+would be <tt class="literal">$pathname</tt> untouched.
+If <tt class="literal">pathname</tt> were something like
+<tt class="literal">fred/bob</tt>, the prefix <tt class="literal">fred/</tt> would match the pattern and be deleted,
+leaving just <tt class="literal">bob</tt> as the expression's value. The same thing would
+happen if <tt class="literal">pathname</tt> were something like <tt class="literal">/dave/pete/fred/bob</tt>:
+since the <tt class="literal">##</tt> deletes the longest match, it deletes the
+entire <tt class="literal">/dave/pete/fred/</tt>.
+</p>
+
+<p>
+<a name="IXT-4-287557" />
+<a name="IXT-4-287558" />
+If we used
+<tt class="literal">#*/</tt>
+instead of <tt class="literal">##*/</tt>, the expression
+would have the incorrect value <tt class="literal">dave/pete/fred/bob</tt>, because the
+shortest instance of "anything followed by a slash" at the beginning
+of the string is just a slash (<tt class="literal">/</tt>).
+</p>
+
+<p>
+<a name="IXT-4-287559" />
+The construct
+<tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</tt></em></tt><tt class="literal">##*/}</tt>
+is actually quite similar to
+to the Unix utility <em class="emphasis">basename</em></tt>(1).
+<a name="IXTR3-204" />
+<a name="IXTR3-205" />
+
+<a name="IXTR3-206" />
+In typical use,
+<em class="emphasis">basename</em></tt> takes a pathname
+as argument and returns the filename only; it is meant to be used
+with the shell's command substitution mechanism (see below).
+<em class="emphasis">basename</em></tt> is
+less efficient than
+<tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</tt></em></tt><tt class="literal">##/*}</tt>
+because it may run in its own separate process rather than
+within the shell.<a href="#FOOTNOTE-60">[60]</a>
+<a name="IXT-4-287560" />
+<a name="IXT-4-287561" />
+<a name="IXT-4-287562" />
+Another utility, <em class="emphasis">dirname</em></tt>(1), does essentially
+the opposite of <em class="emphasis">basename</em></tt>: it returns the directory prefix only.
+It is equivalent to the Korn shell expression
+<tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</tt></em></tt><tt class="literal">%/*}</tt>
+and is less efficient for the same reason.
+<a name="IXTR3-207" />
+<a name="IXTR3-208" />
+
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-60" /><p> [60]
+<em class="emphasis">basename</em></tt> may be built-in in some versions of <em class="emphasis">ksh93</em></tt>.
+Thus it's not guaranteed to run in a separate process.
+</p>
+</blockquote>
+</div>
+
+<a name="korn2-CHP-4-SECT-5.4" /><div class="sect2">
+<h3 class="sect2">4.5.4. Pattern Substitution Operators</h3>
+
+<p>
+<a name="korn2-IDXTERM-931" />
+
+Besides the pattern-matching operators that delete bits and pieces from the values
+of shell variables, you can do substitutions on those values, much as in a
+text editor.  (In fact, using these facilities, you could almost <em class="emphasis">write</em></tt>
+a line-mode text editor as a shell script!) These operators are listed
+in <a href="ch04_05.htm#korn2-CHP-4-TABLE-10">Table 4-10</a>.
+</p>
+
+<a name="korn2-CHP-4-TABLE-10" /><h4 class="objtitle">Table 4-10. Pattern substitution operators</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Operator</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">:</tt><tt><em class="replaceable">start</tt></em></tt><tt class="literal">}</tt></td>
+<td rowspan="1"><p>
+These represent substring operations.  The result is the
+value of <em class="emphasis">variable</em></tt> starting at position
+<em class="emphasis">start</em></tt> and going for <em class="emphasis">length</em></tt>
+characters.  The first character is at position 0, and if no
+<em class="emphasis">length</em></tt> is provided, the rest of the string is used.
+</p><p>
+When used with <tt class="literal">$*</tt> or <tt class="literal">$@</tt> or an
+array indexed by <tt class="literal">*</tt> or <tt class="literal">@</tt> (see
+<a href="ch06_01.htm">Chapter 6</a>), <em class="emphasis">start</em></tt> is a
+starting index and <em class="emphasis">length</em></tt> is the count of elements.
+In other words, the result is a slice out of the positional parameters or array.
+Both <em class="emphasis">start</em></tt> and <em class="emphasis">length</em></tt> may be
+arithmetic expressions.
+</p><p>
+Beginning with <em class="emphasis">ksh93m</em></tt>, a negative <em class="emphasis">start</em></tt>
+is taken as relative to the end of the string.
+For example, if a string has 10 characters,
+numbered 0 to 9, a start value of -2 means 7 (9 - 2 = 7).
+Similarly, if <em class="emphasis">variable</em></tt> is an indexed array, a negative
+<em class="emphasis">start</em></tt> yields an index by working backwards from the
+highest subscript in the array.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">:</tt><tt><em class="replaceable">start</em></tt><tt class="literal">:</tt><tt><em class="replaceable">length</tt></em></tt><tt class="literal">}</tt></td>
+
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/</tt><tt><em class="replaceable">replace</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+If <em class="emphasis">variable</em></tt> contains a match for <em class="emphasis">pattern</em></tt>,
+the first match is replaced with the text
+of <em class="emphasis">replace</em></tt>.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">//</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/</tt><tt><em class="replaceable">replace</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+This is the same as the previous operation, except that <em class="emphasis">every</em></tt> match
+of the pattern is replaced.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">/</tt><tt><em class="replaceable">pattern</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+If <em class="emphasis">variable</em></tt> contains a match for <em class="emphasis">pattern</em></tt>,
+delete the first match of <em class="emphasis">pattern</em></tt>.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">/#</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/</tt><tt><em class="replaceable">replace</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+If <em class="emphasis">variable</em></tt> contains a match for <em class="emphasis">pattern</em></tt>,
+the first match is replaced with the
+text of <em class="emphasis">replace</em></tt>.
+The match is constrained to occur at the beginning of <em class="emphasis">variable</em></tt>'s value.
+If it doesn't match there, no substitution occurs.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">/%</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/</tt><tt><em class="replaceable">replace</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+If <em class="emphasis">variable</em></tt> contains a match for <em class="emphasis">pattern</em></tt>,
+the first match is replaced with the
+text of <em class="emphasis">replace</em></tt>.
+The match is constrained to occur at the end of <em class="emphasis">variable</em></tt>'s value.
+If it doesn't match there, no substitution occurs.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXT-4-287563" />
+<a name="IXT-4-287564" />
+
+The <tt class="literal">${</tt><tt><em class="replaceable"><tt>variable</em></tt><tt class="literal">/</tt><tt><em class="replaceable">pattern</tt></em></tt><tt class="literal">}</tt> syntax is different from the <tt class="literal">#</tt>, <tt class="literal">##</tt>,
+<tt class="literal">%</tt>, and <tt class="literal">%%</tt> operators we saw earlier.
+Those operators are constrained to match at the beginning or end of the variable's value,
+whereas the syntax shown here is not.  For example:
+</p>
+
+
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>path=/home/fred/work/file</b></tt>
+$ <tt class="userinput"><b>print ${path/work/play}</b></tt>             <i class="lineannotation">Change work into play</i>
+/home/fred/play/file
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+Let's return to our compiler front-end example and look at how we might use
+these operators.
+When turning a C source filename into an object filename, we could do the substitution
+this way:
+
+<blockquote><pre class="code">
+objname=${filename/%.c/.o}            <i class="lineannotation">Change .c to .o, but only at end</i>
+</pre></blockquote>
+</p>
+
+<p>
+If we had a list of C filenames and wanted to change all of them into object filenames,
+we could use the so-called <em class="emphasis">global</em></tt> substitution operator:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>allfiles="fred.c dave.c pete.c"</b></tt>
+$ <tt class="userinput"><b>allobs=${allfiles//.c/.o}</b></tt>
+$ <tt class="userinput"><b>print $allobs</b></tt>
+fred.o dave.o pete.o
+</pre></blockquote>
+</p>
+
+<p>
+The patterns may be any Korn shell pattern expression, as discussed earlier, and
+the replacement text may include the <tt class="literal">\</tt><tt><em class="replaceable"><tt>N</tt></em></tt>
+notation to get the text that matched a subpattern.
+</p>
+
+<p>
+Finally, these operations may be applied to the positional parameters and to arrays,
+in which case they are done on all the parameters or array elements at once.
+(Arrays are described in <a href="ch06_01.htm">Chapter 6</a>.)
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print "$@"</b></tt>
+hi how are you over there
+$ <tt class="userinput"><b>print ${@/h/H}</b></tt>                      <i class="lineannotation">Change h to H in all parameters</i>
+Hi How are you over tHere
+</pre></blockquote>
+</p>
+
+
+<a name="korn2-CHP-4-SECT-5.4.1" /><div class="sect3">
+<h3 class="sect3">4.5.4.1. Greedy versus non-greedy matching</h3>
+
+<p>
+<a name="IXT-4-287565" />
+<a name="IXT-4-287566" />
+
+As promised, here is a brief demonstration of the differences between
+greedy and non-greedy matching regular expressions:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>x='12345abc6789'</b></tt>
+$ <tt class="userinput"><b>print ${x//+([[:digit:]])/X}</b></tt>    <i class="lineannotation">Substitution with longest match</i>
+XabcX
+$ <tt class="userinput"><b>print ${x//+-([[:digit:]])/X}</b></tt>   <i class="lineannotation">Substitution with shortest match</i>
+XXXXXabcXXXX
+$ <tt class="userinput"><b>print ${x##+([[:digit:]])}</b></tt>      <i class="lineannotation">Remove longest match</i>
+abc6789
+$ <tt class="userinput"><b>print ${x#+([[:digit:]])}</b></tt>       <i class="lineannotation">Remove shortest match</i>
+2345abc6789
+</pre></blockquote>
+
+<p>
+The first <em class="emphasis">print</em></tt> replaces the longest match of "one or more digits"
+with a single <tt class="literal">X</tt>, everywhere throughout the string.  Since this is a longest match,
+both groups of digits are replaced.  In the second case, the shortest match for
+"one or more digits" is just a single digit, and thus each
+digit is replaced with an <tt class="literal">X</tt>.
+</p>
+
+<p>
+Similarly, the third and fourth cases demonstrate removing text from the front
+of the value, using longest and shortest matching.  In the third case, the
+longest match removes all the digits; in the fourth case, the shortest
+match removes just a single digit.
+<a name="IXTR3-209" />
+
+</p>
+</div>
+
+</div>
+
+<a name="korn2-CHP-4-SECT-5.5" /><div class="sect2">
+<h3 class="sect2">4.5.5. Variable Name Operators</h3>
+
+<p>
+<a name="IXT-4-287567" />
+<a name="IXT-4-287568" />
+<a name="IXT-4-287569" />
+
+
+A number of operators relate to shell variable names, as seen in
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-11">Table 4-11</a>.
+</p>
+
+<a name="korn2-CHP-4-TABLE-11" /><h4 class="objtitle">Table 4-11. Name-related operators</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Operator</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">${!</tt><tt><em class="replaceable"><tt>variable</tt></em></tt><tt class="literal">}</tt></td>
+<td><p>
+Return the name of the real variable referenced by the nameref <em class="emphasis">variable</em></tt>.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${!</tt><tt><em class="replaceable"><tt>base</tt></em></tt><tt class="literal">*}</tt></td>
+<td rowspan="1"><p>
+List of all variables whose names begin with <em class="emphasis">base</em></tt>.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${!</tt><tt><em class="replaceable"><tt>base</tt></em></tt><tt class="literal">@}</tt></td>
+</tr>
+
+
+</table><p>
+
+<p>
+Namerefs were discussed in <a href="ch04_04.htm#korn2-CHP-4-SECT-4">Section 4.4</a>,
+earlier in this chapter.
+See there for an example of
+<tt class="literal">${!</tt><tt><em class="replaceable"><tt>name</tt></em></tt><tt class="literal">}</tt>.
+</p>
+
+<p>
+The last two operators in
+<a href="ch04_05.htm#korn2-CHP-4-TABLE-11">Table 4-11</a>
+might be useful for debugging and/or tracing the use of
+variables in a large script.  Just to see how they work:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print ${!HIST*}</b></tt>
+HISTFILE HISTCMD HISTSIZE
+$ <tt class="userinput"><b>print ${!HIST@}</b></tt>
+HISTFILE HISTCMD HISTSIZE
+</pre></blockquote>
+
+<p>
+Several other operators related to array variables are described in
+<a href="ch06_01.htm">Chapter 6</a>.
+</p>
+
+</div>
+
+<a name="korn2-CHP-4-SECT-5.6" /><div class="sect2">
+<h3 class="sect2">4.5.6. Length Operators</h3>
+
+<p>
+<a name="IXT-4-287570" />
+
+There are three remaining operators on variables. One is
+<tt class="literal">${#</tt><tt><em class="replaceable"><tt>varname</tt></em></tt><tt class="literal">}</tt>, which
+returns the number of characters in the string.<a href="#FOOTNOTE-61">[61]</a>
+(In <a href="ch06_01.htm">Chapter 6</a> we see how to treat this
+and similar values as actual numbers so they can be used
+in arithmetic expressions.) For example,
+if <tt class="literal">filename</tt> has the value <tt class="literal">fred.c</tt>, then
+<tt class="literal">${#filename}</tt> would have the value <tt class="literal">6</tt>.
+The other two operators
+(<tt class="literal">${#</tt><tt><em class="replaceable"><tt>array</tt></em></tt><tt class="literal">[*]}</tt> and
+<tt class="literal">${#</tt><tt><em class="replaceable"><tt>array</tt></em></tt><tt class="literal">[@]}</tt>)
+have to do with array variables, which are also discussed
+in <a href="ch06_01.htm">Chapter 6</a>.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-61" /><p> [61]
+This may be more than the number of bytes for multibyte character sets.
+</p>
+</blockquote>
+</div>
+
+<a name="korn2-CHP-4-SECT-5.7" /><div class="sect2">
+<h3 class="sect2">4.5.7. The .sh.match Variable</h3>
+
+<p>
+
+The <tt class="literal">.sh.match</tt> variable was introduced in <em class="emphasis">ksh93l</em></tt>.
+It is an indexed array
+(see <a href="ch06_01.htm">Chapter 6</a>), whose values are set every time you do a
+pattern matching operation on a variable, such as
+<tt class="literal">${filename%%*/}</tt>, with any of the
+<tt class="literal">#</tt>, <tt class="literal">%</tt>
+operators (for the shortest match), or
+<tt class="literal">##</tt>, <tt class="literal">%%</tt>
+(for the longest match),
+or <tt class="literal">/</tt>
+and <tt class="literal">//</tt>
+(for substitutions).
+<tt class="literal">.sh.match[0]</tt> contains the text that matched the entire pattern.
+<tt class="literal">.sh.match[1]</tt> contains the text that matched the first parenthesized
+subexpression, <tt class="literal">.sh.match[2]</tt> the text that matched the second,
+and so on.
+The values of <tt class="literal">.sh.match</tt> become invalid (meaning, don't
+try to use them) if the variable on which the pattern matching was done
+changes.
+</p>
+
+<p>
+Again, this is a feature meant for more advanced programming and text processing,
+analogous to similar features in other languages such as <em class="emphasis">perl</em></tt>.
+If you're just starting out, don't worry about it.
+<a name="IXTR3-210" />
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.4. Indirect Variable References </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.6. Command Substitution</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

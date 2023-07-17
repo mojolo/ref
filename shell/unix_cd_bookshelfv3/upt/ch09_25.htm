@@ -1,0 +1,126 @@
+<html><head><title>Finding Files with -prune (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_24.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_26.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.25. Finding Files with -prune</h2>
+
+<p><em class="filename">find</em><a name="IXT-9-179" /> <a name="IXT-9-180" />
+has lots of operators for finding some particular kinds of files. But
+<em class="filename">find</em> won't stop at your current
+directory -- if there are subdirectories, it looks there too. How
+can you tell it "only the current
+directory"? Use <em class="filename">-prune</em>.
+</p>
+
+<p>Most <em class="filename">find</em>s also have a
+<em class="filename">-maxdepth</em> option that gives the maximum number
+of directory levels to descend. For example, <em class="filename">find .
+-maxdepth 0</em> operates only on the current directory.
+</p>
+
+<p><em class="filename">-prune</em> cuts short
+<em class="filename">find</em>'s search at the current
+pathname. So, if the current pathname is a directory,
+<em class="filename">find</em> won't descend into that
+directory for any further searches. The command line looks kind of
+hairy. Here's one to find all files modified in the
+last 24 hours from the current directory:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>date</b></tt>
+Tue Feb 12 19:09:35 MST 2002
+% <tt class="userinput"><b>ls -l</b></tt>
+total 0
+drwxr-xr-x  1 deb  deb  0 Feb 12 12:11 adir
+-rw-r--r--  1 deb  deb  0 Feb 12 19:08 afile
+-rw-r--r--  1 deb  deb  0 Jan 10 10:37 bfile
+-rw-r--r--  1 deb  deb  0 Feb 11 22:43 cfile
+% <tt class="userinput"><b>find . \( -type d ! -name . -prune \) -o \( -mtime -1 -print \)</b></tt>
+./afile
+./cfile</pre></blockquote>
+
+<p>Let's try to understand this command: once you see
+the pattern, you'll understand some important things
+about <em class="filename">find</em> that many people
+don't. Let's follow
+<em class="filename">find</em> as it looks at a few pathnames.
+</p>
+
+<p><em class="filename">find</em> looks at each entry, one by one, in the
+current directory (.). For each entry, <em class="filename">find</em>
+tries to match the expression from left to right. As soon as some
+parenthesized part matches, it ignores the rest (if any) of the
+expression.<a href="#FOOTNOTE-40">[40]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-40" /><p> [40]That's because if one
+part of an OR expression is true, you don't need to
+check the rest. This so-called
+"short-circuit" logical evaluation
+by <em class="filename">find</em> is important to understanding its
+expressions.</p> </blockquote>
+
+<p>When <em class="filename">find</em> is looking at the file named
+<em class="filename">./afile</em>, the first part of the expression,
+<em class="filename">(</em> <em class="filename">-type d ! -name . -prune
+)</em>, doesn't match
+(<em class="filename">./afile</em> isn't a directory). So
+<em class="filename">find</em> doesn't prune. It tries
+the other part, after the <em class="filename">-o</em> (or):
+</p>
+
+<p>Has <em class="filename">./afile</em> been modified in the last day? In
+this (imaginary) case, it has -- so the
+<em class="filename">-print</em> (which is always true) prints the
+pathname.
+</p>
+
+<p>Next, <em class="filename">./bfile</em>: like the previous step, the first
+part of the expression won't match. In the second
+part, <em class="filename">( -mtime -1 -print )</em>, the
+file's modification time is more than one day ago.
+So the <em class="filename">-mtime -1</em> part of the expression is
+false; <em class="filename">find</em> doesn't bother with
+the <em class="filename">-print</em> operator.
+</p>
+
+<p>Finally, let's look at <em class="filename">./adir</em>,
+a directory: the first part of the expression, <em class="filename">( -type d !
+-name . -prune )</em>, matches. That's because
+<em class="filename">./adir</em> is a directory (<em class="filename">-type
+d</em> ), its name is not . (<em class="filename">! -name .</em>).
+So <em class="filename">-prune</em>, which is always true, makes this part
+of the expression true. <em class="filename">find</em> skips
+<em class="filename">./adir</em> (because <em class="filename">-prune</em>
+prunes the search tree at the current pathname). Note that if we
+didn't use <em class="filename">! -name .,</em> then the
+current directory would match immediately and not be searched, and we
+wouldn't find anything at all.
+</p>
+
+<p><a href="ch09_27.htm#upt3-CHP-9-SECT-27">Section 9.27</a> shows handy aliases that use
+<em class="filename">-prune</em>.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_24.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_26.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.24. Finding the (Hard) Links to a File</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.26. Quick finds in the Current Directory</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

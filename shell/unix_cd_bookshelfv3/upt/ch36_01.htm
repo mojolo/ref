@@ -1,0 +1,141 @@
+<html><head><title>Shell Programming for the Initiated (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_30.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 36. Shell Programming for the Initiated</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch36_01.htm#sect1">Beyond the Basics</a><br />
+<a href="ch36_02.htm">The Story of : # #!</a><br />
+<a href="ch36_03.htm">Don't Need a Shell for Your Script? Don't Use One</a><br />
+<a href="ch36_04.htm">Making #! Search the PATH</a><br />
+<a href="ch36_05.htm">The exec Command</a><br />
+<a href="ch36_06.htm">The Unappreciated Bourne Shell ":" Operator</a><br />
+<a href="ch36_07.htm">Parameter Substitution</a><br />
+<a href="ch36_08.htm">Save Disk Space and Programming: Multiple Names for a Program</a><br />
+<a href="ch36_09.htm">Finding the Last Command-Line Argument</a><br />
+<a href="ch36_10.htm">How to Unset All Command-Line Parameters</a><br />
+<a href="ch36_11.htm">Standard Input to a for Loop</a><br />
+<a href="ch36_12.htm">Making a for Loop with Multiple Variables</a><br />
+<a href="ch36_13.htm">Using basename and dirname</a><br />
+<a href="ch36_14.htm">A while Loop with Several Loop Control Commands</a><br />
+<a href="ch36_15.htm">Overview: Open Files and File Descriptors</a><br />
+<a href="ch36_16.htm">n&gt;&amp;m: Swap Standard Output and Standard Error</a><br />
+<a href="ch36_17.htm">A Shell Can Read a Script from Its Standard Input, but...</a><br />
+<a href="ch36_18.htm">Shell Scripts On-the-Fly from Standard Input</a><br />
+<a href="ch36_19.htm">Quoted hereis Document Terminators: sh Versus csh</a><br />
+<a href="ch36_20.htm">Turn Off echo for "Secret" Answers</a><br />
+<a href="ch36_21.htm">Quick Reference: expr</a><br />
+<a href="ch36_22.htm">Testing Characters in a String with expr</a><br />
+<a href="ch36_23.htm">Grabbing Parts of a String</a><br />
+<a href="ch36_24.htm">Nested Command Substitution</a><br />
+<a href="ch36_25.htm">Testing Two Strings with One case Statement</a><br />
+<a href="ch36_26.htm">Outputting Text to an X Window</a><br />
+<a href="ch36_27.htm">Shell Lockfile</a><br /></p></div><div class="sect1"><a name="upt3-CHP-36-SECT-1" />
+<h2 class="sect1"><a name="sect1" />36.1. Beyond the Basics</h2>
+
+<p><a name="upt3-IDXTERM-5751" /> <a name="upt3-IDXTERM-5752" />This chapter has a bunch of tricks and
+techniques for programming with the Bourne shell. Some of them are
+documented but hard to find; others aren't
+documented at all. Here is a summary of this
+chapter's articles:
+</p>
+
+<ul><li>
+<p>The first group of articles is about making a file directly
+<a name="IXT-36-3174" />executable with #! on
+the first line. On many versions of Unix, an executable file can
+start with a first line like this:
+</p>
+<blockquote><pre class="code">#!<em class="replaceable"><tt>/path/to/interpreter</tt></em></pre></blockquote>
+<p>The kernel will start the program named in that line and give it the
+file to read. Chris Torek's Usenet classic, <a href="ch36_02.htm#upt3-CHP-36-SECT-2">Section 36.2</a>, explains how <tt class="literal">#!</tt>
+started. <a href="ch36_03.htm#upt3-CHP-36-SECT-3">Section 36.3</a> explains that your
+"shell scripts" may not need a
+shell at all.
+</p>
+</li><li>
+<p>The next bunch of articles are about processes and commands. The
+<i class="command">exec</i> command, <a href="ch36_05.htm#upt3-CHP-36-SECT-5">Section 36.5</a>, replaces the shell with another process; it
+can also be used to change input/output redirection (see below). The
+: (colon) operator evaluates its arguments and returns a zero
+status -- <a href="ch36_06.htm#upt3-CHP-36-SECT-6">Section 36.6</a> explains why you
+should care.
+</p>
+</li><li>
+<p>Next are techniques for handling variables and parameters. Parameter
+substitution, explained in <a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a>, is a
+compact way to test, set, and give default values for variables. You
+can use the <tt class="literal">$0</tt> parameter and Unix links to give
+the same script multiple names and make it do multiple things; see
+<a href="ch36_08.htm#upt3-CHP-36-SECT-8">Section 36.8</a>. <a href="ch36_09.htm#upt3-CHP-36-SECT-9">Section 36.9</a> shows the easy way to get the last
+command-line argument. <a href="ch36_10.htm#upt3-CHP-36-SECT-10">Section 36.10</a> has an
+easy way to remove all the command-line arguments.
+</p>
+</li><li>
+<p>Four articles cover <i class="command">sh</i> loops. A
+<i class="command">for</i> loop usually reads a list of single arguments
+into a single shell variable. <a href="ch36_11.htm#upt3-CHP-36-SECT-11">Section 36.11</a>
+shows how to make the <i class="command">for</i> loop read from standard
+input. <a href="ch36_12.htm#upt3-CHP-36-SECT-12">Section 36.12</a> has techniques for making
+a <i class="command">for</i> loop set more than one variable. The
+<i class="command">dirname</i> and <i class="command">basename</i> commands
+can be used to split pathnames with a loop; see <a href="ch36_13.htm#upt3-CHP-36-SECT-13">Section 36.13</a>. A <i class="command">while</i> loop can have more
+than one command line at the start; see <a href="ch36_14.htm#upt3-CHP-36-SECT-14">Section 36.14</a>. 
+</p>
+</li><li>
+<p>Next is an assortment of articles about input/output. <a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a> introduces open files and file
+descriptors -- there's more to know about
+standard input/output/error than you might have realized! <a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a> has a look at file-descriptor handling
+in the Bourne shell, swapping standard output and standard error.
+</p>
+</li><li>
+<p>The shell can read commands directly from a shell script file. As
+<a href="ch36_17.htm#upt3-CHP-36-SECT-17">Section 36.17</a> points out, a shell can also
+read commands from its standard input, but that can cause some
+problems. <a href="ch36_18.htm#upt3-CHP-36-SECT-18">Section 36.18</a> shows one place
+scripts from <em class="emphasis">stdin</em> are useful: writing a script
+that creates another script as it goes.
+</p>
+
+<p>Next are two articles about miscellaneous I/O. One gotcha with the
+here-document operator (for redirecting input from a script file) is
+that the terminators are different in the Bourne and C shells;
+<a href="ch36_19.htm#upt3-CHP-36-SECT-19">Section 36.19</a> explains. <a href="ch36_20.htm#upt3-CHP-36-SECT-20">Section 36.20</a> shows how to turn off echoing while your
+script reads a "secret" answer such
+as a password.
+</p>
+</li><li>
+<p>Two articles -- <a href="ch36_22.htm#upt3-CHP-36-SECT-22">Section 36.22</a> and <a href="ch36_23.htm#upt3-CHP-36-SECT-23">Section 36.23</a> -- show uses for the versatile
+<i class="command">expr</i> expression-handling command. <a href="ch36_21.htm#upt3-CHP-36-SECT-21">Section 36.21</a> is a quick reference to
+<i class="command">expr</i>. <a href="ch36_24.htm#upt3-CHP-36-SECT-24">Section 36.24</a> covers
+multiple <b class="emphasis-bold">command substitution</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>). 
+</p>
+
+<p><a href="ch36_25.htm#upt3-CHP-36-SECT-25">Section 36.25</a> shows a trick for making one
+<b class="emphasis-bold">case statement</b> (<a href="ch35_10.htm#upt3-CHP-35-SECT-10">Section 35.10</a>) test two things at once. Finally, <a href="ch36_27.htm#upt3-CHP-36-SECT-27">Section 36.27</a> has a simple technique for getting
+exclusive access to a file or other system resource.
+</p>
+</li></ul>
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_30.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.30. Using Shell Functions in Shell Scripts</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.2. The Story of : # #!</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

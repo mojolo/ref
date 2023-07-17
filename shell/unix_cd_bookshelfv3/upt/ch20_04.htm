@@ -1,0 +1,315 @@
+<html><head><title>Useful ex Commands (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch20_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">20.4. Useful ex Commands</h2>
+
+<p><a name="upt3-IDXTERM-2804" />
+<a name="upt3-IDXTERM-2805" /> <a name="upt3-IDXTERM-2806" />Many line
+<a name="IXT-20-223" />editor commands are not particularly
+useful in scripts. The two commands that you will use far and away
+the most often are <tt class="literal">s</tt> (substitute), to replace one
+pattern with another, and <tt class="literal">d</tt> (delete), to delete
+one or more lines. On occasion, though, you'll want
+to insert text from a script. (<b class="emphasis-bold">Editing scripts
+built by diff</b> (<a href="ch18_06.htm#upt3-CHP-18-SECT-6">Section 18.6</a>) make heavy
+use of insert, append, delete, and change commands.) And of course,
+you need commands to write the file and quit the editor.
+</p>
+
+<p>Here's the syntax of most of the commands you may
+encounter in <i class="command">ex</i> editing scripts. (The
+<i class="command">ed</i><a name="IXT-20-224" />
+editor understands the abbreviated versions of some, but not all, of
+these commands.) Elements in [brackets] are optional;
+don't type the <tt class="literal">[</tt> or
+<tt class="literal">]</tt>. <a name="IXT-20-225" />The leading colon (:) shown in examples is
+the <i class="command">ex</i> command character used to issue an
+<i class="command">ex</i> command from <i class="command">vi</i>; in a
+script, the colon would be omitted. The autoindent feature referred
+to below aids anyone writing structured text. Your editor can ease
+the burden of creating outlines and source code by positioning the
+cursor beneath the first character of the previous line.
+</p>
+
+<dl>
+<dt><tt class="literal">append</tt></dt>
+<dd>
+<tt class="literal">[</tt><tt><em class="replaceable"><tt>address</tt></em></tt><tt class="literal">] a[!]</tt>
+<tt><em class="replaceable"><tt>text</tt></em></tt> <tt class="literal">.</tt>
+</p>
+
+<p><a name="IXT-20-226" />Append
+<tt><em class="replaceable"><tt>text</tt></em></tt> at specified
+<tt><em class="replaceable"><tt>address</tt></em></tt>, or at present address if none is
+specified. Add a <tt class="literal">!</tt> to switch the
+<tt class="literal">autoindent</tt> setting that will be used during input.
+For example, if <tt class="literal">autoindent</tt> was enabled,
+<tt class="literal">!</tt> disables it.
+</p>
+</dd><dt><tt class="literal">change</tt></dt>
+<dd>
+<tt class="literal">[</tt><em class="replaceable"><tt>address</tt></em><tt class="literal">] c[!]</tt>
+<em class="replaceable"><tt>text</tt></em> <tt class="literal">.</tt>
+</p>
+
+<p>Replace the specified lines with <em class="emphasis">text</em>. Add a
+<tt class="literal">!</tt> to switch <a name="IXT-20-227" />the <tt class="literal">autoindent</tt> setting
+during input of <em class="replaceable"><tt>text</tt></em>.
+</p>
+</dd><dt><tt class="literal">copy</tt></dt>
+<dd>
+<tt class="literal">[</tt><tt><em class="replaceable"><tt>address</tt></em></tt><tt class="literal">] co</tt>
+<tt><em class="replaceable"><tt>destination</tt></em></tt>
+<tt class="literal">[</tt><tt><em class="replaceable"><tt>address</tt></em></tt><tt class="literal">] t</tt>
+<tt><em class="replaceable"><tt>destination</tt></em></tt>
+</p>
+
+<p>Copy<a href="#FOOTNOTE-55">[55]</a> the lines included in
+<tt><em class="replaceable"><tt>address</tt></em></tt> to the specified
+<tt><em class="replaceable"><tt>destination</tt></em></tt> address.
+<a name="IXT-20-228" />
+</p><blockquote class="footnote"> <a name="FOOTNOTE-55" /><p> [55]Note that "t"
+is short for "to." The ed editor
+only has one-letter commands and since
+"c" was already taken for
+"change," they used
+"t" for "copy
+TO."</p> </blockquote>
+
+<blockquote><pre class="code">:1,10 co 50
+:1,10t50</pre></blockquote>
+</dd><dt><tt class="literal">delete</tt></dt>
+<dd>
+<tt class="literal">[</tt><em class="replaceable"><tt>address</tt></em><tt class="literal">] d
+[</tt><em class="replaceable"><tt>buffer</tt></em><tt class="literal">]</tt>
+</p>
+
+<p>Delete the lines included in <em class="replaceable"><tt>address</tt></em>.
+<a name="IXT-20-229" />If
+<em class="replaceable"><tt>buffer</tt></em> is specified, save or append the
+text to the named buffer.
+</p>
+
+<blockquote><pre class="code">:/Part I/,/Part II/-1d   <i class="lineannotation">Delete to line above "Part II"</i>
+:/main/+d                <i class="lineannotation">Delete line below "main"</i>
+:.,$d                    <i class="lineannotation">Delete from this line to last line</i></pre></blockquote>
+</dd><dt><tt class="literal">global</tt></dt>
+<dd>
+<tt class="literal">[</tt><tt><em class="replaceable"><tt>address</tt></em></tt><tt class="literal">]
+g[!]/pattern/[</tt><tt><em class="replaceable"><tt>commands</tt></em></tt><tt class="literal">]</tt>
+</p>
+
+<p>Execute <tt><em class="replaceable"><tt>commands</tt></em></tt> on all lines that contain
+<tt><em class="replaceable"><tt>pattern</tt></em></tt>, or if
+<tt><em class="replaceable"><tt>address</tt></em></tt><a name="IXT-20-230" /> is specified, on all lines within that
+range. If <tt><em class="replaceable"><tt>commands</tt></em></tt> are not specified,
+print all such lines. (Exception: doesn't print when
+you use it from <i class="command">vi</i> by typing : first.
+You'll need to add a <tt><em class="replaceable"><tt>p</tt></em></tt>,
+as in the second example below). If <tt class="literal">!</tt> is used,
+execute <tt><em class="replaceable"><tt>commands</tt></em></tt> on all lines that
+<em class="emphasis">don't</em></tt> contain
+<tt><em class="replaceable"><tt>pattern</tt></em></tt>.
+</p>
+
+<blockquote><pre class="code">:g/Unix/
+:g/Unix/p
+:g/Name:/s/tom/Tom/</pre></blockquote>
+</dd><dt><tt class="literal">insert</tt></dt>
+<dd>
+<tt class="literal">[</tt><em class="replaceable"><tt>address</tt></em><tt class="literal">] i[!]</tt>
+<em class="replaceable"><tt>text</tt></em> <tt class="literal">.</tt>
+</p>
+
+<p>Insert <em class="replaceable"><tt>text</tt></em> at line before the specified
+<em class="replaceable"><tt>address</tt></em>, or at present
+<a name="IXT-20-231" />address
+if none is specified. Add a <tt class="literal">!</tt> to switch the
+<tt class="literal">autoindent</tt> setting during input of
+<em class="replaceable"><tt>text</tt></em>.
+</p>
+</dd><dt><tt class="literal">move</tt></dt>
+<dd>
+<tt class="literal">[</tt><tt><em class="replaceable"><tt>address</tt></em></tt><tt class="literal">] m</tt>
+<tt><em class="replaceable"><tt>destination</tt></em></tt>
+</p>
+
+<p>Move the lines specified by <tt><em class="replaceable"><tt>address</tt></em></tt> to the
+<tt><em class="replaceable"><tt>destination</tt></em></tt> address.
+</p>
+
+<blockquote><pre class="code">:.,/Note/m /END/          <i class="lineannotation">Move block after line containing "END"</i></pre></blockquote>
+</dd><dt><tt class="literal">print</tt></dt>
+<dd>
+<tt class="literal">[</tt><em class="replaceable"><tt>address</tt></em><tt class="literal">] p
+[</tt><em class="replaceable"><tt>count</tt></em><tt class="literal">]</tt>
+</p>
+
+<p>Print the lines specified by <em class="replaceable"><tt>address</tt></em>.
+<em class="replaceable"><tt>count</tt></em><a name="IXT-20-232" /> specifies the number of lines to print,
+starting with <em class="replaceable"><tt>address</tt></em>.
+</p>
+
+<blockquote><pre class="code">:100;+5p                  <i class="lineannotation">Show line 100 and the next five lines</i></pre></blockquote>
+</dd><dt><tt class="literal">quit</tt></dt>
+<dd>
+<tt class="literal">q[!]</tt></p>
+
+<p>Terminate current editing session. Use <tt class="literal">!</tt> to
+discard changes made <a name="IXT-20-233" />since the last
+save. If the editing session includes additional files in the
+argument list that were never accessed, quit by typing
+<tt class="literal">q!</tt> or by typing <tt class="literal">q</tt> twice.
+</p>
+</dd><dt><tt class="literal">read</tt></dt>
+<dd>
+<tt class="literal">[</tt><em class="replaceable"><tt>address</tt></em><tt class="literal">] r</tt>
+<em class="replaceable"><tt>file</tt></em>
+</p>
+
+<p>Copy in the text from <em class="replaceable"><tt>file</tt></em> on the line
+below the specified
+<em class="replaceable"><tt>address</tt></em><a name="IXT-20-234" />. If
+<em class="replaceable"><tt>file</tt></em> is not specified, the current
+filename is used.
+</p>
+
+<blockquote><pre class="code">:0r $HOME/data             <i class="lineannotation">Read file in at top of current file</i></pre></blockquote>
+</dd><dt><tt class="literal">read</tt></dt>
+<dd>
+<tt class="literal">[</tt><tt><em class="replaceable"><tt>address</tt></em></tt><tt class="literal">] r
+!</tt><tt><em class="replaceable"><tt>command</tt></em></tt>
+</p>
+
+<p>Read the output of Unix <tt><em class="replaceable"><tt>command</tt></em></tt> into the
+text after the line specified by <tt><em class="replaceable"><tt>address</tt></em></tt>.
+</p>
+
+<blockquote><pre class="code">:$r !cal                   <i class="lineannotation">Place a calendar at end of file</i></pre></blockquote>
+</dd><dt><tt class="literal">source</tt></dt>
+<dd>
+<tt class="literal">so</tt> <em class="replaceable"><tt>file</tt></em></p>
+
+<p>Read and execute <em class="emphasis">ex</em> commands from
+<em class="replaceable"><tt>file</tt></em>. <a name="IXT-20-235" />
+</p>
+
+<blockquote><pre class="code">:so $HOME/.exrc</pre></blockquote>
+</dd><dt><tt class="literal">substitute</tt></dt>
+<dd>
+<tt class="literal">[</tt><tt><em class="replaceable"><tt>address</tt></em></tt><tt class="literal">] s
+[</tt><tt><em class="replaceable"><tt>/pattern/replacement/</tt></em></tt><tt class="literal">]
+[</tt><tt><em class="replaceable"><tt>options</tt></em></tt><tt class="literal">]
+[</tt><tt><em class="replaceable"><tt>count</tt></em></tt><tt class="literal">]</tt>
+</p>
+
+<p>Replace first instance of <tt><em class="replaceable"><tt>pattern</tt></em></tt> on each
+of the specified lines with
+<tt><em class="replaceable"><tt>replacement</tt></em></tt><a name="IXT-20-236" /><a name="IXT-20-237" /><a name="IXT-20-238" />. If
+<tt><em class="replaceable"><tt>pattern</tt></em></tt> and
+<tt><em class="replaceable"><tt>replacement</tt></em></tt> are omitted, repeat last
+substitution. <tt><em class="replaceable"><tt>count</tt></em></tt> specifies the number
+of lines on which to substitute, starting with
+<tt><em class="replaceable"><tt>address</tt></em></tt>. The following can be used as
+<tt><em class="replaceable"><tt>options</tt></em></tt>:
+</p>
+
+<dl>
+<dt><tt class="literal">c</tt></dt>
+<dd>
+Prompt for confirmation before each change.</p>
+</dd>
+
+
+<dt><tt class="literal">g</tt></dt>
+<dd>
+Substitute all instances of <tt><em class="replaceable"><tt>pattern</tt></em></tt> on
+each line.
+</p>
+</dd>
+
+
+<dt><tt class="literal">p</tt></dt>
+<dd>
+Print the last line on which a substitution was made.</p>
+
+<p><tt class="literal">c</tt> <a href="ch17_09.htm#upt3-CHP-17-SECT-9">Section
+17.9</a>, <tt class="literal">\U</tt> <a href="ch17_14.htm#upt3-CHP-17-SECT-14">Section 17.14</a></p>
+<blockquote><pre class="code">:1,10s/yes/no/g      <i class="lineannotation">Substitute on first 10 lines</i>
+:%s/[Hh]ello/Hi/gc   <i class="lineannotation">Confirm global substitutions</i>
+:s/Fortran/\U&amp;/ 3    <i class="lineannotation">Uppercase "Fortran" on next 3 lines</i></pre></blockquote>
+</dd>
+
+</dl>
+</dd>
+
+
+<dt><tt class="literal">write</tt></dt>
+<dd>
+<tt class="literal">[</tt><tt><em class="replaceable"><tt>address</tt></em></tt><tt class="literal">] w[!]
+[&gt;&gt;]</tt>
+<tt><em class="replaceable"><tt>file</tt></em></tt><tt class="literal">]</tt>
+</p>
+
+<p>Write lines specified by <tt><em class="replaceable"><tt>address</tt></em></tt> to
+<tt><em class="replaceable"><tt>file</tt></em></tt>, <a name="IXT-20-239" />or write
+full contents of buffer if <tt><em class="replaceable"><tt>address</tt></em></tt> is not
+specified. If <tt><em class="replaceable"><tt>file</tt></em></tt> is also omitted, save
+the contents of the buffer to the current filename. If
+<tt class="literal">&gt;&gt;</tt> <tt><em class="replaceable"><tt>file</tt></em></tt> is used,
+write contents to the end of an existing
+<tt><em class="replaceable"><tt>file</tt></em></tt>. The <tt class="literal">!</tt> flag forces
+the editor to write over any current contents of
+<tt><em class="replaceable"><tt>file</tt></em></tt>.
+</p>
+
+<blockquote><pre class="code">:1,10w name_list    <i class="lineannotation">Copy first 10 lines to name_list</i>
+:50w &gt;&gt; name_list   <i class="lineannotation">Now append line 50</i></pre></blockquote>
+</dd>
+
+<dt><tt class="literal">write</tt></dt>
+<dd>
+<tt class="literal">[</tt><em class="replaceable"><tt>address</tt></em><tt class="literal">] w
+!</tt><em class="replaceable"><tt>command</tt></em>
+</p>
+
+<p>Write lines specified by <em class="replaceable"><tt>address</tt></em>, or write
+full contents of buffer if <em class="replaceable"><tt>address</tt></em> is not
+specified, to the <b class="emphasis-bold">standard input</b>
+(<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>) of <em class="replaceable"><tt>command</tt></em>.
+</p>
+
+<blockquote><pre class="code">:1,10w !spell       <i class="lineannotation">Send first 10 lines to the spell command</i>
+:w !lpr             <i class="lineannotation">Print entire buffer with lpr command</i></pre></blockquote>
+
+</dd>
+
+</dl>
+<p> <em class="emphasis">-- TOR and DG</em> 
+</p>
+<a name="IXTR3-359" />
+<a name="IXTR3-360" />
+<a name="IXTR3-361" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch20_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">20.3. Line Addressing</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">20.5. Running Editing Scripts Within vi</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,197 @@
+<html><head><title>Testing and Saving Output (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.3. Testing and Saving Output</h2>
+
+<p>In our previous discussion of the pattern space, you saw that sed:</p>
+
+<ol><li><p>Makes a copy of the input line.</p></li><li><p>Modifies that copy in the pattern space.</p></li><li><p>Outputs the copy to standard output.</p></li></ol><p>What this means is that sed has a built-in safeguard so that you don't
+make changes to the original file.  Thus, the following command line:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sedscr testfile</b></tt></pre></blockquote>
+
+<p>does not make the change in <em class="filename">testfile</em>.  It sends all lines 
+to standard ouput (typically the screen)--the lines that were modified
+as well as the lines that are unchanged.
+You have to capture this output in a new file
+if you want to save it. 
+<a name="IXT-4-265610" />
+<a name="IXT-4-265611" /></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sedscr testfile &gt; newfile</b></tt></pre></blockquote>
+
+<p>
+<a name="IXT-4-265612" />
+<a name="IXT-4-265613" />
+<a name="IXT-4-265614" />
+The redirection symbol "&gt;" directs the output from sed to the file
+<em class="filename">newfile</em>.  Don't redirect the output from the
+command back to the input file or you will overwrite the input file.
+This will happen <em class="emphasis">before</em> sed even gets a chance to
+process the file, effectively destroying your data.</p>
+
+<p>
+<a name="ch04.test1" />
+<a name="IXT-4-265615" />
+<a name="ch04.test2" />
+One important reason to redirect the output to a file is to verify
+your results.  You can examine the contents of
+<em class="filename">newfile</em> and compare it to
+<em class="filename">testfile</em>.  If you want to be very methodical
+about checking your results (and you should be), use the
+<b class="emphasis-bold">diff</b> program to point out the differences between
+the two files.
+<a name="ch04.test3" /></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff testfile newfile</b></tt></pre></blockquote>
+
+<p>This command will display lines that are unique to
+<em class="filename">testfile</em> preceded by a "&lt;" and lines unique to
+<em class="filename">newfile</em> preceded by a "&gt;".  When you have
+verified your results, make a backup copy of the original input file
+and then use the <b class="emphasis-bold">mv</b> command to overwrite the
+original with the new version.  Be sure that the editing script is
+working properly before abandoning the original version.</p>
+
+<p>Because these steps are repeated so frequently, you will find it
+helpful to put them into a shell script.  While we can't go into much
+depth about the workings of shell scripts, these scripts are fairly
+simple to understand and use.  Writing a shell script involves using a
+text editor to enter one or more command lines in a file, saving the
+file and then using the <b class="emphasis-bold">chmod</b> command to make the
+file executable.  The name of the file is the name of the command, and
+it can be entered at the system prompt.  If you are unfamiliar with
+shell scripts, follow the shell scripts presented in this book as
+recipes in which you make your own substitutions.</p>
+
+<p>The following two shell scripts are useful for testing sed scripts
+and then making the changes permanently in a file.  They are particularly
+useful when the same script needs to be run on multiple files.</p>
+
+<a name="sedawk-ch-4-sect-3.1" /><div class="sect2">
+<h3 class="sect2">4.3.1. testsed</h3>
+
+<p>The shell script <b class="emphasis-bold">testsed</b> automates the process of
+saving the output of sed in a temporary file.  It expects to find the
+script file, <em class="emphasis">sedscr</em>, in the current directory and
+applies these instructions to the input file named on the command
+line.  The output is placed in a temporary file.</p>
+
+<blockquote><pre class="code">for x
+do
+	sed -f sedscr $x &gt; tmp.$x
+done</pre></blockquote>
+
+<p>The name of a file must be specified on the command line.  As a
+result, this shell script saves the output in a temporary file with
+the prefix "<em class="filename">tmp.</em>".  You can examine the
+temporary file to determine if your edits were made correctly.  If you
+approve of the results, you can use <b class="emphasis-bold">mv</b> to
+overwrite the original file with the temporary file.</p>
+
+<p>You might also incorporate the <b class="emphasis-bold">diff</b> command into
+the shell script.  (Add <b class="emphasis-bold">diff $x tmp.$x</b> after the
+sed command.)</p>
+
+<p>If you find that your script did not produce the results you expected,
+remember that the easiest "fix" is usually to perfect the editing
+script and run it again on the original input file.  Don't write a new
+script to "undo" or improve upon changes made in the temporary file.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-4-sect-3.2" /><div class="sect2">
+<h3 class="sect2">4.3.2. runsed</h3>
+
+<p>The shell script <b class="emphasis-bold">runsed</b> was developed to make
+changes to an input file permanently.  In other words, it is used in
+cases when you would want the input file and the output file to be the
+same.  Like <b class="emphasis-bold">testsed</b>, it creates a temporary file,
+but then it takes the next step: copying the file over the original.</p>
+
+<blockquote><pre class="code">#! /bin/sh
+
+for x
+do
+   echo "editing $x: \c"
+   if test "$x" = sedscr; then
+      echo "not editing sedscript!" 
+   elif test -s $x; then 
+      sed -f sedscr $x &gt; /tmp/$x$$
+      if test -s /tmp/$x$$
+      then 
+         if cmp -s $x /tmp/$x$$
+         then
+            echo "file not changed: \c"
+         else
+            mv $x $x.bak  # save original, just in case
+            cp /tmp/$x$$ $x
+         fi
+         echo "done"
+      else 
+         echo "Sed produced an empty file\c"
+         echo " - check your sedscript."
+      fi
+      rm -f /tmp/$x$$
+   else
+      echo "original file is empty."
+   fi
+done
+echo "all done"</pre></blockquote>
+
+<p>To use <b class="emphasis-bold">runsed</b>, create a sed script named
+<em class="emphasis">sedscr</em> in the directory where you want to make the
+edits.  Supply the name or names of the files to edit on the command
+line.  Shell metacharacters can be used to specify a set of files.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>runsed ch0?</b></tt></pre></blockquote>
+
+<p><b class="emphasis-bold">runsed</b> simply invokes <b class="emphasis-bold">sed -f
+sedscr</b> on the named files, one at a time, and redirects the
+output to a temporary file.  <b class="emphasis-bold">runsed</b> then tests this
+temporary file to make sure that output was produced before copying it
+over the original.</p>
+
+<p>The muscle of this shell script (line 9) is essentially the same as
+<b class="emphasis-bold">testsed</b>.  The additional lines are intended to test
+for unsuccessful runsfor instance, when no output is produced.  It
+compares the two files to see if changes were actually made or to see
+if an empty output file was produced before overwriting the original.</p>
+
+<p>However, <b class="emphasis-bold">runsed</b> does not protect you from imperfect
+editing scripts.  You should use <b class="emphasis-bold">testsed</b> first to
+verify your changes before actually making them permanent with
+<b class="emphasis-bold">runsed</b>.</p>
+</div>
+
+
+
+
+<a name="IXT-4-265616" />
+<a name="IXT-4-265617" />
+<a name="IXT-4-265618" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.2. A Global Perspective on Addressing</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.4. Four Types of sed Scripts</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

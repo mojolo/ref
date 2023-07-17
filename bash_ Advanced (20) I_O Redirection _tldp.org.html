@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> <html style><!--
+ Page saved with SingleFile 
+ url: https://tldp.org/LDP/abs/html/io-redirection.html 
+ saved date: Tue Jul 04 2023 00:57:53 GMT-0700 (Pacific Daylight Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>.jfk-bubble.gtx-bubble,.captcheck_answer_label>input+img,span#closed_text>img[src^="https://www.gstatic.com/images/branding/googlelogo"],span[data-href^="https://www.hcaptcha.com/"]>#icon,#bit-notification-bar-iframe,::-webkit-calendar-picker-indicator{filter:invert(100%) hue-rotate(180deg) contrast(90%) sepia(5%)!important}[data-darkreader-inline-bgcolor]{background-color:var(--darkreader-inline-bgcolor)!important}[data-darkreader-inline-color]{color:var(--darkreader-inline-color)!important}:root{--darkreader-neutral-background:#131516;--darkreader-neutral-text:#dcd6cf;--darkreader-selection-background:#054da5;--darkreader-selection-text:#ece8e2}html{background-color:#191a1b!important}html{color-scheme:dark!important}html,body{background-color:#191a1b}html,body{border-color:#756c5e;color:#ece8e2}a{color:#3992f8}table{border-color:#565c5d}::placeholder{color:#b5ada1}::-webkit-scrollbar{background-color:#212324;color:#aea699}::-webkit-scrollbar-thumb{background-color:#464b4d}::-webkit-scrollbar-corner{background-color:#191a1b}*{scrollbar-color:#464b4d #212324}::selection{background-color:#054da5!important;color:#ece8e2!important}::-moz-selection{background-color:#054da5!important;color:#ece8e2!important}</style><title>I/O Redirection</title><meta name=GENERATOR content="Modular DocBook HTML Stylesheet Version 1.7"><link rel=HOME title="Advanced Bash-Scripting Guide" href=https://tldp.org/LDP/abs/html/index.html><meta name=darkreader content=b7d0d99df96246b3bc925406163d8ba6><style class="darkreader darkreader--override" media=screen>::placeholder{opacity:0.5!important}</style><link rel=UP title="Advanced Topics" href=https://tldp.org/LDP/abs/html/part5.html><link rel=PREVIOUS title="Here Strings" href=https://tldp.org/LDP/abs/html/x17837.html><link rel=NEXT title="Using exec" href=https://tldp.org/LDP/abs/html/x17974.html><link type=image/x-icon rel="shortcut icon" href="data:image/x-icon;base64,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"><link rel=canonical href=https://tldp.org/LDP/abs/html/io-redirection.html><meta http-equiv=content-security-policy content="default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;"><style>img[src="data:,"],source[src="data:,"]{display:none!important}</style><body class=CHAPTER style=--darkreader-inline-bgcolor:#191a1b data-darkreader-inline-bgcolor vlink=#840084 text=#000000 link=#0000FF bgcolor=#FFFFFF alink=#0000FF><div class=NAVHEADER><table summary="Header navigation table" width=100% cellspacing=0 cellpadding=0 border=0><tbody><tr><th colspan=3 align=center>Advanced Bash-Scripting Guide: <tr><td width=10% valign=bottom align=left><a href=https://tldp.org/LDP/abs/html/x17837.html accesskey=P>Prev</a><td width=80% valign=bottom align=center><td width=10% valign=bottom align=right><a href=https://tldp.org/LDP/abs/html/x17974.html accesskey=N>Next</a></table><hr width=100% align=LEFT></div><div class=CHAPTER><h1><a name=IO-REDIRECTION></a>Chapter 20. I/O Redirection</h1><div class=TOC><dl><dt><b>Table of Contents</b><dt>20.1. <a href=https://tldp.org/LDP/abs/html/x17974.html>Using <i class=FIRSTTERM>exec</i></a><dt>20.2. <a href=https://tldp.org/LDP/abs/html/redircb.html>Redirecting Code Blocks</a><dt>20.3. <a href=https://tldp.org/LDP/abs/html/redirapps.html>Applications</a></dl></div><p><a name=IOREDIRREF></a><p>There are always three default <i class=FIRSTTERM>files</i>
+ <a name=AEN17884 href=#FTN.AEN17884><span class=footnote>[1]</span></a>
+ open, <tt class=FILENAME>stdin</tt> (the keyboard),
+ <tt class=FILENAME>stdout</tt> (the screen), and
+ <tt class=FILENAME>stderr</tt> (error messages output to the
+ screen). These, and any other open files, can be redirected.
+ Redirection simply means capturing output from a file, command,
+ program, script, or even code block within a script (see <a href=https://tldp.org/LDP/abs/html/special-chars.html#EX8>Example 3-1</a> and <a href=https://tldp.org/LDP/abs/html/special-chars.html#RPMCHECK>Example 3-2</a>) and sending it as
+ input to another file, command, program, or script.<p><a name=FDREF></a>Each open file gets assigned a file descriptor. 
+ <a name=AEN17894 href=#FTN.AEN17894><span class=footnote>[2]</span></a>
+ The file descriptors for <tt class=FILENAME>stdin</tt>,
+ <tt class=FILENAME>stdout</tt>, and <tt class=FILENAME>stderr</tt> are
+ 0, 1, and 2, respectively. For opening additional files, there
+ remain descriptors 3 to 9. It is sometimes useful to assign one of
+ these additional file descriptors to <tt class=FILENAME>stdin</tt>,
+ <tt class=FILENAME>stdout</tt>, or <tt class=FILENAME>stderr</tt>
+ as a temporary duplicate link.
+ <a name=AEN17906 href=#FTN.AEN17906><span class=footnote>[3]</span></a>
+ This simplifies restoration to normal after complex redirection
+ and reshuffling (see <a href=https://tldp.org/LDP/abs/html/x17974.html#REDIR1>Example 20-1</a>).<p><a name=IOREDIRECTIONREF></a><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=100% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>   COMMAND_OUTPUT &gt;
+      # Redirect stdout to a file.
+      # Creates the file if not present, otherwise overwrites it.
+
+      ls -lR &gt; dir-tree.list
+      # Creates a file containing a listing of the directory tree.
+
+   : &gt; filename
+      # The &gt; truncates file "filename" to zero length.
+      # If file not present, creates zero-length file (same effect as 'touch').
+      # The : serves as a dummy placeholder, producing no output.
+
+   &gt; filename    
+      # The &gt; truncates file "filename" to zero length.
+      # If file not present, creates zero-length file (same effect as 'touch').
+      # (Same result as ": &gt;", above, but this does not work with some shells.)
+
+   COMMAND_OUTPUT &gt;&gt;
+      # Redirect stdout to a file.
+      # Creates the file if not present, otherwise appends to it.
+
+
+      # Single-line redirection commands (affect only the line they are on):
+      # --------------------------------------------------------------------
+
+   1&gt;filename
+      # Redirect stdout to file "filename."
+   1&gt;&gt;filename
+      # Redirect and append stdout to file "filename."
+   2&gt;filename
+      # Redirect stderr to file "filename."
+   2&gt;&gt;filename
+      # Redirect and append stderr to file "filename."
+   &amp;&gt;filename
+      # Redirect both stdout and stderr to file "filename."
+      # This operator is now functional, as of Bash 4, final release.
+
+   M&gt;N
+     # "M" is a file descriptor, which defaults to 1, if not explicitly set.
+     # "N" is a filename.
+     # File descriptor "M" is redirect to file "N."
+   M&gt;&amp;N
+     # "M" is a file descriptor, which defaults to 1, if not set.
+     # "N" is another file descriptor.
+
+      #==============================================================================
+
+      # Redirecting stdout, one line at a time.
+      LOGFILE=script.log
+
+      echo "This statement is sent to the log file, \"$LOGFILE\"." 1&gt;$LOGFILE
+      echo "This statement is appended to \"$LOGFILE\"." 1&gt;&gt;$LOGFILE
+      echo "This statement is also appended to \"$LOGFILE\"." 1&gt;&gt;$LOGFILE
+      echo "This statement is echoed to stdout, and will not appear in \"$LOGFILE\"."
+      # These redirection commands automatically "reset" after each line.
+
+
+
+      # Redirecting stderr, one line at a time.
+      ERRORFILE=script.errors
+
+      bad_command1 2&gt;$ERRORFILE       #  Error message sent to $ERRORFILE.
+      bad_command2 2&gt;&gt;$ERRORFILE      #  Error message appended to $ERRORFILE.
+      bad_command3                    #  Error message echoed to stderr,
+                                      #+ and does not appear in $ERRORFILE.
+      # These redirection commands also automatically "reset" after each line.
+      #=======================================================================</pre></font></table><p><a name=IOREDIRECTIONREF1></a><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=100% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>   2&gt;&amp;1
+      # Redirects stderr to stdout.
+      # Error messages get sent to same place as standard output.
+        &gt;&gt;filename 2&gt;&amp;1
+            bad_command &gt;&gt;filename 2&gt;&amp;1
+            # Appends both stdout and stderr to the file "filename" ...
+        2&gt;&amp;1 | [command(s)]
+            bad_command 2&gt;&amp;1 | awk '{print $5}'   # found
+            # Sends stderr through a pipe.
+            # |&amp; was added to Bash 4 as an abbreviation for 2&gt;&amp;1 |.
+
+   i&gt;&amp;j
+      # Redirects file descriptor <em>i</em> to <em>j</em>.
+      # All output of file pointed to by <em>i</em> gets sent to file pointed to by <em>j</em>.
+
+   &gt;&amp;j
+      # Redirects, by default, file descriptor <em>1</em> (stdout) to <em>j</em>.
+      # All stdout gets sent to file pointed to by <em>j</em>.</pre></font></table><p><a name=IOREDIRECTIONREF2></a><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=100% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>   0&lt; FILENAME
+    &lt; FILENAME
+      # Accept input from a file.
+      # Companion command to <span class=QUOTE>"&gt;"</span>, and often used in combination with it.
+      #
+      # grep search-word &lt;filename
+
+
+   [j]&lt;&gt;filename
+      #  Open file "filename" for reading and writing,
+      #+ and assign file descriptor "j" to it.
+      #  If "filename" does not exist, create it.
+      #  If file descriptor "j" is not specified, default to fd 0, stdin.
+      #
+      #  An application of this is writing at a specified place in a file. 
+      echo 1234567890 &gt; File    # Write string to "File".
+      exec 3&lt;&gt; File             # Open "File" and assign fd 3 to it.
+      read -n 4 &lt;&amp;3             # Read only 4 characters.
+      echo -n . &gt;&amp;3             # Write a decimal point there.
+      exec 3&gt;&amp;-                 # Close fd 3.
+      cat File                  # ==&gt; 1234.67890
+      #  Random access, by golly.
+
+
+
+   |
+      # Pipe.
+      # General purpose process and command chaining tool.
+      # Similar to <span class=QUOTE>"&gt;"</span>, but more general in effect.
+      # Useful for chaining commands, scripts, files, and programs together.
+      cat *.txt | sort | uniq &gt; result-file
+      # Sorts the output of all the .txt files and deletes duplicate lines,
+      # finally saves results to <span class=QUOTE>"result-file"</span>.</pre></font></table><p>Multiple instances of input and output redirection
+ and/or pipes can be combined in a single command
+ line.
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=100% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>command &lt; input-file &gt; output-file
+# Or the equivalent:
+&lt; input-file command &gt; output-file   # Although this is non-standard.
+
+command1 | command2 | command3 &gt; output-file</pre></font></table>
+ See <a href=https://tldp.org/LDP/abs/html/filearchiv.html#DERPM>Example 16-31</a> and <a href=https://tldp.org/LDP/abs/html/contributed-scripts.html#FIFO>Example A-14</a>.<p>Multiple output streams may be redirected to one file.
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=100% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>ls -yz &gt;&gt; command.log 2&gt;&amp;1
+#  Capture result of illegal options "yz" in file "command.log."
+#  Because stderr is redirected to the file,
+#+ any error messages will also be there.
+
+#  Note, however, that the following does *not* give the same result.
+ls -yz 2&gt;&amp;1 &gt;&gt; command.log
+#  Outputs an error message, but does not write to file.
+#  More precisely, the command output (in this case, null)
+#+ writes to the file, but the error message goes only to stdout.
+
+#  If redirecting both stdout and stderr,
+#+ the order of the commands makes a difference.</pre></font></table><p><div class=VARIABLELIST><p><b><a name=CFD></a>Closing File Descriptors</b><dl><dt><span class=TOKEN>n&lt;&amp;-</span><dd><p>Close input file descriptor
+ <tt class=REPLACEABLE><i>n</i></tt>.</p><dt><span class=TOKEN>0&lt;&amp;-</span>, <span class=TOKEN>&lt;&amp;-</span><dd><p>Close <tt class=FILENAME>stdin</tt>.</p><dt><span class=TOKEN>n&gt;&amp;-</span><dd><p>Close output file descriptor <tt class=REPLACEABLE><i>n</i></tt>.</p><dt><span class=TOKEN>1&gt;&amp;-</span>, <span class=TOKEN>&gt;&amp;-</span><dd><p>Close <tt class=FILENAME>stdout</tt>.</p></dl></div><p><a name=FDREF2></a><p>Child processes inherit open file descriptors. This is
+ why pipes work. To prevent an fd from being inherited, close it.
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=100% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING># Redirecting only stderr to a pipe.
+
+exec 3&gt;&amp;1                              # Save current "value" of stdout.
+ls -l 2&gt;&amp;1 &gt;&amp;3 3&gt;&amp;- | grep bad 3&gt;&amp;-    # Close fd 3 for 'grep' (but not 'ls').
+#              ^^^^   ^^^^
+exec 3&gt;&amp;-                              # Now close it for the remainder of the script.
+
+# Thanks, S.C.</pre></font></table>
+ <p>For a more detailed introduction to I/O redirection see
+ <a href=https://tldp.org/LDP/abs/html/ioredirintro.html>Appendix F</a>.</p></div><h3 class=FOOTNOTES>Notes</h3><table class=FOOTNOTES width=100% border=0><tbody><tr><td width=5% valign=TOP align=LEFT><a name=FTN.AEN17884 href=#AEN17884><span class=footnote>[1]</span></a><td width=95% valign=TOP align=LEFT><p>By convention in UNIX and Linux, data streams
+ and peripherals (<a href=https://tldp.org/LDP/abs/html/devref1.html#DEVFILEREF>device files</a>)
+ are treated as files, in a fashion analogous to ordinary
+ files.</p><tr><td width=5% valign=TOP align=LEFT><a name=FTN.AEN17894 href=#AEN17894><span class=footnote>[2]</span></a><td width=95% valign=TOP align=LEFT><p><a name=FDREF1></a>A <i class=FIRSTTERM>file
+ descriptor</i> is simply a number that
+ the operating system assigns to an open file
+ to keep track of it. Consider it a simplified
+ type of file pointer. It is analogous
+ to a <i class=FIRSTTERM>file handle</i> in
+ <b class=COMMAND>C</b>.</p><tr><td width=5% valign=TOP align=LEFT><a name=FTN.AEN17906 href=#AEN17906><span class=footnote>[3]</span></a><td width=95% valign=TOP align=LEFT><p>Using <tt class=REPLACEABLE><i>file
+ descriptor 5</i></tt> might cause problems.
+ When Bash creates a child process, as with <a href=https://tldp.org/LDP/abs/html/internal.html#EXECREF>exec</a>, the child inherits
+ fd 5 (see Chet Ramey's archived e-mail, <a href=http://groups.google.com/group/gnu.bash.bug/browse_thread/thread/13955daafded3b5c/18c17050087f9f37 target=_top> SUBJECT: RE: File descriptor 5 is held open</a>).
+ Best leave this particular fd alone.</p></table><div class=NAVFOOTER><hr width=100% align=LEFT><table summary="Footer navigation table" width=100% cellspacing=0 cellpadding=0 border=0><tbody><tr><td width=33% valign=top align=left><a href=https://tldp.org/LDP/abs/html/x17837.html accesskey=P>Prev</a><td width=34% valign=top align=center><a href=https://tldp.org/LDP/abs/html/index.html accesskey=H>Home</a><td width=33% valign=top align=right><a href=https://tldp.org/LDP/abs/html/x17974.html accesskey=N>Next</a><tr><td width=33% valign=top align=left>Here Strings<td width=34% valign=top align=center><a href=https://tldp.org/LDP/abs/html/part5.html accesskey=U>Up</a><td width=33% valign=top align=right>Using <i class=FIRSTTERM>exec</i></table></div>

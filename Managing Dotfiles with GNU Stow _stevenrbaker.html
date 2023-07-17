@@ -1,0 +1,146 @@
+<!DOCTYPE html> <html lang=en><!--
+ Page saved with SingleFile 
+ url: https://stevenrbaker.com/tech/managing-dotfiles-with-gnu-stow.html 
+ saved date: Thu Jan 23 2020 19:01:48 GMT+0000 (Coordinated Universal Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>html{background-color:#2f2f2e!important}html,body{background-color:#2f2f2e}html,body{border-color:#837f79;color:#ffffff}a{color:#6ec8ff}::placeholder{color:#fffbe4}::selection{background-color:#2983ed;color:#ffffff}::-moz-selection{background-color:#2983ed;color:#ffffff}::-webkit-scrollbar{background-color:#343433;color:#fffff5}::-webkit-scrollbar-thumb{background-color:#474745}::-webkit-scrollbar-corner{background-color:#2f2f2e}*{scrollbar-color:#474745 #343433}</style>
+<title> Steven R. Baker | Managing Dotfiles with GNU Stow</title>
+<meta name=description content>
+<meta name=author content>
+<meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1">
+<style>html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}a{background-color:transparent}a:active,a:hover{outline:0}h1{margin:.67em 0}pre{overflow:auto}code,pre{font-family:monospace,monospace;font-size:1em}</style><style class="darkreader darkreader--sync" media=screen>html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}a{background-color:transparent}a:active,a:hover{outline:0}h1{font-size:2em;margin:0.67em 0}pre{overflow:auto}code,pre{font-family:monospace,monospace;font-size:1em}a{background-color:transparent}a:active,a:hover{outline-color:currentcolor}</style>
+<style>.container{position:relative;width:100%;max-width:960px;margin:0 auto;padding:0 20px;box-sizing:border-box}.columns{width:100%;float:left;box-sizing:border-box}@media (min-width:400px){.container{width:85%;padding:0}}@media (min-width:550px){.container{width:80%}.column:first-child,.columns:first-child{margin-left:0}.twelve.columns{width:100%;margin-left:0}}html{font-size:62.5%}body{font-size:1.5em;line-height:1.6;font-weight:400;font-family:"Raleway","HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif;color:#222}h1,h2,h3{margin-top:0;margin-bottom:2rem;font-weight:300}h1{font-size:4rem;line-height:1.2;letter-spacing:-.1rem}h2{font-size:3.6rem;line-height:1.25;letter-spacing:-.1rem}h3{font-size:3rem;line-height:1.3;letter-spacing:-.1rem}@media (min-width:550px){h1{font-size:5rem}h2{font-size:4.2rem}h3{font-size:3.6rem}}p{margin-top:0}a{color:#1eaedb}a:hover{color:#0fa0ce}code{padding:.2rem .5rem;margin:0 .2rem;font-size:90%;white-space:nowrap;background:#f1f1f1;border:1px solid #e1e1e1;border-radius:4px}pre>code{display:block;padding:1rem 1.5rem;white-space:pre}pre,blockquote,p{margin-bottom:2.5rem}.container:after,.row:after,.u-cf{content:"";display:table;clear:both}</style><style class="darkreader darkreader--override" media=screen>.container{position:relative;width:100%;max-width:960px;margin:0 auto;padding:0 20px;box-sizing:border-box}.columns{width:100%;float:left;box-sizing:border-box}@media (min-width:400px){.container{width:85%;padding:0}}@media (min-width:550px){.container{width:80%}.column:first-child,.columns:first-child{margin-left:0}.twelve.columns{width:100%;margin-left:0}}html{font-size:62.5%}body{font-size:1.5em;line-height:1.6;font-weight:400;font-family:"Raleway","HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif;color:#222}h1,h2,h3{margin-top:0;margin-bottom:2rem;font-weight:300}h1{font-size:4.0rem;line-height:1.2;letter-spacing:-.1rem}h2{font-size:3.6rem;line-height:1.25;letter-spacing:-.1rem}h3{font-size:3.0rem;line-height:1.3;letter-spacing:-.1rem}@media (min-width:550px){h1{font-size:5.0rem}h2{font-size:4.2rem}h3{font-size:3.6rem}}p{margin-top:0}a{color:#1EAEDB}a:hover{color:#0FA0CE}code{padding:.2rem .5rem;margin:0 .2rem;font-size:90%;white-space:nowrap;background:#F1F1F1;border:1px solid #E1E1E1;border-radius:4px}pre>code{display:block;padding:1rem 1.5rem;white-space:pre}pre,blockquote,p{margin-bottom:2.5rem}.container:after,.row:after,.u-cf{content:"";display:table;clear:both}body{color:rgb(255,255,255)}a{color:rgb(162,255,255)}a:hover{color:rgb(164,255,255)}code{background-color:rgb(52,52,51);background-image:none;border-color:rgb(91,88,84)}::placeholder{opacity:0.5!important}</style><link rel="shortcut icon" href="data:image/vnd.microsoft.icon;base64,AAABAAEAICAAAAEAIACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP7+/QCfq7YBWneRBbW/yQ6Yp7QeYH2VN3ySpVaLm6h6W3eQo09qgMp2jaDmXnyW8ExsieZUbYLKr7i/o/Ly8nrN0dRWpa63N42cqR5JZn8ONlNsBTtkiQE3YogAkKO0APr6+gD///8A////AP///wD///8A////AP///wDAxckAfY+dAkBliAotXIgaOGOGNzJbf1wrUXOFLVqFqDJgh8IwX4rWLFZ95yxUePQuXYr4LFiB9C1Uduc5YYbWWHaQwj1hgagwXIGFLluGXC5WeDcrUHUaL16LCjBfigI8YIEA1NbYAP///wD///8A////AP///wD///8A/Pz8ANzd3gNxhpcOL12HJy1biFIzYouCMmCLri1Sc9AsV4LmNWSM8TRijPYrUXf6MVuB/TBeiv4uVHT9MVyC+i1bifYyYovxLVZ95jBXetAvXYuuL1h8gipOb1IzYownMF+LDjZYeAPQ0dIA////AP///wD///8A////AP///wD///8D////D9DU1y5BZoZkLlyJnzBeiswsWYfnLVFy9S9ahPsxYIv9MVyD/ilPdv80Yov/L12J/y9WeP8xW3//L12K/jJhi/0pUXv7LFBw9S9ei+cvVnfMK1BxnzBei2QqV4EuZXaED/Py8gP///8A////AP///wD///8A////Av///w7///8u6OnqaE1tiKosVXzbLlyI8itUffsvVnf+MF6K/y5bif8qUnr/MV6F/y5cif8uW4n/M1+F/y1Udv8wXor/M2GK/ydKbf8sVHz+KE95+ypNbvIsWITbLVmFqkxhd2jV1dYu////Dv///wL///8A////AP///wH///8K////J////2PCyc+qOmOH3i1Ud/YsWIT9K1F3/zJehP8uXIn/MWCL/ylSff80Yov/L12K/zJgiv8zX4T/LFaA/zBfiv8rUXf/LlV4/zBchf8rT3L/MF2I/S9divYtVnveo6itqv///2P///8n////Cv///wH///8B////Bf///xr///9R////n7vFzto3Yof2LlR3/S5bh/8qU3v/MFyF/y9dif8uVnj/KExv/ypPb/8mRWD/I0BZ/ydIZP8tVXn/Ml+H/ydMdf8yYIr/L1h9/yxUfP8vXor/LluJ/SxYgPaRnKXa////n////1H///8a////Bf///wL///8O////N////4L////L6ezu8lJwif0tV37/MV+K/ytWhP8wXIP/Jkdk/xYqPP8UKDn/FCg5/xImNv8SJjb/EiY2/xUrPf8hPlf/K1J3/zJhi/8oTnf/LFaA/yxaiP8uW4j/LFqG/Wt+jvL7+/rL////gv///zf///8O////Bf///x7///9d////r////+fm5+j7S2yI/y1bif8vXYn/K1iI/y5Wev8WKz3/EiY3/xMpPP8TKTv/FCs//xQqPP8TKTv/Eic5/xIlNf8dN07/L1uF/yZMdv8sV4H/MV+L/zFgiv8zWnz/mKKq+////uf///+v////Xf///x7///8M////Nf///4X////Q////9fb29v6ClKT/MlyE/y9dif8uXIn/J0lm/xMnOP8UKz7/Fi5D/xUtQf8XMEb/Fi5D/xYuQ/8UKj3/Eyg6/xMnOP8iQl7/K1N8/yxWgP8vXYn/PFx6/52lq//29vb+////9f///9D///+F////N////xX///9O////p////+b////7//////X19f98j6D/MF6I/y5ahf8cNk3/FCo9/xcxR/8YM0v/GDJJ/xk2Tv8ZNEz/GDNK/xUsQP8VLUH/Eic5/xctP/8tVnr/LFmG/y9Wff+jqa////7+///////////7////5v///6n///9X////IP///2b///++////8P////3/////9vb2/2iCmf8vXon/K1N5/xYrPf8VLkL/GTZP/xs6VP8bOlT/HT1Y/xw8V/8bOVP/FzBG/xcxR/8VLUH/Eyc4/yRGaP8wX4z/Mlp9/7m9wf////////////////3////x////wv///3v///8v////fv///87////1/////v/////29vb/YX+b/ytZiP8mSm3/FSs+/xg0S/8cPFf/H0Jf/yBEY/8hRmX/IERi/x5AXf8aOFH/GzlS/xgzSv8SJzn/ID5Y/zFfiv8vXIT/iJWg/////////////////v////b////X////pf///zz///+U////3P////n///////////////+0wMr/N2GJ/yJCX/8XMUb/HDxX/x9DYf8iSGn/I0ps/yNKa/8jSmz/IUdn/x9DYf8fQ2L/GzpU/xQrPv8bNEn/LlqF/y5ch/9ugpT//Pv6////////////////+v///+j////M////Rv///6T////m////+/////////////////Lz8/9YdJH/GzlT/xo6Vf8iRmX/I0lp/yFFZP8cOVH/GzdP/x48Vf8iRmX/I0tt/yJKa/8fQmD/Fi9E/xkwRP8sV4L/LlqE/4aVov///v3////////////////9////9f///+n///9K////qf///+r////8////////////////7+/v/1VwjP8fP1z/SWeH/2iBnP8oRV7/LE5r/1JpgP9PY3j/NExi/yJCXv8gQVz/I0ho/yBHaP8YNEv/GTBF/ypWgv9Xc4z/5OXl//////////////////////7////5////8v///0b///+k////5v////v///////////////+dqbP/K1B0/zNPbP+gu9//obfT/ypAVP8kP1b/T2eA/1tzjP88WHL/HDpT/zlNYP+BmbX/RmaD/xw7Vf8ZMUj/KlaB/2d/lP/4+Pf//////////////////////f////X////n////Pf///5T////c////+f///////////////6u1v/8pTG7/RmB9/7PM7v+wyu3/jqO+/1pviP8+VWz/O1Nr/1Rshf9ZboT/g5iy/7fQ8v+uxOD/TmmD/xo1Tv8pVYD/ZXuQ//n4+P/////////////////////6////6P///8v///8v////fv///87////1/////v//////////09bZ/zBLZf9GYX7/s8vs/7PK6P+xyuv/p8Di/7LI5v+xyOb/pbzb/7HK7f+qxu7/t9Dx/8DX9f+Uq8X/KkZh/y5Uev+lrLT//////////////////////v////b////W////o////yH///9n////vv////D////9//////////+Soa//JUx0/0dlhf+ftdT/q7/a/6q+2f+csMr/rcLd/77V9P+swt//p7zW/6a61f+xxuH/vtX0/6vA2/83Um7/N1l3/5eZmv/i4uL////////////////9////8f///8L///96////Ff///0////+n////5v////v9/f3/wcLD/1Zpef8pVYD/V3aa/7XM6/+zy+z/q8Xp/5quyf+es8//s8jk/6q/2v+zzO3/tM3t/6a61P+2y+j/nbLM/y9Oav8yWXr/UFpg/4WIif/f39////////////v////m////qP///1b///8M////Nf///4X////Q////9dDQ0f5QV1v/T11l/zxSZP9fdI7/tc7v/5Sjt/9+jJ3/iJqy/3SGnv+Tpbv/ssno/5Cgtf+WqL//rcPf/6O2zv+No73/LVBu/zNYeP9MWWH/XGZr/7m7u//////+////9f///9D///+F////N////wX///8e////XPf3967AwcLnZGls+0JOVv9TX2b/VmFm/2V4jP97krL/gZi3/4Wbuf+KnLT/h5iu/4WVqf+it9P/mKrD/5SoxP+Knbf/WmNv/09hdP86VWv/T2Br/1RgZf9AS1L/goeK//v6+vv////n////r////13///8e////Av///w7///83usLGglhjaMtRXGHyWGRq/Vllav9WYmf/WWl8/3aLp/9mepD/boSe/67F4//C2fj/udDt/3eKof9idYv/VGiA/2x+k/+gtM3/UGN2/05cZP9bZmz/WGRq/09cYv9eZ2v94uPj8v///8z///+C////N////w7///8B////Bf///xrO09ZRhZKYn2t5f9tkcnj2Xmtx/Vpnbf9SXmb/Z3SE/4aXqv+Upr3/nK/I/56xyv+brsb/jqG2/3yMn/9ygZL/eYiZ/258if9QW2L/VF9k/1NfZP9TXmT/Ul5j/V5pb/bX2tva////n////1L///8a////Bf///wD///8B////Cv39/Sfs7e5j19vcqsbMzt60vL/2n6is/XWDiv9qeX//Z3R8/258hf9wfoj/bnyF/217hP9te4P/b36F/3SDi/94iZD/fI2V/3uMlP+TnKD/qq6v/5OYmv1/hYn2ipOW3enq6qr///9j////J////wr///8B////AP///wD///8C////Dv///y7///9o////qv///9v29vbyi5Wa+2p5gf50hIz/jaGp/5Glrv+Rpa7/k6ix/5artP+Zrrj/m7G7/52zvf+asLr/lKmy/87U1/7////7/v7+8vn5+dv19fWq/v7+aP///y7///8O////Av///wD///8A////AP///wD///8D////D////y7///9k////n////8yfp6vnaHd/9W18g/uHmqP9l6y2/piut/+Zr7n/mrC6/5yyvP+csrz/nLK8/puyvP2fsbn76err9f///+f////M////n////2P///8u////D////wP///8A////AP///wD///8A////AP///wD///8D////Dv///yj///9S////gquzua5vgIjQdIWN5omcpfCUqbL1k6ix+ZSps/uZrrj8nLK8+5yyvPmcsrz1lau28LK9w+b9/f3Q////rv///4L///9S////J////w7///8D////AP///wD///8A////AP///wD///8A////AP///wD///8C////Cv///xr///835+npXICOlIV2h4+nk6ixvp2zvc6csr3cnLK85pyyvOmcsrzmnLK83J2zvc6PpbC9vcTJp////4X///9c////N////xr///8K////Av///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8B////Bf///w77+/senKSnNXGCik6NoatmnbO9fpyyvJOcsryjnLK8qZyyvKObsryTlKixfcDJzWb6+/tO////Nf///x7///8O////Bf///wH///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8B////Av///wXo6ekMkZugFX+RmSCasLounLK8PJyyvEabsbtJmK23RpmpsDzAxccu9/f3IP///xT///8L////Bf///wL///8B////AP///wD///8A////AP///wD///8A4AAAA8AAAAGAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAAADAAAAB4AAAA/gAAA8="></head>
+ <body>
+ <div id=header class="container container-twelve" style=display:none!important>
+ 
+ </div>
+ <div class=container>
+ <div class=row>
+ <div class="twelve columns">
+ <h1 id=managing-dotfiles-with-gnu-stow>Managing Dotfiles with GNU Stow</h1>
+ <p>Managing dotfiles can be tricky when you have multiple machines. Fortunately, there’s a beautifully simple tool that makes this easy: <a href=https://www.gnu.org/software/stow/>GNU Stow</a>. If you have dotfiles that you want to share across multiple machines, or manage revisions, GNU Stow will make it easy.</p>
+<p>Here you’ll learn about how to use GNU Stow to manage your dotfiles. I’ll start with <a href=#a-simple-example>a simple example</a>, explain in detail <a href=#how-it-works>how it works</a>, and finally demonstrate a <a href=#recommended-workflow>recommended workflow</a> for using GNU Stow to manage your own dotfiles.</p>
+<h2 id=what-is-gnu-stow>What is GNU Stow?</h2>
+<p>From the website:</p>
+<blockquote>
+ <p>GNU Stow is a symlink farm manager which takes distinct packages of software and/or data located in separate directories on the filesystem, and makes them appear to be installed in the same place.</p>
+</blockquote>
+<p>While GNU Stow is an excellent tool for package management, its real beauty lies in the simple design that makes it adaptable to other uses. Despite not being designed specifically for dotfiles, it is a perfect tool for the job.</p>
+<p>GNU Stow is available nearly everywhere, and can probably be installed with your favourite package manager as the package <code>stow</code>. I use it on <a href=http://ports.su/sysutils/stow>OpenBSD</a>, <a href=https://svnweb.freebsd.org/ports/head/sysutils/stow/>FreeBSD</a>, <a href="https://packages.debian.org/search?keywords=stow">Debian</a>, and macOS (available via <a href="https://www.macports.org/ports.php?by=name&amp;substr=stow">MacPorts</a> and <a href=https://formulae.brew.sh/formula/stow>HomeBrew</a>).</p>
+<p>Note that GNU Stow does not work on Windows. There exist some alternatives such as Eric Subach’s <a href=https://github.com/ericsubach/stow-lite>Stow Lite</a>, but I do not have enough experience with such alternatives to comment on their suitability.</p>
+<h2 id=a-simple-example>A Simple Example</h2>
+<p>Let’s get started with a simple example. You probably already have a <code>.gitconfig</code> in your home directory, so let’s start by <code>stow</code>-ing that.</p>
+<p>Create a new home for your <code>git</code>-related dotfiles:</p>
+<pre><code>$ mkdir -p ~/dotfiles/git
+</code></pre>
+<p>Now move your <code>.gitconfig</code> there:</p>
+<pre><code>$ mv ~/.gitconfig ~/dotfiles/git
+</code></pre>
+<p>Get it back using <code>stow</code>:</p>
+<pre><code>$ cd ~/dotfiles
+$ stow git
+</code></pre>
+<p>Behold, your git config:</p>
+<pre><code>$ cd ~
+$ ls -l .gitconfig
+lrwxr-xr-x  1 srbaker  srbaker  23 Jun 13 16:00 .gitconfig -&gt; dotfiles/git/.gitconfig
+</code></pre>
+<p>If you’re not quite sure what running <code>stow</code> will do, you can find out by enabling verbose output, and telling it not to perform operations: <code>stow --verbose --no</code> and it will display what it would have done, without making any changes.</p>
+<p>By now you have all of the knowledge necessary to manage all of your dotfiles using <code>stow</code> using the pattern from above. In the following sections, you’ll learn details about how it works. If you would like to get started immediately, you can just skip to the <a href=#recommended-workflow>recommended workflow</a> section at the end and learn the details later (if needed).</p>
+<h2 id=how-it-works>How It Works</h2>
+<p>The basic premise of <a href=https://www.gnu.org/software/stow/>GNU Stow</a> is that it takes files in multiple directories, and manages symlinks to make them appear in one directory.</p>
+<p>When invoked with a directory as an argument, <code>stow</code> simply changes into that directory, and creates a symlink for everything it contains to the parent directory. When invoked with many directories as arguments, it does this for each directory listed.</p>
+<p>Take this example:</p>
+<pre><code>$ pwd
+/home/srbaker/stow-example/stow
+$ ls -R
+bar foo
+
+./bar:
+barfile
+
+./foo:
+foofile
+</code></pre>
+<p>If we run <code>stow bar</code>, <code>barfile</code> will appear the in the parent directory.</p>
+<pre><code>$ ls ..
+barfile stow
+</code></pre>
+<p>This is everything you need to know to make full use of stow. By default, GNU Stow is smart enough to <em>do the right thing</em> with <a href=#ignoring-files>files that you probably don’t want included</a>, <a href=#handling-directories>handling directories</a>, and <a href=#identifying-conflicts>identifying conflicts</a>.</p>
+<h3 id=ignoring-files>Ignoring Files</h3>
+<p>GNU Stow can ignore files that you don’t wish to have <code>stow</code>-ed. You can tell stow to ignore files on the command line using the <code>--ignore</code> argument, and supplying a regular expression. If we want to use <code>stow</code>, but ignore files named <code>foo</code> we could do so like so:</p>
+<pre><code>stow --ignore=foo *
+</code></pre>
+<p>Likewise, if we wanted to ignore all files starting with the word <code>foo</code> we could use a regular expression: <code>stow --ignore=foo.* *</code>.</p>
+<p>It would be cumbersome to add the <code>--ignore</code> argument to every single run. To solve this, <code>stow</code> will read an ignore list from <code>.stow-local-ignore</code> in the current directory, as well as a global <code>.stow-global-ignore</code> in your home directory.</p>
+<p>By default, when neither a local nor global ignore list exists, GNU Stow will use its default ignore list which includes entries for version control related files, emacs backup and autosave files, and <code>README</code>, <code>LICENSE</code>, and <code>COPYING</code>. You can look at the GNU Stow documentation for the <a href=https://www.gnu.org/software/stow/manual/stow.html#Ignore-Lists>default ignore list</a>.</p>
+<h3 id=handling-directories>Handling Directories</h3>
+<p>When <code>stow</code>-ing files, directories will be handled as well. I use this trick for managing my <code>~/bin</code> directory, which you will see in the <a href=https://stevenrbaker.com/tech/recommended-workflow>recommended workflow</a> section below.</p>
+<p>Consider that you have a directory <code>foo</code> that contains a file <code>foofile</code> and a directory <code>qux</code> which itself contains a file <code>fooquxfile</code>, as demonstrated here:</p>
+<pre><code>stow-example$ find foo
+foo
+foo/foofile
+foo/qux
+foo/qux/quxfile
+</code></pre>
+<p>Running <code>stow foo</code> will create links to both the file <code>foofile</code> and the directory <code>qux</code>:</p>
+<pre><code>stow-example$ ls -l ..
+total 4
+lrwxrwxrwx 1 srbaker srbaker   24 Nov 13 16:49 foofile -&gt; stow-example/foo/foofile
+lrwxrwxrwx 1 srbaker srbaker   20 Nov 13 16:49 qux -&gt; stow-example/foo/qux
+drwxr-xr-x 4 srbaker srbaker 4096 Nov 13 16:42 stow-example
+</code></pre>
+<p>You can see that <code>foofile</code> is appropriately a link to <code>foo/foofile</code> and <code>qux</code> is a link to the directory <code>foo/qux</code>.</p>
+<p>But what if in addition to <code>foo</code> containing a directory <code>qux</code> as described above, you also have a directory <code>bar</code> which has a <code>qux</code> directory of its own? From the example above, we can see that the <code>stow</code>-ed <code>qux</code> is already a symlink to <code>foo/qux</code>. Where will <code>bar/qux</code> live?</p>
+<p>Fortuantely, <code>stow</code> does the right thing:</p>
+<pre><code>stow-example$ stow bar
+srbaker@carbon:~/tmp/stow-example$ ls -l ..
+total 8
+lrwxrwxrwx 1 srbaker srbaker   24 Nov 13 16:54 barfile -&gt; stow-example/bar/barfile
+lrwxrwxrwx 1 srbaker srbaker   24 Nov 13 16:54 foofile -&gt; stow-example/foo/foofile
+drwxr-xr-x 2 srbaker srbaker 4096 Nov 13 16:54 qux
+drwxr-xr-x 4 srbaker srbaker 4096 Nov 13 16:42 stow-example
+</code></pre>
+<p>The <code>qux</code> directory that <code>stow</code> created is now a directory of its own:</p>
+<pre><code>stow-example$ ls -l ../qux
+total 0
+lrwxrwxrwx 1 srbaker srbaker 31 Nov 13 16:54 quxfile -&gt; ../stow-example/foo/qux/quxfile
+lrwxrwxrwx 1 srbaker srbaker 32 Nov 13 16:54 quxfile2 -&gt; ../stow-example/bar/qux/quxfile2
+</code></pre>
+<p>When <code>stow</code> creates a directory and links the contents from multiple sources inside on the second run, it’s called <em><a href=https://www.gnu.org/software/stow/manual/stow.html#Installing-Packages>tree folding</a></em>. <code>stow</code> has noticed that the directory <code>qux</code> is in two different sources, and <em>folds</em> them into the same <em>tree</em>. GNU Stow calls the reverse of this operation <em>tree unfolding</em>.</p>
+<h3 id=identifying-conflicts>Identifying Conflicts</h3>
+<p>The default beahviour of GNU Stow covers most use cases without even displaying output. In most cases, it just does the right thing. Since files are being linked around the filesystem, it’s possible that <code>stow</code> will be asked to put two files with the same name in the same place. Consider two source directories <code>foo</code> and <code>bar</code> which both have a file called <code>bazfile</code> inside:</p>
+<pre><code>stow-example$ stow *
+WARNING! stowing foo would cause conflicts:
+  * existing target is stowed to a different package: baz =&gt; stow-example/bar/baz
+All operations aborted.
+</code></pre>
+<p>In this case <code>stow</code> has recognized that there is a conflict, and refuses to make any changes.</p>
+<p>A <code>stow</code> invocation that would overwrite an existing file also results in a conflict warning that aborts all operations. Consider that our parent directory (the target) already has a file called <code>foofile</code> and we try to <code>stow</code> the <code>foo</code> directory containing <code>foofile</code>:</p>
+<pre><code>stow-example$ stow foo
+WARNING! stowing foo would cause conflicts:
+  * existing target is neither a link nor a directory: foofile
+All operations aborted.
+</code></pre>
+<p>This very careful default behaviour means that running <code>stow</code> is always a completely safe operation: no files will be moved or overwritten unless it can be done non-desctructively.</p>
+<h2 id=recommended-workflow>Recommended Workflow</h2>
+<p>Using <a href=https://www.gnu.org/software/stow/>GNU Stow</a> to manage your dotfiles is made infinitely better by storing your dotfiles in version control. By doing this, you will have history of your edits, and you can use existing tooling to share your dotfiles across machines.</p>
+<p>If you keep your dotfiles in a VCS repository, setting up a new machine is as easy as:</p>
+<pre><code>git clone my-git-host:dotfiles.git &amp;&amp; cd dotfiles &amp;&amp; stow *
+</code></pre>
+<p>The machine you’re sitting at right now probably already has your preferred dotfiles, so you can get started immediately.</p>
+<pre><code>$ git init dotfiles
+</code></pre>
+<p>Now, for each program you have dotfiles for, move them into a directory inside your dotfiles working copy. For example, if you want to stow your <code>git</code> and <code>bash</code> dotfiles, you might do the following:</p>
+<pre><code>$ mkdir git
+$ mv .git* dotfiles/git
+$ mv .bash_profile .bashrc .bash_aliases dotfiles/bash
+$ cd dotfiles &amp;&amp; stow *
+</code></pre>
+<p>Whenever you make changes to your dotfiles <em>in place</em>, you will need to remember to commit those changes. If you add new files, you will have to remember to re-run stow: <code>cd ~/dotfiles &amp;&amp; stow *</code>. If you’ve removed files since the last run, you should re-stow: <code>cd ~/dotfiles &amp;&amp; stow -R *</code>.</p>
+<p>Finally, if you decide that you would like to un-stow all of your dotfiles for whatever reason, you can <code>cd ~/dotfiles &amp;&amp; stow -D</code>.</p>
+<h2 id=conclusion>Conclusion</h2>
+<p>I hope this introduction to dotfile management with GNU Stow has been helpful. If you find any errors, or have any questions, I am more than happy to respond to email.</p>
+ </div>
+</div>
+ </div>
+ 

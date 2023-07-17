@@ -1,0 +1,139 @@
+<html><head><title>Adding Words to ispell's Dictionary (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch16_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch16_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">16.5. Adding Words to ispell's Dictionary</h2>
+
+<p><b class="emphasis-bold">ispell</b> (<a name="IXT-16-1620" /><a name="IXT-16-1621" /><a href="ch16_02.htm#upt3-CHP-16-SECT-2">Section 16.2</a>)
+uses two lists for spelling verification: a master word list and a
+supplemental personal word list. <a name="IXT-16-1622" /> <a name="IXT-16-1623" /><a name="IXT-16-1624" />
+</p>
+
+<p>The master word list for <i class="command">ispell</i> is normally the
+file <em class="emphasis">/usr/local/lib/ispell/ispell.hash</em>, though
+the location of the file can vary on your system. This is a
+"hashed" dictionary file. That is,
+it has been converted to a condensed, program-readable form using the
+<i class="command">buildhash</i> program (which comes with
+<i class="command">ispell</i>) to speed the spell-checking process.
+</p>
+
+<p>The personal word list is normally a file called
+<em class="filename">.ispell_english</em> or
+<em class="filename">.ispell_words</em> in your home directory. (You can
+override this default with either the <span class="option">-p</span>
+command-line option or the
+<em class="emphasis">WORDLIST</em><a name="IXT-16-1625" /> <a name="IXT-16-1626" />
+<b class="emphasis-bold">environment variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>).) This file is simply a list of words, one
+per line, so you can readily edit it to add, alter, or remove
+entries. The personal word list is normally used in addition to the
+master word list, so if a word usage is permitted by either list it
+is not flagged by <i class="command">ispell</i>.
+</p>
+
+<p>Custom personal word lists are particularly useful for checking
+documents that use jargon or special technical words that are not in
+the master word list, and for personal needs such as holding the
+names of your correspondents. You may choose to keep more than one
+custom word list to meet various special requirements.
+</p>
+
+<p>You can add to your personal word list any time you use
+<i class="command">ispell</i>: simply use the <i class="command">I</i>
+command to tell <i class="command">ispell</i> that the word it offered as
+a misspelling is actually correct, and should be added to the
+dictionary. You can also add a list of words from a file using the
+<b class="emphasis-bold">ispell -a</b> (<a name="IXT-16-1627" /><a href="ch16_03.htm#upt3-CHP-16-SECT-3">Section 16.3</a>) option.
+The words must be one to a line, but need not be sorted. Each word to
+be added must be preceded with an asterisk. (Why? Because
+<em class="emphasis">ispell -a</em> has other functions as well.) So, for
+example, we could have added a list of Unix utility names to our
+personal dictionaries all at once, rather than one-by-one as they
+were encountered during spell checking.
+</p>
+
+<p>Obviously, though, in an environment where many people are working
+with the same set of technical terms, it doesn't
+make sense for each individual to add the same word list to his own
+private <em class="emphasis">.ispell_words</em> file. It would make far
+more sense for a group to agree on a common dictionary for
+specialized terms and always to set <em class="emphasis">WORDLIST</em> to
+point to that common dictionary.
+</p>
+
+<p><a name="IXT-16-1628" />If the private word list gets too long,
+you can create a "munched" word
+list. The <a name="IXT-16-1629" /><a name="IXT-16-1630" /><i class="command">munchlist</i>
+script that comes with <i class="command">ispell</i> reduces the words in
+a word list to a set of word roots and permitted suffixes according
+to rules described in the <em class="emphasis">ispell</em>(4) reference
+page that will be installed with <i class="command">ispell</i> from the
+CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>]. This creates a more compact but still editable word list.
+</p>
+
+<p><a name="IXT-16-1631" />Another option is to provide an
+alternative master spelling list using the <span class="option">-d</span>
+option. This has two problems, though:
+</p>
+
+<ol><li>
+<p>The master spelling list should include spellings that are always
+valid, regardless of context. You do not want to overload your master
+word list with terms that might be misspellings in a different
+context. For example, <i class="command">perl</i> is a powerful
+programming language, but in other contexts,
+<em class="emphasis">perl</em> might be a misspelling of
+<em class="emphasis">pearl</em>. You may want to place
+<em class="emphasis">perl</em> in a supplemental word list when
+documenting Unix utilities, but you probably
+wouldn't want it in the master word list unless you
+were documenting Unix utilities most of the time that you use
+<i class="command">ispell</i>.
+</p>
+</li><li>
+<p>The <span class="option">-d</span> option must point to a hashed dictionary
+file. What's more, you cannot edit a hashed
+dictionary; you will have to edit a master word list and use (or
+<a name="IXT-16-1632" /><a name="IXT-16-1633" />have
+the system administrator use) <i class="command">buildhash</i> to hash
+the new dictionary to optimize spell checker performance.
+</p>
+</li></ol>
+<p>To build a new hashed word list, provide <i class="command">buildhash</i>
+with a complete list of the words you want included, one per line.
+(The <i class="command">buildhash</i> utility can only process a raw word
+list, not a munched word list.) The standard system word list,
+<em class="emphasis">/usr/dict/words</em> on many systems, can provide a
+good starting point. This file is writable only by the system
+administrator and probably shouldn't be changed in
+any case. So make a copy of this file, and edit or add to the copy.
+After processing the file with <i class="command">buildhash</i>, you can
+either replace the default <em class="emphasis">ispell.hash</em> file or
+point to your new hashed file with the <span class="option">-d</span> option.
+</p>
+
+<p><em class="emphasis">--TOR and LK<a name="IXTR3-1678" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch16_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch16_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">16.4. Inside spell</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">16.6. Counting Lines, Words, and Characters: wc</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

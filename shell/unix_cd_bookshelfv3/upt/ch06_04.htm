@@ -1,0 +1,223 @@
+<html><head><title>X Event Translations (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.4. X Event Translations</h2>
+
+<p><a name="upt3-IDXTERM-1142" /> <a name="upt3-IDXTERM-1143" /> <a name="upt3-IDXTERM-1144" />This article introduces event
+translations, which are special X Window System resources that
+control actions of things like mouse clicks. <a href="ch06_03.htm#upt3-CHP-6-SECT-3">Section 6.3</a> introduces X resources and shows their syntax.
+<a href="ch06_05.htm#upt3-CHP-6-SECT-5">Section 6.5</a> through <a href="ch06_09.htm#upt3-CHP-6-SECT-9">Section 6.9</a> explain how to set and check
+resources -- as you log in and after.
+</p>
+
+<p>We've discussed the basics of resource-naming
+syntax. From the sample resource settings, it appears that what many
+resource variables do is self-evident or nearly so. Among the less
+obvious resource variables, there is one type of specification, an
+event translation, that can be used with many clients and warrants
+somewhat closer examination.
+</p>
+
+<p>User input and several other types of information pass from the
+server to a client in the form of
+<em class="emphasis">events</em><a name="IXT-6-874" />.
+An event is a packet of information that gives the client something
+to act on, such as keyboard input. Moving the pointer or pressing a
+key causes <em class="emphasis">input</em><a name="IXT-6-875" /> events to occur. When a program receives
+a meaningful event, it responds with some sort of action.
+</p>
+
+<p>For many clients, the resource manager recognizes mappings between
+certain input events (such as a pointer button click) and some sort
+of action by the client program (such as selecting text). A mapping
+between one or more events and an action is called a
+<em class="emphasis">translation</em>. A resource containing a list of
+translations is called a <em class="emphasis">translation table</em>.
+<a name="IXT-6-876" /> <a name="IXT-6-877" />
+</p>
+
+<p>Many event translations are programmed into an application and are
+invisible to the user.<a href="#FOOTNOTE-28">[28]</a> For our purposes we are only
+concerned with very visible translations of certain input events,
+primarily the translation of keystrokes and pointer button clicks to
+particular actions by a client program.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-28" /><p> [28]For more information on events
+and translations, see O'Reilly &amp;
+Associates' <em class="citetitle">X Window System Guide,
+</em>Volume 4.</p> </blockquote>
+
+<p>The operation of many clients, notably <i class="command">xterm</i>, is
+partly determined by default input event translations. For example,
+selecting text with the first pointer button (an event) saves that
+text into memory (an action).
+</p>
+
+<p>In this case, the input "event" is
+actually three separate X events:
+</p>
+
+<ol><li>
+<p>Pressing the first pointer button.</p>
+</li><li>
+<p>Moving the pointer while holding down the first button.<a href="#FOOTNOTE-29">[29]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-29" /><p> [29]Actually, if there is no text to select, motion is recorded as
+a series of <em class="emphasis">MotionNotify</em> events.</p>
+</blockquote>
+</li><li>
+<p>Releasing the button.</p>
+</li></ol>
+<p>Each of these input events performs a part of the action of selecting
+text:
+</p>
+
+<ol><li>
+<p>Unselects any previously selected text and begins selecting new text.</p>
+</li><li>
+<p>Extends the selection.</p>
+</li><li>
+<p>Ends the selection, saving the text into memory (both as the primary
+selection and CUT_BUFFER0).
+</p>
+</li></ol>
+<p>The event and action mappings would be expressed in a translation
+table as follows:
+</p>
+
+<blockquote><pre class="code">&lt;Btn1Down&gt;: select-start( )\n\
+&lt;Btn1Motion&gt;: select-extend( )\n\
+&lt;Btn1Up&gt;: select-end(primary,CUT_BUFFER0)</pre></blockquote>
+
+<p>where each <a name="IXT-6-878" /> <a name="IXT-6-879" />event is enclosed in angle brackets
+(&lt;&gt;) and produces the action that follows the colon (:). A
+space or TAB generally precedes the action, though this is not
+mandatory:
+</p>
+
+<blockquote><pre class="code">&lt;event&gt;: action</pre></blockquote>
+
+<p>A translation table must be a continuous string. To link multiple
+mappings as a continuous string, each event-action line should be
+terminated by a
+<a name="IXT-6-880" />newline character
+(<tt class="literal">\n</tt>), which is in turn followed by a backslash
+(<tt class="literal">\</tt>) to escape the actual newline.
+</p>
+
+<p><a name="IXT-6-881" /><a name="IXT-6-882" />These are default
+translations for <i class="command">xterm</i>.<a href="#FOOTNOTE-30">[30]</a> All of the
+events are simple, comprised of a single button motion. As
+we'll see, events can also have modifiers: i.e.,
+additional button motions or keystrokes (often CTRL or Meta) that
+must be performed with the primary event to produce the action.
+(Events can also have modifiers that <em class="emphasis">must not</em>
+accompany the primary event if the action is to take place.)
+</p><blockquote class="footnote"> <a name="FOOTNOTE-30" /><p> [30]They are
+actually slightly simplified versions of default translations. Before
+you can understand the actual translations listed in the
+<i class="command">xterm</i> manual page, you must learn more about the
+syntax of translations. We cover the basics here; for more
+information, see O'Reilly &amp;
+Associates' <em class="citetitle">X Window System Guide,
+</em>Volume 3M, Appendix F.</p> </blockquote>
+
+<p>As you can see, the default actions of keysym mappings are hardly
+intuitive. The client's manpage usually lists the
+event-action mappings that you can modify.
+</p>
+
+<p><a name="IXT-6-883" /> <a name="IXT-6-884" />You can specify nondefault
+translations using a translation table (a resource containing a list
+of translations). Since actions are part of the client application
+and cannot be modified, you are actually specifying alternative
+events to perform an action.<a href="#FOOTNOTE-31">[31]</a> Keep in mind
+that only applications written with the X Toolkit (or an Xt-based
+toolkit such as the Motif Toolkit) recognize translation-table syntax
+as described here.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-31" /><p> [31]As
+we'll see, in certain cases you may be able to
+supply an alternative <em class="emphasis">argument</em> (such as a
+selection name) to an action. These changes <em class="emphasis">are</em>
+interpreted by the resource manager.</p> </blockquote>
+
+<p>The basic syntax for specifying a <a name="IXT-6-885" />translation table as a resource is as
+follows:
+</p>
+
+<blockquote><pre class="code">[<em class="replaceable"><tt>object</em>*[<em class="replaceable">subobject</tt></em>...]]*translations:   #override\
+        [<em class="replaceable"><tt>modifier</em>]&lt;<em class="replaceable">event</em>&gt;:   <em class="replaceable">action</tt></em></pre></blockquote>
+
+<p>The first line is basically like any other resource specification
+with a few exceptions. First, the final
+<em class="replaceable"><tt>argument</tt></em> is always
+<tt class="literal">translations</tt>, indicating that one (or more) of the
+event-action bindings associated with the
+[<em class="replaceable"><tt>object</em><tt class="literal">*</tt>[<em class="replaceable">subobject</tt></em><tt class="literal">..</tt>.]]
+are being modified.
+</p>
+
+<p>Second, note that <tt class="literal">#override</tt> is not the
+<em class="replaceable"><tt>value</tt></em> of the resource; it is literal and
+indicates that what follows should override any default translations.
+In effect, <tt class="literal">#override</tt> is no more than a pointer to
+the true <em class="replaceable"><tt>value</tt></em> of the resource: a new
+event-action mapping (on the following line) where the event may take
+a modifier.
+</p>
+
+<p>A not-so-obvious principle behind overriding translations is that you
+only literally "override" a default
+translation when the event(s) of the new translation match the
+event(s) of a default translation <em class="emphasis">exactly</em>. If
+the new translation does not conflict with any existing translation,
+it is merely appended to the defaults.
+</p>
+
+<p>To be specified as a resource, a translation table must be a single
+string. The <tt class="literal">#override</tt> is followed by a backslash
+(<tt class="literal">\</tt>) to indicate that the subsequent line should be
+a continuation of the first.
+</p>
+
+<p>In the previous basic syntax example, the
+<em class="replaceable"><tt>value</tt></em> is a single event-action mapping.
+The <em class="replaceable"><tt>value</tt></em> could also be a list of several
+mappings, linked by the characters <tt class="literal">\n\</tt> to make the
+resource a continuous string.
+</p>
+
+<p>The following <i class="command">xterm</i> translation table shows
+multiple event-action mappings linked in this <a name="IXTR3-966" /> <a name="IXTR3-967" /> <a name="IXTR3-968" />manner:
+<a name="IXT-6-886" />
+</p>
+
+<blockquote><pre class="code">*VT100.Translations:   #override\
+        &lt;Btn1Down&gt;:    select-start( )\n\
+        &lt;Btn1Motion&gt;:  select-extend( )\n\
+        &lt;Btn1Up&gt;:      select-end(primary,CUT_BUFFER0)</pre></blockquote>
+
+<p><em class="emphasis">--VQ and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.3. X Resource Syntax</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.5. Setting X Resources: Overview</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

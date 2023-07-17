@@ -1,0 +1,318 @@
+<html><head><title>Shell Setup Files -- Which, Where, and Why (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.3. Shell Setup Files -- Which, Where, and Why</h2>
+
+<p><a name="IXT-3-6978" /><a name="upt3-IDXTERM-369" /> <a name="upt3-IDXTERM-370" />To understand setup files, you
+need to understand that a shell can act like a <b class="emphasis-bold">login shell</b> <b class="emphasis-bold">or
+a</b> <b class="emphasis-bold">nonlogin shell</b> (<a href="ch03_04.htm#upt3-CHP-3-SECT-4">Section 3.4</a>). There are different setup files for nonlogin
+and login shells.
+</p>
+
+<p>When you log in to a Unix system -- but not under a window
+system -- the <i class="command">login</i> program starts a shell for
+you. The <i class="command">login</i> program sets <b class="emphasis-bold">a special flag</b> (<a href="ch03_19.htm#upt3-CHP-3-SECT-19">Section 3.19</a>)
+to tell a shell that it's a login shell. If the
+shell doesn't have that flag set, it
+won't act like a login shell. Opening a new window
+in a window system may or may not set the "login
+shell" flag -- that depends on the configuration.
+(<a name="IXT-3-6979" />For example, the command
+<i class="command">xterm</i> <span class="option">-ls</span> starts a login shell in
+an <b class="emphasis-bold">xterm</b> <b class="emphasis-bold">window</b> (<a href="ch24_20.htm#upt3-CHP-24-SECT-20">Section 24.20</a>);
+<i class="command">xterm</i> <span class="option">+ls</span> starts a nonlogin
+shell.) When you connect to a system with programs like
+<i class="command">ftp</i> and <i class="command">scp</i>, that usually
+starts a nonlogin shell. And a <b class="emphasis-bold">subshell</b> (<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) is
+never a login shell (unless you set a command-line option to force a
+login shell, like <tt class="literal">bash -l</tt>).
+</p>
+
+<p><a name="IXT-3-6980" />How can you tell whether your shell is
+a login shell? The answer is "it
+depends." When you first log in to a system, you
+want a login shell that sets things like the <b class="emphasis-bold">terminal type</b> (<a href="ch05_02.htm#upt3-CHP-5-SECT-2">Section 5.2</a>,
+<a href="ch05_03.htm#upt3-CHP-5-SECT-3">Section 5.3</a>). Other shells on the same terminal
+should be nonlogin shells -- to avoid redoing those one-time-only
+setup commands. Different shells have their own methods for handling
+first-time shell invocations versus later invocations, and
+that's what the rest of this article is about.
+</p>
+
+<p><a name="IXT-3-6981" /><a name="IXT-3-6982" /><a name="IXT-3-6983" /><b class="emphasis-bold">Parenthesis
+operators</b> (<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>)
+don't read any setup file. Instead, they start
+another instance of your current shell. Parentheses are called
+"subshell operators," but the
+subshell they start doesn't print a prompt and
+usually has a short lifetime.
+</p>
+
+<p>Next, let's look at the setup files -- login and
+nonlogin -- for the major shells. I recommend that you read about
+all of them. Then experiment with your shell's setup
+files until you get things working the way you want them.
+</p>
+
+<dl>
+<a name="IXT-3-6984" /><dt><i>System-wide setup</i></dt>
+<dd>
+Your <i class="command">login</i>(1) command probably sets some <b class="emphasis-bold">environment variables</b>
+(<a name="IXT-3-6985" /><a name="IXT-3-6986" /> <a name="IXT-3-6987" /><a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) like HOME, PATH, SHELL, TERM, MAIL, and
+LOGNAME or USER; check its manual page. Your system may set some
+environment variables or other parameters that apply to all shells or
+to all shells of a particular type (all <i class="command">bash</i>
+shells, <i class="command">zsh</i> shells, etc.). All of these will be
+passed through the environment, <b class="emphasis-bold">from parent
+process to child process</b> (<a href="ch35_04.htm#upt3-CHP-35-SECT-4">Section 35.4</a>),
+to all of your shells, login and nonlogin.
+</p>
+
+
+<p>Once <i class="command">login</i> or your window system starts your
+individual shell, it may also read its own system-wide setup files.
+These files, if any, will be read before your personal setup files.
+Check your shell's manual page and the
+<em class="filename">/etc</em></tt> directory for files like
+<em class="filename">csh.login</em></tt>, <em class="filename">bashrc</em></tt>,
+<em class="filename">zshrc</em></tt>, and so on. On Red Hat systems, for
+example, there is a directory named
+<em class="filename">/etc/profile.d</em></tt> containing package-specific C and
+Bash shell config files that are sourced (read into the current
+shell) on startup of a shell. On Mac OS X, when you use <b class="emphasis-bold">Terminal</b> (<a href="ch03_02.htm#upt3-CHP-3-SECT-2">Section 3.2</a>), your
+shell (which is <i class="command">tcsh</i> by default) reads
+<em class="filename">/private/etc/csh.cshrc</em></tt>, as well as any
+user-specific files (e.g., <em class="filename">~/.tcshrc</em></tt>).
+</p>
+</dd>
+</dl>
+
+<dl>
+<dt><i>Bourne shell</i></dt>
+<dd>
+<a name="IXT-3-6988" /><a name="IXT-3-6989" /><a name="IXT-3-6990" />The original Bourne shell has one file
+that it reads when you log in: it's called
+<em class="filename">.profile</em> and is in your home directory. Put all
+your setup commands there. Later versions of the Bourne shell may
+also read
+<em class="filename">/etc/profile</em><a name="IXT-3-6991" /> before your local setup file is read and
+may also read the contents of whatever file is named in the
+<a name="IXT-3-6992" /> <a name="IXT-3-6993" />ENV <b class="emphasis-bold">environment
+variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) (but only for
+<a name="IXT-3-6994" />interactive shells). You may set this
+variable from your own <em class="filename">.profile</em>:
+</p>
+
+<blockquote><pre class="code">ENV=$HOME/.mystartup; export ENV</pre></blockquote>
+
+<p>The Bourne shell doesn't read
+<em class="filename">.profile</em> when you start a
+<a name="IXT-3-6995" /><a name="IXT-3-6996" />nonlogin shell or
+<b class="emphasis-bold">subshell</b> (<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>), though. Subshells are set up through
+inheritance of <b class="emphasis-bold">environment variables</b>
+(<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) that were set when you first logged in
+(in system-wide setup files or <em class="filename">.profile</em>) or from
+commands you typed since.
+</p>
+</dd>
+
+
+<dt><i>C shell</i></dt>
+<dd>
+<a name="IXT-3-6997" /> <a name="IXT-3-6998" /> <a name="IXT-3-6999" />C shell users have several shell setup
+files available:
+</p>
+
+<ul><li>
+<p>The <em class="filename">.cshrc</em></tt> file is read any time a C shell
+starts -- that includes shell escapes and shell scripts.<a href="#FOOTNOTE-4">[4]</a> This is the place to put commands that should run every
+time you start a shell. For instance, shell variables like <b class="emphasis-bold">cdpath</b> (<a href="ch31_05.htm#upt3-CHP-31-SECT-5">Section 31.5</a>) and
+<em class="emphasis">prompt</em></tt> should be set here. <b class="emphasis-bold">Aliases</b>
+(<a name="IXT-3-7000" /><a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>) should,
+too. Those things aren't passed to subshells through
+the environment, so they belong in <em class="filename">.cshrc</em></tt> (or
+<em class="filename">.tcshrc</em></tt>). See the upcoming section on
+<i class="command">tcsh</i> for more details.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-4" /><p> [4]If you write a <i class="command">csh</i> (or
+<i class="command">tcsh</i>) script, you probably should use the
+<span class="option">-f</span> option to keep scripts from reading
+<em class="filename">.cshrc</em></tt> (or <em class="filename">.tcshrc</em></tt>).
+However, you probably shouldn't use
+<i class="command">csh</i> or <i class="command">tcsh</i> for scripts.</p>
+</blockquote>
+
+<p>Alternately, you can put aliases into a separate file and use the
+<i class="command">source</i><a name="IXT-3-7001" /> command to read the file into the
+current shell from your
+<em class="filename">.cshrc</em></tt>/<em class="filename">.tcshrc</em></tt> -- if
+you're the sort who likes to have custom init files
+for every host you log in to, but like your aliases to be common
+wherever you go. This provides a quick and easy way for you to copy
+your <em class="filename">.csh.aliases</em></tt> (or whatever name you give it,
+being careful to distinguish between it and the slightly different
+format required by <i class="command">bash</i> aliases) from host to host
+without clobbering your custom, localized init files.
+</p>
+</li>
+<li>
+<p><a name="IXT-3-7002" /><a name="IXT-3-7003" />When
+<i class="command">csh</i> starts up, on recent systems it may read a
+system-wide setup file, such as
+<em class="filename">/etc/csh.cshrc</em></tt><a name="IXT-3-7004" />,<a href="#FOOTNOTE-5">[5]</a> and for
+login shells,
+<em class="filename">/etc/csh.login</em></tt><a name="IXT-3-7005" />.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-5" /><p> [5]On Mac OS X,
+<em class="filename">/etc</em></tt> is a symbolic link to
+<em class="filename">/private/etc</em></tt>. The actual initialization files
+for <i class="command">tcsh</i> are in
+<em class="filename">/usr/share/init/tcsh</em></tt>.</p> </blockquote>
+</li><li>
+<p><a name="IXT-3-7006" /><a name="IXT-3-7007" />Your <em class="filename">.login</em></tt> file is
+read when you start a login shell. You should set several things
+here. Set <b class="emphasis-bold">environment variables</b>
+(<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) (which Unix will pass to subshells
+automatically). Run commands like <b class="emphasis-bold">tset</b> (<a href="ch05_03.htm#upt3-CHP-5-SECT-3">Section 5.3</a>) and
+<b class="emphasis-bold">stty</b> (<a href="ch05_07.htm#upt3-CHP-5-SECT-7">Section 5.7</a>,
+<a href="ch05_08.htm#upt3-CHP-5-SECT-8">Section 5.8</a>) that set up your terminal. Finally,
+include commands you want to run every time you log in -- checking
+for <b class="emphasis-bold">mail and news</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>), running <i class="command">fortune</i>, checking
+your calendar for the day, etc.
+</p>
+
+<p>Note that <em class="filename">.cshrc</em></tt> is read before
+<em class="filename">.login</em></tt>, by <i class="command">csh</i>, but that tcsh
+may be compiled such that the order is reversed, and
+<em class="filename">.tcshrc</em></tt> may be read <em class="emphasis">after</em></tt>
+<em class="filename">.login</em></tt> in some environments. Check the
+<em class="emphasis">version</em></tt> shell variable to find out how your
+environment is set up.
+</p>
+</li>
+<li>
+<p><a name="IXT-3-7008" />The
+shell reads <em class="filename">.logout</em></tt> when you end a login shell.
+<a href="ch03_08.htm#upt3-CHP-3-SECT-8">Section 3.8</a> has tips for reading
+<em class="filename">.logout</em></tt> from nonlogin shells.
+</p>
+</li></ul>
+</dd>
+
+
+<dt><i>Korn shell</i></dt>
+<dd>
+<a name="IXT-3-7009" /> <a name="IXT-3-7010" /><a name="IXT-3-7011" />The Korn shell is a lot like the Bourne
+shell. A <b class="emphasis-bold">login Korn shell</b> (<a href="ch03_04.htm#upt3-CHP-3-SECT-4">Section 3.4</a>) will read the
+<em class="filename">.profile</em><a name="IXT-3-7012" /> first;
+recent versions do so only after reading
+<em class="filename">/etc/profile</em><a name="IXT-3-7013" />, if
+present. The <em class="filename">.profile</em> can set the <b class="emphasis-bold">ENV</b><a name="IXT-3-7014" /> (<a href="ch35_05.htm#upt3-CHP-35-SECT-5">Section 35.5</a>)
+environment variable to the pathname of a file (typically
+<em class="filename">$HOME/.kshrc</em>). Any child Korn shell started by
+that login shell -- including all subshells -- will read the
+file named by <tt class="literal">$ENV</tt> as it starts up, before
+printing a prompt or running other commands.
+</p>
+
+
+<p>The public domain Korn shell often found on Linux may also be further
+restricted when invoked as a
+"privileged" shell, using a pattern
+that matches r*sh, in which case neither the
+<em class="filename">~/.profile</em> nor the file named by the
+<em class="emphasis">ENV</em> environment variable will be read. Instead,
+the shell will be initialized using
+<em class="filename">/etc/suid_profile</em>, if present.
+</p></dd>
+
+
+<dt><i>bash</i></dt>
+<dd>
+<a name="IXT-3-7015" /><a name="IXT-3-7016" /> <a name="IXT-3-7017" /><a name="IXT-3-7018" /><i class="command">bash</i>
+is something of a cross between the Bourne and C shells. A login
+<i class="command">bash</i> will read
+<em class="filename">.bash_profile</em></tt><a name="IXT-3-7019" /> <a name="IXT-3-7020" /> <a name="IXT-3-7021" />,
+<em class="filename">.bash_login</em></tt>, or <em class="filename">.profile</em></tt>. A
+noninteractive <i class="command">bash</i> will read a file named
+<em class="filename">.bashrc</em></tt> in your home directory.
+<a name="IXT-3-7022" />The shell reads
+<em class="filename">.bash_logout</em></tt> when you end a login shell; you can
+set a <b class="emphasis-bold">trap</b> (<a href="ch04_18.htm#upt3-CHP-4-SECT-18">Section 4.18</a>) to handle nonlogin shells.
+</p>
+
+
+<p><i class="command">bash</i> also uses <a name="IXT-3-7023" />GNU Readline for reading and editing
+text you enter at a shell prompt. The
+<em class="filename">.inputrc</em></tt><a name="IXT-3-7024" /> <a name="IXT-3-7025" /> file configures Readline for a given user;
+<em class="filename">/etc/inputrc</em></tt> is for global configuration.
+</p>
+</dd>
+
+
+<dt><i>tcsh</i></dt>
+<dd>
+<a name="IXT-3-7026" /> <a name="IXT-3-7027" /><i class="command">tcsh</i> is like the C
+shell but more flexible. If a <i class="command">tcsh</i> shell is run,
+it first tries to read
+<em class="filename">.tcshrc</em><a name="IXT-3-7028" /> <a name="IXT-3-7029" /><a name="IXT-3-7030" /> <a name="IXT-3-7031" /> and, if not found, then tries
+<em class="filename">.cshrc</em>. In addition, <i class="command">tcsh</i>
+will also load either <em class="filename">.history</em> or the value of
+the <em class="emphasis">histfile</em> variable, if set; then it may try
+to read <em class="filename">.cshdirs</em><a name="IXT-3-7032" /><a name="IXT-3-7033" /> or the value of the
+<em class="emphasis">dirsfile</em> variable.
+</p>
+</dd>
+
+
+<a name="IXT-3-7034" /><a name="IXT-3-7035" /><dt><i>zsh</i></dt>
+<dd>
+<a name="IXT-3-7036" /><a name="IXT-3-7037" /><a name="IXT-3-7038" /><a name="IXT-3-7039" /><a name="IXT-3-7040" /><a name="IXT-3-7041" />As always, <i class="command">zsh</i> is
+very flexible. Startup files are read from the directory named in the
+<em class="emphasis">ZDOTDIR</em></tt><a name="IXT-3-7042" /> <a name="IXT-3-7043" />
+environment variable, if any;<a href="#FOOTNOTE-6">[6]</a> otherwise, from
+<em class="emphasis">HOME</em></tt>. All shells read the global
+<em class="filename">/etc/zshenv</em></tt> and your
+<em class="filename">.zshenv</em></tt> files. If the shell is a
+<a name="IXT-3-7044" />login shell, commands are read from
+<em class="filename">/etc/zprofile</em></tt> and then your
+<em class="filename">.zprofile</em></tt>. Then, if the shell is interactive,
+commands are read from <em class="filename">/etc/zshrc</em></tt> and your
+<em class="filename">.zshrc</em></tt>. Finally, if the shell is a login shell,
+<em class="filename">/etc/zlogin</em></tt> and your
+<em class="filename">.zlogin</em></tt> files are read.<a name="IXTR3-7192" /> <a name="IXTR3-7193" />
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-6" /><p> [6]<em class="emphasis">ZDOTDIR</em></tt> may be hard to set on your first
+login -- when your <i class="command">zsh</i> is a login
+shell -- because it's hard to set an environment
+variable before your first shell starts. (The system program that
+starts your shell, like <i class="command">login</i>(1), could do the
+job, I guess.)</p> </blockquote>
+</dd>
+
+</dl>
+
+<p><em class="emphasis">--JP and SJC</em></tt></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.2. The Mac OS X Terminal Application</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.4. Login Shells, Interactive Shells</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

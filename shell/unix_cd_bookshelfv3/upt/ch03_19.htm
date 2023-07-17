@@ -1,0 +1,93 @@
+<html><head><title>Making a "Login" Shell (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.19. Making a "Login" Shell</h2>
+
+<p><a name="IXT-3-7185" /><a name="IXT-3-7186" />When you
+log in to most Unix systems, your shell is a <em class="emphasis">login
+shell</em>. When a shell is a login shell, it <b class="emphasis-bold">acts differently</b> (<a href="ch03_04.htm#upt3-CHP-3-SECT-4">Section 3.4</a>). 
+</p>
+
+<p>Sometimes, when you're testing an account or using a
+window system, you want to start a login shell without logging in.
+Unix shells act like login shells when they are executed with a name
+that starts with a dash (<tt class="literal">-</tt>).<a href="#FOOTNOTE-11">[11]</a> This is easy to
+do if you're using a system call in the
+<em class="emphasis">exec</em>(3) family. These system calls let a
+C-language programmer give both the filename of an executable file,
+like <em class="emphasis">sh</em> or <em class="filename">/bin/sh</em>, as well
+as the name that should be used to identify the process (in a
+<b class="emphasis-bold">ps</b> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>)
+listing, for example), like <em class="emphasis">-sh</em>.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-11" /><p> [11]<i class="command">bash</i> also has a command-line option,
+<span class="option">-login</span>, that makes it act like a login shell.
+<i class="command">zsh</i> -<span class="option">l</span> (lowercase L) does the
+same for <i class="command">zsh</i>.</p> </blockquote>
+
+<p>If you're currently using
+<i class="command">zsh</i><a name="IXT-3-7187" />, you can invoke another shell this
+way by typing a dash and a space before the shell's
+name:
+</p>
+
+<blockquote><pre class="code">zsh% <tt class="userinput"><b>- csh</b></tt>
+   <i class="lineannotation">...C shell starts, acting like a login shell...</i>
+%</pre></blockquote>
+
+<p>C programmers can write a little program that runs the actual shell
+but tells the shell that its name starts with a dash. This is how the
+Unix <i class="command">login</i> process does it:
+</p>
+
+<blockquote><pre class="code">run_login_csh( )
+{
+    execl("/bin/csh", "-csh", 0);
+}</pre></blockquote>
+
+<p>A more general solution is to make a <b class="emphasis-bold">link</b> (<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>) to the
+shell and give the link a filename starting with a dash. If your own
+<em class="emphasis">bin</em> subdirectory is on the same filesystem as
+<em class="filename">/bin</em> (or wherever the executable shell file is),
+you can use a hard link. Otherwise, make a symbolic link, as shown
+here:
+</p>
+
+<p><tt class="literal">bin</tt> <a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a>, <tt class="literal">./-</tt> <a href="ch14_13.htm#upt3-CHP-14-SECT-13">Section 14.13</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cd $HOME/bin</b></tt>
+$ <tt class="userinput"><b>ln -s /bin/csh ./-csh</b></tt></pre></blockquote>
+
+<p>Then you can execute your new shell by typing its name:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>-csh</b></tt>
+   <i class="lineannotation">...normal C shell login process...</i>
+% <i class="lineannotation">...run whatever commands you want...</i>
+% <tt class="userinput"><b>logout</b></tt>
+$ <i class="lineannotation">...back to original shell</i></pre></blockquote>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.18. A .cshrc.$HOST File for Per Host Setup</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.20. RC Files</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

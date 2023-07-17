@@ -1,0 +1,650 @@
+<html><head><title>Variables (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">4.3. Variables</h2><p>
+<a name="unut-ch-4-ix-variables-sh-and-ksh-shells" />
+<a name="unut-ch-4-ix-ksh-korn-shell-variables" />
+<a name="unut-ch-4-ix-sh-bourne-shell-variables" />This section describes the following:</p>
+<ul><li><p>Variable substitution</p>
+</li><li><p>Built-in shell variables</p>
+</li><li><p>Other shell variables</p>
+</li><li><p>Arrays (Korn shell only)</p>
+</li><li><p>Discipline functions (<tt class="literal">ksh93</tt> only)</p>
+</li></ul>
+
+<a name="unut-ch-4-sect-3.1" /><div class="sect2"><h3 class="sect2">4.3.1. Variable Substitution</h3><p><tt class="literal">ksh93</tt> provides structured variables, such as
+<tt class="literal">pos.x</tt> and <tt class="literal">pos.y</tt>.
+To create either one, <tt class="literal">pos</tt> must already
+exist, and braces must be used to retrieve their values.
+Names beginning with <tt class="literal">.sh</tt> are
+reserved for use by <tt class="literal">ksh</tt>.</p>
+<p>
+<a name="IXT-4-122708" />No spaces should be used in the following expressions.  The colon
+(<tt class="literal">:</tt>) is optional;
+if it's included, <em class="emphasis">var</em> must be nonnull as
+well as set.</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><p><em class="replaceable"><tt>var</em><tt class="literal">=</tt><em class="replaceable">value</tt></em> ...</p>
+</td><td><p>Set each variable <em class="emphasis">var</em> to a <em class="emphasis">value</em>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use value of <em class="emphasis">var</em>;
+braces are optional if <em class="emphasis">var</em> is separated from the following text.
+They are required in <tt class="literal">ksh93</tt> if a variable name contains periods.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:-</tt><em class="replaceable">value</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use <em class="emphasis">var</em> if set; otherwise, use <em class="emphasis">value</em>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:=</tt><em class="replaceable">value</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use <em class="emphasis">var</em> if set; otherwise, use <em class="emphasis">value</em>
+and assign <em class="emphasis">value</em> to <em class="emphasis">var</em>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:?</tt><em class="replaceable">value</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use <em class="emphasis">var</em> if set; otherwise,
+print <em class="emphasis">value</em> and exit (if not interactive).
+If <em class="emphasis">value</em> isn't supplied, print the phrase
+&#8220;parameter null or not set.&#8221;</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:+</tt><em class="replaceable">value</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use <em class="emphasis">value</em> if <em class="emphasis">var</em> is set; otherwise, use nothing.</p>
+</td></tr>
+</table><p>
+<p>In the Korn shell:</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><p><tt class="literal">${#</tt><em class="replaceable"><tt>var</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use the length of <em class="emphasis">var</em>.</p>
+</td></tr>
+
+
+<tr><td><p><tt class="literal">${#*}</tt></p>
+<p><tt class="literal">${#@}</tt></p>
+</td>
+<td><p>Use the number of positional parameters.</p>
+</td></tr>
+
+
+
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">#</tt><em class="replaceable">pattern</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use value of <em class="emphasis">var</em> after removing
+<em class="emphasis">pattern</em> from the left.
+Remove the shortest matching piece.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">##</tt><em class="replaceable">pattern</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Same as <tt class="literal">#</tt><em class="emphasis">pattern</em>,
+but remove the longest matching piece.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">%</tt><em class="replaceable">pattern</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use value of <em class="emphasis">var</em> after removing
+<em class="emphasis">pattern</em> from the right.
+Remove the shortest matching piece.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">%%</tt><em class="replaceable">pattern</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Same as <tt class="literal">%</tt><em class="emphasis">pattern</em>,
+but remove the longest matching piece.</p>
+</td></tr>
+</table>
+<p>In <tt class="literal">ksh93</tt>:</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><tt class="literal">${!</tt><em class="replaceable"><tt>prefix</tt></em><tt class="literal">*}</tt></p>
+<p><tt class="literal">${!</tt><em class="replaceable"><tt>prefix</tt></em><tt class="literal">@}</tt></p>
+</td>
+
+<td><p>List of variables whose names begin with <em class="emphasis">prefix</em>.</p>
+</td></tr>
+
+
+
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:</tt><em class="replaceable">pos</tt></em><tt class="literal">}</tt></p>
+<p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:</tt><em class="replaceable">pos</em><tt class="literal">:</tt><em class="replaceable">len</tt></em><tt class="literal">}</tt></p>
+</td>
+
+<td><p>Starting at position <em class="emphasis">pos</em> (0-based) in variable
+<em class="emphasis">var</em>, extract <em class="emphasis">len</em> characters,
+or rest of string if no <em class="emphasis">len</em>. 
+<em class="emphasis">pos</em> and <em class="emphasis">len</em> may be
+arithmetic expressions.</p>
+</td></tr>
+
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:</tt><em class="replaceable">pos</em><tt class="literal">:</tt><em class="replaceable">len</tt></em><tt class="literal">}</tt></p></td>
+</tr>
+
+
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">/</tt><em class="replaceable">pat</em><tt class="literal">/</tt><em class="replaceable">repl</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use value of <em class="emphasis">var</em>, with first match of
+<em class="emphasis">pat</em> replaced with <em class="emphasis">repl</em>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">/</tt><em class="replaceable">pat</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use value of <em class="emphasis">var</em>, with first match of
+<em class="emphasis">pat</em> deleted.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">//</tt><em class="replaceable">pat</em><tt class="literal">/</tt><em class="replaceable">repl</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use value of <em class="emphasis">var</em>, with every match of
+<em class="emphasis">pat</em> replaced with <em class="emphasis">repl</em>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">/#</tt><em class="replaceable">pat</em><tt class="literal">/</tt><em class="replaceable">repl</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use value of <em class="emphasis">var</em>, with match of
+<em class="emphasis">pat</em> replaced with <em class="emphasis">repl</em>.
+Match must occur at beginning of the value.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">/%</tt><em class="replaceable">pat</em><tt class="literal">/</tt><em class="replaceable">repl</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use value of <em class="emphasis">var</em>, with match of
+<em class="emphasis">pat</em> replaced with <em class="emphasis">repl</em>.
+Match must occur at end of the value.</p>
+</td></tr>
+</table><p>
+<p>In <tt class="literal">ksh93</tt>,
+indirect variables allow you to &#8220;alias&#8221; one variable
+name to affect the value of another.  This is accomplished
+using <tt class="literal">typeset -n</tt>:</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>greet="hello, world"</b></tt>			<i class="lineannotation">Create initial variable</i>
+$ <tt class="userinput"><b>typeset -n friendly_message=greet</b></tt>	<i class="lineannotation">Set up alias</i>
+$ <tt class="userinput"><b>echo $friendly_message</b></tt>		<i class="lineannotation">Access old value through new name</i>
+hello, world
+$ <tt class="userinput"><b>friendly_message="don't panic"</b></tt>	<i class="lineannotation">Change the value</i>
+$ <tt class="userinput"><b>echo $greet</b></tt>				<i class="lineannotation">Old variable is changed</i>
+don't panic</pre></blockquote>
+
+<a name="unut-ch-4-sect-3.1.1" /><div class="sect3"><h3 class="sect3">4.3.1.1. Examples</h3><blockquote><pre class="code">$ <tt class="userinput"><b>u=up d=down blank=</b></tt>		<i class="lineannotation">Assign values to three variables (last is null)</i>
+$ <tt class="userinput"><b>echo ${u}root</b></tt>			<i class="lineannotation">Braces are needed here</i>
+uproot
+$ <tt class="userinput"><b>echo ${u-$d}</b></tt>                   <i class="lineannotation">Display value of u or d; since u is set, it's printed</i>
+up
+$ <tt class="userinput"><b>echo ${tmp-`date`}</b></tt>	          <i class="lineannotation">If tmp is not set, the date command is executed</i>
+Thu Feb  4 15:03:46 EST 1993
+$ <tt class="userinput"><b>echo ${blank="no data"}</b></tt>        <i class="lineannotation">blank is set, so it is printed (a blank line)</i>
+$ <tt class="userinput"><b>echo ${blank:="no data"}</b></tt>	<i class="lineannotation">blank is set but null, so the string is printed</i>
+no data	
+$ <tt class="userinput"><b>echo $blank</b></tt>			<i class="lineannotation">blank now has a new value </i>
+no data</pre></blockquote>
+</div>
+
+<a name="unut-ch-4-sect-3.1.2" /><div class="sect3">
+<h3 class="sect3">4.3.1.2. Korn shell example</h3>
+
+<blockquote><pre class="code">
+tail='${PWD##*/}'	<i class="lineannotation">Take the current directory name and remove the longest character string 
+                        ending with /, which removes the leading pathname and leaves the tail</i></pre></blockquote>
+</div>
+</div>
+
+<a name="unut-ch-4-sect-3.2" /><div class="sect2"><h3 class="sect2">4.3.2. Built-in Shell Variables</h3><p>
+<a name="IXT-4-122709" />
+<a name="unut-ch-4-ix-shell-variables-sh-and-ksh-shells" />
+<a name="IXT-4-122710" />Built-in variables are automatically set by the shell and
+are typically used inside shell scripts.  
+Built-in variables can make use of the variable substitution 
+patterns shown previously.
+Note that the <tt class="literal">$</tt> is not actually part of the variable name,
+although the variable is always referenced this way.
+<a name="IXT-4-122711" /></p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><p><tt class="literal">$#</tt></p>
+</td><td><p>Number of command-line arguments.</p>
+</td></tr>
+<tr><td><p><tt class="literal">$-</tt></p>
+</td><td><p>Options currently in effect (arguments supplied to <tt class="literal">sh</tt> or
+to <tt class="literal">set</tt>). </p>
+</td></tr>
+<tr><td><p><tt class="literal">$?</tt></p>
+</td><td><p>Exit value of last executed command.</p>
+</td></tr>
+<tr><td><p><tt class="literal">$$</tt></p>
+</td><td><p>Process number of current process.</p>
+</td></tr>
+<tr><td><p><tt class="literal">$!</tt></p>
+</td><td><p>Process number of last background command.</p>
+</td></tr>
+<tr><td><p><tt class="literal">$0</tt></p>
+</td><td><p>First word; that is, command name.
+This will have the full path name if it was found via a
+PATH search.</p>
+</td></tr>
+<tr><td><p><tt class="literal">$</tt><em class="replaceable"><tt>n</tt></em></p>
+</td><td><p>Individual arguments on command line (positional parameters).
+The Bourne shell allows only nine parameters to be referenced
+directly (<em class="emphasis">n</em> = 1&#8211;9);
+the Korn shell allows <em class="emphasis">n</em> to be
+greater than 9 if specified
+as <tt class="literal">${</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">}</tt>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">$*</tt>, <tt class="literal">$@</tt></p>
+</td><td><p>All arguments on command line (<tt class="literal">$1 $2</tt> ...).</p>
+</td></tr>
+<tr><td><p><tt class="literal">"$*"</tt></p>
+</td><td><p>All arguments on command line as one string
+(<tt class="literal">"$1&#160;$2..."</tt>).</p>
+</td></tr>
+<tr><td><p><tt class="literal">"$@"</tt></p>
+</td><td><p>All arguments on command line, individually quoted
+(<tt class="literal">"$1" "$2"</tt> ...).</p>
+</td></tr>
+</table><p>
+<p>The Korn shell automatically sets these additional variables:</p>
+
+<table border="1" cellpadding="3">
+
+
+
+<tr><td><p><tt class="literal">$_</tt></p>
+</td><td><p>Temporary variable; initialized to pathname of script or program being
+executed.  Later, stores the last argument of previous command.  Also
+stores name of matching MAIL file during mail checks.</p>
+</td></tr>
+
+
+<tr><td><p><tt class="literal">LINENO</tt></p>
+</td><td><p>Current line number within the script or function.
+<a name="IXT-4-122712" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">OLDPWD</tt></p>
+</td><td><p>Previous working directory (set by <tt class="literal">cd</tt>).
+<a name="IXT-4-122713" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">OPTARG</tt></p>
+</td><td><p>Name of last option processed by <tt class="literal">getopts</tt>.
+<a name="IXT-4-122714" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">OPTIND</tt></p>
+</td><td><p>Numerical index of OPTARG.
+<a name="IXT-4-122715" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">PPID</tt></p>
+</td><td><p>Process number of this shell's parent.
+<a name="IXT-4-122716" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">PWD</tt></p>
+</td><td><p>Current working directory (set by <tt class="literal">cd</tt>).
+<a name="IXT-4-122717" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">RANDOM</tt>[<tt class="literal">=</tt><em class="replaceable"><tt>n</tt></em>]</p>
+</td><td><p>Generate a new random number with each reference;
+<a name="IXT-4-122718" />
+start with integer <em class="emphasis">n</em>, if given.</p>
+</td></tr>
+<tr><td><p><tt class="literal">REPLY</tt></p>
+</td><td><p>Default reply, used by <tt class="literal">select</tt> and <tt class="literal">read</tt>.
+<a name="IXT-4-122719" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">SECONDS</tt>[<tt class="literal">=</tt><em class="replaceable"><tt>n</tt></em>]</p>
+</td><td><p>Number of seconds since the shell was started,
+<a name="IXT-4-122720" />
+or, if <em class="emphasis">n</em> is given, number of seconds + <em class="emphasis">n</em>
+since the shell started.</p>
+</td></tr>
+</table><p>
+<p><tt class="literal">ksh93</tt>
+automatically sets these additional variables.
+Variables whose names contain &#8220;.&#8221; must be enclosed
+in braces when referenced, e.g., <tt class="literal">${.sh.edchar}</tt>.</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><p><tt class="literal">HISTCMD</tt></p>
+</td><td><p>The history number of the current command.</p>
+</td></tr>
+<tr><td><p>
+<a name="IXT-4-122721" /><tt class="literal">.sh.edchar</tt></p>
+</td><td><p>The character(s) entered when processing a <tt class="literal">KEYBD</tt>
+trap.  Changing it replaces the characters that caused the trap.</p>
+</td></tr>
+<tr><td><p><tt class="literal">.sh.edcol</tt></p>
+</td><td><p>The position of the cursor in the most recent
+<tt class="literal">KEYBD</tt>
+trap.</p>
+</td></tr>
+<tr><td><p><tt class="literal">.sh.edmode</tt></p>
+</td><td><p>Will be equal to ESCAPE if in a <tt class="literal">KEYBD</tt>
+trap in <tt class="literal">vi</tt> mode, otherwise empty.</p>
+</td></tr>
+<tr><td><p><tt class="literal">.sh.edtext</tt></p>
+</td><td><p>The characters in the input buffer during
+a <tt class="literal">KEYBD</tt> trap.</p>
+</td></tr>
+<tr><td><p><tt class="literal">.sh.name</tt></p>
+</td><td><p>The name of the variable running a discipline function.</p>
+</td></tr>
+<tr><td><p><tt class="literal">.sh.subscript</tt></p>
+</td><td><p>The subscript of the variable running a discipline function.</p>
+</td></tr>
+<tr><td><p><tt class="literal">.sh.value</tt></p>
+</td><td><p>The value of the variable inside the <tt class="literal">set</tt>
+and <tt class="literal">get</tt> discipline functions.</p>
+</td></tr>
+<tr><td><p><tt class="literal">.sh.version</tt></p>
+</td><td><p>The version of <tt class="literal">ksh93</tt>.</p>
+</td></tr>
+</table><p>
+</div>
+
+<a name="unut-ch-4-sect-3.3" /><div class="sect2"><h3 class="sect2">4.3.3. Other Shell Variables</h3><p>The following variables are not automatically set by the shell.
+They are typically used in your <tt class="literal">.profile</tt> file,
+where you can define them to suit your needs.
+Variables can be assigned values by issuing commands of the form:</p>
+
+<blockquote><pre class="code"><em class="replaceable"><tt>variable</em>=<em class="replaceable">value</tt></em></pre></blockquote>
+<p>This list includes the type of value expected when defining
+these variables.
+Those that are specific to the Korn shell are marked as (K).
+Those that are specific to <tt class="literal">ksh93</tt> are marked (K93).</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><p><tt class="literal">CDPATH=</tt><em class="replaceable"><tt>dirs</tt></em></p>
+</td><td><p>Directories searched by <tt class="literal">cd</tt>;
+allows shortcuts in changing directories;
+unset by default.</p>
+</td></tr>
+<tr><td><p>
+<a name="IXT-4-122722" /><tt class="literal">COLUMNS=</tt><em class="replaceable"><tt>n</tt></em></p>
+</td><td><p>(K) Screen's column width; used in line edit modes and <tt class="literal">select</tt> lists.
+<a name="IXT-4-122723" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">EDITOR=</tt><em class="replaceable"><tt>file</tt></em></p>
+</td><td><p>(K) Pathname of line edit mode to turn on
+<a name="IXT-4-122724" />
+<a name="IXT-4-122725" />
+(can end in <tt class="literal">emacs</tt> or <tt class="literal">vi</tt>);
+used when VISUAL is not set.</p>
+</td></tr>
+<tr><td><p><tt class="literal">ENV=</tt><em class="replaceable"><tt>file</tt></em></p>
+</td><td><p>(K) Name of script that gets executed at startup;
+<a name="IXT-4-122726" />
+useful for storing alias and function definitions.
+For example, <tt class="literal">ENV=$HOME/.kshrc</tt>
+(like C shell's <tt class="literal">.cshrc</tt>).</p>
+</td></tr>
+<tr><td><p><tt class="literal">FCEDIT=</tt><em class="replaceable"><tt>file</tt></em></p>
+</td><td><p>(K) Editor used by <tt class="literal">fc</tt> command (default is <tt class="literal">/bin/ed</tt>).
+
+
+Obsoleted in <tt class="literal">ksh93</tt> by HISTEDIT.
+<a name="IXT-4-122727" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">FIGNORE=</tt><em class="replaceable"><tt>pattern</tt></em></p>
+</td><td><p>(K93) Pattern describing the set of filenames to ignore during
+pattern matching.
+<a name="IXT-4-122728" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">FPATH=</tt><em class="replaceable"><tt>dirs</tt></em></p>
+</td><td><p>(K) Directories to search for function definitions;
+<a name="IXT-4-122729" />
+undefined functions are set via <tt class="literal">typeset -fu</tt>;
+FPATH is searched when these functions are first referenced.
+(<tt class="literal">ksh93</tt> also searches PATH.)</p>
+</td></tr>
+<tr><td><p><tt class="literal">HISTEDIT=</tt><em class="replaceable"><tt>file</tt></em></p>
+</td><td><p>(K93) Editor used by <tt class="literal">hist</tt> command, if
+set.  Overrides the setting of FCEDIT.
+<a name="IXT-4-122730" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">HISTFILE=</tt><em class="replaceable"><tt>file</tt></em></p>
+</td><td><p>
+<a name="IXT-4-122731" />(K) File in which to store command history
+(must be set before <tt class="literal">ksh</tt> is started);
+default is <tt class="literal">$HOME/.sh_history</tt>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">HISTSIZE=</tt><em class="replaceable"><tt>n</tt></em></p>
+</td><td><p>
+<a name="IXT-4-122732" />(K) Number of history commands available
+(must be set before <tt class="literal">ksh</tt> is started);
+default is 128.</p>
+</td></tr>
+<tr><td><p><tt class="literal">HOME=</tt><em class="replaceable"><tt>dir</tt></em></p>
+</td><td><p>
+<a name="IXT-4-122733" />Home directory; set by <tt class="literal">login</tt> (from <tt class="literal">/etc/passwd</tt> file).</p>
+</td></tr>
+<tr><td><p><tt class="literal">IFS='</tt><em class="replaceable"><tt>chars</tt></em><tt class="literal">'</tt></p>
+</td><td><p>
+<a name="IXT-4-122734" />Input field separators; default is space, tab, and newline.</p>
+</td></tr>
+<tr><td><p><tt class="literal">LANG=</tt><em class="replaceable"><tt>dir</tt></em></p>
+</td><td><p>Directory to use for certain language-dependent programs.
+<a name="IXT-4-122735" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">LC_ALL=</tt><em class="replaceable"><tt>locale</tt></em></p>
+</td><td><p>(K93) Current locale; overrides LANG and the other LC_* variables.
+<a name="IXT-4-122736" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">LC_COLLATE=</tt><em class="replaceable"><tt>locale</tt></em></p>
+</td><td><p>(K93) Locale to use for character collation (sorting order).
+<a name="IXT-4-122737" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">LC_CTYPE=</tt><em class="replaceable"><tt>locale</tt></em></p>
+</td><td><p>(K93) Locale to use for character class functions.
+(See the earlier <a href="ch04_02.htm#unut-ch-4-sect-2.2">Section 4.2.2</a>.)
+<a name="IXT-4-122738" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">LC_NUMERIC=</tt><em class="replaceable"><tt>locale</tt></em></p>
+</td><td><p>(K93) Locale to use for the decimal-point character.
+<a name="IXT-4-122739" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">LINES=</tt><em class="replaceable"><tt>n</tt></em></p>
+</td><td><p>(K) Screen's height; used for <tt class="literal">select</tt> lists.
+<a name="IXT-4-122740" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">MAIL=</tt><em class="replaceable"><tt>file</tt></em></p>
+</td><td><p>Default file in which to receive mail; set by <tt class="literal">login</tt>.
+<a name="IXT-4-122741" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">MAILCHECK=</tt><em class="replaceable"><tt>n</tt></em></p>
+</td><td><p>Number of seconds between mail checks; default is 600 (10 minutes).
+<a name="IXT-4-122742" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">MAILPATH=</tt><em class="replaceable"><tt>files</tt></em></p>
+</td><td><p>
+<a name="IXT-4-122743" />One or more files, delimited by a colon, in which to receive mail.
+Along with each file, you may supply an optional message that the shell
+prints when the file increases in size. Messages are separated
+from the file name by a separator character.
+The Korn shell separator is <tt class="literal">?</tt>, and the default message
+is <tt class="literal">You have mail in $_</tt>.
+<tt class="literal">$_</tt> is replaced with the name of the file.
+The Bourne shell separator is <tt class="literal">%</tt>, and
+the default message is <tt class="literal">You have mail</tt>.
+For example, for <tt class="literal">ksh</tt>, you might have:
+
+
+<blockquote><pre class="code">MAILPATH="$MAIL?Ring! Candygram!:/etc/motd?New Login Message"</pre></blockquote>
+
+</p>
+</td></tr>
+<tr><td><p><tt class="literal">PATH=</tt><em class="replaceable"><tt>dirlist</tt></em></p>
+</td><td><p>One or more pathnames, delimited by colons, in which to search
+<a name="IXT-4-122744" />
+for commands to execute.
+Default for SVR4 is <tt class="literal">/bin:/usr/bin</tt>.
+On Solaris, the default is
+<tt class="literal">/usr/bin:</tt>.
+However, the standard start-up scripts change it to:
+
+<blockquote><pre class="code">/usr/bin:/usr/ucb:/etc:.</pre></blockquote>
+
+<tt class="literal">ksh93</tt>: PATH is also searched for
+function definitions
+for undefined functions.</p>
+</td></tr>
+<tr><td><p><tt class="literal">PS1=</tt><em class="replaceable"><tt>string</tt></em></p>
+</td><td><p>Primary prompt string; default is <tt class="literal">$</tt>.
+<a name="IXT-4-122745" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">PS2=</tt><em class="replaceable"><tt>string</tt></em></p>
+</td><td><p>Secondary prompt (used in multiline commands); 
+default is <tt class="literal">&gt;</tt>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">PS3=</tt><em class="replaceable"><tt>string</tt></em></p>
+</td><td><p>(K) Prompt string in <tt class="literal">select</tt> loops; default is <tt class="literal">#?</tt>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">PS4=</tt><em class="replaceable"><tt>string</tt></em></p>
+</td><td><p>(K) Prompt string for execution trace (<tt class="literal">ksh -x</tt> or <tt class="literal">set -x</tt>);
+default is <tt class="literal">+</tt>.</p>
+</td></tr>
+<tr><td><p><tt class="literal">SHACCT=</tt><em class="replaceable"><tt>file</tt></em></p>
+</td><td><p>&#8220;Shell account&#8221;; file in which to log executed shell scripts.
+<a name="IXT-4-122746" />
+Not in Korn shell.</p>
+</td></tr>
+<tr><td><p><tt class="literal">SHELL=</tt><em class="replaceable"><tt>file</tt></em></p>
+</td><td><p>Name of default shell (e.g., <tt class="literal">/bin/sh</tt>).
+<a name="IXT-4-122747" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">TERM=</tt><em class="replaceable"><tt>string</tt></em></p>
+</td><td><p>Terminal type.
+<a name="IXT-4-122748" /></p>
+</td></tr>
+<tr><td><p><tt class="literal">TMOUT=</tt><em class="replaceable"><tt>n</tt></em></p>
+</td><td><p>
+<a name="IXT-4-122749" />(K) If no command is typed after <em class="emphasis">n</em> seconds, exit the shell.</p>
+</td></tr>
+<tr><td><p><tt class="literal">VISUAL=</tt><em class="replaceable"><tt>path</tt></em></p>
+</td><td><p>
+<a name="IXT-4-122750" />(K) Same as EDITOR, but VISUAL is checked first.</p>
+</td></tr>
+</table><p>
+
+<a name="IXT-4-122751" /></div>
+
+<a name="unut-ch-4-sect-3.4" /><div class="sect2"><h3 class="sect2">4.3.4. Arrays</h3><p>
+<a name="IXT-4-122752" />
+<a name="IXT-4-122753" />The Korn shell supports one-dimensional arrays of up to 1024 elements.
+The first element is numbered 0.
+An array <em class="emphasis">name</em> can be initialized as follows:</p>
+
+<blockquote><pre class="code">set -A <em class="replaceable"><tt>name value0 value1 ...</tt></em></pre></blockquote>
+<p>where the specified values become elements of <em class="emphasis">name</em>.
+Declaring arrays is not required, however.  Any valid reference to
+a subscripted variable can create an array.</p>
+<p>
+<a name="IXT-4-122754" />When referencing arrays, use the
+<tt class="literal">${</tt> ... <tt class="literal">}</tt> syntax.
+This isn't needed when referencing arrays
+inside <tt class="literal">(( ))</tt> 
+(the form of <tt class="literal">let</tt> that does automatic quoting).
+Note that <tt class="literal">[</tt> and <tt class="literal">]</tt> are typed literally
+(i.e., they don't 
+stand for optional syntax).</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>name</em><tt class="literal">[</tt><em class="replaceable">i</tt></em><tt class="literal">]}</tt></p>
+</td><td><p>Use element <em class="emphasis">i</em> of array <em class="emphasis">name</em>.
+<em class="emphasis">i</em> can be any arithmetic expression
+as described under <tt class="literal">let</tt>.
+The expression must return a value between 0 and 1023.</p>
+</td></tr>
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>name</tt></em><tt class="literal">}</tt></p>
+</td><td><p>Use element 0 of array <em class="emphasis">name</em>.</p>
+</td></tr>
+
+
+
+
+<tr><td><p><tt class="literal">${</tt><em class="replaceable"><tt>name</tt></em><tt class="literal">[*]}</tt></p>
+<p><tt class="literal">${</tt><em class="replaceable"><tt>name</tt></em><tt class="literal">[@]}</tt></p>
+</td>
+
+<td><p>Use all elements of array <em class="emphasis">name</em>.</p>
+</td></tr>
+
+
+
+
+
+<tr>
+<td><p><tt class="literal">${#</tt><em class="replaceable"><tt>name</tt></em><tt class="literal">[*]}</tt></p>
+<p><tt class="literal">${#</tt><em class="replaceable"><tt>name</tt></em><tt class="literal">[@]}</tt></p>
+</td>
+
+<td><p>Use the number of elements in array <em class="emphasis">name</em>.</p>
+</td></tr>
+
+
+
+
+</table><p>
+<p><tt class="literal">ksh93</tt> provides associative arrays, where the indices
+are strings instead of numbers (as in <tt class="literal">awk</tt>).
+In this case,
+<tt class="literal">[</tt> and <tt class="literal">]</tt> act like double quotes.
+Associative arrays are created with <tt class="literal">typeset -A</tt>.
+A special syntax
+
+
+ 
+allows assigning to multiple elements at once:</p>
+
+<blockquote><pre class="code">data=([joe]=30 [mary]=25)</pre></blockquote>
+<p>The values would be retrieved as <tt class="literal">${data[joe]}</tt>
+and <tt class="literal">${data[mary]}</tt>.</p>
+
+<a name="IXT-4-122755" />
+<a name="IXT-4-122756" />
+<a name="IXT-4-122757" /></div>
+
+<a name="unut-ch-4-sect-3.5" /><div class="sect2"><h3 class="sect2">4.3.5. Discipline Functions (ksh93 only)</h3><p>
+<a name="IXT-4-122758" />
+<a name="IXT-4-122759" />Along with structured variables,
+<tt class="literal">ksh93</tt> introduces <em class="emphasis">discipline functions</em>.
+These are special functions that are called whenever a variable's
+value is accessed or changed.
+For a shell variable named <tt class="literal">x</tt>, you can
+define the following functions:</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><tt class="literal">x.get</tt></td><td><p>Called when <tt class="literal">x</tt>'s value
+is retrieved (<tt class="literal">$x</tt>).</p>
+</td></tr>
+<tr><td><tt class="literal">x.set</tt></td><td><p>Called when <tt class="literal">x</tt>'s value
+is changed (<tt class="literal">x=2</tt>).</p>
+</td></tr>
+<tr><td><tt class="literal">x.unset</tt></td><td><p>Called when <tt class="literal">x</tt> is
+unset (<tt class="literal">unset x</tt>).</p>
+</td></tr>
+</table><p>
+<p>Within the discipline functions, special variables provide information
+about the variable being changed:</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><tt class="literal">.sh.name</tt></td><td><p>The name of the variable being changed.</p>
+</td></tr>
+<tr><td><tt class="literal">.sh.subscript</tt></td><td><p>The subscript of the array element being changed.</p>
+</td></tr>
+<tr><td><tt class="literal">.sh.value</tt></td><td><p>The value of the variable being assigned or
+returned.  Changing it within the discipline function
+changes the value that is actually assigned or returned.</p>
+</td></tr>
+</table><p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.2. Syntax</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.4. Arithmetic Expressions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

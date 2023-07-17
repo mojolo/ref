@@ -1,0 +1,722 @@
+<html><head><title>Built-in C Shell Commands (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="part2.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">5.8. Built-in C Shell Commands</h2><p>
+<a name="unut-ch-5-ix-csh-c-shell-built-in-commands-list-of" />
+<a name="unut-ch-5-ix-commands-for-csh-shell-csh-shell" />
+
+</p>
+
+<table border="1" cellpadding="5"><tr><td valign="top"><a name="#">#</a></a></td><td><p><tt class="literal">#</tt></p>
+<p>
+<a name="IXT-5-123028" />Ignore all text that follows on the same line.  <tt class="literal">#</tt> is used in shell
+scripts as the comment character and is not really a command.
+In addition,
+a file that has
+<tt class="literal">#</tt> as its first character is sometimes interpreted by
+older systems as a C shell script.</p>
+</td></tr><tr><td valign="top"><a name="#!">#!</a></a></td><td><tt class="literal">#!</tt><em class="replaceable"><tt>shell</em> [<em class="replaceable">option</tt></em>]
+<p>
+<a name="IXT-5-123029" />
+<a name="IXT-5-123030" />Used as the first line of a script to
+invoke the named <em class="emphasis">shell</em>.
+Anything given on the rest of the line is passed
+<em class="emphasis">as a single argument</em> to the named <em class="emphasis">shell</em>.
+This feature is typically implemented by the kernel, but may not
+be supported on some older systems.
+Some systems have
+a limit of around 32 characters on the maximum length
+of <em class="emphasis">shell</em>.
+For example:</p>
+<blockquote><pre class="code">#!/bin/csh -f</pre></blockquote>
+</td></tr><tr><td valign="top"><a name=":">:</a></a></td><td><tt class="literal">:</tt>
+<p>
+<a name="IXT-5-123031" />Null (do-nothing) command.  Returns an exit status of 0.</p>
+</td></tr><tr><td valign="top"><a name="alias">alias</a></a></td><td><tt class="literal">alias</tt> [<em class="replaceable"><tt>name</em> [<em class="replaceable">command</tt></em>]]
+<p>
+<a name="IXT-5-123032" />
+<a name="IXT-5-123033" />
+<a name="IXT-5-123034" />Assign <em class="emphasis">name</em> as the shorthand name, or alias, for <em class="emphasis">command</em>. 
+If <em class="emphasis">command</em> is omitted, print the alias for <em class="emphasis">name</em>; 
+if <em class="emphasis">name</em> is also omitted, print all aliases.  Aliases can be defined
+on the command line, but they are more often stored in <tt class="literal">.cshrc</tt> so that 
+they take effect after login.  (See <a href="ch05_03.htm#unut-ch-5-sect-3.4">Section 5.3.4</a> earlier in this chapter.)
+Alias definitions can reference command-line arguments, much like
+the history list.  Use <tt class="literal">\!*</tt> to refer to all command-line arguments, 
+<tt class="literal">\!^</tt> for the first argument, <tt class="literal">\!$</tt> for the last, etc.  An alias <em class="emphasis">name</em> 
+can be any valid Unix command; however, you lose the original
+command's meaning unless you type <em class="emphasis">\name</em>.  See also
+<b class="emphasis-bold"><a href="#unalias">unalias</a></b>.</p>
+
+
+<h4 class="refsect2">Examples</h4><p>Set the size for <tt class="literal">xterm</tt> windows under the X Window System:</p>
+<blockquote><pre class="code">alias R 'set noglob; eval `resize`; unset noglob'</pre></blockquote>
+<p>Show aliases that contain the string <em class="emphasis">ls</em>:</p>
+<blockquote><pre class="code">alias | grep ls</pre></blockquote>
+<p>Run <tt class="literal">nroff</tt> on all command-line arguments:</p>
+<blockquote><pre class="code">alias ms 'nroff -ms \!*'</pre></blockquote>
+<p>Copy the file that is named as the first argument:</p>
+<blockquote><pre class="code">alias back 'cp \!^ \!^.old'</pre></blockquote>
+<p>Use the regular <tt class="literal">ls</tt>, not its alias:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>\ls</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="bg">bg</a></a></td><td><tt class="literal">bg</tt> [<em class="replaceable"><tt>jobIDs</tt></em>]
+<p>
+<a name="IXT-5-123035" />Put the current job or the <em class="emphasis">jobIDs</em>
+in the background. See <a href="ch05_06.htm#unut-ch-5-sect-6">Section 5.6</a>.</p>
+<h4 class="refsect2">Example</h4><p>To place a time-consuming process in the background, you might
+begin with:</p>
+<blockquote><pre class="code">4% <tt class="userinput"><b>nroff -ms report | col &gt; report.txt</b></tt>
+<tt class="userinput"><b>CTRL-Z</b></tt></pre></blockquote>
+<p>and then issue any one of the following:</p>
+
+
+<blockquote><pre class="code">5% <tt class="userinput"><b>bg</b></tt>
+5% <tt class="userinput"><b>bg %</b></tt>         <i class="lineannotation">Current job</i>
+5% <tt class="userinput"><b>bg %1</b></tt>        <i class="lineannotation">Job number 1</i>
+5% <tt class="userinput"><b>bg %nr</b></tt>       <i class="lineannotation">Match initial string nroff</i>
+5% <tt class="userinput"><b>% &amp;</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="break">break</a></a></td><td><tt class="literal">break</tt>
+<p>
+<a name="IXT-5-123036" />Resume execution following the <tt class="literal">end</tt> command of the nearest 
+enclosing <tt class="literal">while</tt> or <tt class="literal">foreach</tt>.</p>
+</td></tr><tr><td valign="top"><a name="breaksw">breaksw</a></a></td><td><tt class="literal">breaksw</tt>
+<p>
+<a name="IXT-5-123037" />Break
+
+
+from a <tt class="literal">switch</tt>;
+continue execution after the <tt class="literal">endsw</tt>.</p>
+</td></tr>
+
+<tr><td valign="top"><a name="case">case</a></a></td><td><p><tt class="literal">case</tt> <em class="replaceable"><tt>pattern </tt></em><tt class="literal">:</tt></p>
+<p>
+<a name="IXT-5-123038" />Identify a <em class="emphasis">pattern</em> in a <tt class="literal">switch</tt>.</p>
+</td></tr><tr><td valign="top"><a name="cd">cd</a></a></td><td><tt class="literal">cd</tt> [<em class="replaceable"><tt>dir</tt></em>]
+<p>
+<a name="IXT-5-123039" />
+<a name="IXT-5-123040" />Change working directory to <em class="emphasis">dir</em>; default is home directory of
+user.  If <em class="emphasis">dir</em> is a relative pathname but is not in the current
+directory, the <tt class="literal">cdpath</tt> variable is searched.
+See <a href="ch05_03.htm#unut-ch-5-sect-3.4">Section 5.3.4</a> earlier in this chapter.</p>
+</td></tr><tr><td valign="top"><a name="chdir">chdir</a></a></td><td><tt class="literal">chdir</tt> [<em class="replaceable"><tt>dir</tt></em>]
+<p>
+<a name="IXT-5-123041" />Same as <tt class="literal">cd</tt>.  Useful if you are redefining <tt class="literal">cd</tt>
+as an alias.</p>
+</td></tr><tr><td valign="top"><a name="continue">continue</a></a></td><td><tt class="literal">continue</tt>
+<p>
+<a name="IXT-5-123042" />Resume execution of nearest enclosing <tt class="literal">while</tt> or <tt class="literal">foreach</tt>.</p>
+</td></tr><tr><td valign="top"><a name="default">default</a></a></td><td><tt class="literal">default:</tt>
+<p>
+<a name="IXT-5-123043" />Label the default case (typically last) in a <tt class="literal">switch</tt>.</p>
+</td></tr><tr><td valign="top"><a name="dirs">dirs</a></a></td><td><tt class="literal">dirs</tt> [<tt class="literal">-l</tt>]
+<p>
+<a name="IXT-5-123044" />Print the directory stack, showing the current directory first; 
+use <tt class="literal">-l</tt> to expand the home directory symbol (<tt class="literal">~</tt>)
+to the actual directory name.
+See also <b class="emphasis-bold"><a href="#popd">popd</a></b> 
+and <b class="emphasis-bold"><a href="#pushd">pushd</a></b>.</p>
+</td></tr><tr><td valign="top"><a name="echo">echo</a></a></td><td><tt class="literal">echo</tt> [<tt class="literal">-n</tt>] <em class="replaceable"><tt>string</tt></em>
+<p>
+<a name="IXT-5-123045" />Write <em class="emphasis">string</em> to standard output; if <tt class="literal">-n</tt> is
+specified, the output is not terminated by a newline.
+Unlike the Unix version
+(<tt class="literal">/bin/echo</tt>) and the Bourne shell version,
+the C shell's <tt class="literal">echo</tt> doesn't support escape characters.
+See also 
+
+
+<b class="emphasis-bold"><a href="#echo">echo</a></b> in
+<a href="ch02_01.htm">Chapter 2</a> and
+<a href="ch04_01.htm">Chapter 4</a>.</p>
+</td></tr><tr><td valign="top"><a name="end">end</a></a></td><td><tt class="literal">end</tt>
+<p>
+<a name="IXT-5-123046" />Reserved
+
+
+word that ends a <tt class="literal">foreach</tt> or <tt class="literal">while</tt> statement.</p>
+</td></tr>
+
+<tr><td valign="top"><a name="endif">endif</a></a></td><td><p><tt class="literal">endif</tt></p>
+<p>
+<a name="IXT-5-123047" />Reserved word that ends an <tt class="literal">if</tt> statement.</p>
+</td></tr><tr><td valign="top"><a name="endsw">endsw</a></a></td><td><tt class="literal">endsw</tt>
+<p>
+<a name="IXT-5-123048" />Reserved word that ends a <tt class="literal">switch</tt> statement.</p>
+</td></tr><tr><td valign="top"><a name="eval">eval</a></a></td><td><tt class="literal">eval</tt> <em class="replaceable"><tt>args</tt></em>
+<p>
+<a name="IXT-5-123049" />Typically, <tt class="literal">eval</tt> is used in shell scripts,
+and <em class="emphasis">args</em> is a line of code that contains shell variables. 
+<tt class="literal">eval</tt> forces variable expansion to happen first
+and then runs the resulting command.
+This &#8220;double-scanning&#8221; is useful any time shell variables 
+contain input/output redirection symbols, aliases, or other shell variables.
+(For example, redirection normally happens before variable 
+expansion, so a variable containing redirection symbols must be
+expanded first using <tt class="literal">eval</tt>; otherwise, the redirection symbols 
+remain uninterpreted.)
+A Bourne shell example can be found under <b class="emphasis-bold"><a href="ch04_09.htm#eval">eval</a></b> in <a href="ch04_01.htm">Chapter 4</a>.
+Other uses of <tt class="literal">eval</tt> are shown next.</p>
+<h4 class="refsect2">Examples</h4><p>The following lines can be placed in the <tt class="literal">.login</tt> file
+to set up terminal characteristics:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>set noglob
+eval `tset -s xterm`
+unset noglob</b></tt></pre></blockquote>
+<p>The following commands show the effect of <tt class="literal">eval</tt>:</p>
+
+
+<blockquote><pre class="code">% <tt class="userinput"><b>set b='$a'</b></tt>
+% <tt class="userinput"><b>set a=hello</b></tt>
+
+% <tt class="userinput"><b>echo $b</b></tt>         <i class="lineannotation">Read the command line once</i>
+$a
+% <tt class="userinput"><b>eval echo $b</b></tt>    <i class="lineannotation">Read the command line twice</i>
+hello</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="exec">exec</a></a></td><td><tt class="literal">exec</tt> <em class="replaceable"><tt>command</tt></em>
+<p>
+<a name="IXT-5-123050" />Execute <em class="emphasis">command</em> in place of current shell.
+This terminates the current shell, rather than creating
+a new process under it.</p>
+</td></tr><tr><td valign="top"><a name="exit">exit</a></a></td><td><tt class="literal">exit</tt> [<tt class="literal">(</tt><em class="replaceable"><tt>expr</tt></em><tt class="literal">)</tt>]
+<p>
+<a name="IXT-5-123051" />Exit a shell script with the status given by <em class="emphasis">expr</em>.  A status of 0
+means success; nonzero means failure.  If <em class="emphasis">expr</em> is not specified,
+the exit value is that of the <tt class="literal">status</tt> variable.
+<tt class="literal">exit</tt> can be issued at the command line to close a window (log out).</p>
+</td></tr><tr><td valign="top"><a name="fg">fg</a></a></td><td><tt class="literal">fg</tt> [<em class="replaceable"><tt>jobIDs</tt></em>]
+<p>
+<a name="IXT-5-123052" />Bring the current job or the <em class="emphasis">jobIDs</em> to the foreground.  See 
+also <a href="ch05_06.htm#unut-ch-5-sect-6">Section 5.6</a> earlier in this chapter.</p>
+<h4 class="refsect2">Example</h4><p>If you suspend a <tt class="literal">vi</tt> editing session (by pressing <tt class="literal">CTRL-Z</tt>),
+you might resume <tt class="literal">vi</tt> using any of these commands:</p>
+<blockquote><pre class="code">8% <tt class="userinput"><b>%</b></tt>
+8% <tt class="userinput"><b>fg</b></tt>
+8% <tt class="userinput"><b>fg %</b></tt>
+8% <tt class="userinput"><b>fg %vi</b></tt>    <i class="lineannotation">Match initial string</i></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="foreach">foreach</a></a></td><td><tt class="literal">foreach</tt> <em class="replaceable"><tt>name</em> <tt class="literal">(</tt><em class="replaceable">wordlist</em><tt class="literal">)</tt><br>&#160;&#160;&#160;&#160;&#160;<em class="replaceable">commands</tt></em><br><tt class="literal">end</tt>
+<p>
+<a name="IXT-5-123053" />Assign variable <em class="emphasis">name</em> to each value in <em class="emphasis">wordlist</em>, and
+execute <em class="emphasis">commands</em> between <tt class="literal">foreach</tt> and <tt class="literal">end</tt>.
+You can use <tt class="literal">foreach</tt> as a multiline command
+issued at the C shell prompt (first Example),
+or you can use it in a shell script (second Example).</p>
+<h4 class="refsect2">Examples</h4><p>Rename all files that begin with a capital letter:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>foreach i ([A-Z]*)</b></tt>
+? <tt class="userinput"><b>mv $i $i.new</b></tt>
+? <tt class="userinput"><b>end</b></tt></pre></blockquote>
+<p>Check whether each command-line argument is an option or not:</p>
+<blockquote><pre class="code">foreach arg ($argv)
+   # does it begin with - ?
+   if ("$arg" =~ -*) then
+      echo "Argument is an option"
+   else
+      echo "Argument is a filename"
+   endif
+end</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="glob">glob</a></a></td><td><tt class="literal">glob</tt> <em class="replaceable"><tt>wordlist</tt></em>
+<p>
+<a name="IXT-5-123054" />Do filename, variable, and history substitutions on <em class="emphasis">wordlist</em>.
+This expands it much like <tt class="literal">echo</tt>, except that no \ escapes are 
+recognized, and words are delimited by null characters.
+<tt class="literal">glob</tt> is typically used in shell scripts to &#8220;hardcode&#8221; a value
+so that it remains the same for the rest of the script.</p>
+</td></tr><tr><td valign="top"><a name="goto">goto</a></a></td><td><tt class="literal">goto</tt> <em class="replaceable"><tt>string</tt></em>
+<p>
+<a name="IXT-5-123055" />Skip to a line whose first nonblank character is <em class="emphasis">string</em>
+followed by a <tt class="literal">:</tt>, and continue execution below that line.
+On the <tt class="literal">goto</tt> line, <em class="emphasis">string</em> can be a variable or filename pattern,
+but the label branched to must be a literal, expanded value
+and must not occur within a <tt class="literal">foreach</tt> or <tt class="literal">while</tt>.</p>
+</td></tr><tr><td valign="top"><a name="hashstat">hashstat</a></a></td><td><tt class="literal">hashstat</tt>
+<p>
+<a name="IXT-5-123056" />Display statistics that show the hash table's level of success at locating
+commands via the <tt class="literal">path</tt> variable.</p>
+</td></tr><tr><td valign="top"><a name="history">history</a></a></td><td><tt class="literal">history</tt> [<em class="replaceable"><tt>options</tt></em>]
+<p>
+<a name="IXT-5-123057" />Display the list of history events.  (History syntax is discussed
+earlier in <a href="ch05_05.htm#unut-ch-5-sect-5">Section 5.5</a>.)</p>
+<p>Note: multiline compound commands such as <tt class="literal">foreach ... end</tt>
+are <em class="emphasis">not</em> saved in the history list.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-h</tt></dt><dd>Print history list without event numbers.</p>
+</dd>
+<dt><tt class="literal">-r</tt></dt><dd>Print in reverse order; show oldest commands last.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>n</em></tt></i></dt><dd>Display only the last <em class="emphasis">n</tt></em></tt> history commands, instead
+of the number set by the <tt class="literal">history</tt> shell variable.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Example</h4><p>To save and execute the last five commands:</p>
+
+
+<blockquote><pre class="code">history -h 5 &gt; do_it
+source do_it</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="if">if</a></a></td><td><tt class="literal">if</tt>
+<p>
+<a name="IXT-5-123058" />Begin a conditional statement.  The simple format is:</p>
+<blockquote><pre class="code">if (<tt><em class="replaceable"><tt>expr</em></tt>) <tt><em class="replaceable">cmd</tt></em></tt></pre></blockquote>
+
+
+<p>There are three other possible formats, shown side-by-side:</p>
+<blockquote><pre class="code">if (<tt><em class="replaceable"><tt>expr</em></tt>) then   if (<tt><em class="replaceable">expr</em></tt>) then   if (<tt><em class="replaceable">expr</tt></em></tt>) then
+   <tt><em class="replaceable"><tt>cmds</em></tt>             <tt><em class="replaceable">cmds1</em></tt>             <tt><em class="replaceable">cmds1</tt></em></tt>
+endif            else              else if (<tt><em class="replaceable"><tt>expr</tt></em></tt>) then
+                    <tt><em class="replaceable"><tt>cmds2</em></tt>             <tt><em class="replaceable">cmds2</tt></em></tt>
+                 endif             else
+                                      <tt><em class="replaceable"><tt>cmds3</tt></em></tt>
+                                   endif</pre></blockquote>
+<p>In the simplest form, execute <em class="emphasis">cmd</em></tt> if <em class="emphasis">expr</em></tt> is true;
+otherwise, do nothing (redirection still occurs; this is a bug).  In 
+the other forms, execute one or more commands.
+If <em class="emphasis">expr</em></tt> is true, continue with the commands after <tt class="literal">then</tt>;
+if <em class="emphasis">expr</em></tt> is false, branch to the commands after <tt class="literal">else</tt>
+(or after the <tt class="literal">else if</tt> and continue checking).
+For more examples, see <a href="ch05_04.htm#unut-ch-5-sect-4">Section 5.4</a> or <b class="emphasis-bold"><a href="#shift">shift</a></b> or 
+<b class="emphasis-bold"><a href="#while">while</a></b>.</p>
+<h4 class="refsect2">Example</h4><p>Take a default action if no command-line arguments are given:</p>
+<blockquote><pre class="code">if ($#argv == 0) then
+   echo "No filename given.  Sending to Report."
+   set outfile = Report
+else
+   set outfile = $argv[1]
+endif</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="jobs">jobs</a></a></td><td><tt class="literal">jobs</tt> [<tt class="literal">-l</tt>]
+<p>
+<a name="IXT-5-123059" />List all running or stopped jobs; <tt class="literal">-l</tt> includes process IDs.
+For example, you can check whether a long compilation or text format
+is still running.  Also useful before logging out.</p>
+</td></tr><tr><td valign="top"><a name="kill">kill</a></a></td><td><tt class="literal">kill</tt> [<tt><em class="replaceable"><tt>options</em></tt>] <tt><em class="replaceable">ID</tt></em></tt>
+<p>
+<a name="IXT-5-123060" />Terminate each specified process <em class="emphasis">ID</em></tt> or job <em class="emphasis">ID</em></tt>.
+You must own the process or be a privileged user.
+This built-in is similar to <tt class="literal">/usr/bin/kill</tt>
+described in <a href="ch02_01.htm">Chapter 2</a> but also allows symbolic job names.
+Stubborn processes can be killed using signal 9.  See also the earlier
+section
+&#8220;Job Control.&#8221;</p>
+
+
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-l</tt></dt><dd>List the signal names.  (Used by itself.)</p>
+</dd>
+<dt><tt class="literal">-</tt><tt><em class="replaceable">signal</em></tt></dt><dd>The signal number
+(from <tt class="literal">/usr/include/sys/signal.h</tt>)
+or name (from <tt class="literal">kill -l</tt>).
+With a signal number of 9, the kill is absolute.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Signals</h4><p>Signals are defined
+in <tt class="literal">/usr/include/sys/signal.h</tt> and are listed here without
+the <tt class="literal">SIG</tt> prefix.
+You probably have more signals on your system than the
+ones shown here.</p>
+<blockquote><pre class="code">HUP     1       hangup
+INT     2       interrupt
+QUIT    3       quit
+ILL     4       illegal instruction
+TRAP    5       trace trap
+IOT     6       IOT instruction
+EMT     7       EMT instruction
+FPE     8       floating point exception
+KILL    9       kill
+BUS     10      bus error
+SEGV    11      segmentation violation
+SYS     12      bad argument to system call
+PIPE    13      write to pipe, but no process to read it
+ALRM    14      alarm clock
+TERM    15      software termination (the default signal)
+USR1    16      user-defined signal 1
+USR2    17      user-defined signal 2
+CLD     18      child process died
+PWR     19      restart after power failure</pre></blockquote>
+
+<h4 class="refsect2">Examples</h4><p>If you've issued the following command:</p>
+<blockquote><pre class="code">44% <tt class="userinput"><b>nroff -ms report &gt; report.txt &amp;</b></tt>
+[1] 19536               <i class="lineannotation">csh prints job and process IDs</i></pre></blockquote>
+<p>you can terminate it in any of the following ways:</p>
+<blockquote><pre class="code">45% <tt class="userinput"><b>kill 19536</b></tt>            <i class="lineannotation">Process ID</i>
+45% <tt class="userinput"><b>kill %</b></tt>                <i class="lineannotation">Current job</i>
+45% <tt class="userinput"><b>kill %1</b></tt>               <i class="lineannotation">Job number 1</i>
+45% <tt class="userinput"><b>kill %nr</b></tt>              <i class="lineannotation">Initial string</i>
+45% <tt class="userinput"><b>kill %?report</b></tt>         <i class="lineannotation">Matching string</i></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="limit">limit</a></a></td><td><tt class="literal">limit</tt> [<tt class="literal">-h</tt>] [<tt><em class="replaceable"><tt>resource</em></tt> [<tt><em class="replaceable">limit</tt></em></tt>]]
+<p>
+<a name="IXT-5-123061" />Display limits or set a <em class="emphasis">limit</em></tt> on resources 
+used by the current process and by each
+process it creates. If no <em class="emphasis">limit</em></tt> is given, the current limit is printed for
+<em class="emphasis">resource</em></tt>. If <em class="emphasis">resource</em></tt> is also omitted, all limits are printed.
+By default, the current limits are shown or set; with <tt class="literal">-h</tt>, 
+hard limits are used.  A hard limit 
+
+
+imposes an absolute limit that can't
+be exceeded.  Only a privileged user may raise it.
+See also <b class="emphasis-bold"><a href="#unlimit">unlimit</a></b>.</p>
+<h4 class="refsect2">Resource</h4><dl><dt><tt class="literal">cputime</tt></dt><dd>Maximum number of seconds the CPU can spend;
+can be abbreviated as <tt class="literal">cpu</tt></p>
+</dd>
+<dt><tt class="literal">filesize</tt></dt><dd>Maximum size of any one file</p>
+</dd>
+<dt><tt class="literal">datasize</tt></dt><dd>Maximum size of data (including stack)</p>
+</dd>
+<dt><tt class="literal">stacksize</tt></dt><dd>Maximum size of stack</p>
+</dd>
+<dt><tt class="literal">coredumpsize</tt></dt><dd>Maximum size of a core dump file</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Limit</h4><p>A number followed by an optional character (a unit specifier).</p>
+
+<table border="1" cellpadding="3">
+
+
+<tr><td>For <tt class="literal">cputime</tt>:</td>
+<td><em class="emphasis">n</em><tt class="literal">h</tt> (for
+<em class="emphasis">n</em> hours),
+<em class="emphasis">n</em><tt class="literal">m</tt> (for <em class="emphasis">n</em>
+minutes), <em class="emphasis">mm</em><tt class="literal">:</tt><tt class="literal">ss</tt>
+(minutes and seconds).</td></tr>
+
+<tr><td>For others:</td>
+<td><em class="emphasis">n</em><tt class="literal">k</tt> (for
+<em class="emphasis">n</em> kilobytes, the default), <em class="emphasis">n</em><tt class="literal">m</tt> (for <em class="emphasis">n</em> megabytes).</td></tr>
+</table><p>
+
+</td></tr><tr><td valign="top"><a name="login">login</a></a></td><td><tt class="literal">login</tt> [<em class="replaceable"><tt>user</tt></em> | <tt class="literal">-p</tt> ]
+<p>
+<a name="IXT-5-123062" />Replace <em class="emphasis">user</em>'s login shell with <tt class="literal">/bin/login</tt>.
+<tt class="literal">-p</tt> preserves environment variables.</p>
+</td></tr><tr><td valign="top"><a name="logout">logout</a></a></td><td><tt class="literal">logout</tt>
+<p>
+<a name="IXT-5-123063" />Terminate the login shell.</p>
+</td></tr><tr><td valign="top"><a name="nice">nice</a></a></td><td><tt class="literal">nice</tt> [<tt class="literal">&#177;</tt><em class="replaceable"><tt>n</em>] <em class="replaceable">command</tt></em>
+<p>
+<a name="IXT-5-123064" />Change the execution priority for <em class="emphasis">command</em>, or, if
+none is given, change priority for the current shell.
+(See also <b class="emphasis-bold"><a href="ch02_01.htm#nice">nice</a></b> in <a href="ch02_01.htm">Chapter 2</a>.)
+The priority range is -20 to 20, with a default of 4.
+The range is backwards from what you might expect:
+-20 gives the highest priority
+(fastest execution); 20 gives the lowest.</p>
+
+
+<dl><dt><tt class="literal">+</tt><tt><em class="replaceable">n</em></tt></dt><dd>Add <em class="emphasis">n</em></tt> to the priority value (lower job priority).</p>
+</dd>
+<dt><tt class="literal">-</tt><tt><em class="replaceable">n</em></tt></dt><dd>Subtract <em class="emphasis">n</em></tt> from the priority value (raise job priority).
+Privileged users only.</p>
+</dd>
+</dl>
+</td></tr><tr><td valign="top"><a name="nohup">nohup</a></a></td><td><tt class="literal">nohup</tt> [<em class="replaceable"><tt>command</tt></em>]
+<p>
+<a name="IXT-5-123065" />&#8220;No hangup signals.&#8221;
+Do not terminate <em class="emphasis">command</em> after terminal line is
+closed (i.e., when you hang up from a phone or log out).  
+Use without <em class="emphasis">command</em> in shell
+
+
+scripts to keep script from
+being terminated.
+(See also <b class="emphasis-bold"><a href="ch02_01.htm#nohup">nohup</a></b> in <a href="ch02_01.htm">Chapter 2</a>.)</p>
+</td></tr><tr><td valign="top"><a name="notify">notify</a></a></td><td><tt class="literal">notify</tt> [<em class="replaceable"><tt>jobID</tt></em>]
+<p>
+<a name="IXT-5-123066" />Report immediately when a background job finishes
+(instead of waiting for you to exit a long editing session,
+for example).  If no <em class="emphasis">jobID</em> is given, the current background
+job is assumed.</p>
+</td></tr><tr><td valign="top"><a name="onintr">onintr</a></a></td><td><tt class="literal">onintr</tt> <em class="replaceable"><tt>label</tt></em><br><tt class="literal">onintr -</tt><br><tt class="literal">onintr</tt>
+<p>
+<a name="IXT-5-123067" />&#8220;On interrupt.&#8221;  Used in shell scripts to handle interrupt signals
+(similar to the Bourne shell's <tt class="literal">trap 2</tt> and <tt class="literal">trap "" 2</tt> commands).
+The first form is like a <tt class="literal">goto</tt> <em class="emphasis">label</em>.  The script
+branches to <em class="emphasis">label</em><tt class="literal">:</tt> if it catches an interrupt signal (e.g., <tt class="literal">CTRL-C</tt>).
+The second form lets the script ignore interrupts.  This is useful
+at the beginning of a script or before any code segment that needs
+to run unhindered (e.g., when moving files).
+The third form restores interrupt handling that was previously disabled
+with <tt class="literal">onintr -</tt>.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">onintr cleanup     <i class="lineannotation">Go to &#8220;cleanup&#8221; on interrupt</i>
+ .
+ .                 <i class="lineannotation">Shell script commands</i>
+ .
+cleanup:           <i class="lineannotation">Label for interrupts</i>
+  onintr -         <i class="lineannotation">Ignore additional interrupts</i>
+  rm -f $tmpfiles  <i class="lineannotation">Remove any files created</i>
+  exit 2           <i class="lineannotation">Exit with an error status</i></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="popd">popd</a></a></td><td><tt class="literal">popd</tt> [<tt class="literal">+</tt><em class="replaceable"><tt>n</tt></em>]
+<p>
+<a name="IXT-5-123068" />Remove
+
+
+the current entry from the directory stack
+or remove the <em class="emphasis">n</em>th entry from the stack.  The current
+entry has number 0 and appears on the left.
+See also <b class="emphasis-bold"><a href="#dirs">dirs</a></b> and 
+<b class="emphasis-bold"><a href="#pushd">pushd</a></b>.
+</p>
+</td></tr>
+
+<tr><td valign="top"><a name="pushd">pushd</a></a></td><td><p><tt class="literal">pushd</tt> <em class="replaceable"><tt>name</em></p><p><tt class="literal">pushd</tt> <tt class="literal">+</tt><em class="replaceable">n</tt></em></p><p><tt class="literal">pushd</tt></p>
+<p>
+<a name="IXT-5-123069" />The first form changes the working directory to <em class="emphasis">name</em> and adds it
+to the directory stack.  The second form rotates the <em class="emphasis">n</em>th entry to the
+beginning, making it the working directory.  (Entry numbers begin at 0.)
+With no arguments, <tt class="literal">pushd</tt> switches the first two entries
+and changes to the new current directory.  See also <b class="emphasis-bold"><a href="#dirs">dirs</a></b> and <b class="emphasis-bold"><a href="#popd">popd</a></b>.</a> 
+<h4 class="refsect2">Examples</h4><blockquote><pre class="code">5% <tt class="userinput"><b>dirs</b></tt>
+/home/bob /usr
+6% <tt class="userinput"><b>pushd /etc</b></tt>             <i class="lineannotation">Add /etc to directory stack</i>
+/etc /home/bob /usr
+7% <tt class="userinput"><b>pushd +2</b></tt>               <i class="lineannotation">Switch to third directory</i>
+/usr /etc /home/bob
+8% <tt class="userinput"><b>pushd</b></tt>                  <i class="lineannotation">Switch top two directories</i>
+/etc /usr /home/bob
+9% <tt class="userinput"><b>popd</b></tt>                   <i class="lineannotation">Discard current entry; go to next</i>
+/usr /home/bob</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="rehash">rehash</a></a></td><td><tt class="literal">rehash</tt>
+<p>
+<a name="IXT-5-123070" />Recompute the hash table for the <tt class="literal">path</tt> variable.  
+Use <tt class="literal">rehash</tt> whenever a new command is created during the current session.
+This allows the shell
+to locate and execute the command.
+(If the new command resides in a directory not listed in <tt class="literal">path</tt>,
+add this directory to <tt class="literal">path</tt> before rehashing.)
+See also <b class="emphasis-bold"><a href="#unhash">unhash</a></b>.</p>
+</td></tr>
+
+<tr><td valign="top"><a name="repeat">repeat</a></a></td><td><p><tt class="literal">repeat</tt> <em class="replaceable"><tt>n command</tt></em></p>
+<p>
+<a name="IXT-5-123071" />Execute <em class="emphasis">n</em> instances of <em class="emphasis">command</em>.</p>
+<h4 class="refsect2">Examples</h4><p>Generate a test file for a program by saving
+25 copies of <tt class="literal">/usr/dict/words</tt> in a file:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>repeat 25 cat /usr/dict/words &gt; test_file</b></tt></pre></blockquote>
+<p>Read 10 lines from the terminal and store in <tt class="literal">item_list</tt>:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>repeat 10 line &gt; item_list</b></tt></pre></blockquote>
+<p>Append
+
+
+50 boilerplate files to <tt class="literal">report</tt>:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>repeat 50 cat template &gt;&gt; report</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="set">set</a></a></td><td><tt class="literal">set</tt> <em class="replaceable"><tt>variable</em> <tt class="literal">=</tt> <em class="replaceable">value</em><br><tt class="literal">set</tt> <em class="replaceable">variable</em><tt class="literal">[</tt><em class="replaceable">n</em><tt class="literal">] =</tt> <em class="replaceable">value</tt></em><br><tt class="literal">set</tt>
+<p>
+<a name="IXT-5-123072" />Set <em class="emphasis">variable</em> to <em class="emphasis">value</em>, or, if multiple values are specified, set the
+variable to the list of words in the value list.  If an index <em class="emphasis">n</em>
+is specified, set the <em class="emphasis">n</em>th word in the variable to <em class="emphasis">value</em>.
+(The variable must already contain at least that number of words.)
+With no arguments, display the names and values of all set variables.
+See also <a href="ch05_03.htm#unut-ch-5-sect-3.3">Section 5.3.3</a>  earlier in this chapter.</p>
+<h4 class="refsect2">Examples</h4><blockquote><pre class="code">% <tt class="userinput"><b>set list=(yes no maybe)</b></tt>           <i class="lineannotation">Assign a word list</i>
+% <tt class="userinput"><b>set list[3]=maybe</b></tt>                 <i class="lineannotation">Assign an item in existing word list</i>
+% <tt class="userinput"><b>set quote="Make my day"</b></tt>           <i class="lineannotation">Assign a variable</i>
+% <tt class="userinput"><b>set x=5 y=10 history=100</b></tt>          <i class="lineannotation">Assign several variables</i>
+% <tt class="userinput"><b>set blank</b></tt>                         <i class="lineannotation">Assign a null value to blank</i> </pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="setenv">setenv</a></a></td><td><tt class="literal">setenv</tt> [<em class="replaceable"><tt>name</em> [<em class="replaceable">value</tt></em>]]
+<p>
+<a name="IXT-5-123073" />Assign a <em class="emphasis">value</em> to an environment variable <em class="emphasis">name</em>.
+By convention, <em class="emphasis">name</em> should be uppercase.
+<em class="emphasis">value</em> can be a single word or a quoted string.
+If no <em class="emphasis">value</em> is given, the null value is assigned.
+With no arguments, display the names and values of all 
+environment variables.  <tt class="literal">setenv</tt> is not necessary for the
+USER, TERM, and PATH variables
+because they are automatically exported
+from <tt class="literal">user</tt>, <tt class="literal">term</tt>, and <tt class="literal">path</tt>.
+See also <a href="ch05_03.htm#unut-ch-5-sect-3.5">Section 5.3.5</a>.</p>
+</td></tr><tr><td valign="top"><a name="shift">shift</a></a></td><td><tt class="literal">shift</tt> [<em class="replaceable"><tt>variable</tt></em>]
+<p>
+<a name="IXT-5-123074" />If <em class="emphasis">variable</em> is given, shift the words in a word list variable;
+i.e., <em class="emphasis">name</em><tt class="literal">[2]</tt> becomes <em class="emphasis">name</em><tt class="literal">[1]</tt>.
+With no argument,
+shift the positional parameters (command-line arguments); i.e.,
+<tt class="literal">$2</tt> becomes <tt class="literal">$1</tt>.
+<tt class="literal">shift</tt> is typically
+
+
+used in a <tt class="literal">while</tt> loop.
+See additional Example under <b class="emphasis-bold"><a href="#while">while</a></b>.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">while ($#argv)      <i class="lineannotation">While there are arguments</i>
+    if (-f $argv[1])  
+       wc -l $argv[1]
+    else
+       echo "$argv[1] is not a regular file"
+    endif
+    shift           <i class="lineannotation">Get the next argument</i>
+end</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="source">source</a></a></td><td><tt class="literal">source</tt> [<tt class="literal">-h</tt>] <em class="replaceable"><tt>script</tt></em>
+<p>
+<a name="IXT-5-123075" />Read and execute commands from a C shell script.  
+With <tt class="literal">-h</tt>, the commands are
+
+
+added to the history list but aren't executed.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">source ~/.cshrc</pre></blockquote>
+
+</td></tr>
+
+<tr><td valign="top"><a name="stop">stop</a></a></td><td><p><tt class="literal">stop</tt> [<em class="replaceable"><tt>jobIDs</tt></em>]</p>
+<p>
+<a name="IXT-5-123076" />Suspend the current background job or the
+background job specified by <em class="emphasis">jobIDs</em>; this is
+the complement of <tt class="literal">CTRL-Z</tt> or <tt class="literal">suspend</tt>.</p>
+</td></tr><tr><td valign="top"><a name="suspend">suspend</a></a></td><td><tt class="literal">suspend</tt>
+<p>
+<a name="IXT-5-123077" />Suspend the current foreground job; similar to <tt class="literal">CTRL-Z</tt>.
+Often used to stop an <tt class="literal">su</tt> command.</p>
+</td></tr><tr><td valign="top"><a name="switch">switch</a></a></td><td><tt class="literal">switch</tt>
+<p>
+<a name="IXT-5-123078" />Process commands depending on the value of a variable.
+When you need to handle more than three choices, <tt class="literal">switch</tt>
+is a useful alternative to an <tt class="literal">if-then-else</tt> statement.
+If the <em class="emphasis">string</em> variable matches <em class="emphasis">pattern1</em>,
+the first set of <em class="emphasis">commands</em> is executed; if <em class="emphasis">string</em> 
+matches <em class="emphasis">pattern2</em>, the second set of <em class="emphasis">commands</em> is executed;
+and so on.  If no patterns match, execute commands under the
+<tt class="literal">default</tt> case.
+<em class="emphasis">string</em> can be specified using command substitution, 
+variable substitution, or filename expansion.
+Patterns can be specified using pattern-matching symbols <tt class="literal">*</tt>, 
+<tt class="literal">?</tt>, and <tt class="literal">[</tt> <tt class="literal">]</tt>.  <tt class="literal">breaksw</tt> exits the <tt class="literal">switch</tt> after <em class="emphasis">commands</em> 
+are executed.  If <tt class="literal">breaksw</tt> is omitted (which is rarely done), 
+the <tt class="literal">switch</tt> continues to execute another set of commands until
+it reaches a <tt class="literal">breaksw</tt> or <tt class="literal">endsw</tt>.
+Here is the general syntax of <tt class="literal">switch</tt>, side-by-side with an example
+that processes the first command-line argument.  
+</p>
+
+
+<blockquote><pre class="code">switch (<em class="replaceable"><tt>string</tt></em>)    switch ($argv[1])
+  case <em class="replaceable"><tt>pattern1</tt></em>:      case -[nN]:
+      <em class="replaceable"><tt>commands</tt></em>            nroff $file | lp
+      breaksw             breaksw
+  case <em class="replaceable"><tt>pattern2</tt></em>:      case -[Pp]:
+      <em class="replaceable"><tt>commands</tt></em>            pr $file | lp
+      breaksw             breaksw
+  case <em class="replaceable"><tt>pattern3</tt></em>:      case -[Mm]:
+      <em class="replaceable"><tt>commands</tt></em>            more $file
+      breaksw             breaksw
+      .                case -[Ss]:
+      .                    sort $file
+      .                    breaksw
+  default:             default:
+      <em class="replaceable"><tt>commands</tt></em>             echo "Error-no such option"
+                           exit 1
+      breaksw              breaksw
+endsw                 endsw</pre></blockquote>
+</td></tr>
+
+<tr><td valign="top"><a name="time">time</a></a></td><td><p><tt class="literal">time</tt> [<em class="replaceable"><tt>command</tt></em>]</p>
+<p>
+<a name="IXT-5-123079" />Execute a <em class="emphasis">command</em> and show how much time it uses.
+With no argument, <tt class="literal">time</tt> can be used in a shell script to time it.</p>
+</td></tr><tr><td valign="top"><a name="umask">umask</a></a></td><td><tt class="literal">umask</tt> [<em class="replaceable"><tt>nnn</tt></em>]
+<p>
+<a name="IXT-5-123080" />Display file-creation mask or set file creation mask to octal
+<em class="emphasis">nnn</em>.  The file-creation mask determines which permission bits
+are turned off.
+See the
+entry in <a href="ch02_01.htm">Chapter 2</a> for examples.</p>
+</td></tr><tr><td valign="top"><a name="unalias">unalias</a></a></td><td><tt class="literal">unalias</tt> <em class="replaceable"><tt>name</tt></em>
+<p>
+<a name="IXT-5-123081" />Remove <em class="emphasis">name</em> from the alias list.
+See <b class="emphasis-bold"><a href="#alias">alias</a></b> for more
+information.</p>
+</td></tr><tr><td valign="top"><a name="unhash">unhash</a></a></td><td><tt class="literal">unhash</tt>
+<p>
+<a name="IXT-5-123082" />Remove internal hash table.  The C shell stops using hashed values
+and spends time searching the <tt class="literal">path</tt> directories to locate a
+command.  See also <b class="emphasis-bold"><a href="#rehash">rehash</a></b>.</p>
+</td></tr><tr><td valign="top"><a name="unlimit">unlimit</a></a></td><td><tt class="literal">unlimit</tt> [<em class="replaceable"><tt>resource</tt></em>]
+<p>
+<a name="IXT-5-123083" />Remove the allocation limits on <em class="emphasis">resource</em>.  If <em class="emphasis">resource</em> is not
+specified, remove limits for all resources.  See <b class="emphasis-bold"><a href="#limit">limit</a></b> for more
+information.</p>
+</td></tr><tr><td valign="top"><a name="unset">unset</a></a></td><td><tt class="literal">unset</tt> <em class="replaceable"><tt>variables</tt></em>
+<p>
+<a name="IXT-5-123084" />Remove one or more <em class="emphasis">variables</em>.  Variable names may be specified
+as a pattern, using filename metacharacters.  See <b class="emphasis-bold"><a href="#set">set</a></b>.</p>
+</td></tr><tr><td valign="top"><a name="unsetenv">unsetenv</a></a></td><td><tt class="literal">unsetenv</tt> <em class="replaceable"><tt>variable</tt></em>
+<p>
+<a name="IXT-5-123085" />Remove an environment variable.  Filename
+
+
+matching is <em class="emphasis">not</em> valid.
+See <b class="emphasis-bold"><a href="#setenv">setenv</a></b>.</p>
+</td></tr>
+
+<tr><td valign="top"><a name="wait">wait</a></a></td><td><p><tt class="literal">wait</tt></p>
+<p>
+<a name="IXT-5-123086" />Pause in execution until all
+
+
+background jobs complete,
+or until an interrupt signal is received.</p>
+</td></tr>
+
+<tr><td valign="top"><a name="while">while</a></a></td><td><p><tt class="literal">while (</tt><em class="replaceable"><tt>expression</em><tt class="literal">)</tt></p><p>&#160;&#160;&#160;&#160;&#160;<em class="replaceable">commands</tt></em></p><p><tt class="literal">end</tt></p>
+<p>
+<a name="IXT-5-123087" />As long as <em class="emphasis">expression</em> is true
+(evaluates to nonzero),
+evaluate <em class="emphasis">commands</em> 
+between <tt class="literal">while</tt> and <tt class="literal">end</tt>.
+<tt class="literal">break</tt> and <tt class="literal">continue</tt> can terminate or continue the loop.
+See also the Example under <b class="emphasis-bold"><a href="#shift">shift</a></b>.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">set user = (alice bob carol ted)
+while ($argv[1] != $user[1])
+   <i class="lineannotation">Cycle through each user, checking for a match</i>
+   shift user
+   <i class="lineannotation">If we cycled through with no match...</i>
+   if ($#user == 0) then
+     echo "$argv[1] is not on the list of users"
+     exit 1
+   endif
+end</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="@">@</a></a></td><td><tt class="literal">@</tt> <em class="replaceable"><tt>variable</em> <tt class="literal">=</tt> <em class="replaceable">expression</em><br><tt class="literal">@</tt> <em class="replaceable">variable</em><tt class="literal">[</tt><em class="replaceable">n</em><tt class="literal">] =</tt> <em class="replaceable">expression</tt></em><br><tt class="literal">@</tt>
+<p>
+<a name="IXT-5-123088" />Assign the value of the arithmetic <em class="emphasis">expression</em> to <em class="emphasis">variable</em>, 
+or to the <em class="emphasis">n</em>th element of <em class="emphasis">variable</em> if the index <em class="emphasis">n</em> 
+is specified.  With no <em class="emphasis">variable</em> or <em class="emphasis">expression</em>
+specified, print the values of all shell variables (same as <tt class="literal">set</tt>).
+Expression operators as well as examples are listed in <a href="ch05_04.htm#unut-ch-5-sect-4">Section 5.4</a>.  Two special forms are also valid:</p>
+<dl><dt><tt class="literal">@</tt> <tt><em class="replaceable">variable</em></tt><tt class="literal">++</tt></dt><dd>Increment <em class="emphasis">variable</em></tt> by one.</p>
+</dd>
+<dt><tt class="literal">@</tt> <tt><em class="replaceable">variable</em></tt><tt class="literal">--</tt></dt><dd>Decrement <em class="emphasis">variable</em></tt> by one.</p>
+</dd>
+</dl>
+</td></tr></table><p>
+
+<a name="IXT-5-123089" />
+<a name="IXT-5-123090" />
+<a name="IXT-5-123091" />
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="part2.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.7. Invoking the Shell</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">II. Text Editing and Processing</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

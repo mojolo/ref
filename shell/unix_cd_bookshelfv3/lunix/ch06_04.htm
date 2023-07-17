@@ -1,0 +1,517 @@
+<html><head><title>Transferring Files (Learning the Unix Operating System, 5th Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Jerry Peek, John Strang and Grace Todino-Gonguet" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00261-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Unix Operating System, 5th Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning Unix" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.4. Transferring Files</h2>
+
+<p>
+<a name="lunix5-IDXTERM-700" />
+<a name="lunix5-IDXTERM-701" />
+<a name="lunix5-IDXTERM-702" />
+<a name="lunix5-IDXTERM-703" />
+<a name="lunix5-IDXTERM-704" />
+You may need to copy files between computers.
+For instance, you can put a backup copy of an important file you're
+editing onto an account at a computer in another building, or another
+city.
+Dr. Nelson could put a copy of a data file from her local computer
+onto a central computer, where her colleagues can access it.
+Or you might want to download 20 files from an FTP server, but not
+want to go through the tedious process of clicking on them one-by-one
+in a web browser window.
+If you need to do this sort of thing often, your system administrator
+may be able to set up a networked filesystem connection; then you'll
+be able to use local programs such as <b class="emphasis-bold">cp</b>
+and <b class="emphasis-bold">mv</b>.
+But Unix systems also have command-line tools for transferring files between
+computers. These often do it more quickly than working with graphical tools does.
+We explore them later in this section.
+</p>
+
+<a name="lunix5-CHP-6-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">6.4.1. scp and rcp</h3>
+
+<p>
+<a name="IXT-6-279973" />
+<a name="IXT-6-279974" />
+Your system may have an <b class="emphasis-bold">scp</b>
+(secure copy) or <b class="emphasis-bold">rcp</b>
+(remote copy) program for copying files between two computers.
+In general, you must have accounts on both computers to use these.
+The syntax of <b class="emphasis-bold">scp</b> and
+<b class="emphasis-bold">rcp</b> are like
+<b class="emphasis-bold">cp</b>, but
+also let you add the remote
+hostname to the start of a file or directory pathname.
+The syntax of each argument is:
+</p>
+
+
+<p>
+<em class="emphasis">hostname</em><b class="emphasis-bold">:</b><em class="emphasis">pathname</em>
+</p>
+
+
+<p>
+<em class="emphasis">hostname</em><b class="emphasis-bold">:</b> is
+needed only for remote files.
+You can copy from a remote computer to the local computer, from the local
+computer to a remote computer, or between two remote computers.
+</p>
+
+<p>
+The <b class="emphasis-bold">scp</b> program is much more secure than
+<b class="emphasis-bold">rcp</b>, so we suggest using
+<b class="emphasis-bold">scp</b> to transfer private
+files over insecure networks such as the Internet.
+For privacy, <b class="emphasis-bold">scp</b> encrypts the file
+and your passphrase.
+</p>
+
+<p>
+For example, let's copy the files named
+<em class="emphasis">report.may</em> and <em class="emphasis">report.june</em>
+from your home directory on the computer named <em class="emphasis">giraffe</em>
+and put the copies into your working directory (<tt class="literal">.</tt>) on
+the machine you're logged in to now.
+If you haven't set up the SSH agent that lets you use
+<b class="emphasis-bold">scp</b> without typing your passphrase,
+<b class="emphasis-bold">scp</b> will ask you:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>scp giraffe:report.may giraffe:report.june .</b></tt>
+Enter passphrase for RSA key 'jpeek@home':
+</pre></blockquote>
+</p>
+
+<p>
+To use wildcards in the remote filenames, put quotation marks
+(<tt class="literal">"</tt><em class="emphasis">name</em><tt class="literal">"</tt>) around each remote name.<a href="#FOOTNOTE-17">[17]</a>
+You can use absolute or relative pathnames; if you use relative
+pathnames, they start from your home directory on the remote system.
+For example, to copy all files from your <em class="emphasis">food/lunch</em>
+subdirectory on your <em class="emphasis">giraffe</em> account into your
+working directory (<tt class="literal">.</tt>) on the local account, enter:
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-17" /><p> [17]
+Quotes tell the local shell not to interpret special characters,
+such as wildcards, in the filename.
+The wildcards are passed, unquoted, to the remote shell, which
+interprets them <em class="emphasis">there</em>.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>scp "giraffe:food/lunch/*" .</b></tt>
+</pre></blockquote></p>
+
+<p>
+Unlike <b class="emphasis-bold">cp</b>, most versions of
+<b class="emphasis-bold">scp</b> and
+<b class="emphasis-bold">rcp</b> don't have an
+<b class="emphasis-bold">-i</b> safety option.
+If the files you're copying already exist on the destination system
+(in the previous example, that's your local machine), those files are overwritten.
+</p>
+
+<p>
+If your system has <b class="emphasis-bold">rcp</b>,
+your system administrator may not want you to use it for system
+security reasons.
+Another program, <b class="emphasis-bold">ftp</b>, is more flexible
+and secure than <b class="emphasis-bold">rcp</b> (but much
+<em class="emphasis">less</em> secure than <b class="emphasis-bold">scp</b>).
+<a name="IXTR3-110" />
+
+
+
+</p>
+</div>
+
+
+<a name="lunix5-CHP-6-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">6.4.2. FTP</h3>
+
+<p>
+<a name="lunix5-IDXTERM-708" />
+<a name="lunix5-IDXTERM-709" />
+FTP, file transfer protocol, is a standard way to transfer files
+between two computers.
+The Unix <b class="emphasis-bold">ftp</b> program
+does FTP transfers from the command line.<a href="#FOOTNOTE-18">[18]</a>
+(Your system may have a friendlier version of
+<b class="emphasis-bold">ftp</b> named
+<b class="emphasis-bold">ncftp</b>.
+Some graphical filesystem browsers can also handle FTP transfers.
+But we cover the standard <b class="emphasis-bold">ftp</b> program here.)
+Both computers must be connected by a network (such as the Internet),
+but they don't need to run Unix.
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-18" /><p> [18]
+Microsoft Windows, and some other operating systems,
+have a version of <b class="emphasis-bold">ftp</b>
+that you can use from a command prompt.
+It works just like the Unix version.
+</p>
+</blockquote>
+
+<p>
+To start FTP, identify yourself to the remote computer by giving
+the username and password for your account on that remote system.
+Unfortunately, sending your username and password over a public
+network means that snoopers may see them--and use them to log into
+your account on that system.
+</p>
+
+<p>
+A special kind of FTP, <em class="emphasis">anonymous FTP</em>, happens if you
+log into the remote server with the username <em class="emphasis">anonymous</em>.
+The password is your email address, like <em class="emphasis">alex@foo.co.uk</em>.
+(The password usually isn't required; it's a courtesy to the remote server.)
+Anonymous FTP lets anyone log into a remote system and download
+publicly-accessible files to their local systems.
+</p>
+
+<a name="lunix5-CHP-6-SECT-4.2.1" /><div class="sect3">
+<h3 class="sect3">6.4.2.1. Command-line ftp</h3>
+
+<p>
+
+<a name="lunix5-IDXTERM-710" />
+
+
+To start the standard Unix <b class="emphasis-bold">ftp</b> program,
+provide the
+remote computer's hostname:
+</p>
+
+
+<p>
+<b class="emphasis-bold">ftp</b> <em class="emphasis">hostname</em>
+</p>
+
+
+<p>
+<b class="emphasis-bold">ftp</b> prompts for your username
+and password on the remote computer.
+This is something like a remote login (see <a href="ch06_01.htm#lunix5-CHP-6-SECT-1">Section 6.1</a>,
+earlier in this chapter),
+but <b class="emphasis-bold">ftp</b> doesn't start your usual shell.
+Instead, <b class="emphasis-bold">ftp</b> prints its 
+own prompt and uses a special set of commands for transferring
+files.
+<a href="ch06_04.htm#lunix5-CHP-6-TABLE-1">Table 6-1</a>
+lists the most important <b class="emphasis-bold">ftp</b> commands.
+<a name="IXT-6-279975" />
+</p>
+
+<a name="lunix5-CHP-6-TABLE-1" /><h4 class="objtitle">Table 6-1. Some ftp commands</h4><table border="1" cellpadding="3">
+
+
+<tr>
+<th><p>Command</p></th>
+<th><p>Description</p></th>
+</tr>
+
+
+
+
+<tr>
+<td>
+<p>
+<b class="emphasis-bold">put</b> <em class="emphasis">filename</em>
+</p>
+</td>
+<td>
+<p>
+Copies the file <em class="emphasis">filename</em> from your local computer
+to the remote computer. If you give a second argument, the remote copy will
+have that name.
+</p>
+</td>
+</tr>
+
+<a name="IXT-6-279976" />
+<tr>
+<td>
+<p>
+<b class="emphasis-bold">mput</b> <em class="emphasis">filenames</em>
+</p>
+</td>
+<td>
+<p>
+Copies the named files (you can use wildcards) from local
+to remote.
+</p>
+</td>
+</tr>
+
+<a name="IXT-6-279977" />
+<tr>
+<td>
+<p>
+<b class="emphasis-bold">get</b> <em class="emphasis">filename</em>
+</p>
+</td>
+<td>
+<p>
+Copies the file <em class="emphasis">filename</em> from the 
+remote computer to your local computer. If you give a second argument, the
+local copy will have that name.
+</p>
+</td>
+</tr>
+
+<a name="IXT-6-279978" />
+<tr>
+<td>
+<p>
+<b class="emphasis-bold">mget</b> <em class="emphasis">filenames</em>
+</p>
+</td>
+<td>
+<p>
+Copies the named files (you can use wildcards) from remote
+to local.
+</p>
+</td>
+</tr>
+
+<a name="IXT-6-279979" />
+<tr>
+<td>
+<p>
+<b class="emphasis-bold">prompt</b>
+</p>
+</td>
+<td>
+<p>
+A "toggle" command that turns prompting on or off during transfers with the
+<b class="emphasis-bold">mget</b> and <b class="emphasis-bold">mput</b>
+commands.
+By default, 
+<b class="emphasis-bold">mget</b> and <b class="emphasis-bold">mput</b>
+will prompt you "<b class="emphasis-bold">mget</b> <em class="emphasis">filename</em>?" or
+"<b class="emphasis-bold">mput</b> <em class="emphasis">filename</em>?" before transferring each file;
+you answer <em class="emphasis">y</em> or <em class="emphasis">n</em> each time.
+Typing <b class="emphasis-bold">prompt</b> once, from an
+"ftp&gt;" prompt, stops the prompting: all files will be transferred
+without question until the end of the <b class="emphasis-bold">ftp</b>
+session.
+Or, if prompting is off, typing <b class="emphasis-bold">prompt</b>
+at an "ftp&gt;" prompt resumes prompting.
+</p>
+</td>
+</tr>
+
+<tr>
+<td>
+<p>
+
+<a name="IXT-6-279980" />
+
+<b class="emphasis-bold">cd</b> <em class="emphasis">pathname</em>
+</p>
+</td>
+<td>
+<p>
+Changes the working directory on the remote machine
+to <em class="emphasis">pathname</em>
+(<b class="emphasis-bold">ftp</b> typically starts at your home 
+directory on the remote machine).
+</p>
+</td>
+</tr>
+
+<a name="IXT-6-279981" />
+<a name="IXT-6-279982" />
+<tr>
+<td>
+<p>
+<b class="emphasis-bold">lcd</b> <em class="emphasis">pathname</em>
+</p>
+</td>
+<td>
+<p>
+Changes <b class="emphasis-bold">ftp</b>'s working directory on
+the local machine to <em class="emphasis">pathname</em>.
+(<b class="emphasis-bold">ftp</b>'s first local working directory is
+the same working directory from which you started the program.)
+Note that the <b class="emphasis-bold">ftp lcd</b> command
+changes only <b class="emphasis-bold">ftp</b>'s working directory.
+After you quit <b class="emphasis-bold">ftp</b>, your
+shell's working directory will not have changed.
+</p>
+</td>
+</tr>
+
+<tr>
+<td><p><b class="emphasis-bold">dir</b></p></td>
+<td>
+<p>
+Lists the remote directory (like <b class="emphasis-bold">ls -l</b>).
+</p>
+</td>
+</tr>
+
+<a name="IXT-6-279983" />
+<tr>
+<td><p><b class="emphasis-bold">binary</b></p></td>
+<td>
+<p>
+Tells <b class="emphasis-bold">ftp</b> to copy the following file(s) 
+without translation.
+This preserves pictures, sound, or other data.
+</p>
+</td>
+</tr>
+
+<a name="IXT-6-279984" />
+<tr>
+<td><p><b class="emphasis-bold">ascii</b></p></td>
+<td>
+<p>
+Transfers plain text files, translating data if needed.
+For instance, during transfers between a Microsoft Windows system
+(which adds CTRL-M to the end of each line of text) and a Unix system
+(which doesn't), an <b class="emphasis-bold">ascii</b>-mode
+transfer removes or adds those characters as needed.
+</p>
+</td>
+</tr>
+
+<a name="IXT-6-279985" />
+<tr>
+<td><p><b class="emphasis-bold">quit</b></p></td>
+<td><p>
+<a name="IXT-6-279986" />
+Ends the <b class="emphasis-bold">ftp</b> session and takes you 
+back to a shell prompt.
+</p>
+</td>
+</tr>
+
+
+</table><p>
+
+<p>
+Here's an example.
+Carol uses <b class="emphasis-bold">ftp</b> to copy the file
+<em class="emphasis">todo</em> from her <em class="emphasis">work</em>
+subdirectory on her account on the remote computer
+<em class="emphasis">rhino</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>ls</b></tt>
+afile   ch2    somefile
+$ <tt class="userinput"><b>ftp rhino</b></tt>
+Connected to rhino.zoo.edu.
+Name (rhino:carol): <tt class="userinput"><b>csmith</b></tt>
+Password:
+ftp&gt; <tt class="userinput"><b>cd work</b></tt>
+ftp&gt; <tt class="userinput"><b>dir</b></tt>
+total 3
+-rw-r--r--  1 csmith   mgmt    47 Feb  5  2001 for.ed
+-rw-r--r--  1 csmith   mgmt   264 Oct 11 12:18 message
+-rw-r--r--  1 csmith   mgmt   724 Nov 20 14:53 todo
+ftp&gt; <tt class="userinput"><b>get todo</b></tt>
+ftp&gt; <tt class="userinput"><b>quit</b></tt>
+$ <tt class="userinput"><b>ls</b></tt>
+afile   ch2    somefile    todo
+</pre></blockquote>
+</p>
+
+<p>
+We've explored the most basic <b class="emphasis-bold">ftp</b>
+commands here.
+Entering <b class="emphasis-bold">help</b> at an
+<tt class="literal">ftp&gt;</tt> prompt gives a list of all commands;
+entering <b class="emphasis-bold">help</b> followed by an
+<b class="emphasis-bold">ftp</b> command name gives a
+one-line summary of that command.
+<a name="IXTR3-111" />
+<a name="IXTR3-112" />
+<a name="IXTR3-113" />
+<a name="IXTR3-114" />
+<a name="IXTR3-115" />
+<a name="IXTR3-116" />
+</p>
+</div>
+
+<a name="lunix5-CHP-6-SECT-4.2.2" /><div class="sect3">
+<h3 class="sect3">6.4.2.2. FTP with a web browser</h3>
+
+<p>
+If you need a file from a remote site, and you don't need all the
+control that you get with the <b class="emphasis-bold">ftp</b>
+program, you can use a web browser to download files using anonymous
+FTP.
+To do that, make a URL (location) with this syntax:
+</p>
+
+
+<p>ftp://<em class="emphasis">hostname</em>/<em class="emphasis">pathname</em></p>
+
+
+<p>
+For instance, <em class="emphasis">ftp://somecorp.za/pub/reports/2001.pdf</em>
+specifies the file <em class="emphasis">2001.pdf</em>
+from the directory <em class="emphasis">/pub/reports</em> on the host
+<em class="emphasis">somecorp.za</em>.
+In most cases, you can also start with just the first part of the
+URL--such as <em class="emphasis">ftp://somecorp.za</em>--and browse
+your way through the FTP directory tree to find what you want.
+If your web browser doesn't prompt you to save a file, use its
+"Save" menu command.
+</p>
+
+<p>
+An even faster way to download a file is with the handy Lynx web browser.
+Its <b class="emphasis-bold">-dump</b> option sends a page
+to the standard output, where you can redirect it to a file or
+pipe it to another program (see <a href="ch05_01.htm">Chapter 5</a>).
+For example, to save the report in a file named
+<em class="emphasis">report.pdf</em>, enter:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>lynx -dump "ftp://somecorp.za/pub/reports/2001.pdf" &gt; report.pdf</b></tt>
+</pre></blockquote>
+
+<a name="IXTR3-117" />
+
+
+</p>
+
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.3. Lynx, a Text-based Web Browser</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.5. Electronic Mail</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

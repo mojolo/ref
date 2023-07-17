@@ -1,0 +1,138 @@
+<html><head><title>Saving Time When You Change Directories: cdpath (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch31_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch31_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">31.5. Saving Time When You Change Directories: cdpath</h2>
+
+<p><a name="IXT-31-4101" /><a name="IXT-31-4102" /><a name="IXT-31-4103" /><a name="IXT-31-4104" />Some people make a shell <b class="emphasis-bold">alias</b> (<a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>) for
+directories they <i class="command">cd</i> to often. Other people set
+<b class="emphasis-bold">shell variables</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>) to hold the pathnames of directories they
+don't want to retype. But both of those methods make
+you remember directory abbreviations -- and make you put new
+aliases or shell variables in your <b class="emphasis-bold">shell
+startup files</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) each time you
+want to add or change one. There's another way: the
+C shell's
+<em class="emphasis">cdpath</em><a name="IXT-31-4105" /> <a name="IXT-31-4106" /> shell
+variable and the
+<em class="emphasis">CDPATH</em><a name="IXT-31-4107" /> <a name="IXT-31-4108" /> variable
+in <i class="command">ksh</i>, <i class="command">bash</i>, and some versions
+of <i class="command">sh</i>. (<i class="command">zsh</i> understands both
+<em class="emphasis">cdpath</em> and <em class="emphasis">CDPATH</em>.)
+I'll use the term
+"cdpath" to talk about all shells.
+</p>
+
+<p>When you type the command <tt class="literal">cd</tt>
+<em class="replaceable"><tt>foo</tt></em>, the shell first tries to go to the
+exact pathname <em class="replaceable"><tt>foo</tt></em>. If that
+doesn't work, and if <em class="replaceable"><tt>foo</tt></em>
+is a relative pathname, the shell tries the same command from every
+directory listed in the <em class="emphasis">cdpath</em>. (If you use
+<i class="command">ksh</i> or <i class="command">sh</i>, see the note at the
+end of this article.)
+</p>
+
+<p>Let's say that your home directory is
+<em class="filename">/home/lisa</em> and your current directory is
+somewhere else. Let's also say that your
+<em class="emphasis">cdpath</em> has the directories
+<em class="filename">/home/lisa</em>,
+<em class="filename">/home/lisa/projects</em>, and
+<em class="filename">/books/troff</em>. If your <tt class="literal">cd</tt>
+<em class="replaceable"><tt>foo</tt></em> command doesn't work
+in your current directory, your shell will try <tt class="literal">cd
+/home/lisa/</tt><em class="replaceable"><tt>foo</tt></em>, <tt class="literal">cd
+/home/lisa/projects/</tt><em class="replaceable"><tt>foo</tt></em>, and
+<tt class="literal">cd /books/troff/</tt><em class="replaceable"><tt>foo</tt></em>, in
+that order. If the shell finds one, it shows the pathname:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd foo</b></tt>
+/home/lisa/foo
+%</pre></blockquote>
+
+<p>If there is more than one matching directory, the shell uses the
+first match; if this isn't what you wanted, you can
+change the order of the directories in the
+<em class="emphasis">cdpath</em>.
+</p>
+
+<p>Some Bourne shells don't show the directory name.
+All shells print an error, though, if they can't
+find any <em class="replaceable"><tt>foo</tt></em> directory.
+</p>
+
+<p>So, set your <em class="emphasis">cdpath</em> to a list of the parent
+directories that contain directories you might want to
+<i class="command">cd</i> to. Don't list the exact
+directories -- list the <b class="emphasis-bold">parent
+directories</b><a name="IXT-31-4109" /> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>). This
+list goes in your <em class="filename">.tcshrc</em>,
+<em class="filename">.cshrc</em>, or <em class="filename">.profile</em> file.
+For example, <em class="emphasis">lisa</em>'s
+<em class="filename">.tcshrc</em> could have:
+</p>
+
+<p><tt class="literal">~</tt> <a href="ch31_11.htm#upt3-CHP-31-SECT-11">Section 31.11</a></p>
+
+<blockquote><pre class="code">set cdpath=(~ ~/projects /books/troff)</pre></blockquote>
+
+<p>A Bourne shell user would have this in his <em class="filename">.profile
+</em><a name="IXT-31-4110" />file:
+</p>
+
+<blockquote><pre class="code">CDPATH=:$HOME:$HOME/projects:/books/troff
+export CDPATH</pre></blockquote>
+
+<p>A <i class="command">bash</i> user might have it in her
+<em class="filename">.bashrc</em><a name="IXT-31-4111" /><a name="IXT-31-4112" /> or
+<em class="filename">.bash_profile</em>.
+</p>
+
+<p>(If your system doesn't define
+<tt class="literal">$HOME</tt>, try <tt class="literal">$LOGDIR</tt>.)
+</p>
+
+<a name="ch31-4-fm2xml" /><blockquote><b>NOTE:</b> 
+Note that the Bourne shell <em class="emphasis">CDPATH</em> in the above
+example starts with a colon (:) -- which, as in the
+<em class="emphasis">PATH</em> variable, is actually <b class="emphasis-bold">an empty entry</b> (<a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a>)
+that stands for "the current
+directory." Both the <i class="command">sh</i> and
+<i class="command">ksh</i> I tested required that. Without an empty
+entry, neither <i class="command">sh</i> or <i class="command">ksh</i> would
+<i class="command">cd</i> into the current directory!
+(<i class="command">bash</i> seemed to work like <i class="command">csh</i>,
+though.) You could actually call this a feature. If
+there's no empty entry in
+<em class="emphasis">CDPATH</em>, a user has to use <tt class="literal">cd</tt>
+<em class="replaceable"><tt>./subdirname</tt></em> to go to a
+subdirectory of the current directory.
+</p>
+</blockquote>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch31_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch31_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">31.4. How Does Unix Find Your Current Directory?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">31.6. Loop Control: break and continue</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

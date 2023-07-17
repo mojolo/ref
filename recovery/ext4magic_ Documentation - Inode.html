@@ -1,0 +1,433 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> <html><!--
+ Page saved with SingleFile 
+ url: http://ext4magic.sourceforge.net/inode_en.html 
+ saved date: Thu Jan 23 2020 01:10:42 GMT+0000 (Coordinated Universal Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>[data-darkreader-inline-bgcolor]{background-color:var(--darkreader-inline-bgcolor)!important}[data-darkreader-inline-border-bottom]{border-bottom-color:var(--darkreader-inline-border-bottom)!important}[data-darkreader-inline-border-left]{border-left-color:var(--darkreader-inline-border-left)!important}[data-darkreader-inline-border-right]{border-right-color:var(--darkreader-inline-border-right)!important}[data-darkreader-inline-border-top]{border-top-color:var(--darkreader-inline-border-top)!important}html{background-color:#2f2f2e!important}html,body{background-color:#2f2f2e}html,body{border-color:#837f79;color:#ffffff}a{color:#6ec8ff}table{border-color:#74716b}::placeholder{color:#fffbe4}::selection{background-color:#2983ed;color:#ffffff}::-moz-selection{background-color:#2983ed;color:#ffffff}::-webkit-scrollbar{background-color:#343433;color:#fffff5}::-webkit-scrollbar-thumb{background-color:#474745}::-webkit-scrollbar-corner{background-color:#2f2f2e}*{scrollbar-color:#474745 #343433}</style>
+<title></title>
+<meta name=GENERATOR content="LibreOffice 3.5  (Linux)">
+<meta name=CREATED content=20140327;22325100>
+<meta name=CHANGED content=20140415;3445100>
+<style><!--@page{margin:2cm}TD P{margin-bottom:0cm}H1{margin-bottom:0.21cm}H1.western{font-family:"Liberation Serif",serif}P{margin-bottom:0.21cm}H2{margin-bottom:0.21cm}H3{margin-bottom:0.21cm}A:link{so-language:zxx}--></style><style class="darkreader darkreader--override" media=screen>::placeholder{opacity:0.5!important}</style>
+<link type=image/x-icon rel="shortcut icon" href="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></head>
+<body dir=LTR lang=de-DE>
+<h1 class=western><a name=firstHeading style=display:none!important></a>Ext4magic-Inode</h1>
+<div id=bodyContent dir=LTR>
+ <p><br><br>
+ </p>
+ <div id=contentSub dir=LTR>
+ <p><br><br>
+ </p>
+ </div>
+ <div id=mw-content-text dir=LTR>
+ <center>
+ <table style=--darkreader-inline-bgcolor:#2f2f2e data-darkreader-inline-bgcolor width=100% cellspacing=0 cellpadding=5 bgcolor=#ffffff>
+ <tbody><tr>
+ <td style="border:medium none;padding:0cm;--darkreader-inline-border-top:currentcolor;--darkreader-inline-border-right:currentcolor;--darkreader-inline-border-bottom:currentcolor;--darkreader-inline-border-left:currentcolor" data-darkreader-inline-border-top data-darkreader-inline-border-right data-darkreader-inline-border-bottom data-darkreader-inline-border-left>
+ <p><b><a href=http://ext4magic.sourceforge.net/ext4magic_en.html>Ext4magic</a>:</b> <strong>Inode</strong>
+ - <a href=http://ext4magic.sourceforge.net/directory_en.html>Directory</a> - <a href=http://ext4magic.sourceforge.net/journal_en.html>Journal</a>
+ - <a href=http://ext4magic.sourceforge.net/install_en.html>Install</a> - <a href=http://ext4magic.sourceforge.net/time-options_en.html>Time_Options</a>
+ - <a href=http://ext4magic.sourceforge.net/histogram_en.html>Histogram</a> - <a href=http://ext4magic.sourceforge.net/howto_en.html>Scenarios</a>
+ - <a href=http://ext4magic.sourceforge.net/tips_en.html>Tips&amp;Tricks</a> - <a href=http://ext4magic.sourceforge.net/manpage_en.html>Manpage</a>
+ - <a href=http://ext4magic.sourceforge.net/expert-mode_en.html>Expert-Mode</a> 
+ </p>
+ </td>
+ </tr>
+ </table>
+ </center>
+ <p><br><br>
+ </p><a name=toc></a>
+ <table width=395 cellspacing=0 cellpadding=0>
+ <colgroup><col width=395>
+ <tbody><tr>
+ <td style="border:medium none;padding:0cm;--darkreader-inline-border-top:currentcolor;--darkreader-inline-border-right:currentcolor;--darkreader-inline-border-bottom:currentcolor;--darkreader-inline-border-left:currentcolor" data-darkreader-inline-border-top data-darkreader-inline-border-right data-darkreader-inline-border-bottom data-darkreader-inline-border-left width=395>
+ <div id=toctitle dir=LTR>
+ <h2 class=western>Contents</h2>
+ </div>
+ <ul>
+ <li><p style=margin-bottom:.5cm><a href=#Inodes>1 Inodes</a>
+ </p>
+ <li><p style=margin-bottom:.5cm><a href=#ex4magic_output_format_of_the_inode_data>2
+ ex4magic output format of the inode data</a> 
+ </p>
+ <li><p style=margin-bottom:.5cm><a href=#Timestamps_of_inodes>3
+ Timestamps of inodes</a> 
+ </p>
+ <li><p><a href=#Inode_copies_inside_the_journal>4 Inode
+ copies inside the journal</a> 
+ </p>
+ </ul>
+ </td>
+ </tr>
+ </table>
+ <h3 class=western lang=en><a name=Inodes></a>Inodes</h3>
+ <p><span lang=en>The inode is the central management structure an
+ every file in a ext files system. All properties of the file, with
+ the exception of the inode number and file name are stored in an
+ inode. The inode number is an index number for the inode data
+ within the inode table of the file system. One or more file names
+ are in the <a href=http://ext4magic.sourceforge.net/directory_en.html>directory</a> data, always
+ together with an associated unique inode number. Most Linux users
+ known the properties of a file as they are stored in the inode. The
+ output format of ext4magic is presented in the next section. </span>
+ </p>
+ <p lang=en>Data blocks of a file are referenced by an inode.
+ Without an inode a file cannot be found on the disk. When you
+ delete a file the references in the inode are cleared which makes
+ recovery of deleted files difficult for ext3 and ext4 file system. 
+ </p>
+ <p lang=en>The inode table is part of the file system meta data
+ and for every change a copy of the data block will be written to
+ the journal. <br>The typical inode size was originally 128 Byte and
+ keeps most of the information. Today an inode size of 256 Bytes is
+ commonly used. If a file system size is 4 KByte and 256 Bytes are
+ used for inodes, 16 inode are contained in a file system block. The
+ file system writes a whole file system block to the disk which
+ means the whole inode block is copied to the journal, even if only
+ a single inode has changed. In the journal there are many inode
+ block copies. ext4magic uses them to recover deleted files. 
+ </p>
+ <p><br><br>
+ </p>
+ <h3 class=western lang=en><a name=ex4magic_output_format_of_the_inode_data></a>
+ ex4magic output format of the inode data</h3>
+ <p><span lang=en>There exists a Linux command <a href=http://linux.die.net/man/1/stat>stat</a>
+ which also allows to query information about inodes: </span>
+ </p>
+ <pre class=western lang=en>ROBI@LINUX:~ # stat /boot/message
+  <span lang=en>File: `/boot/message'</span>
+  <span lang=en>Size: 421376          Blocks: 830        IO Block: 1024   regular file</span>
+<span lang=en>Device: 811h/2065d      Inode: 22          Links: 1</span>
+<span lang=en>Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)</span>
+<span lang=en>Access: 2009-12-04 01:13:51.000000000 +0100</span>
+<span lang=en>Modify: 2009-12-04 01:13:51.000000000 +0100</span>
+<span lang=en>Change: 2009-12-04 01:13:51.000000000 +0100</span></pre><p lang=en>
+ ext4magic output has following format: 
+ </p>
+ <pre class=western lang=en>ROBI@LINUX:~ # ext4magic /dev/sdb1 -f "message" -x
+<span lang=en>Filesystem in use: /dev/sdb1</span>
+
+
+<span lang=en>Dump internal Inode 22</span>
+<span lang=en>Status: Inode is Allocated</span>
+
+<span lang=en>Inode: 22   Type: regular    Mode:  0644   Flags: 0x0</span>
+<span lang=en>Generation: 1797523886    Version: 0x00000000</span>
+<span lang=en>User:     0   Group:     0   Size: 421376</span>
+<span lang=en>File ACL: 0    Directory ACL: 0</span>
+<span lang=en>Links: 1   Blockcount: 830</span>
+<span lang=en>Fragment:  Address: 0    Number: 0    Size: 0</span>
+<span lang=en>ctime: 1259885631 -- Fri Dec  4 01:13:51 2009</span>
+<span lang=en>atime: 1259885631 -- Fri Dec  4 01:13:51 2009</span>
+<span lang=en>mtime: 1259885631 -- Fri Dec  4 01:13:51 2009</span>
+<span lang=en>BLOCKS:</span>
+<span lang=en>(0-11):531-542, (IND):543, (12-267):544-799, (DIND):800, (IND):801, (268-411):802-945</span>
+<span lang=en>TOTAL: 415</span></pre><p lang=en>
+ ext4magic displays more details in a different format compared to
+ the format of <b>"stat"</b>. There is a major difference
+ in the way to specify the filename as an argument. For stat the
+ path for the filename starts from the <b>root of the entire Linux
+ system</b> (e.g. /boot). For ext4magic the path of the filename
+ starts from the <b>root of the filesystem</b> (always inode 2)
+ (e.g. / when /boot is mounted on a separate partition). 
+ </p>
+ <pre class=western lang=en>ROBI@LINUX:~ # stat /boot
+  <span lang=en>File: `/boot'</span>
+  <span lang=en>Size: 1024            Blocks: 2          IO Block: 1024   directory</span>
+<span lang=en>Device: 811h/2065d      Inode: 2           Links: 4</span>
+<span lang=en>Access: (0755/drwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)</span>
+<span lang=en>Access: 2010-04-01 21:39:03.000000000 +0200</span>
+<span lang=en>Modify: 2010-03-13 12:05:22.000000000 +0100</span>
+<span lang=en>Change: 2010-03-13 12:05:22.000000000 +0100</span>
+<span lang=en>ROBI@LINUX:~ # ext4magic /dev/sdb1 -f / -x</span>
+<span lang=en>Filesystem in use: /dev/sdb1</span>
+
+
+<span lang=en>Dump internal Inode 2</span>
+<span lang=en>Status: Inode is Allocated</span>
+
+<span lang=en>Inode: 2   Type: directory    Mode:  0755   Flags: 0x0</span>
+<span lang=en>Generation: 0    Version: 0x00000000</span>
+<span lang=en>User:     0   Group:     0   Size: 1024</span>
+<span lang=en>File ACL: 0    Directory ACL: 0</span>
+<span lang=en>Links: 4   Blockcount: 2</span>
+<span lang=en>Fragment:  Address: 0    Number: 0    Size: 0</span>
+<span lang=en>ctime: 1268478322 -- Sat Mar 13 12:05:22 2010</span>
+<span lang=en>atime: 1270150743 -- Thu Apr  1 21:39:03 2010</span>
+<span lang=en>mtime: 1268478322 -- Sat Mar 13 12:05:22 2010</span>
+<span lang=en>BLOCKS:</span>
+<span lang=en>(0):517</span>
+<span lang=en>TOTAL: 1</span>
+
+        <span lang=en>2  d  755 (2)      0      0      1024 13-Mar-2010 12:05 .</span>
+        <span lang=en>2  d  755 (2)      0      0      1024 13-Mar-2010 12:05 ..</span>
+       <span lang=en>11  d  700 (2)      0      0     12288  3-Dec-2009 21:20 lost+found</span>
+    <span lang=en>28673  d  755 (2)      0      0      1024 13-Mar-2010 12:05 grub</span>
+       <span lang=en>22  _  644 (1)      0      0    421376  4-Dec-2009 01:13 message</span>
+       <span lang=en>14  l  777 (7)      0      0         1  3-Dec-2009 23:39 boot</span>
+       <span lang=en>23  _  644 (1)      0      0      1236  3-Dec-2009 02:52 boot.readme</span>
+       <span lang=en>19  l  777 (7)      0      0        29 13-Mar-2010 12:04 vmlinuz</span>
+       <span lang=en>20  l  777 (7)      0      0        28 13-Mar-2010 12:05 initrd</span>
+       <span lang=en>21  _  644 (1)      0      0   6757618 13-Mar-2010 12:05 initrd-2.6.31.12-0.1-desktop</span>
+       <span lang=en>15  _  644 (1)      0      0   1512469 28-Jan-2010 16:35 System.map-2.6.31.12-0.1-desktop</span>
+       <span lang=en>16  _  644 (1)      0      0    168515 28-Jan-2010 16:50 symvers-2.6.31.12-0.1-desktop.gz</span>
+       <span lang=en>17  _  644 (1)      0      0   4098688 28-Jan-2010 16:35 vmlinuz-2.6.31.12-0.1-desktop</span>
+       <span lang=en>13  _  600 (1)      0      0       512  4-Dec-2009 01:13 backup_mbr</span>
+<span lang=en>&lt;       0&gt;      0 (1)      0      0         0                   initrd-2.6.31.8-0.1-desktop</span>
+<span lang=en>&lt;       0&gt;      0 (1)      0      0         0                   System.map-2.6.31.8-0.1-desktop</span>
+<span lang=en>&lt;       0&gt;      0 (1)      0      0         0                   symvers-2.6.31.8-0.1-desktop.gz</span>
+<span lang=en>&lt;       0&gt;      0 (1)      0      0         0                   vmlinuz-2.6.31.8-0.1-desktop</span>
+<span lang=en>&lt;       0&gt;      0 (1)      0      0         0                   config-2.6.31.8-0.1-desktop</span>
+       <span lang=en>18  _  644 (1)      0      0    105422 28-Jan-2010 16:50 config-2.6.31.12-0.1-desktop</span></pre><p lang=en>
+ ext4magic output includes a list of the directory contents. Output
+ of <b>"ls -il "'</b> command on Linux contains similar
+ directory information. 
+ </p>
+ <pre class=western lang=en>ROBI@LINUX:~ # ls -il /boot
+<span lang=en>total 12833</span>
+   <span lang=en>15 -rw-r--r-- 1 root root 1512469 Jan 28 16:35 System.map-2.6.31.12-0.1-desktop</span>
+   <span lang=en>13 -rw------- 1 root root     512 Dec  4 01:13 backup_mbr</span>
+   <span lang=en>14 lrwxrwxrwx 1 root root       1 Dec  3 23:39 boot -&gt; .</span>
+   <span lang=en>23 -rw-r--r-- 1 root root    1236 Dec  3 02:52 boot.readme</span>
+   <span lang=en>18 -rw-r--r-- 1 root root  105422 Jan 28 16:50 config-2.6.31.12-0.1-desktop</span>
+<span lang=en>28673 drwxr-xr-x 2 root root    1024 Mar 13 12:05 grub</span>
+   <span lang=en>20 lrwxrwxrwx 1 root root      28 Mar 13 12:05 initrd -&gt; initrd-2.6.31.12-0.1-desktop</span>
+   <span lang=en>21 -rw-r--r-- 1 root root 6757618 Mar 13 12:05 initrd-2.6.31.12-0.1-desktop</span>
+   <span lang=en>11 drwx------ 2 root root   12288 Dec  3 21:20 lost+found</span>
+   <span lang=en>22 -rw-r--r-- 1 root root  421376 Dec  4 01:13 message</span>
+   <span lang=en>16 -rw-r--r-- 1 root root  168515 Jan 28 16:50 symvers-2.6.31.12-0.1-desktop.gz</span>
+   <span lang=en>19 lrwxrwxrwx 1 root root      29 Mar 13 12:04 vmlinuz -&gt; vmlinuz-2.6.31.12-0.1-desktop</span>
+   <span lang=en>17 -rw-r--r-- 1 root root 4098688 Jan 28 16:35 vmlinuz-2.6.31.12-0.1-desktop</span></pre><p>
+ <span lang=en>For details of the format ext4magic directory
+ output see <a href=http://ext4magic.sourceforge.net/directory_en.html>Directory page</a>. </span>
+ </p>
+ <p lang=en>There is another special feature included in the
+ listing of the inode: All data blocks an inode addresses are
+ listed. 
+ </p>
+ <pre class=western lang=en>....
+<span lang=en>BLOCKS:</span>
+<span lang=en>(0-11):531-542, (IND):543, (12-267):544-799, (DIND):800, (IND):801, (268-411):802-945</span>
+<span lang=en>TOTAL: 415</span></pre><p lang=en>
+ The output should be read as follows: 
+ </p>
+ <ul>
+ <li><p style=margin-bottom:0cm lang=en>File blocks 0 to 11 of
+ this file are in the file system data blocks 531-542 
+ </p>
+ <li><p style=margin-bottom:0cm lang=en>File system block 543
+ indirectly (IND) refers to file blocks 12 to 267 which are located
+ in file system data blocks 544-799 
+ </p>
+ <li><p lang=en>File system block 800 addressed double indirectly
+ (DIND) the indirectly addressed file system block 801 which refers
+ to file blocks 268-411 located in file system blocks 802-945. 
+ </p>
+ </ul>
+ <p lang=en>This is the classic block addressing how they are
+ using by ext2 and ext3. 
+ </p>
+ <p><span lang=en>The <a href=http://computer-forensics.sans.org/blog/2010/12/20/digital-forensics-understanding-ext4-part-1-extents>extents
+ of ext4</a> files are displayed in a similar format: </span>
+ </p>
+ <pre class=western lang=en>Level Entries                   Logical                  Physical Length Flags
+ <span lang=en>0/ 1   1/  1           0 -       16703     2791415                16704</span>
+ <span lang=en>1/ 1   1/  9           0 -        2047     1826816 -     1828863   2048</span>
+ <span lang=en>1/ 1   2/  9        2048 -        4095     1837056 -     1839103   2048</span>
+ <span lang=en>1/ 1   3/  9        4096 -        6143     2463744 -     2465791   2048</span>
+ <span lang=en>1/ 1   4/  9        6144 -        8191     2791424 -     2793471   2048</span>
+ <span lang=en>1/ 1   5/  9        8192 -       10239     2795520 -     2797567   2048</span>
+ <span lang=en>1/ 1   6/  9       10240 -       12287     2805760 -     2807807   2048</span>
+ <span lang=en>1/ 1   7/  9       12288 -       14335     2859008 -     2861055   2048</span>
+ <span lang=en>1/ 1   8/  9       14336 -       16383     2852864 -     2854911   2048</span>
+ <span lang=en>1/ 1   9/  9       16384 -       16703     2876537 -     2876856    320</span></pre><p lang=en>
+ This is the exact list of the various extents of ext4 file which
+ consists 16704 data blocks. 
+ </p>
+ <p lang=en>This information is usually not needed and can create
+ a lengthy output for large files. For this reason, they are only
+ displayed by ext4magic with the additional command line option
+ <b>"-x"</b>. 
+ </p>
+ <p lang=en>If it is necessary to view the contents of such a data
+ block see the following example. The first block of the ext3 file
+ is the same as in the previous ext3 example (file system block
+ 531). 
+ </p>
+ <pre class=western lang=en>ROBI@LINUX:~ # ext4magic /dev/sdb1 -B 531 
+<span lang=en>Filesystem in use: /dev/sdb1              </span>
+
+<span lang=en>Dump Filesystemblock        531   Status: Block is Allocated</span>
+    <span lang=en>0000:  c7 71 13 08 62 ae a4 81 8f 01 8f 01 01 00 00 00    .q..b...........</span>
+    <span lang=en>0010:  18 4b 3f 54 0a 00 01 00 f3 fb 31 36 78 31 36 2e    .K?T......16x16.</span>
+    <span lang=en>0020:  66 6e 74 00 06 8e 82 d2 e0 07 00 00 13 04 12 20    fnt............ </span>
+    <span lang=en>0030:  00 60 ed 04 21 00 e0 ed 04 22 00 e0 ee 04 23 00    .`..!...."....#.</span>
+    <span lang=en>0040:  a0 ef 04 24 00 a0 f4 04 25 00 80 f9 04 26 00 80    ...$....%....&amp;..</span>
+    <span lang=en>0050:  01 05 27 00 c0 07 05 28 00 60 08 05 29 00 e0 0b    ..'....(.`..)...</span>
+    <span lang=en>0060:  05 2a 00 60 0f 05 2b 00 a0 12 05 2c 00 20 14 05    .*.`..+....,. ..</span>
+    <span lang=en>0070:  2d 00 80 15 05 2e 00 20 16 05 2f 00 a0 16 05 30    -...... ../....0</span>
+    <span lang=en>0080:  00 60 1a 05 31 00 60 1f 05 32 00 60 22 05 33 00    .`..1.`..2.`".3.</span>
+    <span lang=en>0090:  40 26 05 34 00 a0 2a 05 35 00 a0 2e 05 36 00 80    @&amp;.4..*.5....6..</span>
+    <span lang=en>00a0:  32 05 37 00 a0 37 05 38 00 40 3b 05 39 00 20 40    2.7..7.8.@;.9. @</span>
+    <span lang=en>00b0:  05 3a 00 40 45 05 3b 00 00 46 05 3c 00 00 48 05    .:.@E.;..F.&lt;..H.</span>
+    <span lang=en>00c0:  3d 00 e0 4b 05 3e 00 40 4d 05 3f 00 20 51 05 40    =..K.&gt;.@M.?. Q.@</span>
+    <span lang=en>00d0:   ..................</span>
+<span lang=en>........</span></pre><p>
+ <span lang=en>The output format is similar to the one created by
+ Linux command "<a href=http://linux.die.net/man/1/hexdump>hexdump
+ -C</a>" </span>
+ </p>
+ <h3 class=western lang=en><a name=Timestamps_of_inodes></a>Timestamps
+ of inodes</h3>
+ <p><span lang=en>In Linux the following timestamps <a href=http://linuxboxadmin.com/micro/micro-howtos/system-administration/file-timestamps.html>atime
+ , mtime , ctime</a> are used. </span>
+ </p>
+ <p lang=en>With ext4magic more timestamps are displayed in the
+ inode, the <b>dtime</b> which means the time when that inode data
+ has been deleted. On ext4 file systems there exists also <b>crtime</b>
+ which is the time when that inode was reused for a new file. So
+ <b>crtime</b> is the actual file creation time of the file. 
+ </p>
+ <p lang=en>3 time stamps are always displayed in each inode:
+ "<b>dtime</b>" and "<b>crtime</b>" may be
+ missing if they are not present on the inode. 
+ </p>
+ <dl>
+ <dt style=margin-bottom:.5cm lang=en>Output format</dl>
+ <pre class=western> <span lang=en>ctime: 1274512877:2933655396 -- Sat May 22 09:21:17 2010</span>
+ <span lang=en>atime: 1274512899:3413691564 -- Sat May 22 09:21:39 2010</span>
+ <span lang=en>mtime: 1274512877:2933655396 -- Sat May 22 09:21:17 2010</span>
+<span lang=en>crtime: 1259871665:0000000000 -- Thu Dec  3 21:21:05 2009</span></pre><p>
+ <span lang=en>The first number, for example. "1274512877"
+ after the type of the timestamp is the time in seconds (UTC), this
+ date format is used in ext4magic for the input options. It is
+ therefore possible to use the timestamps directly from the output
+ with copy &amp; paste. Other ext4magic functions contain the second
+ format in their output. That way a manual conversion of time input
+ parameters for ext4magic with the command <a href=http://linux.die.net/man/1/date>date</a>
+ can be cirumvented. </span>
+ </p>
+ <h3 class=western lang=en><a name=Inode_copies_inside_the_journal></a>
+ Inode copies inside the journal</h3>
+ <p lang=en>The examples on this page used current inodes of the
+ file system. It's also possible to print out all or a subset of
+ inode copies from the journal. Options on the command line, which
+ open the journal will output the inode copies of the journal. In
+ this example it's the <b>"-T"</b> option. Other options
+ are <b>"-J"</b>, <b>"-a &lt;time&gt;"</b> or
+ <b>"-b &lt;time&gt;"</b>. 
+ </p>
+ <pre class=western lang=en>ROBI@LINUX:~ # ext4magic /home/rob/test/test.iso -I2 -Tx | sed -ne '/^Dump/,/^BLOCKS/p'
+<span lang=en>Dump Inode 2 from journal transaction 24</span>
+<span lang=en>Inode: 2   Type: directory    Mode:  0755   Flags: 0x0</span>
+<span lang=en>Generation: 0    Version: 0x00000000:00000000</span>
+<span lang=en>User:     0   Group:     0   Size: 4096</span>
+<span lang=en>File ACL: 0    Directory ACL: 0</span>
+<span lang=en>Links: 11   Blockcount: 8</span>
+<span lang=en>Fragment:  Address: 0    Number: 0    Size: 0</span>
+ <span lang=en>ctime: 1260473457:0000000000 -- Thu Dec 10 20:30:57 2009</span>
+ <span lang=en>atime: 1260473464:0000000000 -- Thu Dec 10 20:31:04 2009</span>
+ <span lang=en>mtime: 1260473457:0000000000 -- Thu Dec 10 20:30:57 2009</span>
+<span lang=en>crtime: 1260470173:0000000000 -- Thu Dec 10 19:36:13 2009</span>
+<span lang=en>Size of extra inode fields: 28</span>
+<span lang=en>BLOCKS:</span>
+<span lang=en>Dump Inode 2 from journal transaction 25</span>
+<span lang=en>Inode: 2   Type: directory    Mode:  0755   Flags: 0x0</span>
+<span lang=en>Generation: 0    Version: 0x00000000:00000000</span>
+<span lang=en>User:     0   Group:     0   Size: 4096</span>
+<span lang=en>File ACL: 0    Directory ACL: 0</span>
+<span lang=en>Links: 11   Blockcount: 8</span>
+<span lang=en>Fragment:  Address: 0    Number: 0    Size: 0</span>
+ <span lang=en>ctime: 1260473478:0000000000 -- Thu Dec 10 20:31:18 2009</span>
+ <span lang=en>atime: 1260473478:0000000000 -- Thu Dec 10 20:31:18 2009</span>
+ <span lang=en>mtime: 1260473478:0000000000 -- Thu Dec 10 20:31:18 2009</span>
+<span lang=en>crtime: 1260470173:0000000000 -- Thu Dec 10 19:36:13 2009</span>
+<span lang=en>Size of extra inode fields: 28</span>
+<span lang=en>BLOCKS:</span>
+<span lang=en>Dump Inode 2 from journal transaction 26</span>
+<span lang=en>Inode: 2   Type: directory    Mode:  0755   Flags: 0x0</span>
+<span lang=en>Generation: 0    Version: 0x00000000:00000000</span>
+<span lang=en>User:     0   Group:     0   Size: 4096</span>
+<span lang=en>File ACL: 0    Directory ACL: 0</span>
+<span lang=en>Links: 11   Blockcount: 8</span>
+<span lang=en>Fragment:  Address: 0    Number: 0    Size: 0</span>
+ <span lang=en>ctime: 1260473508:0000000000 -- Thu Dec 10 20:31:48 2009</span>
+ <span lang=en>atime: 1260473513:0000000000 -- Thu Dec 10 20:31:53 2009</span>
+ <span lang=en>mtime: 1260473508:0000000000 -- Thu Dec 10 20:31:48 2009</span>
+<span lang=en>crtime: 1260470173:0000000000 -- Thu Dec 10 19:36:13 2009</span>
+<span lang=en>Size of extra inode fields: 28</span>
+<span lang=en>BLOCKS:</span>
+<span lang=en>Dump Inode 2 from journal transaction 29</span>
+<span lang=en>Inode: 2   Type: directory    Mode:  0755   Flags: 0x0</span>
+<span lang=en>Generation: 0    Version: 0x00000000:00000000</span>
+<span lang=en>User:     0   Group:     0   Size: 4096</span>
+<span lang=en>File ACL: 0    Directory ACL: 0</span>
+<span lang=en>Links: 3   Blockcount: 8</span>
+<span lang=en>Fragment:  Address: 0    Number: 0    Size: 0</span>
+ <span lang=en>ctime: 1260473770:0000000000 -- Thu Dec 10 20:36:10 2009</span>
+ <span lang=en>atime: 1260473772:0000000000 -- Thu Dec 10 20:36:12 2009</span>
+ <span lang=en>mtime: 1260473770:0000000000 -- Thu Dec 10 20:36:10 2009</span>
+<span lang=en>crtime: 1260470173:0000000000 -- Thu Dec 10 19:36:13 2009</span>
+<span lang=en>Size of extra inode fields: 28</span>
+<span lang=en>BLOCKS:</span>
+<span lang=en>Dump Inode 2 from journal transaction 47</span>
+<span lang=en>Inode: 2   Type: directory    Mode:  0755   Flags: 0x0</span>
+<span lang=en>Generation: 0    Version: 0x00000000:00000000</span>
+<span lang=en>User:     0   Group:     0   Size: 4096</span>
+<span lang=en>File ACL: 0    Directory ACL: 0</span>
+<span lang=en>Links: 3   Blockcount: 8</span>
+<span lang=en>Fragment:  Address: 0    Number: 0    Size: 0</span>
+ <span lang=en>ctime: 1272100594:0000000000 -- Sat Apr 24 11:16:34 2010</span>
+ <span lang=en>atime: 1272048604:0000000000 -- Fri Apr 23 20:50:04 2010</span>
+ <span lang=en>mtime: 1272100594:0000000000 -- Sat Apr 24 11:16:34 2010</span>
+<span lang=en>crtime: 1260470173:0000000000 -- Thu Dec 10 19:36:13 2009</span>
+<span lang=en>Size of extra inode fields: 28</span>
+<span lang=en>BLOCKS:</span></pre><p>
+ <span lang=en>This are journal copies of inode 2 (root directory)
+ of a filesystem image, The directory data has been truncated here
+ with "<a href=http://linux.die.net/man/1/sed>sed</a>"
+ in the pipe. </span>
+ </p>
+ <p lang=en>Previous output shows the individual copies of the
+ inode which are listed in the journal. Depending on how many copies
+ of an inode reside in the journal, the history of a file can be
+ pursued or it can be appreciated that one inode was used for
+ different files during it's life time. 
+ </p>
+ <p lang=en>Internally ext4magic always assume that inode copies
+ with the same ctime, the same file size and the same number of
+ links are identical and displays them not multiple. For example,
+ such identical copies are written, if only the atime has changed,
+ or because a other inode in the same inode block has changed. 
+ </p>
+ <p lang=en>Each of these inode copies from a file which can be
+ found in the journal and which has not set the dtime, can be used
+ by ext4magic to recover a copy of this file with the contents it
+ had at exactly this point in time. But this is true only if the
+ data blocks addressed by this inode was not changed in the
+ meantime. Which inode will be used for a recovery depends on the
+ recover options and time options on the extmagic command line. In
+ very difficult cases, individual file versions can be selected
+ directly by selecting a specific inode copy with the journal
+ transaction number. 
+ </p>
+ <p><br><br>
+ </p>
+ <center>
+ <table style=--darkreader-inline-bgcolor:#2f2f2e data-darkreader-inline-bgcolor width=100% cellspacing=0 cellpadding=5 bgcolor=#ffffff>
+ <tbody><tr>
+ <td style="border:medium none;padding:0cm;--darkreader-inline-border-top:currentcolor;--darkreader-inline-border-right:currentcolor;--darkreader-inline-border-bottom:currentcolor;--darkreader-inline-border-left:currentcolor" data-darkreader-inline-border-top data-darkreader-inline-border-right data-darkreader-inline-border-bottom data-darkreader-inline-border-left>
+ <p><b><a href=http://ext4magic.sourceforge.net/ext4magic_en.html>Ext4magic</a>:</b> <strong>Inode</strong>
+ - <a href=http://ext4magic.sourceforge.net/directory_en.html>Directory</a> - <a href=http://ext4magic.sourceforge.net/journal_en.html>Journal</a>
+ - <a href=http://ext4magic.sourceforge.net/install_en.html>Install</a> - <a href=http://ext4magic.sourceforge.net/time-options_en.html>Time_Options</a>
+ - <a href=http://ext4magic.sourceforge.net/histogram_en.html>Histogram</a> - <a href=http://ext4magic.sourceforge.net/howto_en.html>Scenarios</a>
+ - <a href=http://ext4magic.sourceforge.net/tips_en.html>Tips&amp;Tricks</a> - <a href=http://ext4magic.sourceforge.net/manpage_en.html>Manpage</a>
+ - <a href=http://ext4magic.sourceforge.net/expert-mode_en.html>Expert-Mode</a> 
+ </p>
+ </td>
+ </tr>
+ </table>
+ </center>
+ <p><br><br>
+ </p>
+ </div>
+</div>

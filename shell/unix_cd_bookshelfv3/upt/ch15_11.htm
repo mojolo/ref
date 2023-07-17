@@ -1,0 +1,92 @@
+<html><head><title>Disk Quotas (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="part4.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">15.11. Disk Quotas</h2>
+
+<p><a name="IXT-15-6193" /> <a name="IXT-15-6194" /> <a name="IXT-15-6195" />No matter how much disk space you
+have, you will eventually run out. One way the system administrator
+can force users to clean up after themselves is to impose quotas on
+disk usage. Many Unixes have quota systems available: check your
+manual pages with a command like <tt class="literal">apropos quota</tt>.
+</p>
+
+<p>If you're a user, how do quotas affect you? Sooner
+or later, you may find that you're over your quota.
+Quotas are maintained on a per-filesystem basis. They may be placed
+on disk storage (the number of blocks) and on inodes (the number of
+files). <a name="IXT-15-6196" /><a name="IXT-15-6197" />The quota system maintains the concept of
+<em class="emphasis">hard</em> and <em class="emphasis">soft</em> limits. When
+you exceed a soft limit, you'll get a warning
+(<tt class="literal">WARNING: disk quota</tt> <tt class="literal">exceeded</tt>),
+but you can continue to accumulate more storage. The warning will be
+repeated whenever you log in. At some point (i.e., after some number
+of sessions in which the storage stays above the soft limit), the
+system loses patience and refuses to allocate any more storage.
+You'll get a message like <tt class="literal">OVER
+DISK</tt> <tt class="literal">QUOTA: NO MORE DISK SPACE</tt>. At this
+point, you must delete files until you're again
+within the soft limit. Users are never allowed to exceed their hard
+limit. This design allows you to have large temporary files without
+penalty, provided that they do not occupy too much disk space
+long-term.
+</p>
+
+<p>There may also be a quota on the number of files (i.e., inodes) that
+you can own per filesystem. It works exactly the same way;
+you'll get a warning when you exceed the soft limit;
+if you don't delete some files, the system will
+eventually refuse to create new files.
+</p>
+
+<p><a name="IXT-15-6198" />The
+<i class="command">quota</i> command shows a user's
+quota on each filesystem where quotas have been set. With no option,
+it displays a line for each system where you're over
+quota. The <span class="option">-v</span> option shows a line for each system
+where you have a quota. The output can be a bit confusing on systems
+with the automounter running, since it mounts things dynamically and
+uses symlinks to make things appear where you expect them, so the
+filesystem names may not match the directory names
+you're accustomed to:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>quota</b></tt>
+Over disk quota on /home/jpeek, remove 228K within 4.0 days
+Over file quota on /home/jpeek, remove 13 files within 4.5 days
+$ <tt class="userinput"><b>quota -v</b></tt>
+Filesystem     usage  quota limit  timeleft  files  quota limit  timeleft
+/export/users      0   8000  9000                0    600   750
+/export/home9   8228   8000  9000  4.0 days    613    600   750  4.5 days</pre></blockquote>
+
+<p>In this case, the automounter has clearly mounted my home directory
+on <em class="filename">/export/home9</em>, since that shows the same
+information that <i class="command">quota</i> showed me in the first
+command.<a name="IXTR3-6202" />
+<a name="IXTR3-6203" />
+</p>
+
+<p><em class="emphasis">-- ML and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="part4.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">15.10. Save Space in Executable Files with strip</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">IV. Basic Editing</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

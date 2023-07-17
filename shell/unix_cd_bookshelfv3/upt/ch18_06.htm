@@ -1,0 +1,126 @@
+<html><head><title>Protecting Keys from Interpretation by ex (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch18_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch18_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">18.6. Protecting Keys from Interpretation by ex</h2>
+
+<p><a name="IXT-18-1706" /> <a name="IXT-18-1707" /> <a name="IXT-18-1708" /> <a name="IXT-18-1709" />Note that when defining a map, you cannot
+simply type certain keys -- such as RETURN, ESC, BACKSPACE, and
+DELETE -- as part of the command to be mapped, because these keys
+already have meaning within <i class="command">ex</i>. If you want to
+include one of these keys as part of the command sequence, you must
+escape the normal meaning by preceding the key with
+<tt class="literal">^V</tt>
+(<a name="IXT-18-1710" /> CTRL-v). After CTRL-v, a carriage
+return appears as <tt class="literal">^M</tt>, escape as
+<tt class="literal">^[</tt>, backspace as <tt class="literal">^H</tt>, and so on.
+</p>
+
+<p>On the other hand, if you want to map a control character, in most
+cases you can just hold down the CTRL key and press the letter key at
+the same time. For example, to map <tt class="literal">^A</tt> (CTRL-a),
+simply type:
+</p>
+
+<blockquote><pre class="code">:map CTRL-a <em class="replaceable"><tt>sequence</tt></em></pre></blockquote>
+
+<p>There are, however, a few other control characters that must be
+escaped with a <tt class="literal">^V</tt>. One is <tt class="literal">^T</tt>.
+The others are as follows:
+</p>
+
+<ul><li>
+<p>The characters that your account uses for erasing parts of the input
+you type at a command line: <tt class="literal">^W</tt> for erasing words
+and <tt class="literal">^U</tt> for erasing lines.
+</p>
+</li><li>
+<p>The characters for <b class="emphasis-bold">interrupting jobs</b>
+(<a href="ch24_11.htm#upt3-CHP-24-SECT-11">Section 24.11</a>) and <b class="emphasis-bold">stopping
+jobs</b> (<a href="ch23_01.htm#upt3-CHP-23-SECT-1">Section 23.1</a>).
+</p>
+</li></ul>
+<p><a name="upt3-IDXTERM-2624" />So, if you want to map
+<tt class="literal">^T</tt>, you must type:
+</p>
+
+<blockquote><pre class="code">:map CTRL-v CTRL-t <em class="replaceable"><tt>sequence</tt></em></pre></blockquote>
+
+<p>The use of CTRL-v applies to any <i class="command">ex</i> command, not
+just a map command. This means that you can type a carriage return in
+an <b class="emphasis-bold">abbreviation</b> (<a href="ch17_23.htm#upt3-CHP-17-SECT-23">Section 17.23</a>) or a substitution command. For example, the
+abbreviation:
+</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:ab 123 one^Mtwo^Mthree</b></tt></pre></blockquote>
+
+<p>expands to this:</p>
+
+<blockquote><pre class="code">one
+two
+three</pre></blockquote>
+
+<p>(The sequence CTRL-v RETURN is shown as it appears on your screen,
+<tt class="literal">^M</tt>.)
+</p>
+
+<p>You can also add lines globally at certain locations. The command:</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:g/^Section/s//As you recall, in^M&amp;/</b></tt></pre></blockquote>
+
+<p>inserts a phrase on a separate line before any line beginning with
+the word <em class="emphasis">Section</em>. The <tt class="literal">&amp;</tt>
+restores the search pattern.
+</p>
+
+<p><a name="IXT-18-1711" /> <a name="IXT-18-1712" /> <a name="IXT-18-1713" />The vertical bar
+(<tt class="literal">|</tt>) is used to separate multiple
+<i class="command">ex</i> commands; it's especially
+difficult to quote. Because a map is interpreted when
+it's stored and again when it's
+used, you need enough CTRL-v characters to protect the vertical bar
+from each interpretation. You also need to protect stored CTRL-v
+characters by adding a CTRL-v before each one! The worst case is a
+text-input mode map (<b class="emphasis-bold">map!</b> (<a href="ch18_02.htm#upt3-CHP-18-SECT-2">Section 18.2</a>)) -- it needs three CTRL-v characters,
+which means you need to type <em class="emphasis">six</em> CTRL-v
+characters before you type the vertical bar. For example, the
+following map will make your <b class="emphasis-bold">function key
+F1</b> (<a href="ch18_02.htm#upt3-CHP-18-SECT-2">Section 18.2</a>) insert the string
+<tt class="literal">{x|y}</tt>:
+</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>map! #1 {x^V^V^V|y}</b></tt></pre></blockquote>
+
+<p>If you ask for a list of text-input mode maps, you should see a
+single stored CTRL-v:
+</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:map!</b></tt>
+f1  ^[OP   {x^V|y}</pre></blockquote>
+
+<p><em class="emphasis"> --LL, DG, and JP, from <em class="emphasis">Learning the vi
+Editor</em> (O'Reilly, 1998)</em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch18_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch18_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">18.5. Keymaps for Pasting into a Window Running vi</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">18.7. Maps for Repeated Edits</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

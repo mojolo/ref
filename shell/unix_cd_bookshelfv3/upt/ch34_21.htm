@@ -1,0 +1,106 @@
+<html><head><title>The sed Test Command (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.21. The sed Test Command</h2>
+
+<p><a name="IXT-34-805" /> <a name="IXT-34-806" /> <a name="IXT-34-807" />The test command,
+<em class="emphasis">t</em>, branches to a label (or the end of the
+script) if a successful substitution has been made on the currently
+addressed line. It implies a conditional branch. Its syntax is as
+follows:
+</p>
+
+
+<p>[<em class="replaceable"><tt>address</em>]<tt class="literal">t</tt>[<em class="replaceable">label</tt></em>]
+</p>
+
+
+<p>If no <em class="replaceable"><tt>label</tt></em> is supplied, control falls
+through to the end of the script. If <em class="replaceable"><tt>label</tt></em>
+is supplied, execution resumes at the line following the label.
+</p>
+
+<p>Let's look at a <a name="IXT-34-808" />spelling corrector written by Greg
+Ubben. The script fixes common (in this example, silly) spelling
+goofs; the <em class="emphasis">t</em> command tells about corrections
+that were made:
+</p>
+
+<blockquote><pre class="code">h
+s/seperate/separate/g
+s/compooter/computer/g
+s/said editor/sed editor/g
+s/lable/label/g
+t changed
+b
+: changed
+p
+g
+s/.*/[WAS: &amp;]/
+t</pre></blockquote>
+
+<p>First, <b class="emphasis-bold">h</b> (<a href="ch34_14.htm#upt3-CHP-34-SECT-14">Section 34.14</a>) holds a copy of the current input line. Then,
+if any of the four substitutions succeed, the command <tt class="literal">t
+changed</tt> branches to the corresponding label (<tt class="literal">:
+changed</tt>) at the end of the script. Otherwise, if no
+<tt class="literal">s</tt> succeeded, the <tt class="literal">b</tt> command
+restarts the script on the next line (as always in
+<i class="command">sed</i>, the input line is printed before the script
+restarts).
+</p>
+
+<p>After the label, the script prints the current input line (the line
+with a spelling error -- which, by now, has been corrected). Then
+<b class="emphasis-bold">g</b> (<a href="ch34_14.htm#upt3-CHP-34-SECT-14">Section 34.14</a>)
+gets the original uncorrected line. An <tt class="literal">s</tt> command
+brackets that line <tt class="literal">[WAS:</tt>
+<em class="replaceable"><tt>xxx</tt></em><tt class="literal">]</tt>.
+Here's some sample output:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sedscr afile</b></tt>
+This is a separate test.
+[WAS: This is a seperate test.]
+I put a label on my computer!
+[WAS: I put a lable on my compooter!]
+That's all for now.</pre></blockquote>
+
+<p>The final <tt class="literal">t</tt> in the script is a work-around for a
+bug in some versions of <i class="command">sed</i>. Greg says,
+"The <em class="emphasis">t</em> flag is supposed to be
+reset after either the <em class="emphasis">t</em> command is executed or
+a new line of input is read, but some versions of
+<i class="command">sed</i> don't reset it on a new line
+of input. So I added a do-nothing <tt class="literal">t</tt> to make sure
+it's reset after the previous always-true
+<tt class="literal">s///</tt>." Try the script without the
+extra <tt class="literal">t</tt>; if adding it makes the script work right,
+your <i class="command">sed</i> has the bug and you might try a new
+version, like GNU <i class="command">sed</i>.
+</p>
+
+<p><em class="emphasis">--JP and DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.20. Making Edits Everywhere Except...</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.22. Uses of the sed Quit Command</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

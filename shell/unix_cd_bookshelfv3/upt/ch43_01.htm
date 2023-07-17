@@ -1,0 +1,392 @@
+<html><head><title>Redirecting Input and Output (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="part8.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch43_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 43. Redirecting Input and Output</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch43_01.htm#sect1">Using Standard Input and Output</a><br />
+<a href="ch43_02.htm">One Argument with a cat Isn't Enough</a><br />
+<a href="ch43_03.htm">Send (Only) Standard Error Down a Pipe</a><br />
+<a href="ch43_04.htm">Problems Piping to a Pager</a><br />
+<a href="ch43_05.htm">Redirection in C Shell: Capture Errors, Too?</a><br />
+<a href="ch43_06.htm">Safe I/O Redirection with noclobber</a><br />
+<a href="ch43_07.htm">The ( ) Subshell Operators</a><br />
+<a href="ch43_08.htm">Send Output Two or More Places</a><br />
+<a href="ch43_09.htm">How to tee Several Commands into One Place</a><br />
+<a href="ch43_10.htm">Redirecting Output to More Than One Place</a><br />
+<a href="ch43_11.htm">Named Pipes: FIFOs</a><br />
+<a href="ch43_12.htm">What Can You Do with an Empty File?</a><br /></p></div><div class="sect1"><a name="upt3-CHP-43-SECT-1" />
+<h2 class="sect1"><a name="sect1" />43.1. Using Standard Input and Output</h2>
+
+<p><a name="upt3-IDXTERM-6951" />There is <a name="upt3-IDXTERM-6952" />basically
+<a name="IXT-43-2225" />no difference between reading data
+from a file and reading data from a
+<a name="IXT-43-2226" /><a name="IXT-43-2227" /><a name="IXT-43-2228" />terminal.<a href="#FOOTNOTE-127">[127]</a> Likewise, if a
+program's output consists entirely of alphanumeric
+characters and punctuation, there is no difference between writing to
+a file, writing to a terminal, and writing to the input of another
+program (as in a pipe).
+</p><blockquote class="footnote"> <a name="FOOTNOTE-127" /><p> [127]If a
+program's input consists entirely of alphanumeric
+characters and punctuation (i.e., ASCII data or international
+(non-English) characters).</p> </blockquote>
+
+<p><a name="upt3-IDXTERM-6957" />
+<a name="upt3-IDXTERM-6958" />The
+<em class="emphasis">standard I/O</em> facility provides some simple
+defaults for managing input/output. There are three default I/O
+streams: standard input, standard output, and
+<a name="IXT-43-2229" />standard
+error. By convention, standard output (abbreviated
+<em class="emphasis">stdout</em>) consists of all
+"normal" output from your program,
+while standard error (<em class="emphasis">stderr</em>) consists of
+<a name="IXT-43-2230" />error messages.
+It is often a convenience to be able to handle error messages and
+standard output separately. If you don't do anything
+special, programs will read standard input from your keyboard, and
+they will send standard output and standard error to your
+terminal's display.
+</p>
+
+<p>Standard input (<em class="emphasis">stdin</em>)
+<a name="IXT-43-2231" />normally comes from your keyboard. Many
+programs ignore <em class="emphasis">stdin</em>; you name files directly
+on their command line -- for instance, the command <em class="emphasis">cat
+file1 file2</em> never reads its standard input; it reads the
+files directly. But without filenames on the command line,
+<a name="IXT-43-2232" />Unix commands that need input will
+usually read <em class="emphasis">stdin</em>. Standard input normally
+comes from your keyboard, but the shell can redirect
+<em class="emphasis">stdin</em> from a file. This is handy for Unix
+commands that can't open files directly -- for
+instance, <b class="emphasis-bold">mail</b>
+(<a name="IXT-43-2233" /><a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>). To
+mail a file to <em class="emphasis">joan</em>, use <tt class="literal">&lt;</tt>
+<em class="replaceable"><tt>filename</tt></em> -- to tell the shell
+to attach the file, instead of your keyboard, to
+<i class="command">mail</i>'s standard input:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>mail joan &lt; myfile</b></tt></pre></blockquote>
+
+<p>The real virtue of standard I/O is that it allows you to
+<em class="emphasis">redirect</em> input or output away from your terminal
+to a file. As we said, Unix is <b class="emphasis-bold">file-based</b> (<a href="ch01_19.htm#upt3-CHP-1-SECT-19">Section 1.19</a>).
+Because terminals and other I/O devices are treated as files, a
+program doesn't even need to know<a href="#FOOTNOTE-128">[128]</a> if it is sending its
+output to a terminal or to a file. For example, if you want to run
+the command <em class="emphasis">cat file1 file2</em>, but you want to
+place the output in <em class="emphasis">file3</em> rather than sending it
+to your terminal, give the command:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-128" /><p> [128]But it can find out.</p> </blockquote>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat file1 file2 &gt; file3</b></tt></pre></blockquote>
+
+<p>This is called <em class="emphasis">redirecting</em> standard output to
+<em class="emphasis">file3</em>. If you give this command and look at
+<em class="emphasis">file3</em> afterward, you will find the contents of
+<em class="emphasis">file1</em>, followed by the contents of
+<em class="emphasis">file2</em> -- exactly what you would have seen on
+your screen if you omitted the <tt class="literal">&gt; file3</tt>
+modifier. (The Z shell takes this further with multiple-file
+redirection.)
+</p>
+
+<p><a name="IXT-43-2234" />One of the best-known forms of
+redirection in Unix is the <em class="emphasis">pipe</em>. The
+shell's vertical bar (<tt class="literal">|</tt>) operator
+makes a pipe. For example, to send both <em class="emphasis">file1</em>
+and <em class="emphasis">file2</em> together in a mail message for
+<em class="emphasis">joan</em>, type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat file1 file2 | mail joan</b></tt></pre></blockquote>
+
+<p>The pipe says, "Connect the standard output of the
+process at the left (<tt class="literal">cat</tt>) to the standard input of
+the process at the right (<tt class="literal">mail</tt>)."
+</p>
+
+<p><a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a>
+has diagrams and more information about standard I/O and redirection.
+<a href="ch43_01.htm#upt3-CHP-43-TABLE-1">Table 43-1</a> shows the most common ways of
+redirecting standard I/O, for both the C shell and the Bourne shell,
+which also apply to derivatives like <i class="command">tcsh</i> and
+<i class="command">bash</i>.
+</p>
+
+<a name="upt3-CHP-43-TABLE-1" /><h4 class="objtitle">Table 43-1. Common standard I/O redirections </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Function</p>
+</th>
+<th>
+<p>csh</p>
+</th>
+<th>
+<p>sh</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Send <em class="emphasis">stdout</em> to <em class="emphasis">file</em></p>
+</td>
+<td>
+<p><tt class="literal">prog &gt;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+<td>
+<p><tt class="literal">prog &gt;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Send <em class="emphasis">stderr</em> to <em class="emphasis">file</em></p>
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+<p><tt class="literal">prog 2 &gt;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Send <em class="emphasis">stdout</em> and <em class="emphasis">stderr</em> to
+<em class="emphasis">file</em>
+</p>
+</td>
+<td>
+<p><tt class="literal">prog &gt;&amp;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+<td>
+<p><tt class="literal">prog &gt;</tt> <em class="replaceable"><tt>file</tt></em>
+<tt class="literal">2&gt;&amp;1</tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Take <em class="emphasis">stdin</em> from <em class="emphasis">file</em></p>
+</td>
+<td>
+<p><tt class="literal">prog &lt;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+<td>
+<p><tt class="literal">prog &lt;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Send <em class="emphasis">stdout</em> to end of <em class="emphasis">file</em></p>
+</td>
+<td>
+<p><tt class="literal">prog &gt;&gt;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+<td>
+<p><tt class="literal">prog &gt;&gt;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Send <em class="emphasis">stderr</em> to end of <em class="emphasis">file</em></p>
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+<p><tt class="literal">prog 2 &gt;&gt;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Send <em class="emphasis">stdout</em> and <em class="emphasis">stderr</em> to
+end of <em class="emphasis">file</em>
+</p>
+</td>
+<td>
+<p><tt class="literal">prog &gt;&gt;&amp;</tt> <em class="replaceable"><tt>file</tt></em></p>
+</td>
+<td>
+<p><tt class="literal">prog &gt;&gt;</tt>
+<em class="replaceable"><tt>file</tt></em>
+<tt class="literal">2&gt;&amp;1</tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Read <em class="emphasis">stdin</em> from keyboard until
+<em class="emphasis">c</em> (see <a href="ch27_16.htm#upt3-CHP-27-SECT-16">Section 27.16</a>)
+</p>
+</td>
+<td>
+<p><tt class="literal">prog &lt;&lt;</tt> <em class="replaceable"><tt>c</tt></em></p>
+</td>
+<td>
+<p><tt class="literal">prog &lt;&lt;</tt> <em class="replaceable"><tt>c</tt></em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Pipe <em class="emphasis">stdout</em> to <em class="emphasis">prog2</em></p>
+</td>
+<td>
+<p><tt class="literal">prog | prog2</tt></p>
+</td>
+<td>
+<p><tt class="literal">prog | prog2</tt></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Pipe <em class="emphasis">stdout</em> and <em class="emphasis">stderr</em> to
+<em class="emphasis">prog2</em>
+</p>
+</td>
+<td>
+<p><tt class="literal">prog |&amp; prog2</tt></p>
+</td>
+<td>
+<p><tt class="literal">prog 2&gt;&amp;1 | prog2</tt></p>
+</td>
+</tr>
+
+</table><p>
+
+<p>Be aware that:</p>
+
+<ul><li>
+<p>While standard I/O is a basic feature of Unix, the syntax used to
+redirect standard I/O depends on the shell you are using.
+<a name="IXT-43-2235" /> <a name="IXT-43-2236" /> <a name="IXT-43-2237" />Bourne shell syntax and C shell syntax
+differ, particularly when you get into the less commonly used
+features. The Korn shell and <i class="command">bash</i> are the same as
+the Bourne shell, but with a few twists of their own. The
+<a name="IXT-43-2238" />Z shell generally understands
+both syntaxes (and, in its usual manner, adds even more).
+</p>
+</li><li>
+<p>You can redirect standard input and standard output in the same
+command line. For example, to read from the file
+<em class="emphasis">input</em> and write to the file
+<em class="emphasis">output</em>, give the command:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>prog &lt; input &gt; output</b></tt></pre></blockquote>
+<p>The Bourne shell will let you go further and write
+<a name="IXT-43-2239" /><em class="emphasis">stderr</em> to a third
+file:
+</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>prog &lt; input &gt; output 2&gt; errors</b></tt></pre></blockquote>
+</li>
+<li>
+<p>The C shell doesn't give you an easy way to redirect
+standard output without redirecting standard error. A simple trick
+will help you do this. To put standard output and standard error in
+different files, give a command like:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>( prog &gt; output ) &gt;&amp; errors</b></tt></pre></blockquote>
+<p>We'll discuss commands like this in <a href="ch43_03.htm#upt3-CHP-43-SECT-3">Section 43.3</a> and <a href="ch43_05.htm#upt3-CHP-43-SECT-5">Section 43.5</a>.
+</p>
+</li><li>
+<p>Many implementations of both shells don't care what
+order the redirections appear in, or even where they appear on the
+command line. For example,
+<a name="IXT-43-2240" />SunOS lets you type
+<tt class="literal">&lt;</tt> <tt class="literal">input</tt>
+<tt class="literal">&gt;</tt> <tt class="literal">output</tt>
+<tt class="literal">prog</tt>. However, clarity is a virtue that computer
+users have never appreciated enough. It will be easiest to understand
+what you are doing if you type the command name first -- then
+redirect standard input, followed by standard output, followed by
+standard error.
+</p>
+</li></ul>
+<p><a name="IXT-43-2241" />There are some more complex forms of
+standard<b class="emphasis-bold"> I/O redirection, particularly for the
+Bourne shell</b> (<a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a>).
+</p>
+
+<p><a name="IXT-43-2242" />Of course, programs
+aren't restricted to standard I/O. They can open
+other files, define their own special-purpose pipes, and write
+directly to the terminal. But standard I/O is the glue that allows
+you to make big programs out of smaller ones, and it is therefore a
+crucial part of the operating system. Most Unix utilities read their
+data from standard input and write their output to standard output,
+allowing you to combine them easily. A program that creates its own
+special-purpose pipe may be very useful, but it cannot be used in
+combination with standard utilities.
+</p>
+
+<p><a name="IXT-43-2243" />Many Unix
+systems, and utilities such as <b class="emphasis-bold">gawk</b>
+(<a name="IXT-43-2244" /><a href="ch20_11.htm#upt3-CHP-20-SECT-11">Section 20.11</a>), support
+special filenames like <em class="emphasis">/dev/stdin</em>,
+<em class="emphasis">/dev/stdout</em>, and
+<em class="emphasis">/dev/stderr</em>.<a href="#FOOTNOTE-129">[129]</a> You can use these just as you'd use
+other files. For instance, to have any ordinary command read from the
+file <em class="emphasis">afile</em>, then standard input (from the
+keyboard, for example), then the file <em class="emphasis">bfile</em>:
+</p><blockquote class="footnote"> <a name="FOOTNOTE-129" /><p> [129]On Linux, at least,
+those are <b class="emphasis-bold">symbolic links</b> (<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>) to <em class="emphasis">/proc/self/fd/0</em>,
+<em class="emphasis">/proc/self/fd/1</em>, and
+<em class="emphasis">/proc/self/fd/2</em>, respectively.</p>
+</blockquote>
+
+<blockquote><pre class="code">% <em class="replaceable"><tt>somecmd</tt></em><tt class="userinput"><b> afile /dev/stdin bfile</b></tt></pre></blockquote>
+
+<p>In the same way, a process can write to its standard output through
+<em class="emphasis">/dev/stdout</em> and the <a name="IXT-43-2245" />standard error via
+<em class="emphasis">/dev/stderr</em>.
+</p>
+
+<p>Because reading from standard input and standard output is so common,
+there is a more general convention for redirecting to these two
+devices: using <tt class="literal">-</tt> where a program expects a
+filename. If the program was expecting the name of an input file, it
+will read from standard input instead. If it was expecting an output
+file, it will write to standard output. A very common place this is
+seen is in the unpacking of <a name="IXT-43-2246" /><a name="IXT-43-2247" /> <a name="IXT-43-2248" />tar gzipped archives:
+</p>
+
+<blockquote><pre class="code">$ gzip -dc <em class="replaceable"><tt>filename</tt></em>.tar.gz | tar -xvf -</pre></blockquote>
+
+<p>Here, the <tt class="literal">-c</tt> flag tells <i class="command">gzip</i> to
+stream the uncompressed file to standard output, which is then piped
+to <i class="command">tar</i>. The <tt class="literal">-f</tt> flag of tar is
+used to specify the source tar file, which, because of the
+<tt class="literal">-</tt>, is standard input.<a name="IXTR3-2329" /> <a name="IXTR3-2330" /> 
+</p>
+
+<p><em class="emphasis">--ML and JP<a name="IXTR3-2331" /></em> 
+</p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="part8.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch43_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">VIII. Communication and Connectivity</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">43.2. One Argument with a cat Isn't Enough</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

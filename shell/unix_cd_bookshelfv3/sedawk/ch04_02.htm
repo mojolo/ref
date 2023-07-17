@@ -1,0 +1,195 @@
+<html><head><title>A Global Perspective on Addressing (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.2. A Global Perspective on Addressing</h2>
+
+<p>
+<a name="ch04.global1" />
+<a name="ch04.global2" />
+One of the first things you'll notice about sed commands is that sed
+will apply them to every input line.  Sed is implicitly global, unlike
+<b class="emphasis-bold">ed</b>, <b class="emphasis-bold">ex</b>, or
+<b class="emphasis-bold">vi</b>.  The following substitute command will change
+every "CA" into "California."</p>
+
+<blockquote><pre class="code">s/CA/California/g</pre></blockquote>
+
+<p>If the same command were entered from the <b class="emphasis-bold">ex</b>
+command prompt in <b class="emphasis-bold">vi</b>, it would make the replacement
+for all occurrences on the current line only.  In sed, it is as though
+each line has a turn at becoming the current line and so the command
+is applied to every line.  Line addresses are used to supply context
+<a name="IXT-4-265597" />
+<a name="IXT-4-265598" />
+for, or <em class="emphasis">restrict</em>, an operation.  (In short: Nothing gets 
+done in <b class="emphasis-bold">vi</b> unless you tell it which
+lines to work on, while sed will work on every line unless you tell it
+not to.)  For instance, by supplying the address "Sebastopol" to the
+previous substitute command, we can limit the replacement of "CA" by
+"California" to just lines containing "Sebastopol."</p>
+
+<blockquote><pre class="code">/Sebastopol/s/CA/California/g</pre></blockquote>
+
+<p>An input line consisting of "Sebastopol, CA" would match the address
+and the substitute command would be applied, changing it to
+"Sebastopol, California." A line consisting of "San Francisco, CA"
+would not be matched and the substitution would not be applied.</p>
+
+<p>A sed command can specify zero, one, or two addresses.  An address can
+be a regular expression describing a pattern, a line number, or a
+line addressing symbol.</p>
+
+<ul><li><p>If no address is specified, then the command is applied to each line.</p></li><li><p>If there is only one address, the command is applied 
+to any line matching the address.</p></li><li><p>If two comma-separated addresses are specified, the command is 
+performed on the first line matching the first address
+and all succeeding lines up 
+to and including a line matching the second address.</p></li><li><p>
+<a name="IXT-4-265599" />
+<a name="IXT-4-265600" />
+If an address is followed by an exclamation mark (<b class="emphasis-bold">!</b>), the command
+is applied to all lines that do <em class="emphasis">not</em> match the address.</p></li></ul><p>
+<a name="IXT-4-265601" />
+To illustrate how addressing works, let's look at examples using the
+delete command, <b class="emphasis-bold">d</b>.  A script consisting of simply
+the <b class="emphasis-bold">d</b> command and no address produces no output
+since it deletes <em class="emphasis">all</em> lines:</p>
+
+<blockquote><pre class="code">d</pre></blockquote>
+
+<p>When a line number is supplied as an address, the command affects only
+that line.  For instance, the following example deletes only the first
+line:</p>
+
+<blockquote><pre class="code">1d</pre></blockquote>
+
+<p>The line number refers to an internal line count maintained by sed.
+This counter is not reset for multiple input files.  Thus, no matter
+how many files were specified as input, there is only one line 1 in
+the input stream.</p>
+
+<p>
+<a name="IXT-4-265602" />
+<a name="IXT-4-265603" />
+Similarly, the input stream has only one last line.  It
+can be specified using the addressing symbol <b class="emphasis-bold">$</b>.  The following
+example deletes the last line of input:</p>
+
+<blockquote><pre class="code">$d</pre></blockquote>
+
+<p>The $ symbol should not be confused with the $ used
+in regular expressions, which means the end of the line.</p>
+
+<p>When a regular expression is supplied as an address, the command 
+affects only the lines matching that pattern.
+The regular expression must be enclosed by slashes (/). 
+The following delete command</p>
+
+<blockquote><pre class="code">/^$/d</pre></blockquote>
+
+<p>deletes only blank lines.  All other lines are passed through
+untouched.</p>
+
+<p>If you supply two addresses, then you specify a range of lines over
+which the command is executed.  The following example shows hows to
+delete all lines blocked by a pair of macros, in this case, .TS
+and .TE, that mark <b class="emphasis-bold">tbl</b> input.</p>
+
+<blockquote><pre class="code">/^\.TS/,/^\.TE/d</pre></blockquote>
+
+<p>It deletes all lines beginning with the line matched by the first
+pattern and up to and including the line matched by the second
+pattern.  Lines outside this range are not affected.  The following
+command deletes from line 50 to the last line in the file:</p>
+
+<blockquote><pre class="code">50,$d</pre></blockquote>
+
+<p>You can mix a line address and a pattern address:</p>
+
+<blockquote><pre class="code">1,/^$/d</pre></blockquote>
+
+<p>This example deletes from the first line up to the first blank line,
+which, for instance, will delete a mailer header from an Internet mail
+message that you have saved in a file.</p>
+
+<p>You can think of the first address as enabling the action and the
+second address as disabling it.  Sed has no way of looking ahead to
+determine if the second match will be made.  The action will be
+applied to lines once the first match is made.  The command will be
+applied to <em class="emphasis">all</em> subsequent lines until the second
+match is made.  In the previous example, if the file did not contain a
+blank line, then all lines would be deleted.</p>
+
+<p>An exclamation mark (!) following an address reverses the sense of the
+match.  For instance, the following script deletes all lines
+<em class="emphasis">except</em> those inside <b class="emphasis-bold">tbl</b> input:</p>
+
+<blockquote><pre class="code">/^\.TS/,/^\.TE/!d</pre></blockquote>
+
+<p>This script, in effect, extracts <b class="emphasis-bold">tbl</b> input from a source file.</p>
+
+<a name="sedawk-ch-4-sect-2.1" /><div class="sect2">
+<h3 class="sect2">4.2.1. Grouping Commands</h3>
+
+<p>
+<a name="IXT-4-265604" />
+<a name="IXT-4-265605" />
+<a name="IXT-4-265606" />
+<a name="IXT-4-265607" />
+Braces ({}) are used in sed to nest one
+address inside another or to apply multiple commands at the same
+address.  You can nest addresses if you want to specify a range of
+lines and then, within that range, specify another address.  For
+example, to delete blank lines only inside blocks of
+<b class="emphasis-bold">tbl</b> input, use the following command:</p>
+
+<blockquote><pre class="code">/^\.TS/,/^\.TE/{
+      /^$/d
+}</pre></blockquote>
+
+<p>The opening curly brace must end a line and the closing curly brace
+must be on a line by itself.  Be sure there are no spaces after
+the braces.</p>
+
+<p>You can apply multiple commands to the same range of lines
+by enclosing the editing commands within braces, as shown below.</p>
+
+<blockquote><pre class="code">/^\.TS/,/^\.TE/{
+	/^$/d
+  	s/^\.ps 10/.ps 8/
+  	s/^\.vs 12/.vs 10/
+}</pre></blockquote>
+
+<p>This example not only deletes blank lines in <b class="emphasis-bold">tbl</b>
+input but it also uses the substitute command, <b class="emphasis-bold">s</b>,
+to change several <b class="emphasis-bold">troff</b> requests.  These commands
+are applied only to lines within the .TS/.TE block.</p>
+</div>
+
+
+
+
+<a name="IXT-4-265608" />
+<a name="IXT-4-265609" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4. Writing sed Scripts</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.3. Testing and Saving Output</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

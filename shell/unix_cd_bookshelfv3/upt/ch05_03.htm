@@ -1,0 +1,214 @@
+<html><head><title>Setting the Terminal Type When You Log In (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.3. Setting the Terminal Type When You Log In</h2>
+
+<p>If you always work at the same terminal or use the same terminal
+emulator, there's no problem with setting the
+terminal type explicitly in your
+<a name="IXT-5-7290" /> <a name="IXT-5-7291" /><b class="emphasis-bold">shell setup
+file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) -- like
+<em class="filename">.login</em> or <em class="filename">.profile</em>. Just
+set the <em class="emphasis">TERM</em> <b class="emphasis-bold">environment
+variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>):
+</p>
+
+<blockquote><pre class="code">setenv TERM vt100           <i class="lineannotation">...csh, tcsh</i>
+TERM=vt100; export TERM     <i class="lineannotation">...sh, ksh, zsh</i>
+export TERM=vt100           <i class="lineannotation">...pdksh, bash, zsh</i></pre></blockquote>
+
+<p>In fact, on a hardwired terminal, your terminal type may already have
+been set in a system file like <b class="emphasis-bold">/etc/ttys</b> <b class="emphasis-bold">or</b>
+<b class="emphasis-bold">/etc/ttytype</b> (<a href="ch03_15.htm#upt3-CHP-3-SECT-15">Section 3.15</a>). But if, like many Unix users, you might log
+in from time to time at different terminals, from home, or on
+different systems over a network, you may need some more intelligent
+method for setting the terminal type. To find out, try logging in at
+each place and starting a screen-oriented program like
+<i class="command">vi</i>. Do various operations: scrolling up, inserting
+text that wraps onto another line, deleting lines. If the screen
+scrambles or the cursor gets "out of
+sync," your terminal type may need to be set.
+</p>
+
+<p><a name="IXT-5-7292" />It's possible to
+set up various <b class="emphasis-bold">tests</b> (<a href="ch03_10.htm#upt3-CHP-3-SECT-10">Section 3.10</a>) in your shell setup files to do this.
+<a name="IXT-5-7293" />But you can
+also do a surprising amount of terminal type testing with
+<i class="command">tset</i>, even though it was nominally designed for
+initializing the terminal:
+</p>
+
+<ul><li>
+<p>If no <b class="emphasis-bold">arguments</b> (<a href="ch01_04.htm#upt3-CHP-1-SECT-4">Section 1.4</a>) are specified and <em class="emphasis">TERM</em>
+is already set, <i class="command">tset</i> uses the value of
+<em class="emphasis">TERM</em> to determine the terminal type.
+</p>
+</li><li>
+<p>If no arguments are specified and <em class="emphasis">TERM</em> is
+<em class="emphasis">not</em> set, then <i class="command">tset</i> uses the
+value specified in the system file <em class="filename">/etc/ttytype</em>
+or <em class="filename">/etc/ttys</em> (BSD 4.3 and later and its
+derivatives only). On Linux systems, the terminal type is determined
+by <i class="command">getty</i>, based on a similar process but using the
+<em class="filename">/etc/inittab</em> file or other configuration files
+used by <i class="command">getty</i> during initialization. On SVR4
+systems, a similar process is managed by <i class="command">ttymon</i>
+and <i class="command">listen</i>.<a href="#FOOTNOTE-16">[16]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-16" /><p> [16]<i class="command">getty</i> is spawned by the
+<i class="command">init</i> at multiuser system startup, and it sets up
+all ttys, handles the initial login prompt, and then hands successful
+logins over to <i class="command">login</i> to complete.</p>
+</blockquote>
+</li><li>
+<p>If a terminal type is specified as an argument, that argument is used
+as the terminal type, regardless of the value of
+<em class="emphasis">TERM</em>.
+</p>
+</li><li>
+<p>The <span class="option">-m</span><a name="IXT-5-7294" /> <a name="IXT-5-7295" /> (map) option allows a fine degree of
+control in cases where the terminal type may be ambiguous. For
+example, if you sometimes log in on a dialup line, sometimes over a
+local area network, and sometimes on a hardwired line, the
+<span class="option">-m</span> option can be specified to determine which login
+is currently being used, and the terminal type can be set
+accordingly.
+</p>
+</li></ul>
+<p><a name="IXT-5-7296" /><a name="IXT-5-7297" />In Bourne-type shells,
+<i class="command">tset</i> can be used to set the value of
+<em class="emphasis">TERM</em> as follows:
+</p>
+
+<blockquote><pre class="code">export TERM=`tset - -Q <em class="replaceable"><tt>options</tt></em>`           <i class="lineannotation">...newer shells</i>
+TERM=`tset - -Q <em class="replaceable"><tt>options</tt></em>`; export TERM     <i class="lineannotation">...all shells</i></pre></blockquote>
+
+<p>(Given the <span class="option">-</span> option, <i class="command">tset</i> prints
+the value determined for the terminal type to <b class="emphasis-bold">standard output</b> (<a name="IXT-5-7298" /><a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>).
+Otherwise, it <b class="emphasis-bold">initializes the
+terminal</b> (<a href="ch05_03.htm#upt3-CHP-5-SECT-3">Section 5.3</a>), but keeps the
+terminal type to itself. <span class="option" /><a name="IXT-5-7299" />The <span class="option">-Q</span> (quiet) option
+causes <i class="command">tset</i> to suppress printing a message it
+normally prints regarding the values set for the erase and kill
+characters -- a job it does in its alternate role as terminal
+initializer. The <b class="emphasis-bold">backquotes</b>
+(<a name="IXT-5-7300" /><a name="IXT-5-7301" /><a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) surrounding
+the <i class="command">tset</i> command interpolate its output into the
+command line.)
+</p>
+
+<p><a name="IXT-5-7302" /><a name="IXT-5-7303" />In the C shell, you should use the
+<b class="emphasis-bold">eval</b> (<a href="ch27_08.htm#upt3-CHP-27-SECT-8">Section 27.8</a>)
+command to capture the output of <i class="command">tset</i>; this will
+also allow you to <b class="emphasis-bold">set the</b> <b class="emphasis-bold">TERMCAP</b><a name="IXT-5-7304" /> <b class="emphasis-bold">variable</b> (<a href="ch35_05.htm#upt3-CHP-35-SECT-5">Section 35.5</a>). (You
+must also issue the command <tt class="literal">set
+noglob</tt><a name="IXT-5-7305" />.) To simplify the rest of this article,
+we'll show examples for the C shell; if you
+don't use a C-type shell, please translate to
+Bourne-shell syntax (as shown earlier).
+</p>
+
+<p>To see what <i class="command">tset</i> can do, consider a case where the
+terminal's serial line is connected to a dialup
+modem, through which several different users might be connected, each
+using a different type of terminal. Accordingly, the default terminal
+type in <em class="filename">/etc/ttytype</em> or
+<em class="filename">/etc/ttys</em> should be set to
+<em class="emphasis">dialup</em><a name="IXT-5-7306" />. The <i class="command">tset</i> command could
+then be used in the <em class="filename">.login</em> file as follows, with
+the appropriate terminal type set for each user:
+</p>
+
+<blockquote><pre class="code">set noglob
+eval `tset -s -Q -m 'dialup:vt100'`</pre></blockquote>
+
+<p><a name="IXT-5-7307" />This means that if
+<em class="emphasis">ttytype</em> says <em class="emphasis">dialup</em>, use
+<em class="emphasis">vt100</em> as the terminal type. A colon separates
+the <em class="emphasis">ttytype</em> value and the value to which it is
+to be mapped. If a user wants to be prompted to be sure, place a
+question mark after the colon and before the mapped terminal type:
+</p>
+
+<blockquote><pre class="code">set noglob
+eval `tset -s -Q -m 'dialup:?vt100'`</pre></blockquote>
+
+<p>The prompt will look like this:</p>
+
+<blockquote><pre class="code">TERM = (vt100)</pre></blockquote>
+
+<p>If the user presses RETURN, the preferred terminal type will be used.
+Alternately, another terminal type could be entered at that time.
+</p>
+
+<p>You can cause <i class="command">tset</i> to prompt for a terminal type
+even without testing a generic entry like
+<em class="emphasis">dialup</em>. Just specify the desired terminal type,
+preceded by a question mark, after the <span class="option">-m</span> option.
+For example:
+</p>
+
+<blockquote><pre class="code">set noglob
+eval `tset -s -Q -m '?vt100'`</pre></blockquote>
+
+<p>It is also possible to specify different terminal types for different
+line speeds. For example, say that you normally used a Wyse-50 with a
+9600-bps modem when dialing in from home, but used a portable PC with
+a VT100 terminal emulator and 2400-bps modem on the road.<a href="#FOOTNOTE-17">[17]</a> You might then use a <i class="command">tset</i>
+command like this:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-17" /><p> [17]Sure, you don't have to worry about whether
+there is a local TYMNET dialup nowadays, but back in the day . . .
+</p> </blockquote>
+
+<blockquote><pre class="code">set noglob
+eval `tset -s -Q -m 'dialup@2400:vt100' wy50`</pre></blockquote>
+
+<p>Assuming that the type is set in <em class="filename">/etc/ttys</em> or
+<em class="filename">/etc/ttytype</em> as <em class="emphasis">dialup</em>,
+<i class="command">tset</i> will use the type <em class="emphasis">vt100</em>
+if at 2400 bps and, if not, will use the type
+<em class="emphasis">wy50</em>. See the <i class="command">tset</i>(1) manual
+page for more choices. Watch out for the line-speed switches. They
+don't work on a lot of networked
+systems -- usually, the line speed at the
+computer's port is higher than the speed at the
+terminal. The same problem occurs with dialup modems that use data
+compression. The <i class="command">stty</i><a name="IXT-5-7308" /> command will tell you what data
+rate the system believes you're using.
+</p>
+
+<p>Multiple<a name="IXT-5-7309" /> <span class="option">-m</span> options can
+be specified; the first map to be satisfied will be used. If no match
+is found, a final value specified on the line without a
+<span class="option">-m</span> option (as in the previous example) will be used.
+If no value is specified, the type in
+<em class="filename">/etc/ttytype</em> or <em class="filename">/etc/ttys</em>
+will be used.
+</p>
+
+<p><em class="emphasis">--TOR and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.2. The Idea of a Terminal Database</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.4. Querying Your Terminal Type: qterm</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

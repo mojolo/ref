@@ -1,0 +1,118 @@
+<html><head><title>Basic Kernel Configuration (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch44_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch44_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">44.3. Basic Kernel Configuration</h2>
+
+<p><a name="IXT-44-2131" /><a name="IXT-44-2132" /><a name="IXT-44-2133" /><a name="IXT-44-2134" />Generally a Unix kernel is made up
+of some core, which handles fundamental functionality like virtual
+memory, and a lot of modules for various devices. A kernel
+configuration file is used to build a kernel and, on some platforms,
+a set of loadable kernel modules.
+</p>
+
+<p>A kernel <a name="IXT-44-2135" />configuration file has a list of kernel
+options and then a list of devices and device options. The kernel
+build process uses this file to determine exactly what to build; this
+way you can have a kernel that supports exactly the hardware you have
+in your machine but isn't using any extra resources
+to support hardware you don't have.
+</p>
+
+<p>Some example device lines from various kernel configuration files:</p>
+
+<blockquote><pre class="code">#
+# FreeBSD samples
+#
+maxusers        128
+options         INCLUDE_CONFIG_FILE
+options         INET                    #InterNETworking
+device          isa
+device          pci
+device          ata0    at isa? port IO_WD1 irq 14
+device          ata
+device          atadisk                 # ATA disk drives
+device          atapicd                 # ATAPI CDROM drives
+device          atapifd                 # ATAPI floppy drives
+device          atapist                 # ATAPI tape drives
+options         ATA_STATIC_ID           #Static device numbering
+
+#
+# Linux samples
+#
+# Loadable module support
+CONFIG_MODULES=y
+CONFIG_MODVERSIONS=y
+# CONFIG_KMOD is not set
+
+# General setup
+CONFIG_NET=y
+CONFIG_PCI=y
+
+# Block devices
+CONFIG_BLK_DEV_FD=m
+CONFIG_BLK_DEV_IDE=y
+# CONFIG_BLK_DEV_HD_IDE is not set
+CONFIG_BLK_DEV_IDEDISK=y
+CONFIG_BLK_DEV_IDECD=m
+CONFIG_BLK_DEV_IDETAPE=m
+CONFIG_BLK_DEV_IDEFLOPPY=m
+# CONFIG_BLK_DEV_IDESCSI is not set
+CONFIG_BLK_DEV_IDEPCI=y
+CONFIG_BLK_DEV_IDEDMA=y
+CONFIG_IDEDMA_AUTO=y</pre></blockquote>
+
+<p>The kernel build process involves setting up an appropriate
+configuration file for your platform and then using a tool (generally
+<i class="command">config</i>(8); check the manpage) to create a kernel
+build setup from the configuration file. Then you simply run
+<i class="command">make</i> within the kernel build setup and you have a
+new kernel. Once the new kernel is installed, you reboot the machine,
+and poof, you're running on a sleek new customized
+kernel.
+</p>
+
+<p>To understand how to configure the kernel on your platform, consult
+the documentation for that platform. Note that many platforms have
+tools or even GUIs for helping you configure your kernel. For the
+free Unixes, search the Web. There are extensive HOWTOs available
+describing how to configure your kernel in excruciating detail.
+</p>
+
+<p><a name="IXT-44-2136" />Linux has a very detailed HOWTO
+for kernel configuration at
+<a href="http://www.tldp.org/HOWTO/Kernel-HOWTO.html">http://www.tldp.org/HOWTO/Kernel-HOWTO.html</a>. The
+short version is that the configuration file mentioned above is
+stored in the <em class="filename">.config</em> file at the top of the
+kernel source tree (usually <em class="filename">/usr/src/linux</em>).
+Generally you don't have to edit it directly;
+instead you'd use <tt class="literal">make</tt>
+<tt class="literal">menuconfig</tt> or <tt class="literal">make</tt>
+<tt class="literal">xconfig</tt>, again at the top of the kernel source
+tree, to use the fancy kernel configuration tools.
+</p>
+
+<p> <em class="emphasis">-- DJPH</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch44_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch44_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">44.2. Reading Kernel Boot Output</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">44.4. Disk Partitioning</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

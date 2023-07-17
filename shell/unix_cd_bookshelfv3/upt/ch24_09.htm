@@ -1,0 +1,387 @@
+<html><head><title>The /proc Filesystem (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.9. The /proc Filesystem</h2>
+
+<p><a name="upt3-IDXTERM-3502" /> <a name="upt3-IDXTERM-3503" />
+<a name="upt3-IDXTERM-3504" />In Unix, it seems <b class="emphasis-bold">almost everything can be treated like a file</b>
+(<a href="ch01_19.htm#upt3-CHP-1-SECT-19">Section 1.19</a>). On many modern Unix systems, even
+processes are files -- well, sort of. A special filesystem named
+<em class="filename">/proc</em> doesn't actually
+"contain" processes, but it lets
+you interact with them. Almost all of the
+"files" in
+<em class="filename">/proc</em> are plain text, so you can access them
+from scripts and programs, as well as from the command line. Of the
+systems I've checked, my <a name="upt3-IDXTERM-3505" />Red Hat Linux 6.2 box (kernel version 2.2)
+seems to have the most in <em class="filename">/proc</em>, so
+I'll cover it. Please check your
+documentation -- a <i class="command">proc</i>(5) manual page, for
+instance -- for the story on your system.
+</p>
+
+<p>All <em class="filename">/proc</em> filesystems have one subdirectory for
+each process currently running on the system. Each of those process
+subdirectories is named for its <b class="emphasis-bold">PID</b>
+(<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>). Some versions of
+<em class="filename">/proc</em> also have other named files and
+subdirectories -- and my system has a lot of them.
+Here's a partial listing of my
+<em class="filename">/proc</em> filesystem at the moment;
+I've left out a lot of the numbered subdirectories:
+</p>
+
+<p><tt class="literal">-F</tt> <a href="ch08_10.htm#upt3-CHP-8-SECT-10">Section 8.10</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls -F /proc</b></tt>
+1/        17415/    467/      cmdline      ksyms        pci
+1047/     2/        482/      cpuinfo      loadavg      rtc
+1052/     3/        5/        devices      locks        scsi/
+1057/     345/      553/      dma          mdstat       self@
+1287/     370/      593/      fb           meminfo      slabinfo
+1289/     379/      594/      filesystems  misc         stat
+14288/    393/      595/      fs/          modules      swaps
+14289/    4/        596/      ide/         mounts       sys/
+17409/    4017/     597/      interrupts   mtrr         tty/
+17412/    407/      6/        ioports      net/         uptime
+17413/    425/      apm       kcore        partitions   version
+17414/    439/      bus/      kmsg</pre></blockquote>
+
+<p>Linux system utilities like <i class="command">ps</i> and
+<i class="command">pidof</i> use information from
+<em class="filename">/proc</em>. Your programs can use it, too; there are
+some examples below. But it's also useful when you
+want to know something about your system. The
+"files" in
+<em class="filename">/proc</em> are most useful there.
+Let's look at a series of examples.
+We'll end with the numbered per-process
+"directories."
+</p>
+
+<a name="upt3-CHP-24-SECT-9.1" /><div class="sect2">
+<h3 class="sect2">24.9.1. Memory Information</h3>
+
+<p><a name="IXT-24-5273" /><a name="IXT-24-5274" />The <a name="IXT-24-5275" />Linux <i class="command">free</i>(1) utility
+shows your memory status. It simply reads the file
+<em class="filename">/proc/meminfo</em> and reformats the information. If
+you want an <b class="emphasis-bold">alias</b> (<a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>) that simply shows how much memory is free,
+it's probably simpler to read the
+<em class="filename">meminfo</em> file directly. For example:
+</p>
+
+<p><tt class="literal">grep</tt> <a href="ch13_01.htm#upt3-CHP-13-SECT-1">Section 13.1</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat /proc/meminfo</b></tt>
+        total:    used:    free:  shared: buffers:  cached:
+Mem:  263929856 253022208 10907648 79675392 30797824 57868288
+Swap: 394784768 14585856 380198912
+MemTotal:    257744 kB
+MemFree:      10652 kB
+MemShared:    77808 kB
+Buffers:      30076 kB
+Cached:       56512 kB
+BigTotal:         0 kB
+BigFree:          0 kB
+SwapTotal:   385532 kB
+SwapFree:    371288 kB
+$ <tt class="userinput"><b>alias memfree='grep Free: /proc/meminfo'</b></tt>
+$ <tt class="userinput"><b>memfree</b></tt>
+MemFree:      10616 kB
+BigFree:          0 kB
+SwapFree:    371288 kB</pre></blockquote>
+
+<p>(The free <span class="acronym">RAM</span> decreased a bit while I was writing
+the alias.)
+</p>
+
+</div>
+<a name="upt3-CHP-24-SECT-9.2" /><div class="sect2">
+<h3 class="sect2">24.9.2. Kernel and System Statistics</h3>
+
+<p>The <em class="filename">/proc/stat</em><a name="IXT-24-5276" /><a name="IXT-24-5277" /><a name="IXT-24-5278" /><a name="IXT-24-5279" /> file has statistics on the
+kernel and system. As with most of the rest of
+<em class="filename">/proc</em>, it's updated constantly.
+For example, we can <i class="command">grep</i> for the
+<span class="acronym">CPU</span> statistics. The four fields on the
+<tt class="literal">cpu</tt> line show the number of
+<em class="emphasis">jiffies</em><a name="IXT-24-5280" /> (hundredths of a second) since the
+system was last rebooted: time spent in normal-priority user mode,
+<b class="emphasis-bold">niced user mode</b> (<a href="ch26_05.htm#upt3-CHP-26-SECT-5">Section 26.5</a>), system (kernel) mode, and the idle task,
+respectively. You might want to use this information from a script
+that monitors your system's utilization.
+Here's an example: <i class="command">grep</i>ping for
+the <span class="acronym">CPU</span> ststistics, then the start of an <b class="emphasis-bold">awk</b> (<a href="ch20_10.htm#upt3-CHP-20-SECT-10">Section 20.10</a>) script that
+could watch the CPU usage:
+</p>
+<p><tt class="literal">!!</tt> <a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep cpu /proc/stat</b></tt>
+cpu  14693561 48135949 638573 4031301
+$ <tt class="userinput"><b>awk '/^cpu/ { print $5 / 100 " seconds idle" }' /proc/stat</b></tt>
+40318.7 seconds idle
+$ <tt class="userinput"><b>!!</b></tt>
+awk '/^cpu/ { print $5 / 100 " seconds idle" }' /proc/stat
+40323.8 seconds idle</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-24-SECT-9.3" /><div class="sect2">
+<h3 class="sect2">24.9.3. Statistics of the Current Process</h3>
+
+<p><a name="IXT-24-5281" /> <a name="IXT-24-5282" /><a name="IXT-24-5283" />The sections below describe
+per-process subdirectories in <em class="filename">/proc</em>. One special
+directory is <em class="filename">/proc/self</em>. It has the unusual
+property of giving a different answer for every process that examines
+it: information about the current process. (This
+"directory" is actually a <b class="emphasis-bold">symbolic link</b> (<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>)
+to the directory numbered for the process'
+<span class="acronym">PID</span>.)
+</p>
+
+<p>For instance, a process can check its
+<em class="filename">/proc/self/fd</em> directory to see which files its
+<b class="emphasis-bold">file descriptors</b>
+(<a name="IXT-24-5284" /><a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a>) are currently pointing to. This
+isn't just what <em class="emphasis">type</em> of file
+(disk file, <b class="emphasis-bold">tty</b> (<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>), pipe, etc.) but the actual full pathname of
+the file. If you're new to Unix, this may not seem
+too earth-shaking, but it's actually pretty amazing.
+</p>
+
+<p>For a simple example, here's a shell script that
+lists its input and outputs. It then redirects its standard input
+(file descriptor 0) from<b class="emphasis-bold"> /dev/null</b>
+(<a href="ch43_12.htm#upt3-CHP-43-SECT-12">Section 43.12</a>) and lists again.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>pwd</b></tt>
+/tmp
+$ <tt class="userinput"><b>tty</b></tt>
+/dev/pts/5
+$ <tt class="userinput"><b>cat showfds</b></tt>
+#!/bin/sh
+cd /proc/self/fd
+ls -l
+exec 0&lt;/dev/null
+ls -l
+$ <tt class="userinput"><b>./showfds &lt; somefile</b></tt>
+total 0
+lr-x------    1 jpeek    jpeek     64 Dec  2 09:03 0 -&gt; /tmp/somefile
+lrwx------    1 jpeek    jpeek     64 Dec  2 09:03 1 -&gt; /dev/pts/5
+lrwx------    1 jpeek    jpeek     64 Dec  2 09:03 2 -&gt; /dev/pts/5
+lr-x------    1 jpeek    jpeek     64 Dec  2 09:03 3 -&gt; /tmp/showfds
+total 0
+lr-x------    1 jpeek    jpeek     64 Dec  2 09:03 0 -&gt; /dev/null
+lrwx------    1 jpeek    jpeek     64 Dec  2 09:03 1 -&gt; /dev/pts/5
+lrwx------    1 jpeek    jpeek     64 Dec  2 09:03 2 -&gt; /dev/pts/5
+lr-x------    1 jpeek    jpeek     64 Dec  2 09:03 3 -&gt; /tmp/showfds</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-24-SECT-9.4" /><div class="sect2">
+<h3 class="sect2">24.9.4. Statistics of Processes by PID</h3>
+
+<p><a name="IXT-24-5285" /> <a name="IXT-24-5286" /><a name="IXT-24-5287" /> <a name="IXT-24-5288" />All versions of <em class="filename">/proc</em>
+that I've seen have subdirectories named for each
+process currently running on the system. Each subdirectory is named
+for the process <b class="emphasis-bold">PID</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>). Here are a series of examples of the useful
+info on my Linux system:
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: showenv</p>
+
+<ul><li>
+<p>You can use <b class="emphasis-bold">printenv or env</b>
+(<a name="IXT-24-5289" /><a name="IXT-24-5290" /><a name="IXT-24-5291" /><a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) to
+find the environment of your current process. How about the
+environment of another process? Here's a shell
+script called <i class="command">showenv</i><a name="IXT-24-5292" /> <a name="IXT-24-5293" /> that
+works like <i class="command">printenv</i>:
+</p>
+<blockquote><pre class="code">#!/bin/sh
+# showenv - show environment of a process, by PID
+# If second argument given, show just that one environment variable.
+
+f=/proc/$1/environ
+
+if [ ! -r "$f" ]; then
+    echo "`basename $0`: can't access process $1" 1&gt;&amp;2
+    exit 1
+fi
+
+case $# in
+1) tr '\000' '\012' &lt; $f | sort ;;
+2) tr '\000' '\012' &lt; $f | grep "^$2=" ;;
+*) echo "Usage: `basename $0` pid [envariable-name]" 1&gt;&amp;2; exit 1 ;;
+esac</pre></blockquote>
+
+<p>The <a name="IXT-24-5294" /><b class="emphasis-bold">tr</b>
+(<a href="ch21_11.htm#upt3-CHP-21-SECT-11">Section 21.11</a>) command translates the NUL-separated
+entries from the <em class="filename">environ</em> file into
+newline-separated lines. With one argument, the whole environment is
+shown. With two arguments, the script <i class="command">grep</i>s for
+the environment variable named in the second argument. Maybe
+you'd like to know what the <b class="emphasis-bold">EXINIT</b> (<a href="ch17_27.htm#upt3-CHP-17-SECT-27">Section 17.27</a>)
+environment variable was set to in a <i class="command">vi</i> process
+with <span class="acronym">PID</span> 8984:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>showenv 8984</b></tt>
+DISPLAY=:0.0
+ECIINI=/usr/lib/ViaVoiceTTS/eci.ini
+EDITOR=vi
+EXINIT=so ~/.lib/vi/exrc8
+HISTFILESIZE=1000
+  ...
+$ <tt class="userinput"><b>showenv 8984 EXINIT</b></tt>
+EXINIT=so ~/.lib/vi/exrc8</pre></blockquote>
+</li>
+<li>
+<p>The <em class="filename">status</em> file gives <a name="IXT-24-5295" />status
+information about the process. A lot of this information is available
+in <b class="emphasis-bold">ps</b> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>)
+output, but it's broken out nicely here. For
+instance, maybe you're wondering what group access
+process 918 has, or what process started it (its <b class="emphasis-bold">parent</b> <span class="acronym">PID</span> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>)): 
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd /proc/918</b></tt>
+% <tt class="userinput"><b>grep PPid status</b></tt>
+PPid:   916
+% <tt class="userinput"><b>grep Groups status</b></tt>
+Groups: 1000 501 103</pre></blockquote>
+
+<p>The <span class="acronym">PPID</span> is 916. The process has the group numbers
+(can access resources with the group permissions of)
+<span class="acronym">GID</span>s 1000, 501, and 103.
+</p>
+</li>
+
+<li>
+<p>The <a name="IXT-24-5296" />command-line
+arguments of a process are in the <em class="filename">cmdline</em> file,
+separated by NUL characters. Hmmm, what files is that
+<i class="command">tail</i><a name="IXT-24-5297" />
+-<span class="option">f</span> job, process 861, watching?
+Let's see...using <b class="emphasis-bold">echo</b> (<a href="ch27_05.htm#upt3-CHP-27-SECT-5">Section 27.5</a>) to add a
+final newline:
+</p>
+</li></ul>
+<p><tt class="literal">;</tt> <a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a></p>
+
+<blockquote><pre class="code">$ tr '\000' ' ' &lt; /proc/861/cmdline; echo
+tail -f /var/log/messages /var/log/maillog /u/jerry/tmp/startx.log</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-24-SECT-9.5" /><div class="sect2">
+<h3 class="sect2">24.9.5. A Glimpse at Hardware</h3>
+
+<p><a name="IXT-24-5298" /><a name="IXT-24-5299" /><a name="IXT-24-5300" />If you are curious about your
+system's hardware, a quick look at
+<em class="filename">/proc/cpuinfo</em>,
+<em class="filename">/proc/interrupts</em>, and
+<em class="filename">/proc/ioports</em> will help you size up the system.
+All the following examples came from a Red Hat Linux box, but you
+will find these <em class="emphasis">proc</em> files on most Linux and BSD
+systems. For instance,
+<em class="filename">/proc/cpuinfo</em><a name="IXT-24-5301" /> looks like this (on my system):
+</p>
+
+<blockquote><pre class="code">processor: 0
+vendor_id: GenuineIntel
+cpu family: 6
+model: 6
+model name: Celeron (Mendocino)
+stepping: 0
+cpu MHz: 400.918
+cache size: 128 KB
+fdiv_bug: no
+hlt_bug: no
+f00f_bug: no
+coma_bug: no
+fpu: yes
+fpu_exception: yes
+cpuid level: 2
+wp: yes
+flags: fpu vme de pse tsc msr pae mce cx8 sep mtrr pat pse36 mmx fxsr
+bogomips: 799.53</pre></blockquote>
+
+<p>The most important fields to notice are <tt class="literal">processor</tt>,
+<tt class="literal">model name</tt>, and <tt class="literal">cpu MHz</tt> since
+these identify how many CPUs are in the system, the model name
+(although this isn't always so clear in older
+Pentium models), and the CPU speed of your machine.
+</p>
+
+<p>The other three <em class="emphasis">proc</em> files are important if you
+are installing hardware or trying to configuring recently installed
+hardware. <em class="filename">/proc/interrupts</em> lists the hardware
+interrupt numbers and shows which devices are using which interrupt.
+On my machine, this looks like:
+</p>
+
+<blockquote><pre class="code">           CPU0
+  0:   92887036          XT-PIC  timer
+  1:     910141          XT-PIC  keyboard
+  2:          0          XT-PIC  cascade
+  3:          4          XT-PIC  serial
+  5:    4794267          XT-PIC  eth0
+  8:   11642728          XT-PIC  rtc
+ 10:   65248789          XT-PIC  es1371
+ 11:          0          XT-PIC  usb-uhci
+ 12:    5109157          XT-PIC  PS/2 Mouse
+ 14:     560048          XT-PIC  ide0
+ 15:     408739          XT-PIC  ide1
+NMI:          0
+ERR:          0</pre></blockquote>
+
+<p><em class="filename">/proc/ioports</em> lists the hardware I/O port ranges
+that all your systems devices use. This is a good file to examine if
+recently installed hardware can't be found in your
+drivers. Here's an abbreviated sample of my
+system's <em class="filename">/proc/ioports</em>.
+</p>
+
+<blockquote><pre class="code">03f6-03f6 : ide0
+03f8-03ff : serial(auto)
+0cf8-0cff : PCI conf1
+4000-403f : Intel Corporation 82371AB PIIX4 ACPI
+5000-501f : Intel Corporation 82371AB PIIX4 ACPI
+c000-cfff : PCI Bus #01
+d000-d01f : Intel Corporation 82371AB PIIX4 USB
+d400-d43f : Ensoniq ES1371 [AudioPCI-97]
+d800-d807 : Lucent Microelectronics 56k WinModem
+dc00-dcff : Lucent Microelectronics 56k WinModem
+e000-e0ff : PCI device 1186:1300 (D-Link System Inc)
+f000-f00f : Intel Corporation 82371AB PIIX4 IDE</pre></blockquote>
+
+<p>This file makes it easy to diagnosis hardware conflicts. However, if
+your system is working well, you probably won't be
+looking at any of these files <a name="IXTR3-5464" />much.<a name="IXTR3-5465" /> <a name="IXTR3-5466" /> <a name="IXTR3-5467" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.8. Why ps Prints Some Commands in Parentheses</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.10. What Are Signals?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

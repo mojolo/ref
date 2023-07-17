@@ -1,0 +1,1455 @@
+<html><head><title>Shell Variables (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.4. Shell Variables</h2>
+
+<p>
+
+<a name="IXT-3-287356" />
+<a name="korn2-IDXTERM-577" />
+<a name="IXT-3-287357" />
+<a name="IXT-3-287358" />
+There are several characteristics of your environment that you
+may want to customize but that cannot be expressed as an on/off choice.
+Characteristics of this type are specified in shell variables.
+Shell variables can specify everything from your
+prompt string to how often the shell checks for new mail.
+</p>
+
+<p>
+Like an alias, a shell variable is a name that has a value
+associated with it.
+<a name="IXT-3-287359" />
+The Korn shell keeps track of several
+built-in shell variables; shell programmers can add their own.
+By convention, built-in variables have names in all capital letters.
+<a name="IXT-3-287360" />
+
+The syntax for defining variables is somewhat similar to the
+syntax for aliases:
+</p>
+
+<p>
+<blockquote><pre class="code">
+<em class="emphasis">varname</em>=<em class="emphasis">value</em>
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-3-287361" />
+<a name="IXT-3-287362" />
+
+There must be no space on either side of the
+equal sign, and if the value is more than one word, it must
+be surrounded by quotes.
+<a name="IXT-3-287363" />
+To use the value of a variable in a
+command, precede its name by a dollar sign (<tt class="literal">$</tt>).
+</p>
+
+<p>
+<a name="IXT-3-287364" />
+You can
+delete a variable with the command <tt class="literal">unset</tt> <em class="replaceable"><tt>varname</tt></em>.
+Normally, this isn't useful, since all variables that don't exist
+are assumed to be null, i.e., equal to the empty string <tt class="literal">""</tt>.
+But if you use the option <em class="emphasis">nounset</em> (see
+<a href="ch03_03.htm#korn2-CHP-3-TABLE-1">Table 3-1</a>),
+which causes
+the shell to indicate an error when it encounters an undefined
+variable, you may be interested in <em class="emphasis">unset</em>.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-586" />
+The easiest way to check a variable's value is to use the
+<em class="emphasis">print</em> built-in command.<a href="#FOOTNOTE-38">[38]</a>
+All <em class="emphasis">print</em> does is print its
+arguments, but not until the shell has evaluated them. This
+includes -- among other things that will be discussed later -- taking
+the values of variables and expanding filename wildcards.
+So, if the variable <em class="emphasis">fred</em> has the<?troff .ne 10?> value
+<tt class="literal">bob</tt>, typing the following causes the shell to simply print <tt class="literal">bob</tt>:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-38" /><p> [38]
+The Korn shell supports the old command <em class="emphasis">echo</em>,
+which does much the same thing, for backward compatibility
+reasons.
+<a name="IXT-3-287365" />
+However, we strongly recommend <em class="emphasis">print</em> because
+its options are the same on all Unix systems, whereas <em class="emphasis">echo</em>'s
+options differ among different Unix versions.
+This is not likely to change; the POSIX standard says that
+<em class="emphasis">echo</em>'s options are implementation-defined.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+print "$fred"
+</pre></blockquote>
+</p>
+
+<p>
+If the variable is undefined, the shell prints a blank line.
+A more verbose way to do this is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+print "The value of \$<em class="replaceable"><tt>varname</em> is \"$<em class="replaceable">varname</tt></em>\"."
+</pre></blockquote>
+</p>
+
+<p>
+The first dollar sign and the inner double quotes
+are backslash-escaped (i.e., preceded with <tt class="literal">\</tt> so the shell
+doesn't try to interpret them; see <a href="ch01_01.htm">Chapter 1</a>) so that
+they appear literally in the output, which for the above example would be:
+</p>
+
+<p>
+<blockquote><pre class="code">
+The value of $fred is "bob".
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-120" />
+<a name="IXTR3-121" />
+
+</p>
+
+<a name="korn2-CHP-3-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">3.4.1. Variables and Quoting</h3>
+
+<p>
+<a name="korn2-IDXTERM-590" />
+<a name="korn2-IDXTERM-591" />
+<a name="IXT-3-287366" />
+<a name="IXT-3-287367" />
+<a name="IXT-3-287368" />
+<a name="IXT-3-287369" />
+
+Notice that we used double quotes around variables (and strings
+containing them) in these <em class="emphasis">print</em> examples.
+In <a href="ch01_01.htm">Chapter 1</a>
+we said that some special characters inside double quotes
+are still interpreted (while none are interpreted inside single
+quotes).
+</p>
+
+<p>
+Perhaps the most important
+special character that "survives" double quotes is
+the dollar sign -- meaning that variables are evaluated.
+It's possible to do without the double quotes in some cases;
+for example, we could have written the above <em class="emphasis">print</em>
+command this way:
+</p>
+
+<p>
+<blockquote><pre class="code">
+print The value of \$<em class="emphasis">varname</em> is \"$<em class="emphasis">varname</em>\".
+</pre></blockquote>
+</p>
+
+<p>
+But double quotes are more generally correct.
+</p>
+
+<p>
+Here's why. Suppose we did this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+fred='Four spaces between these    words.'
+</pre></blockquote>
+</p>
+
+<p>
+Then if we entered the command <tt class="literal">print $fred</tt>, the result
+would be:
+</p>
+
+<p>
+<blockquote><pre class="code">
+Four spaces between these words.
+</pre></blockquote>
+</p>
+
+<p>
+What happened to the extra spaces? Without the double
+quotes, the shell splits the string into words
+after substituting the variable's value, as it normally
+does when it processes command lines. The double quotes
+circumvent this part of the process (by making the shell think
+that the whole quoted string is a single word).
+</p>
+
+<p>
+Therefore the command
+<tt class="literal">print "$fred"</tt> prints this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+Four spaces between these    words.
+</pre></blockquote>
+</p>
+
+<p>
+This becomes especially important when we start dealing
+with variables that contain user or file input later on.
+In particular, it's increasingly common to find directories
+made available on Unix systems via the network from Apple Macintosh
+and Microsoft Windows systems, where spaces and other unusual characters
+are common in filenames.
+</p>
+
+<p>
+Double quotes also allow other special characters to
+work, as we'll see in <a href="ch04_01.htm">Chapter 4</a>,
+<a href="ch06_01.htm">Chapter 6</a>,
+and <a href="ch07_01.htm">Chapter 7</a>.
+But for now,
+we'll revise the "When in doubt, use single quotes" rule in
+<a href="ch01_01.htm">Chapter 1</a> by adding, "...unless a string contains a variable,
+in which case you should use double quotes."
+<a name="IXTR3-122" />
+<a name="IXTR3-123" />
+<a name="IXTR3-124" />
+
+</p>
+</div>
+
+
+
+
+<a name="korn2-CHP-3-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">3.4.2. Built-in Variables</h3>
+
+<p>
+<a name="korn2-IDXTERM-599" />
+
+As with options, some built-in shell variables are meaningful to general
+Unix users, while others are arcana for professional programmers. We'll look at
+the more generally useful ones here,
+and we'll save some of the more obscure ones for later chapters.
+Again, <a href="appb_01.htm">Appendix B</a> contains a complete list.
+</p>
+
+<a name="korn2-CHP-3-SECT-4.2.1" /><div class="sect3">
+<h3 class="sect3">3.4.2.1. Editing mode variables</h3>
+
+<p>
+Several shell variables relate to the command-line editing modes
+that we saw in the previous chapter. These are listed in
+<a href="ch03_04.htm#korn2-CHP-3-TABLE-2">Table 3-2</a>.
+</p>
+
+<p>
+The first two of these are sometimes used by text
+editors and other
+screen-oriented programs, which rely on the variables
+being set correctly. Although the Korn shell
+and most windowing systems should know how to set them correctly,
+you should look at the values of <tt class="literal">COLUMNS</tt> and <tt class="literal">LINES</tt>
+if you are having display trouble with a screen-oriented program.
+<a name="IXT-3-287370" />
+<a name="IXT-3-287371" />
+<a name="IXT-3-287372" />
+<a name="IXT-3-287373" />
+<a name="IXT-3-287374" />
+<a name="IXT-3-287375" />
+
+</p>
+
+<a name="korn2-CHP-3-TABLE-2" /><h4 class="objtitle">Table 3-2. Editing mode variables</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+
+
+
+<tr>
+<td><tt class="literal">COLUMNS</tt></td>
+<td><p>
+Width, in character columns, of your terminal.
+The standard value is 80 (sometimes 132), though if you are
+using a windowing system like X, you could give a terminal
+window any size you wish.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">LINES</tt></td>
+<td><p>
+Length of your terminal in text lines. The standard value for
+terminals is 24, but for IBM PC-compatible monitors it's 25; once
+again, if you are using a windowing system, you can usually resize
+to any amount.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">HISTFILE</tt></td>
+<td><p>
+Name of history file on which the editing modes operate.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">EDITOR</tt></td>
+<td><p>
+Pathname of your favorite text editor; the suffix
+(<tt class="literal">macs</tt><a href="#FOOTNOTE-39">[39]</a>
+or <tt class="literal">vi</tt>)
+determines which editing mode to use.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">VISUAL</tt></td>
+<td><p>
+Similar to <tt class="literal">EDITOR</tt>; if set, used in preference to <tt class="literal">EDITOR</tt>
+to choose editing mode.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">HISTEDIT</tt></td>
+<td><p>
+Pathname of editor to use with the <em class="emphasis">hist</em> command.
+</p></td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-39" /><p> [39]
+This suffix also works if your editor is a different
+version of Emacs whose name doesn't end in <tt class="literal">emacs</tt>.
+</p></blockquote>
+</div>
+
+
+<a name="korn2-CHP-3-SECT-4.2.2" /><div class="sect3">
+<h3 class="sect3">3.4.2.2. Mail variables</h3>
+
+<p>
+<a name="korn2-IDXTERM-606" />
+
+Since the <em class="emphasis">mail</em> program is not running all
+the time, there is no way for it to inform you when you get new mail;
+therefore the shell does this instead.<a href="#FOOTNOTE-40">[40]</a>
+The shell can't actually check for incoming mail, but it can look at your
+mail file periodically and determine whether the file has been modified
+since the last check.
+The variables listed in
+<a href="ch03_04.htm#korn2-CHP-3-TABLE-3">Table 3-3</a>
+let you control how this works.
+<a name="IXT-3-287377" />
+<a name="IXT-3-287378" />
+<a name="IXT-3-287379" />
+
+
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-40" /><p> [40]
+<a name="IXT-3-287376" />
+The commonly available <em class="emphasis">biff</em> command
+does a better job of this; while the Korn shell
+only prints "you have mail" messages right before it prints
+command prompts, <em class="emphasis">biff</em> can tell you who the mail is from.
+</p>
+</blockquote>
+
+<a name="korn2-CHP-3-TABLE-3" /><h4 class="objtitle">Table 3-3. Mail variables</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+
+
+
+<tr>
+<td><tt class="literal">MAIL</tt></td>
+<td><p>
+Name of file to check for incoming mail (i.e., your mail file)
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">MAILCHECK</tt></td>
+<td><p>
+How often, in seconds, to check for new mail (default 600 seconds,
+or 10 minutes)
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">MAILPATH</tt></td>
+<td><p>
+List of filenames, separated by colons (<tt class="literal">:</tt>), to check for
+incoming mail
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">_</tt> (underscore)</td>
+<td><p>
+When used inside <tt class="literal">$MAILPATH</tt>, name of
+mail file that changed; see text for other uses
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+Under the simplest scenario, you use the standard Unix mail program,
+and your mail file is <em class="emphasis">/var/mail/yourname</em> or something
+similar.
+<a name="IXT-3-287380" />
+In this case, you would
+just set the variable <tt class="literal">MAIL</tt>
+to this filename if you want your mail checked:
+</p>
+
+<p>
+<blockquote><pre class="code">
+MAIL=/var/mail/yourname
+</pre></blockquote>
+</p>
+
+<p>
+If your system
+administrator hasn't already done it for you, put a line like this
+in your <em class="emphasis">.profile</em>.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-612" />
+However, some people use nonstandard mailers that
+use multiple mail files;
+<tt class="literal">MAILPATH</tt> was designed to accommodate this.
+The Korn shell uses the value of <tt class="literal">MAIL</tt> as the name
+of the file to check, unless <tt class="literal">MAILPATH</tt> is set,
+in which case the shell checks each file in the <tt class="literal">MAILPATH</tt>
+list for new mail. You can use this mechanism to have the shell
+print a different message for each mail file:
+for each mail filename in <tt class="literal">MAILPATH</tt>, append a question mark followed
+by the message you want printed.
+</p>
+
+<p>
+For example, let's say you have a mail system that automatically
+sorts your mail into files according to the username of the sender.
+You have mail files called <em class="emphasis">/var/mail/you/fritchie</em>,
+<em class="emphasis">/var/mail/you/droberts</em>, <em class="emphasis">/var/mail/you/jphelps</em>, etc.
+You define your <tt class="literal">MAILPATH</tt> as follows:
+</p>
+
+<p>
+<blockquote><pre class="code">
+MAILPATH=/var/mail/you/fritchie:/var/mail/you/droberts:\
+/var/mail/you/jphelps
+</pre></blockquote>
+</p>
+
+<p>
+If you get mail from Jennifer Phelps,
+the file <em class="emphasis">/var/mail/you/jphelps</em> changes. The Korn
+shell notices the change within 10 minutes and prints the message:
+</p>
+
+<p>
+<blockquote><pre class="code">
+you have mail in /var/mail/you/jphelps.
+</pre></blockquote>
+</p>
+
+<p>
+If you are in the middle of running a command, the shell
+waits until the command finishes (or is suspended) to print the message.
+To customize this further, you could define <tt class="literal">MAILPATH</tt> to be:
+</p>
+
+<p>
+<blockquote><pre class="code">
+MAILPATH=\
+/var/mail/you/fritchie?You have mail from Fiona.:\
+/var/mail/you/droberts?Mail from Dave has arrived.:\
+/var/mail/you/jphelps?There is new mail from Jennifer.
+</pre></blockquote>
+</p>
+
+<p>
+The backslashes at the end of each line allow you to continue
+your command on the next line. But be careful: you can't indent
+subsequent lines. Now, if you get mail from Jennifer, the shell
+prints:
+</p>
+
+<p>
+<blockquote><pre class="code">
+There is new mail from Jennifer.
+</pre></blockquote>
+</p>
+
+<p>
+Within the message parts of <tt class="literal">MAILPATH</tt>, you may
+use the special variable _ (underscore) for the name of the file
+that is triggering the message:
+</p>
+
+<blockquote><pre class="code">
+MAILPATH='/var/mail/you/fritchie?You have mail from Fiona in $_.'
+MAILPATH+=':/var/mail/you/droberts?Mail from Dave has arrived, check $_.'
+MAILPATH+=':/var/mail/you/jphelps?There is new mail from Jennifer, look at $_.'
+</pre></blockquote>
+
+<p>
+The meaning of <tt class="literal">$_</tt> actually varies depending on
+where and how it's used:
+</p>
+
+<dl>
+
+<dt><i>Inside the value of MAILPATH</i></dt>
+<dd>
+As just described, use <tt class="literal">$_</tt> for the name of the
+file that triggers a message in the value of <tt class="literal">MAILPATH</tt>.
+</p></dd>
+
+
+<dt><i>The last argument of the last interactive command</i></dt>
+<dd>
+When used on a command line entered interactively, <tt class="literal">$_</tt>
+represents the last word on the previous command line:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print hi</b></tt>          <i class="lineannotation">Run a command</i>
+hi
+$ <tt class="userinput"><b>print $_</b></tt>          <i class="lineannotation">Verify setting of $_</i>
+hi
+$ <tt class="userinput"><b>print hello</b></tt>       <i class="lineannotation">New last argument</i>
+hello
+$ <tt class="userinput"><b>print $_</b></tt>
+hello
+$ <tt class="userinput"><b>print "hi there"</b></tt>  <i class="lineannotation">Usage is word based</i>
+hi there
+$ <tt class="userinput"><b>print $_</b></tt>
+hi there
+</pre></blockquote>
+</p>
+
+<p>
+This usage of <tt class="literal">$_</tt> is similar to the <tt class="literal">!$</tt>
+feature of the C shell's history mechanism.
+</p></dd>
+
+
+<dt><i>Inside a script</i></dt>
+<dd>
+When accessed from inside a shell script, <tt class="literal">$_</tt>
+is the full pathname used to find and invoke the script:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cat /tmp/junk</b></tt>       <i class="lineannotation">Show test program</i>
+print _ is $_
+$ <tt class="userinput"><b>PATH=/tmp:$PATH</b></tt>     <i class="lineannotation">Add directory to PATH</i>
+$ <tt class="userinput"><b>junk</b></tt>                <i class="lineannotation">Run the program</i>
+_ is /tmp/junk
+</pre></blockquote>
+</p></dd>
+
+
+</dl>
+
+
+<p>
+<a name="IXTR3-125" />
+<a name="IXTR3-126" />
+<a name="IXTR3-127" />
+</p>
+</div>
+
+
+<a name="korn2-CHP-3-SECT-4.2.3" /><div class="sect3">
+<h3 class="sect3">3.4.2.3. Prompting variables</h3>
+
+<p>
+<a name="korn2-IDXTERM-616" />
+If you have seen enough experienced Unix users at work, you
+may already have realized that the shell's prompt is not
+engraved in stone. It seems as though one of the favorite
+pastimes of professional Unix programmers is thinking of cute or innovative
+prompt strings. We'll give you some of the information you
+need to do your own here; the rest comes in the next chapter.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-617" />
+<a name="IXT-3-287381" />
+<a name="IXT-3-287382" />
+<a name="IXT-3-287383" />
+<a name="IXT-3-287384" />
+<a name="IXT-3-287385" />
+
+Actually, the Korn shell uses four prompt strings. They are stored in the variables <tt class="literal">PS1</tt>, <tt class="literal">PS2</tt>, <tt class="literal">PS3</tt>,
+and <tt class="literal">PS4</tt>. The first of these is called the primary
+prompt string; it is your usual shell prompt, and its default
+value is "<tt class="literal">$</tt> " (a dollar sign followed by a space).
+Many people like to set their primary prompt
+string to something containing their login name.
+Here is one way to do this:
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS1="($LOGNAME)-&gt; "
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-3-287386" />
+
+<tt class="literal">LOGNAME</tt> is another built-in shell variable, which is set to
+your login name when you log in.<a href="#FOOTNOTE-41">[41]</a>
+So, <tt class="literal">PS1</tt> becomes a left parenthesis, followed by
+your login name, followed by "<tt class="literal">)-&gt;</tt> ".
+If your login name is fred, your prompt string will be
+<tt class="literal">"(fred)-&gt; "</tt>.If you are a C shell user and, like many
+such people, are used to having a command number in your prompt string, the Korn shell
+can do this similarly to the C shell: if there is an exclamation point
+in the prompt string, it substitutes the command number.
+Thus, if you define your prompt string to be the following, your prompts will look like <tt class="literal">(fred 1)-&gt;</tt>,
+<tt class="literal">(fred 2)-&gt;</tt>,
+and so on:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-41" /><p> [41]
+Some very old systems use <tt class="literal">USER</tt> instead.
+Thankfully, such systems are becoming more and more rare with time.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+PS1="($LOGNAME !)-&gt;"
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-3-287387" />
+
+Perhaps the most useful way to set up your prompt string is so that it
+always contains your current directory. Then you needn't type
+<tt class="literal">pwd</tt> to remember where you are.  Putting your
+directory in the prompt is more complicated than the above examples,
+because your current directory changes during your login session,
+unlike your login name and the name of your machine. But we can
+accommodate<?troff .ne 10?> this by taking advantage of the different
+kinds of quotes.  Here's how:
+
+<a name="korn2-IDXTERM-625" />
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS1='($PWD)-&gt; '
+</pre></blockquote>
+</p>
+
+<p>
+The difference is the single quotes, instead of double quotes,
+surrounding the string on the right side of the assignment.
+The trick is that
+this string is evaluated twice:
+once when the assignment to <tt class="literal">PS1</tt> is done (in your
+<em class="emphasis">.profile</em></tt> or
+environment file)
+and then again after every command you enter.
+Here's what each of these evaluations does:
+</p>
+
+<ol>
+
+<li><p>
+The first evaluation observes the single quotes
+and returns what is inside them without further processing.
+As a result, <tt class="literal">PS1</tt> contains the
+string <tt class="literal">($PWD)-&gt; </tt>.
+</p></li>
+
+<li><p>
+After every command, the shell evaluates
+<tt class="literal">($PWD)-&gt;</tt>.
+<tt class="literal">PWD</tt> is a built-in variable that is always equal to
+the current directory, so the result
+is a primary prompt that always contains the current
+directory.<a href="#FOOTNOTE-42">[42]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-42" /><p> [42]
+The shell also does command and arithmetic substitution on the value
+of <tt class="literal">PS1</tt>, but we haven't covered those features yet.
+See <a href="ch06_01.htm">Chapter 6</a>.
+</p>
+</blockquote></li>
+</ol>
+
+<p>
+We'll discuss the subtleties of quoting and delayed evaluation in
+more depth in <a href="ch07_01.htm">Chapter 7</a>.
+<a name="IXTR3-128" />
+<a name="IXTR3-129" />
+<a name="IXTR3-130" />
+</p>
+
+<p>
+<a name="IXT-3-287388" />
+
+<tt class="literal">PS2</tt> is called the secondary prompt
+string; its default value is "<tt class="literal">&gt;</tt> "
+(a greater-than sign followed by a single space).
+It is used when you type an incomplete line and hit
+ENTER, as an indication that you must finish your command.
+For example, assume that you start a quoted string but don't
+close the quote. Then if you hit ENTER, the shell prints
+<tt class="literal">&gt;</tt> and waits for you to finish the string:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>x="This is a long line,</b></tt>            <i class="lineannotation">PS1 for the command</i>
+&gt; <tt class="userinput"><b>which is terminated down here"</b></tt>     <i class="lineannotation">PS2 for the continuation</i>
+$                                    <i class="lineannotation">PS1 for the next command</i>
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-131" />
+<a name="IXTR3-132" />
+<a name="IXT-3-287389" />
+<a name="IXT-3-287390" />
+<tt class="literal">PS3</tt> and <tt class="literal">PS4</tt> relate to shell programming and debugging,
+respectively;
+they are explained in <a href="ch05_01.htm">Chapter 5</a> and <a href="ch09_01.htm">Chapter 9</a>.
+<a name="IXTR3-133" />
+
+</p>
+</div>
+
+<a name="korn2-CHP-3-SECT-4.2.4" /><div class="sect3">
+<h3 class="sect3">3.4.2.4. Using history command numbers</h3>
+
+<p>
+<a name="IXT-3-287391" />
+The current history command number is available in the
+<tt class="literal">HISTCMD</tt> environment variable.
+You can see the current history number in your prompt by
+placing a <tt class="literal">!</tt> (or <tt class="literal">$HISTCMD</tt>)
+somewhere in the value of
+the <tt class="literal">PS1</tt> variable:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>PS1="command !&gt; "</b></tt>
+command 42&gt; <tt class="userinput"><b>ls -FC *.xml</b></tt>
+appa.xml  appd.xml  ch01.xml  ch04.xml  ch07.xml  ch10.xml
+appb.xml  appf.xml  ch02.xml  ch05.xml  ch08.xml  colo1.xml
+appc.xml  ch00.xml  ch03.xml  ch06.xml  ch09.xml  copy.xml
+command 43&gt;
+</pre></blockquote>
+</p>
+
+<p>
+To get a literal <tt class="literal">!</tt> into the value of your
+prompt, place <tt class="literal">!!</tt> into <tt class="literal">PS1</tt>.
+</p>
+</div>
+
+
+<a name="korn2-CHP-3-SECT-4.2.5" /><div class="sect3">
+<h3 class="sect3">3.4.2.5. Terminal types</h3>
+
+<p>
+<a name="korn2-IDXTERM-636" />
+Today, the most common use of the shell is from inside a terminal emulator window
+displayed on the high resolution screen of a workstation or PC.
+However, the terminal emulator program still does emulate the facilities
+provided by the actual serial CRT terminals of yesteryear.
+As such,
+the shell variable <tt class="literal">TERM</tt> is vitally important for any program that
+uses your entire window, like a text editor. Such programs include traditional screen editors (such as
+<em class="emphasis">vi</em></tt> and Emacs),
+pager programs like<em class="emphasis">more</em></tt>, and countless third-party applications.
+
+<a name="IXT-3-287392" />
+<a name="IXT-3-287393" />
+
+</p>
+
+<p>
+Because users are spending more and more time within programs
+and less and less using the shell itself, it
+is extremely important that your <tt class="literal">TERM</tt>
+is set correctly. It's really your system administrator's job
+to help you do this (or to do it for you), but in case you need
+to do it yourself, here are a few guidelines.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-639" />
+The value of <tt class="literal">TERM</tt> must be a short character string
+with lowercase letters that
+appears as a filename in the <em class="emphasis">terminfo</em></tt> database.<a href="#FOOTNOTE-43">[43]</a>
+This database is a two-tiered directory of files under the
+root directory <em class="emphasis">/usr/share/terminfo</em></tt>.<a href="#FOOTNOTE-44">[44]</a>
+This directory contains
+subdirectories with single-character names; these in turn contain
+files of terminal information for all terminals whose names begin
+with that character. Each file describes how to tell the terminal
+in question to do certain common things like position the cursor on the
+screen, go into reverse video, scroll, insert text, and so on.
+The descriptions are in binary form (i.e., not readable by humans).
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-43" /><p> [43]
+<a name="IXT-3-287394" />
+<a name="IXT-3-287395" />
+Versions of Unix not derived from System V use
+<em class="emphasis">termcap</em></tt>, an older-style database of terminal capabilities
+that uses the single text file <em class="emphasis">/etc/termcap</em></tt> for all terminal
+descriptions.
+Modern systems often have both the <em class="emphasis">/etc/termcap</em></tt>
+file and the <em class="emphasis">terminfo</em></tt> database available.
+Current BSD systems use a single-file indexed database,
+<em class="emphasis">/usr/share/misc/termcap.db</em></tt>.
+</p>
+</blockquote><blockquote class="footnote">
+<a name="FOOTNOTE-44" /><p> [44]
+This is the typical location on modern systems.
+Older systems have it in <em class="emphasis">/usr/lib/terminfo</em></tt>.
+</p>
+</blockquote>
+
+<p>
+Names of terminal description files are the same as that of the
+terminal being described; sometimes an abbreviation is used.
+<a name="IXT-3-287396" />
+<a name="IXT-3-287397" />
+For example, the DEC VT100 has a description
+in the file <em class="emphasis">/usr/share/terminfo/v/vt100</em></tt>;
+the GNU/Linux character-based console
+has a description in the file
+<em class="emphasis">/usr/share/terminfo/l/linux</em></tt>.
+<a name="IXT-3-287398" />
+<a name="IXT-3-287399" />
+An <em class="emphasis">xterm</em></tt> terminal window
+under the X Window System has
+a description in <em class="emphasis">/usr/share/terminfo/x/xterm</em></tt>.
+</p>
+
+<p>
+Sometimes your Unix software will not set up <tt class="literal">TERM</tt> correctly; this
+often happens for X terminals and PC-based Unix systems. Therefore,
+you should check the value of <tt class="literal">TERM</tt> by typing <tt class="literal">print $TERM</tt>
+before going any further. If you find that your Unix system isn't
+setting the right value for you (especially likely if your terminal
+is of a different make than your computer), you need to find the
+appropriate value of <tt class="literal">TERM</tt> yourself.
+</p>
+
+<p>
+The best way to find the <tt class="literal">TERM</tt>
+value -- if you can't find a local guru to do it for you -- is
+to guess the <em class="emphasis">terminfo</em></tt> name and search for a file
+of that name under <em class="emphasis">/usr/share/terminfo</em></tt> by using
+<em class="emphasis">ls</em></tt>. For example,
+if your terminal is a Blivitz BL-35A, you could try:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cd /usr/share/terminfo</b></tt>
+$ <tt class="userinput"><b>ls b/bl*</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+If you are successful, you will see something like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+bl35a           blivitz35a
+</pre></blockquote>
+</p>
+
+<p>
+In this case, the two names are likely to be synonyms for (links to)
+the same terminal description, so you could use either one as a
+value of <tt class="literal">TERM</tt>. In other words,
+you could put <em class="emphasis">either</em></tt> of these
+two lines in your <em class="emphasis">.profile</em></tt>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+TERM=bl35a
+TERM=blivitz35a
+</pre></blockquote>
+</p>
+
+<p>
+If you aren't successful, <em class="emphasis">ls</em></tt> won't print anything, and you
+will have to make another guess and try again. If you find that
+<em class="emphasis">terminfo</em></tt> contains nothing that resembles your terminal, all is
+not lost. Consult your terminal's manual to see if the terminal
+can emulate a more popular model; nowadays the odds of this are excellent.
+</p>
+
+<p>
+Conversely, <em class="emphasis">terminfo</em></tt> may have several entries that relate to your
+terminal, for submodels, special modes, etc. If you
+have a choice of which entry to use as your value of <tt class="literal">TERM</tt>,
+we suggest you test each one out with your text editor
+or any other screen-oriented programs you use and see which one
+works best.
+<a name="IXTR3-134" />
+
+</p>
+
+<p>
+The process is much simpler if you are using a windowing system,
+in which your "terminals" are logical portions of the screen
+rather than physical devices. In this case,
+operating system-dependent software was written to control your
+terminal window(s), so the odds are very good that if it knows how
+to handle window resizing and complex cursor motion, it is capable of
+dealing with simple things like <tt class="literal">TERM</tt>.
+<a name="IXT-3-287400" />
+<a name="IXT-3-287401" />
+The X Window System, for
+example, automatically sets "xterm" as its value for <tt class="literal">TERM</tt>
+in an <em class="emphasis">xterm</em></tt> terminal window.
+<a name="IXTR3-135" />
+<a name="IXTR3-136" />
+
+</p>
+</div>
+
+
+<a name="korn2-CHP-3-SECT-4.2.6" /><div class="sect3">
+<h3 class="sect3">3.4.2.6. Command search path</h3>
+
+<p>
+<a name="korn2-IDXTERM-651" />
+<a name="korn2-IDXTERM-652" />
+Another important variable
+is <tt class="literal">PATH</tt>, which helps the shell find the commands you enter.
+</p>
+
+<p>
+As you probably know, every command
+you use is actually a file that contains code for your machine to
+run.<a href="#FOOTNOTE-45">[45]</a>
+
+<a name="IXT-3-287402" />
+
+<a name="IXT-3-287403" />
+These files are called <em class="emphasis">executable files</em></tt> or just
+<em class="emphasis">executables</em></tt> for short. They
+are stored in various directories.
+<a name="IXT-3-287404" />
+<a name="IXT-3-287405" />
+Some directories,
+like <em class="emphasis">/bin</em></tt> or <em class="emphasis">/usr/bin</em></tt>, are standard on all Unix systems;
+some depend on the particular version of Unix you are using;
+some are unique to your machine; if you are a programmer, some
+may even be your own. In any case, there is no reason why
+you should have to know where a command's executable file is in
+order to run it.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-45" /><p> [45]
+Unless it's a built-in command (like <em class="emphasis">cd</em></tt>
+and <em class="emphasis">print</em></tt>), in which case the code is
+simply part of the executable file for the entire shell.
+</p>
+</blockquote>
+
+<p>
+That is where <tt class="literal">PATH</tt> comes in. Its value is a list of
+directories that the shell searches every time you enter a
+command name that does not contain a slash;
+the directory names are separated by colons (<tt class="literal">:</tt>), just like the
+files in <tt class="literal">MAILPATH</tt>.
+<a name="IXT-3-287406" />
+
+For example, if you type <tt class="literal">print $PATH</tt>, you will see
+something like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+/sbin:/usr/sbin:/usr/bin:/etc:/usr/X11R6/bin:/local/bin
+</pre></blockquote>
+</p>
+
+<p>
+Why should you care about your path? There are three main reasons.
+First, there are security aspects to its value, which we touch on shortly.
+Second, once you have read the later chapters of this book and
+you try writing your own shell programs, you will want
+to test them and eventually set aside a directory for them.
+Third, your system may be set up so that certain "restricted"
+commands' executable files are kept in directories that are
+not listed in <tt class="literal">PATH</tt>.
+For example, there may be a
+directory <em class="emphasis">/usr/games</em></tt> in which there are executables
+that are verboten during regular working hours.
+</p>
+
+<p>
+Therefore you may want to add directories to the default <tt class="literal">PATH</tt>
+you get when you login.
+Let's say you have created a <em class="emphasis">bin</em></tt> directory under
+your login directory for your
+own shell scripts and programs. To add this directory to
+your <tt class="literal">PATH</tt> so that it is there every time you log in,
+put this line in your <em class="emphasis">.profile</em></tt>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PATH="$PATH:$HOME/bin"
+</pre></blockquote>
+</p>
+
+<p>
+This sets <tt class="literal">PATH</tt> to whatever it was before, followed
+immediately by a colon and <tt class="literal">$HOME/bin</tt> (your personal
+<em class="emphasis">bin</em></tt> directory).  This is a rather typical usage.
+(Using <tt class="literal">$HOME</tt> lets your system administrator move
+your home directory around, without your having to fix your <em class="emphasis">.profile</em></tt>
+file.)
+</p>
+
+<p>
+There is an important additional detail to understand about how <tt class="literal">PATH</tt> works.
+This has to do with empty (or "null") elements in the <tt class="literal">PATH</tt>.
+A null element can occur in one of three ways: placing a lone colon at the front
+of <tt class="literal">PATH</tt>, placing a lone colon at the end of <tt class="literal">PATH</tt>,
+or placing two adjacent colons in the middle of <tt class="literal">PATH</tt>.
+The shell treats
+a null element in <tt class="literal">PATH</tt> as a synonym for ".",
+the current directory, and searches in whatever directory you happen to be
+in at that point in the path search.
+</p>
+
+<blockquote><pre class="code">
+PATH=:$HOME/bin:/usr/bin:/usr/local/bin   <i class="lineannotation">Search current directory first</i>
+PATH=$HOME/bin:/usr/bin:/usr/local/bin:   <i class="lineannotation">Search current directory last</i>
+PATH=$HOME/bin::/usr/bin:/usr/local/bin   <i class="lineannotation">Search current directory second</i>
+</pre></blockquote>
+
+<p>
+Finally,
+if you need to know which directory a command comes from, you need not look
+at directories in your <tt class="literal">PATH</tt> until you find it. The shell built-in
+command <em class="emphasis">whence</em></tt> prints the full pathname of the command you
+give it as argument, or just the command's name if it's a built-in
+command itself (like <em class="emphasis">cd</em></tt>), an alias,
+or a function
+(as we'll see in <a href="ch04_01.htm">Chapter 4</a>).
+</p>
+</div>
+
+<a name="korn2-CHP-3-SECT-4.2.7" /><div class="sect3">
+<h3 class="sect3">3.4.2.7. PATH security considerations</h3>
+
+<p>
+How you set up your <tt class="literal">PATH</tt> variable can have
+important implications for security.
+</p>
+
+<p>
+First, having the current directory in your path is a real security hole,
+especially for system administrators, and the <tt class="literal">root</tt>
+account should <em class="emphasis">never</em></tt> have a null element (or
+explicit dot) in its search path.  Why? Consider someone who creates
+a shell script named, for example, <em class="emphasis">ls</em></tt>, makes it
+executable, and places it in a directory that <tt class="literal">root</tt>
+might <em class="emphasis">cd</em></tt> to, such as <em class="emphasis">/tmp</em></tt>:
+</p>
+
+<blockquote><pre class="code">
+rm -f /tmp/ls           <i class="lineannotation">Hide the evidence</i>
+/bin/ls "$@"            <i class="lineannotation">Run real ls</i>
+nasty stuff here        <i class="lineannotation">Silently run other stuff as root</i>
+</pre></blockquote>
+
+<p>
+If <tt class="literal">root</tt> has the current directory first in <tt class="literal">PATH</tt>,
+then <tt class="literal">cd /tmp; ls</tt> does whatever the miscreant wants, and
+<tt class="literal">root</tt> is none the wiser.
+(This is known in the security world as a "trojan horse.")
+While less serious for regular users, there are many
+experts who would still advise against having the current directory in <tt class="literal">PATH</tt>.
+</p>
+
+<p>
+Secondly, the safest way to add your personal bin to <tt class="literal">PATH</tt>
+is at the end.
+When you enter a command,
+the shell searches directories in the order they
+appear in <tt class="literal">PATH</tt> until it finds an executable file.
+Therefore, if you have a shell script or program whose name
+is the same as an existing command, the shell will use
+the existing command -- unless you type in the command's full pathname
+to disambiguate. For example, if you have created your own version
+of the <em class="emphasis">more</em></tt> command in <tt class="literal">$HOME/bin</tt> and
+your <tt class="literal">PATH</tt>
+has <tt class="literal">$HOME/bin</tt> at the end,
+to get your version
+you will need to type <tt class="literal">$HOME/bin/more</tt>
+(or just <tt class="literal">~/bin/more</tt>).
+</p>
+
+<p>
+The more reckless way of resetting your path is to tell the shell to
+look in your directory first by putting it before the other
+directories in your <tt class="literal">PATH</tt>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PATH="$HOME/bin:$PATH"
+</pre></blockquote>
+</p>
+
+<p>
+This is less safe because you are trusting that your own version
+of the <em class="emphasis">more</em></tt> command works properly.
+<a name="IXT-3-287407" />
+<a name="IXT-3-287408" />
+But it is also risky since it might allow for
+trojan horses (similar to the <em class="emphasis">ls</em></tt> example we just saw).
+If your <em class="emphasis">bin</em></tt>
+directory is writable by others on your system, they
+can install a program that does something nasty.
+</p>
+
+<p>
+Proper use of <tt class="literal">PATH</tt> is just one of many
+aspects of system security.
+See <a href="ch10_01.htm">Chapter 10</a> for more details.
+In short, we recommend
+leaving the current directory out of your <tt class="literal">PATH</tt>
+(both implicitly and explicitly), adding your personal
+<em class="emphasis">bin</em></tt> directory at the end of <tt class="literal">PATH</tt>,
+and making sure that <em class="emphasis">only</em></tt> you can create, remove, or change files in your
+personal <em class="emphasis">bin</em></tt> directory.
+</p>
+
+</div>
+
+<a name="korn2-CHP-3-SECT-4.2.8" /><div class="sect3">
+<h3 class="sect3">3.4.2.8. PATH and tracked aliases</h3>
+
+<p>
+<a name="korn2-IDXTERM-660" />
+<a name="IXT-3-287409" />
+
+It is worth noting that a search through the directories in your <tt class="literal">PATH</tt>
+can take time. You won't exactly die if you hold your breath for the
+length of time it takes for most computers to search your <tt class="literal">PATH</tt>,
+but the large number of disk I/O operations involved in some <tt class="literal">PATH</tt>
+searches can take longer than the command you invoked takes
+to run!
+</p>
+
+<p>
+The Korn shell provides a way to circumvent <tt class="literal">PATH</tt> searches,
+called a tracked alias.
+First, notice that if you specify a command
+by giving its full pathname, the shell won't even use your
+<tt class="literal">PATH</tt> -- instead,
+it just goes directly to the executable file.
+</p>
+
+<p>
+Tracked aliases do this for you automatically.
+The first time you invoke a command, the shell looks for the executable
+in the normal way (through <tt class="literal">PATH</tt>). Then it
+creates an alias for the full pathname,
+so that the next time you invoke the command,
+the shell uses the full pathname and does not bother with <tt class="literal">PATH</tt> at all.
+If you ever change your <tt class="literal">PATH</tt>, the shell marks tracked aliases
+as "undefined," so that it searches for the full pathnames again when
+you invoke the corresponding commands.
+</p>
+
+<p>
+In fact, you can add tracked aliases for the sole purpose of avoiding
+<tt class="literal">PATH</tt> lookup of commands that you use particularly
+often. Just put a "trivial alias" of the form <tt class="literal">alias -t</tt>
+<tt><em class="replaceable"><tt>command</tt></em></tt>
+in your <em class="emphasis">.profile</em></tt> or environment file; the shell
+substitutes the full pathname itself.
+</p>
+
+<p>
+For example, the first time you invoke <em class="emphasis">emacs</em></tt>,
+the shell does a <tt class="literal">PATH</tt> search.
+Upon finding the location of <em class="emphasis">emacs</em></tt>
+(say <em class="emphasis">/usr/local/bin/emacs</em></tt>), the shell creates a
+tracked alias:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias -t emacs=/usr/local/bin/emacs    <i class="lineannotation">Automatic tracked alias</i>
+</pre></blockquote>
+</p>
+
+<p>
+The next time you run <em class="emphasis">emacs</em></tt>, the shell expands the
+<em class="emphasis">emacs</em></tt> alias into the full path
+<em class="emphasis">/usr/local/bin/emacs</em></tt>, and executes the program
+directly, not bothering with a <tt class="literal">PATH</tt> search.
+</p>
+
+<p>
+You can also define individual tracked aliases yourself,
+with the option <em class="emphasis">-t</em></tt> to the <em class="emphasis">alias</em></tt> command,
+and you can list
+all such tracked aliases by typing <tt class="literal">alias -t</tt> by itself.
+(For compatibility with the System V Bourne shell, <em class="emphasis">ksh</em></tt>
+predefines the alias <tt class="literal">hash='alias -t --'</tt>; the <em class="emphasis">hash</em></tt>
+command in that shell displays the internal table of found commands.
+The Korn shell's tracked alias mechanism is more flexible.)
+</p>
+
+<p>
+Although the shell's documentation and <em class="emphasis">trackall</em></tt> option
+indicate that you can turn alias tracking on and off, the shell's actual
+behavior is different:
+alias tracking is always on.
+<em class="emphasis">alias -t</em></tt>
+lists all of the automatically-created tracked aliases.
+However, <em class="emphasis">alias -p</em></tt> does not print tracked aliases.
+This is because, conceptually, tracked aliases are just a performance enhancement;
+they are really unrelated to the aliases that you define for customization.
+<a name="IXTR3-137" />
+<a name="IXTR3-138" />
+<a name="IXTR3-139" />
+<a name="IXTR3-140" />
+<a name="IXTR3-141" />
+</p>
+</div>
+
+<a name="korn2-CHP-3-SECT-4.2.9" /><div class="sect3">
+<h3 class="sect3">3.4.2.9. Directory search path</h3>
+
+<p>
+<a name="korn2-IDXTERM-667" />
+
+<tt class="literal">CDPATH</tt> is a variable whose value, like that of <tt class="literal">PATH</tt>,
+is a list of directories separated by
+colons. Its purpose is to augment the functionality of
+the <em class="emphasis">cd</em></tt> built-in command.
+</p>
+
+<p>
+By default, <tt class="literal">CDPATH</tt> isn't set (meaning that it is null), and when you type
+<tt class="literal">cd</tt> <tt><em class="replaceable"><tt>dirname</tt></em></tt>,
+the shell looks in the current
+directory for a subdirectory called
+<em class="emphasis">dirname</em></tt>.
+Similar to <tt class="literal">PATH</tt>,
+this search is disabled when <em class="emphasis">dirname</em></tt>
+starts with a slash.
+If you set <tt class="literal">CDPATH</tt>,
+you give the shell a list of places to look for <em class="emphasis">dirname</em></tt>;
+the list may or may not include the current directory.
+</p>
+
+<p>
+Here is an example. Consider the alias for the
+long <em class="emphasis">cd</em></tt> command from earlier in this chapter:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias cdcm="cd work/projects/devtools/windows/confman"
+</pre></blockquote>
+</p>
+
+<p>
+Now suppose there were a few directories under this directory to
+which you need to go often; they are called <em class="emphasis">src</em></tt>,
+<em class="emphasis">bin</em></tt>, and <em class="emphasis">doc</em></tt>.  You define your
+<tt class="literal">CDPATH</tt> like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+CDPATH=:~/work/projects/devtools/windows/confman
+</pre></blockquote>
+</p>
+
+<p>
+In other words, you define your <tt class="literal">CDPATH</tt> to be the
+empty string (meaning the current directory, wherever you happen to be)
+followed by <tt class="literal">~/work/projects/devtools/windows/confman</tt>.
+</p>
+
+<p>
+With this setup, if you type <tt class="literal">cd doc</tt>, then the shell
+looks in the current directory for a (sub)directory called
+<em class="emphasis">doc</em></tt>. Assuming that it doesn't find one, it
+looks in the directory <em class="emphasis">~/work/projects/devtools/windows/confman</em></tt>.
+The shell finds the <em class="emphasis">doc</em></tt> directory there,
+so you go directly to it.
+</p>
+
+<p>
+This works for any relative pathname.
+For example, if you have a directory <em class="emphasis">src/whizprog</em></tt>
+in your home directory, and your <tt class="literal">CDPATH</tt> is
+<tt class="literal">:$HOME</tt> (the current directory and your home directory),
+typing <tt class="literal">cd src/whizprog</tt> takes you to
+<em class="emphasis">$HOME/src/whizprog</em></tt> from anywhere on the system.
+</p>
+
+<p>
+This feature gives you yet another way to save typing when you need to
+<em class="emphasis">cd</em></tt> often to directories that are buried deep in your
+file hierarchy. You may find yourself going to a specific
+group of directories often as you work on a
+particular project, and then changing to another set of
+directories when you switch to another project. This implies that the
+<tt class="literal">CDPATH</tt> feature is only useful if you update it
+whenever your work habits change; if you don't, you may
+occasionally find yourself where you don't want to be.
+<a name="IXTR3-142" />
+<a name="IXTR3-143" />
+</p>
+
+</div>
+
+<a name="korn2-CHP-3-SECT-4.2.10" /><div class="sect3">
+<h3 class="sect3">3.4.2.10. Miscellaneous variables</h3>
+
+<p>
+
+We have covered the shell variables that are important from the
+standpoint of customization. There are also several that serve as
+status indicators and for various other miscellaneous purposes. Their
+meanings are relatively straightforward; the<?troff .ne 10?> more
+basic ones are summarized in <a href="ch03_04.htm#korn2-CHP-3-TABLE-4">Table 3-4</a>.
+
+<a name="IXT-3-287410" />
+<a name="IXT-3-287411" />
+<a name="IXT-3-287412" />
+<a name="IXT-3-287413" />
+<a name="IXT-3-287414" />
+
+</p>
+
+<p>
+The first two variables are set by the <em class="emphasis">login</em></tt> program,
+before the shell starts.
+The shell sets the value of the next two whenever you change directories.
+The final variable's value changes dynamically, as time elapses.
+Although you can also set the values of any of these, just like any other variables,
+it is difficult to imagine any situation where you would want to.
+</p>
+
+<a name="korn2-CHP-3-TABLE-4" /><h4 class="objtitle">Table 3-4. Status variables</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+
+
+
+<tr>
+<td><tt class="literal">HOME</tt></td>
+<td><p>
+Name of your home (login) directory.
+This is the default argument for the <em class="emphasis">cd</em></tt>
+command.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">SHELL</tt></td>
+<td><p>
+Pathname of the shell that programs should use to run commands.
+
+<a name="IXTR3-144" />
+<a name="IXTR3-145" />
+<a name="IXTR3-146" />
+
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">PWD</tt></td>
+<td>Current directory.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">OLDPWD</tt></td>
+<td>Previous directory before the last <em class="emphasis">cd</em></tt> command.</td>
+</tr>
+
+
+<tr>
+<td><tt class="literal">SECONDS</tt></td>
+<td>Number of seconds since the shell was invoked.</td>
+</tr>
+
+
+</table><p>
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.3. Options</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.5. Customization and Subprocesses</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

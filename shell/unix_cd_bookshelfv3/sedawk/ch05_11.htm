@@ -1,0 +1,469 @@
+<html><head><title>Reading and Writing Files (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.11. Reading and Writing Files</h2>
+
+<p>
+<a name="IXT-5-265738" />
+<a name="IXT-5-265739" />
+<a name="ch05.rw1" />
+<a name="ch05.rw3" />
+<a name="ch05.rw6" />
+<a name="ch05.rw2" />
+<a name="IXT-5-265740" />
+<a name="IXT-5-265741" />
+The read (<b class="emphasis-bold">r</b>) and write (<b class="emphasis-bold">w</b>)
+commands allow you to work directly with files.  Both take a single
+argument, the name of a file.  The syntax follows:</p>
+
+<blockquote><pre class="code">[<em class="replaceable"><tt>line-address</em>]<b class="emphasis-bold">r</b> <em class="replaceable">file</tt></em>
+[<em class="replaceable"><tt>address</em>]<b class="emphasis-bold">w</b> <em class="replaceable">file</tt></em></pre></blockquote><p>
+<a name="IXT-5-265742" />
+The read command reads the contents of <em class="emphasis">file</em> into
+the pattern space after the addressed line.  It cannot operate on a
+range of lines.  The write command writes the contents of the pattern
+space to the <em class="emphasis">file</em>.</p>
+
+<p>You must have a single space between the command and the filename.
+(Everything after that space and up to the newline is taken to be the
+filename.  Thus, leading or embedded spaces will become part of
+the filename.)  The read command will not complain if the file does
+not exist.  The write command will create a file if it does not exist;
+if the file already exists, the write command will overwrite it each
+time the script is invoked.  If there are multiple instructions
+writing to the same file in one script, then each write command
+appends to the file.  Also, be aware that you can only open up to 10
+files per script.</p>
+
+<p>The read command can be useful for inserting the contents of one file
+at a particular place in another file.  For instance, let's say that
+there is a set of files and each file should close with the same one-
+or two-paragraph statement.  A sed script would allow you to maintain
+the closing separately while inserting it as needed, for instance,
+when sending the file to the printer.</p>
+
+<blockquote><pre class="code">sed '$r closing' $* | pr | lp</pre></blockquote>
+
+<p>The $ is an addressing symbol specifying the last line of the file.
+The contents of the file named <em class="filename">closing</em> are placed
+after the contents of pattern space and output with it.  This example
+does not specify a pathname, assuming the file to be in the same
+directory as the command.  A more general-purpose command should use
+the full pathname.</p>
+
+<p>You may want to test out a few quirks of the read command.  Let's look
+at the following command:</p>
+
+<blockquote><pre class="code">/^&lt;Company-list&gt;/r company.list</pre></blockquote>
+
+<p>That is, when sed matches a line beginning with the string
+"&lt;Company-list&gt;", it is going to append the contents of the file
+<em class="emphasis">company.list</em> to the end of the matched line.  No
+subsequent command will affect the lines read from the file.  For
+instance, you can't make any changes to the list of companies that
+you've read into the file.  However, commands that address the
+original line will work.  The previous command could be
+followed by a second command:</p>
+
+<blockquote><pre class="code">/^&lt;Company-list&gt;/d</pre></blockquote>
+
+<p>to delete the original line.  So that if the input file was as
+follows:</p>
+
+<blockquote><pre class="code">For service, contact any of the following companies:
+&lt;Company-list&gt;
+Thank you.</pre></blockquote>
+
+<p>running the two-line script would produce:</p>
+
+<blockquote><pre class="code">For service, contact any of the following companies:
+	Allied
+	Mayflower
+	United
+Thank you.</pre></blockquote>
+
+<p>Suppressing the automatic output, using the <span class="option">-n</span> option
+or <b class="emphasis-bold">#n</b> script syntax, prevents the original line in
+the pattern space from being output, but the result of a read command
+still goes to standard output.</p>
+
+<p>
+<a name="ch05.rw5" />
+Now let's look at examples of the write command.  One use is to
+extract information from one file and place it in its own file.
+For instance, imagine that we had a file listing the names of
+salespeople alphabetically.   For each person, the listing designates
+which of four regions the person is assigned to.  Here's a sample:</p>
+
+<blockquote><pre class="code">Adams, Henrietta        Northeast
+Banks, Freda            South
+Dennis, Jim             Midwest
+Garvey, Bill            Northeast
+Jeffries, Jane          West
+Madison, Sylvia         Midwest
+Sommes, Tom             South</pre></blockquote>
+
+<p>Writing a script for a seven-line file, of course, is ridiculous.
+Yet such a script can potentially handle as many names as you
+can put together, and is reusable.</p>
+
+<p>If all we wanted was to extract the names for a particular region,
+we could easily use <b class="emphasis-bold">grep</b> to do it.  The advantage with
+sed is that we can break up the file into four separate files
+in a single step.  The following four-line script does it:</p>
+
+<blockquote><pre class="code">/Northeast$/w region.northeast
+/South$/w region.south
+/Midwest$/w region.midwest
+/West$/w region.west</pre></blockquote>
+
+<p>All of the names of salespeople that are assigned to the Northeast region will
+be placed in a file named <em class="filename">region.northeast</em>.</p>
+
+<p>The write command writes out the contents of the pattern space when
+the command is invoked, not when end of the script is reached.  In the
+previous example, we might want to remove the name of the region
+before writing it to file.  For each case, we could handle it as we
+show for the Northeast region:</p>
+
+<blockquote><pre class="code">/Northeast$/{
+	s///
+	w region.northeast
+	}</pre></blockquote>
+
+<p>The substitute command matches the same pattern as the address and
+removes it.  There are many different uses for the write command; 
+for example, you could use it in a script to generate several customized
+versions of the same source file.</p>
+
+<a name="sedawk-ch-5-sect-11.1" /><div class="sect2">
+<h3 class="sect2">5.11.1. Checking Out Reference Pages</h3>
+
+<p>Like many programs, a sed script often starts out small, and is simple
+to write and simple to read.  In testing the script, you may discover
+specific cases for which the general rules do not apply.  To account
+for these, you add lines to your script, making it longer, more
+complex, and more complete.  While the amount of time you spend
+refining your script may cancel out the time saved by not doing the editing
+manually, at least during that time your mind has been engaged by your
+own seeming sleight-of-hand: "See!  The computer did it."</p>
+
+<p>We encountered one such problem in preparing a formatted copy of
+command pages that the writer had typed as a text file without any
+formatting information.  Although the files had no formatting codes,
+headings were used consistently to identify the format of the command
+pages.  A sample file is shown below.</p>
+
+<blockquote><pre class="code">******************************************************************
+
+NAME:	DBclose - closes a database
+
+SYNTAX:
+	void	DBclose(fdesc)
+		DBFILE *fdesc;
+
+USAGE:
+	fdesc	- pointer to database file descriptor
+
+DESC: 
+DBclose() closes a file when given its database file descriptor.  
+Your pending writes to that file will be completed before the
+file is closed.  All of your update locks are removed. 
+*fdesc becomes invalid.
+
+Other users are not affected when you call DBclose().  Their update
+locks and pending writes are not changed.
+
+Note that there is no default file as there is in BASIC.  
+*fdesc must specify an open file.
+
+DBclose() is analogous to the CLOSE statement in BASIC.
+
+RETURNS:
+	There is no return value
+
+******************************************************************</pre></blockquote>
+
+<p>The task was to format this document for the laser printer, using the
+reference header macros we had developed.  Because there were perhaps
+forty of these command pages, it would have been utter drudgery to go
+through and add codes by hand.  However, because there were that many,
+and even though the writer was generally consistent in entering them,
+there would be enough differences from command to command to have
+required several passes.</p>
+
+<p>We'll examine the process of building this sed script.  In a sense,
+this is a process of looking carefully at each line of a sample input
+file and determining whether or not an edit must be made on that line.
+Then we look at the rest of the file for similar occurrences.  We try
+to find specific patterns that mark the lines or range of lines that
+need editing.</p>
+
+<p>For instance, by looking at the first line, we know we need to
+eliminate the row of asterisks separating each command.  We specify an
+address for any line beginning and ending with an asterisk and look
+for zero or more asterisks in between.  The regular expression uses an
+asterisk as a literal and as a metacharacter:</p>
+
+<blockquote><pre class="code">/^\*\**\*$/d</pre></blockquote>
+
+<p>This command deletes entire lines of asterisks anywhere they occur in
+the file.  We saw that blank lines were used to separate paragraphs,
+but replacing every blank line with a paragraph macro would cause
+other problems.  In many cases, the blank lines can be removed because
+spacing has been provided in the macro.  This is a case where we put
+off deleting or replacing blank lines on a global basis until we have
+dealt with specific cases.  For instance, some blank lines separate
+labeled sections, and we can use them to define the end of a range of
+lines.  The script, then, is designed to delete unwanted blank lines
+as the last operation.</p>
+
+<p>Tabs were a similar problem.  Tabs were used to indent syntax lines
+and in some cases after the colon following a label, such as "NAME".
+Our first thought was to remove all tabs by replacing them with eight
+spaces, but there were tabs we wanted to keep, such as those
+inside the syntax line.  So we removed only specific cases, tabs at
+the beginning of lines and tabs following a colon.</p>
+
+<blockquote><pre class="code">/^&#x95;/s///
+/:&#x95;/s//:/</pre></blockquote>
+
+<p>The next line we come across has the name of the command and a
+description.</p>
+
+<blockquote><pre class="code">NAME:	DBclose - closes a database</pre></blockquote>
+
+<p>We need to replace it with the macro .Rh 0.  Its syntax is:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">.Rh 0</b> "<em class="replaceable"><tt>command</em>" "<em class="replaceable">description</tt></em>"</pre></blockquote><p>We insert the macro at the beginning of the line, remove the hyphen,
+and surround the arguments with quotation marks.</p>
+
+<blockquote><pre class="code">/NAME:/ {
+	s//.Rh 0 "/
+	s/ - /" "/
+	s/$/"/
+	}</pre></blockquote>
+
+<p>We can jump ahead of ourselves a bit here and look at what this
+portion of our script does to the sample line:</p>
+
+<blockquote><pre class="code">.Rh 0 "DBclose" "closes a database"</pre></blockquote>
+
+<p>The next part that we examine begins with "SYNTAX."  What we need to
+do here is put in the .Rh macro, plus some additional
+<b class="emphasis-bold">troff</b> requests for indentation, a font change, and
+no-fill and no-adjust.  (The indentation is required because we
+stripped the tabs at the beginning of the line.)  These requests must
+go in before and after the syntax lines, turning the capabilities on
+and off.  To do this, we define an address that specifies the range of
+lines between two patterns, the label and a blank line.  Then, using
+the change command, we replace the label and the blank line with a
+series of formatting requests.</p>
+
+<blockquote><pre class="code">/SYNTAX:/,/^$/ {
+	/SYNTAX:/c\
+.Rh Syntax\
+.in +5n\
+.ft B\
+.nf\
+.na
+	/^$/c\
+.in -5n\
+.ft R\
+.fi\
+.ad b
+	}</pre></blockquote>
+
+<p>Following the change command, each line of input ends with a backslash
+except the last line.  As a side effect of the change command, the
+current line is deleted from the pattern space.</p>
+
+<p>The USAGE portion is next, consisting of one or more descriptions of
+variable items.  Here we want to format each item as an indented
+paragraph with a hanging italicized label.  First, we output the .Rh
+macro; then we search for lines having two parts separated by a tab
+and a hyphen.  Each part is saved, using backslash-parentheses, and
+recalled during the substitution.</p>
+
+<blockquote><pre class="code">/USAGE:/,/^$/ {
+	/USAGE:/c\
+.Rh Usage
+	/\(.*\)&#x95;- \(.*\)/s//.IP "\\fI\1\\fR" 15n\
+\2./
+	}</pre></blockquote>
+
+<p>This is a good example of the power of regular expressions. 
+Let's look ahead, once again, and preview the output for the sample.</p>
+
+<blockquote><pre class="code">.Rh Usage
+.IP "\fIfdesc\fR" 15n
+pointer to database file descriptor.</pre></blockquote>
+
+<p>The next part we come across is the description.  We notice that blank
+lines are used in this portion to separate paragraphs.  In specifying
+the address for this portion, we use the next label, "RETURNS."</p>
+
+<blockquote><pre class="code">/DESC:/,/RETURNS/ {
+	/DESC:/i\
+.LP
+	s/DESC: *$/.Rh Description/
+	s/^$/.LP/
+}</pre></blockquote>
+
+<p>The first thing we do is insert a paragraph macro because the
+preceding USAGE section consisted of indented paragraphs.  (We could
+have used the variable-list macros from the <b class="emphasis-bold">-mm</b>
+package in the USAGE section; if so, we would insert the .LE at this
+point.)  This is done only once, which is why it is keyed to the
+"DESC" label.  Then we substitute the label "DESC" with the .Rh macro
+and replace all blank lines in this section with a paragraph macro.</p>
+
+<p>When we tested this portion of the sed script on our sample file, it
+didn't work because there was a single space following the DESC label.
+We changed the regular expression to look for zero or more spaces
+following the label.  Although this worked for the sample file, there
+were other problems when we used a larger sample.  The writer was
+inconsistent in his use of the "DESC" label.  Mostly, it occurred on a
+line by itself; sometimes, though, it was included at the start of the
+second paragraph.  So we had to add another pattern to deal with this
+case.  It searches for the label followed by a space and one or more
+characters.</p>
+
+<blockquote><pre class="code">s/DESC: *$/.Rh Description/
+s/DESC: \(.*\)/.Rh Description\
+\\1/</pre></blockquote>
+
+<p>In the second case, the reference header macro is output followed by a
+newline.</p>
+
+<p>The next section, labeled "RETURNS," is handled in the same way
+as the SYNTAX section.</p>
+
+<p>We do make minor content changes, replacing the label "RETURNS" with
+"Return Value" and consequently adding this substitution:</p>
+
+<blockquote><pre class="code">s/There is no return value\.*/None./</pre></blockquote>
+
+<p>The very last thing we do is delete remaining blank lines.</p>
+
+<blockquote><pre class="code">/^$/d</pre></blockquote>
+
+<p>Our script is put in a file named <em class="emphasis">refsed</em>. 
+Here it is in full:</p>
+
+<blockquote><pre class="code"># refsed -- add formatting codes to reference pages
+/^\*\**\*$/d
+/^&#x95;/s///
+/:&#x95;/s//:/
+/NAME:/ {
+	s//.Rh 0 "/
+	s/ - /" "/
+	s/$/"/
+}
+/SYNTAX:/,/^$/ {
+	/SYNTAX:/c\
+.Rh Syntax\
+.in +5n\
+.ft B\
+.nf\
+.na
+	/^$/c\
+.in -5n\
+.ft R\
+.fi\
+.ad b
+}
+/USAGE:/,/^$/ {
+	/USAGE:/c\
+.Rh Usage
+	/\(.*\)&#x95;- \(.*\)/s//.IP "\\fI\1\\fR" 15n\
+\2./
+}
+/DESC:/,/RETURNS/ {
+	/DESC:/i\
+.LP
+	s/DESC: *$/.Rh Description/
+	s/DESC: \(.*\)/.Rh Description\
+\1/
+	s/^$/.LP/
+}
+/RETURNS:/,/^$/ {
+	/RETURNS:/c\
+.Rh "Return Value"
+	s/There is no return value\.*/None./
+}
+/^$/d</pre></blockquote>
+
+<p>As we have remarked, you should not have sed overwrite the original.
+It is best to redirect the output of sed to another file or let it go
+to the screen.  If the sed script does not work properly, you will
+find that it is generally easier to change the script and re-run it on
+the original file than to write a new script to correct the problems
+caused by a previous run.</p>
+
+<blockquote><pre class="code">$<tt class="userinput"><b> sed -f refsed refpage  </b></tt>
+.Rh 0 "DBclose" "closes a database"
+.Rh Syntax
+.in +5n
+.ft B
+.nf
+.na
+void	DBclose(fdesc)
+	DBFILE *fdesc;
+.in -5n
+.ft R
+.fi
+.ad b
+.Rh Usage
+.IP "\fIfdesc\fR" 15n
+pointer to database file descriptor.
+.LP
+.Rh Description
+DBclose() closes a file when given its database file descriptor.  
+Your pending writes to that file will be completed before the
+file is closed.  All of your update locks are removed. 
+*fdesc becomes invalid.
+.LP
+Other users are not effected when you call DBclose().  Their update
+locks and pending writes are not changed.
+.LP
+Note that there is no default file as there is in BASIC.  
+*fdesc must specify an open file.
+.LP
+DBclose() is analogous to the CLOSE statement in BASIC.
+.LP
+.Rh "Return Value"
+None.</pre></blockquote>
+</div>
+
+
+
+
+<a name="IXT-5-265743" />
+<a name="IXT-5-265744" />
+<a name="IXT-5-265745" />
+<a name="IXT-5-265746" />
+<a name="IXT-5-265747" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.10. Next</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.12. Quit</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

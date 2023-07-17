@@ -1,0 +1,493 @@
+<html><head><title>Using getopts (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appb_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="appc_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">B.11. Using getopts</h2>
+
+<p>
+<a name="korn2-IDXTERM-2114" />
+
+
+The <em class="emphasis">getopts</em> command is extremely capable.  With it,
+you can make your shell scripts accept long options, specify that arguments are
+optional or numeric, and provide descriptions of the arguments and values
+such that the <em class="emphasis">-?</em>, <em class="emphasis">--man</em>,
+<em class="emphasis">--html</em> and <em class="emphasis">--nroff</em> options work the
+same for your program as they do for the <em class="emphasis">ksh93</em>
+built-in commands.
+</p>
+
+<p>
+The price for this power is the complexity of the option description
+"language."  Based on a description provided by Dr. Glenn Fowler of
+AT&amp;T Research, we describe how the facilities evolved, how
+they work, and summarize how to use them in your own programs.
+We use the the extended <em class="emphasis">getopts</em> command in the
+solution to <a href="appb_11.htm#korn2-APP-B-SIDEBAR-1">Task B-1</a>.
+</p>
+
+<a name="korn2-APP-B-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task B-1</h4>
+<p>
+Design the program <em class="emphasis">phaser4</em>, that
+combines the features of the <em class="emphasis">phaser3</em>
+and <em class="emphasis">tricorder</em> programs.
+Make sure it is self-documenting.<a href="#FOOTNOTE-158">[158]</a>
+</p>
+<blockquote class="footnote">
+<a name="FOOTNOTE-158" /><p> [158]
+No, the walls of my room are not covered with Star Trek posters.
+I outgrew that a long time ago, and besides, my wife wouldn't let me anyway. ADR.
+</p>
+</blockquote></td></tr></table><p></blockquote>
+
+<p>
+The first step is to describe the options.  This is done with a comment
+at the top of the script:
+
+<blockquote><pre class="code">
+# usage: phaser4 [ options ] files
+#   -k, --kill                  use kill setting (default)
+#   -l n, --level n             set phaser level (default = 2)
+#   -s, --stun                  use stun-only setting
+#   -t [lf], --tricorder [lf]   tricorder mode, opt. scan for life form lf
+</pre></blockquote></p>
+
+<p>Now the fun begins.
+This outline of capabilities follows the order in which
+features were added to <em class="emphasis">getopts</em>.
+</p>
+
+<ol>
+
+<li><p>
+Start with the <em class="emphasis">getopts</em> command as described in
+<a href="ch06_01.htm">Chapter 6</a>.  This yields a simple option
+string that only allows one-letter options:
+
+<blockquote><pre class="code">
+USAGE="kl#st:"
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Add a textual description for the option argument.  This
+is done by enclosing arbitrary text in between <tt class="literal">[</tt>
+and <tt class="literal">]</tt>:
+
+<blockquote><pre class="code">
+USAGE="kl#[level]st:[life_form]"
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Allow a default value for an option's argument.  This is done
+by specifying <tt class="literal">:=</tt> <em class="replaceable"><tt>value</tt></em>
+within the description in between the brackets:
+
+<blockquote><pre class="code">
+USAGE="kl#[level:=2]st:[life_form]"
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Add <tt class="literal">?</tt> after the <tt class="literal">:</tt> to
+indicate an optional argument:
+
+<blockquote><pre class="code">
+USAGE="kl#[level:=2]st:?[life_form]"
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Allow long options that start with <tt class="literal">--</tt>.
+This is done by using
+<tt class="literal">[</tt><em class="replaceable"><tt>let</em><tt class="literal">:</tt><em class="replaceable">long</tt></em><tt class="literal">]</tt>
+<em class="emphasis">instead of</em> the single option letter:
+</p>
+
+<blockquote><pre class="code">
+USAGE="[k:kill]"
+USAGE+="[l:level]#[level:=2]"
+USAGE+="[s:stun]"
+USAGE+="[t:tricorder]:?[life_form]"
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+
+<p>
+Here, we've split each option out into its own line, to make things easier to
+follow, and concatenated them together using the <tt class="literal">+=</tt>
+assignment operator.
+Note that there are no newlines in the string.
+</p></li>
+
+<li><p>
+Within the square brackets for an option letter, allow
+descriptive text to follow a question mark.  This text is
+ignored, as are any whitespace characters, including newlines:
+
+<blockquote><pre class="code">
+USAGE="[k:kill?Use kill setting (default).]"
+USAGE+="[l:level]#[level:=2?Set the phaser level.]"
+USAGE+="[s:stun?Stun-only.]"
+USAGE+="[t:tricorder?Tricorder mode.]:?[life_form]"
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Now it gets interesting.  Unix man page style
+section headings come <em class="emphasis">before</em> the option
+description.  They are distinguished from option descriptions by starting
+with a <tt class="literal">+</tt>
+inside square brackets:
+
+<blockquote><pre class="code">
+USAGE="[+NAME?phaser4 --- combined phaser and tricorder]"
+USAGE+="[+DESCRIPTION?The phaser4 program combines the operation "
+USAGE+="of the phaser3 and tricorder programs in one handy tool.]"
+USAGE+="[k:kill?Use kill setting (default).]"
+USAGE+="[l:level]#[level:=2?Set the phaser level.]"
+USAGE+="[s:stun?Stun-only.]"
+USAGE+="[t:tricorder?Tricorder mode.]:?[life_form]"
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p>
+
+<p>
+Note that <em class="emphasis">getopts</em> automatically understands that
+the actual options description comes after the man page headings;
+there is no explicit <tt class="literal">[+OPTIONS?</tt>...<tt class="literal">]</tt> in
+the text of the string.
+</p></li>
+
+<li><p>
+Additional descriptive
+text for the short usage summary can be given
+after the options description,
+separated by two newlines:
+
+<blockquote><pre class="code">
+USAGE="[+NAME?phaser4 --- combined phaser and tricorder]"
+USAGE+="[+DESCRIPTION?The phaser4 program combines the operation "
+USAGE+="of the phaser3 and tricorder programs in one handy tool.]"
+USAGE+="[k:kill?Use kill setting (default).]"
+USAGE+="[l:level]#[level:=2?Set the phaser level.]"
+USAGE+="[s:stun?Stun-only.]"
+USAGE+="[t:tricorder?Tricorder mode.]:?[life_form]"
+USAGE+=$'\n\nfile ...\n\n'                     <i class="lineannotation">Use ANSI C string for \n character</i>
+USAGE+="[+SEE ALSO?phaser3(1), tricorder(1)]"
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+To indicate text to be italicized, enclose it
+in between pairs of <tt class="literal">\a</tt> characters.
+To indicate text to be emboldened, enclose it
+between pairs of <tt class="literal">\b</tt>:
+
+<blockquote><pre class="code">
+USAGE="[+NAME?phaser4 --- combined phaser and tricorder]"
+USAGE+="[+DESCRIPTION?The \aphaser4\a program combines the operation "
+USAGE+="of the \aphaser3\a and \atricorder\a programs in one handy tool.]" 
+USAGE+="[k:kill?Use kill setting (default).]"
+USAGE+="[l:level]#[level:=2?Set the phaser level.]"
+USAGE+="[s:stun?Stun-only.]"
+USAGE+="[t:tricorder?Tricorder mode.]:?[life_form]"
+USAGE+=$'\n\nfile ...\n\n'
+USAGE+=$'[+SEE ALSO?\aphaser3\a(1), \atricorder\a(1)]'
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Dynamic control of descriptive output is possible.
+To do this, write a function that prints whatever you want, and
+then enclose the function name in a pair of <tt class="literal">\f</tt>
+characters:
+<tt class="literal">\f</tt><em class="replaceable"><tt>name</tt></em><tt class="literal">\f</tt>
+(this isn't needed for <em class="emphasis">phaser4</em>).
+</p></li>
+
+<li><p>
+If an option (or anything else) needs a verbose description,
+enclosing the text between <tt class="literal">{</tt> and <tt class="literal">}</tt>
+creates an indented list.  This is particularly useful for describing
+different option values:
+
+<blockquote><pre class="code">
+USAGE="[+NAME?phaser4 --- combined phaser and tricorder]"
+USAGE+="[+DESCRIPTION?The \aphaser4\a program combines the operation "
+USAGE+="of the \aphaser3\a and \atricorder\a programs in one handy tool.]"
+USAGE+="[k:kill?Use kill setting (default).]"
+USAGE+="[l:lev*el]#[level:=2?Set the phaser level.]{   <i class="lineannotation">Add value descriptions</i>
+                [level=0-2?non-lethal settings]
+                [level=3-10?lethal, use with caution]
+}"
+USAGE+="[s:stun?Stun-only.]"
+USAGE+="[t:tricorder?Tricorder mode.]:?[life_form]"
+USAGE+=$'\n\nfile ...\n\n'
+USAGE+=$'[+SEE ALSO?\aphaser3\a(1), \atricorder\a(1)]'
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Almost done.
+Text in between square brackets that begins with a
+minus sign provides version and identification information.
+Such text comes at the very beginning.
+The empty item indicates a version and may contain both
+SCCS and RCS ID strings as shown here:
+
+<blockquote><pre class="code">
+USAGE=$'[-?\n@(#)$Id: phaser4 (Starfleet Research and Development)'
+USAGE+=$' Stardate 57234.22 $\n]'
+USAGE+="[-author?J. Programmer &lt;J.Prog@r-d.starfleet.mil.fed&gt;]"
+USAGE+="[-copyright?Copyright (c) Stardate 57000 Starfleet.]"
+USAGE+="[-license?http://www.starfleet.mil.fed/weapons-license.xml23]"
+USAGE+="[+NAME?phaser4 --- combined phaser and tricorder]"
+USAGE+="[+DESCRIPTION?The \aphaser4\a program combines the operation "
+USAGE+="of the \aphaser3\a and \atricorder\a programs in one handy tool.]"
+USAGE+="[k:kill?Use kill setting (default).]"
+USAGE+="[l:lev*el]#[level:=2?Set the phaser level.]{
+                [level=0-2?non-lethal settings]
+                [level=3-10?lethal, use with caution]
+}"
+USAGE+="[s:stun?Stun-only.]"
+USAGE+="[t:tricorder?Tricorder mode.]:?[life_form]"
+USAGE+=$'\n\nfile ...\n\n'
+USAGE+=$'[+SEE ALSO?\aphaser3\a(1), \atricorder\a(1)]'
+while getopts "$USAGE" optchar ...
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Finally, allow escapes within the strings. <tt class="literal">]]</tt>
+represents a literal <tt class="literal">]</tt> when <em class="emphasis">getopts</em>
+might otherwise take it to mean a closing bracket.  Similarly,
+<tt class="literal">??</tt> stands for a literal <tt class="literal">?</tt>
+that might otherwise start a description.
+</p></li>
+
+</ol>
+
+<p>
+Whew!  That's a lot of stuff.  However, seeing it in the order
+it was added helps it to make sense.  Here is a
+summary of the items that go in the usage string, in
+the order that <em class="emphasis">getopts</em> requires:
+</p>
+
+<ol>
+
+<li><p>
+Identification strings for the version, author, license, and so on
+are the very first part.  They are enclosed in square brackets and
+begin with a minus sign.  The item name, such as author, follows
+the minus sign and ends at a question mark.  Following the question
+mark is the associated information.
+</p><p>
+The empty item indicates version information, and should be of
+the form as shown earlier; <em class="emphasis">getopts</em> strips
+out the special SCCS and RCS identification characters.
+</p></li>
+
+<li><p>
+Unix man page-style section headings and
+text come next.  These are enclosed in square brackets and
+begin with a <tt class="literal">+</tt> sign.  The section heading name
+ends at the <tt class="literal">?</tt> character, and the descriptive
+text follows.
+</p><p>
+Text separated by two successive newlines from the options
+description is appended to the short usage message.
+</p></li>
+
+<li><p>
+Option descriptions form the third section.  The original short form
+as described in
+<a href="ch06_01.htm">Chapter 6</a> is still allowed:
+</p>
+
+   <ul>
+   
+   <li><p>
+   Use <tt class="literal">:</tt> for options that require arguments.
+   </p></li>
+   
+   <li><p>
+   Use <tt class="literal">#</tt> for options that require numeric arguments.
+   </p></li>
+   
+   <li><p>
+   Use <tt class="literal">:?</tt> and <tt class="literal">#?</tt> for options that allow
+   arguments but don't require them.
+   </p></li>
+
+   </ul>
+</li>
+
+<li><p>
+Follow options by descriptive text in between <tt class="literal">[</tt> and <tt class="literal">]</tt>.
+Use <tt class="literal">:=</tt> within the descriptive text to specify a default value for an option argument.
+</p></li>
+
+<li><p>
+Long options are matched with a short option letter by enclosing them in
+square brackets, separated by a colon.  This replaces the single letter form.
+</p></li>
+
+<li><p>
+Enclose items to be italicized between two <tt class="literal">\a</tt> characters.
+Enclose items to be emboldened between two <tt class="literal">\b</tt> characters.
+Enclose the name of a customizing function to call between two <tt class="literal">\f</tt> characters.
+</p></li>
+
+<li><p>
+Use <tt class="literal">{</tt> and <tt class="literal">}</tt> to enclose
+nested, indented option descriptions.
+</p></li>
+
+<li><p>
+Follow the options section with two newlines and additional
+text for the short options summary.
+</p></li>
+
+<li><p>
+Use <tt class="literal">]]</tt> to represent a literal <tt class="literal">]</tt>
+and <tt class="literal">??</tt> to represent a literal <tt class="literal">?</tt>.
+</p></li>
+
+</ol>
+
+<?troff .Nd 10?>
+
+<p>
+Here is the skeletal version of <em class="emphasis">phaser4</em>:
+</p>
+
+<blockquote><pre class="code">
+#! /bin/ksh
+
+# usage: phaser4 [ options ] files
+#   -k, --kill                  use kill setting (default)
+#   -l n, --level n             set phaser level (default = 2)
+#   -s, --stun                  use stun-only setting
+#   -t [lf], --tricorder [lf]   tricorder mode, opt. scan for life form lf
+
+USAGE=$'[-?\n@(#)$Id: phaser4 (Starfleet Research and Development)'
+USAGE+=$' Stardate 57234.22 $\n]'
+USAGE+="[-author?J. Programmer &lt;J.Prog@r-d.starfleet.mil.fed&gt;]"
+USAGE+="[-copyright?Copyright (c) Stardate 57000 Starfleet.]"
+USAGE+="[-license?http://www.starfleet.mil.fed/weapons-license.xml23]"
+USAGE+="[+NAME?phaser4 --- combined phaser and tricorder]"
+USAGE+="[+DESCRIPTION?The \aphaser4\a program combines the operation "
+USAGE+="of the \aphaser3\a and \atricorder\a programs in one handy tool.]"
+USAGE+="[k:kill?Use kill setting (default).]"
+USAGE+="[l:lev*el]#[level:=2?Set the phaser level.]{
+                [0-2?non-lethal settings]
+                [3-10?lethal, use with caution]
+}"
+USAGE+="[s:stun?Stun-only.]"
+USAGE+="[t:tricorder?Tricorder mode.]:?[life_form]"
+USAGE+=$'\n\nfile ...\n\n'
+USAGE+=$'[+SEE ALSO?\aphaser3\a(1), \atricorder\a(1)]'
+
+kill=1 stun=0 level=2   # defaults
+tricorder=0 phaser=1
+life_form=
+while getopts "$USAGE" optchar ; do
+    case $optchar in
+    k)  kill=1 stun=0 ;;
+    s)  kill=0 stun=1 ;;
+    l)  level=$OPTARG
+        if ((level &lt; 0)) ; then level=0 ; fi
+        if ((level &gt; 10)) ; then level=10 ; fi
+        ;;
+    t)  phaser=0 tricorder=1
+        life_form=${OPTARG:-"general_unknown"}
+        ;;
+    esac
+done
+
+print kill=$kill
+print stun=$stun
+print level=$level
+print phaser=$phaser
+print tricorder=$tricorder
+print life_form=$life_form
+</pre></blockquote>
+
+<?troff .Nd 10?>
+
+<p>
+Here is the output from <tt class="literal">phaser4 --man</tt>:
+<a name="IXTR3-17" />
+<a name="IXTR3-18" />
+
+
+</p>
+
+<blockquote><pre class="code">
+<tt class="userinput"><b>NAME</b></tt>
+  phaser4 --- combined phaser and tricorder
+
+<tt class="userinput"><b>SYNOPSIS</b></tt>
+  <tt class="userinput"><b>phaser4</b></tt> [ <tt class="userinput"><b>options</b></tt> ] file ...
+
+<tt class="userinput"><b>DESCRIPTION</b></tt>
+  The <tt class="userinput"><b>phaser4</b></tt> program combines the operation of the <tt class="userinput"><b>phaser3</b></tt> and <tt class="userinput"><b>tricorder</b></tt>
+  programs in one handy tool.
+
+<tt class="userinput"><b>OPTIONS</b></tt>
+  -<tt class="userinput"><b>k</b></tt>, --<tt class="userinput"><b>kill</b></tt>      Use kill setting (default).
+  -<tt class="userinput"><b>l</b></tt>, --<tt class="userinput"><b>level</b></tt>=<tt class="userinput"><b>level</b></tt>
+                  Set the phaser level.
+                    <tt class="userinput"><b>level=0-2</b></tt>
+                          non-lethal settings
+                    <tt class="userinput"><b>level=3-10</b></tt>
+                          lethal, use with caution
+                  The default value is 2.
+  -<tt class="userinput"><b>s</b></tt>, --<tt class="userinput"><b>stun</b></tt>      Stun-only.
+  -<tt class="userinput"><b>t</b></tt>, --<tt class="userinput"><b>tricorder</b></tt>[=<tt class="userinput"><b>life form</b></tt>]
+                  Tricorder mode. The option value may be omitted.
+
+<tt class="userinput"><b>SEE ALSO</b></tt>
+  <tt class="userinput"><b>phaser3</b></tt>(1), <tt class="userinput"><b>tricorder</b></tt>(1)
+
+<tt class="userinput"><b>IMPLEMENTATION</b></tt>
+  <tt class="userinput"><b>version</b></tt>         phaser4 (Starfleet Research and Development) Stardate
+                  57234.22
+  <tt class="userinput"><b>author</b></tt>          J. Programmer &lt;J.Prog@r-d.starfleet.mil.fed&gt;
+  <tt class="userinput"><b>copyright</b></tt>       Copyright (c) Stardate 57000 Starfleet.
+  <tt class="userinput"><b>license</b></tt>         http://www.starfleet.mil.fed/weapons-license.xml23
+</pre></blockquote>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appb_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="appc_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">B.10. vi Control Mode Commands</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">C. Building ksh from Source Code</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

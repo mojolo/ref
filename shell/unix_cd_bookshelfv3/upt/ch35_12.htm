@@ -1,0 +1,142 @@
+<html><head><title>Exit Status of Unix Processes (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.12. Exit Status of Unix Processes</h2>
+
+<p><a name="IXT-35-3614" />When a <a name="upt3-IDXTERM-5533" />Unix
+<a name="IXT-35-3615" /><a name="IXT-35-3616" /> <a name="IXT-35-3617" /><a name="IXT-35-3618" />process (command) runs, it can
+return a numeric status value to the parent process that called
+(started) it. The status can tell the calling process whether the
+command <a name="IXT-35-3619" /><a name="IXT-35-3620" />succeeded or failed. Many (but not all)
+Unix commands return a status of zero if everything was okay and
+nonzero (1, 2, etc.) if something went wrong. A few commands, such as
+<i class="command">grep</i> and <i class="command">diff</i>, return a
+different nonzero status for different kinds of problems; see your
+online manual pages (or just experiment!) to find out.
+</p>
+
+<p><a name="IXT-35-3621" /><a name="IXT-35-3622" />The Bourne shell puts the exit
+status of the previous command in the question mark
+(<tt class="literal">?</tt>) variable. You can get its value by preceding
+it with a dollar sign (<tt class="literal">$</tt>), just like any other
+shell variable. For example, when
+<i class="command">cp</i><a name="IXT-35-3623" />
+copies a file, it sets the status to 0. If something goes wrong,
+<i class="command">cp</i> sets the status to 1:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cp afile /tmp</b></tt>
+$ <tt class="userinput"><b>echo $?</b></tt>
+0
+$ <tt class="userinput"><b>cp afiel /tmp</b></tt>
+cp: afiel: No such file or directory
+$ <tt class="userinput"><b>echo $?</b></tt>
+1</pre></blockquote>
+
+<p><a name="IXT-35-3624" /> <a name="IXT-35-3625" />In the C shell, use the
+<em class="emphasis">status</em> variable instead (<i class="command">tcsh</i>
+supports both):
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cp afiel /tmp</b></tt>
+cp: afiel: No such file or directory
+% <tt class="userinput"><b>echo $status</b></tt>
+1
+tcsh&gt; <tt class="userinput"><b>cp afiel /tmp</b></tt>
+cp: afiel: No such file or directory
+tcsh&gt; <tt class="userinput"><b>echo $status</b></tt>
+1</pre></blockquote>
+
+<p>Of course, you usually don't have to display the
+exit status in this way, because there are <b class="emphasis-bold">several ways</b> (<a href="ch35_13.htm#upt3-CHP-35-SECT-13">Section 35.13</a>,
+<a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a>, <a href="ch35_15.htm#upt3-CHP-35-SECT-15">Section 35.15</a>) to use
+the exit status of one command as a condition of further execution.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: true, false</p>
+
+<p><a name="IXT-35-3626" /><a name="IXT-35-3627" />Two simple Unix utilities do nothing but
+return an exit status. <i class="command">true</i> returns a status of 0
+(zero); <i class="command">false</i> returns 1 (one). There are GNU
+versions on the web site -- and no, they don't
+have any amazing extra features. <tt class="literal">;-)</tt>
+</p>
+
+<p><i class="command">bash</i><a name="IXT-35-3628" /> <a name="IXT-35-3629" /> <a name="IXT-35-3630" /> and <i class="command">zsh</i> have a handy
+way to reverse the status of a command line: put an
+<a name="IXT-35-3631" />exclamation point (<tt class="literal">!</tt>)
+before it. Let's look at a simple example (of
+course, you'd use <tt class="literal">!</tt> with
+something besides <i class="command">true</i> or
+<i class="command">false</i>):
+</p>
+
+<blockquote><pre class="code">bash$ <tt class="userinput"><b>true</b></tt>
+bash$ <tt class="userinput"><b>echo $?</b></tt>
+0
+bash$ <tt class="userinput"><b>! true</b></tt>
+bash$ <tt class="userinput"><b>echo $?</b></tt>
+1
+bash$ <tt class="userinput"><b>false</b></tt>
+bash$ <tt class="userinput"><b>echo $?</b></tt>
+1
+bash$ <tt class="userinput"><b>! false</b></tt>
+bash$ <tt class="userinput"><b>echo $?</b></tt>
+0</pre></blockquote>
+
+<p><i class="command">tcsh</i> and <i class="command">zsh</i> have a handy
+feature for work with exit statuses. If you set the
+<i class="command">tcsh</i> shell variable
+<em class="emphasis">printexitvalue</em><a name="IXT-35-3632" /> <a name="IXT-35-3633" />
+or the <i class="command">zsh</i> shell option
+<span class="option">PRINT_EXIT_VALUE</span><a name="IXT-35-3634" /> <a name="IXT-35-3635" /> <a name="IXT-35-3636" /> <a name="IXT-35-3637" />, the shell will print the exit
+status of any program that doesn't return zero. For
+example:
+</p>
+
+<blockquote><pre class="code">zsh$ <tt class="userinput"><b>setopt printexitvalue</b></tt>
+zsh$ <tt class="userinput"><b>grep '&lt;title&gt;' 0001.sgm</b></tt>
+&lt;title&gt;Too Many Arguments for the Command Line&lt;/title&gt;
+zsh$ <tt class="userinput"><b>grep '&lt;title&gt;' 0000.sgm</b></tt>
+grep: 0000.sgm: No such file or directory
+zsh: exit 2     grep &lt;title&gt; 0000.sgm
+zsh$ <tt class="userinput"><b>grep '&lt;ttle&gt;' 0001.sgm</b></tt>
+zsh: exit 1     grep &lt;ttle&gt; 0001.sgm
+
+tcsh% <tt class="userinput"><b>set printexitvalue</b></tt>
+tcsh% <tt class="userinput"><b>true</b></tt>
+tcsh% <tt class="userinput"><b>false</b></tt>
+Exit 1</pre></blockquote>
+
+<p><a name="IXT-35-3638" /><a name="IXT-35-3639" /><a name="IXT-35-3640" />You can't test the exit
+status of a <a name="IXT-35-3641" />background job in the Bourne shell
+unless you use the <i class="command">wait</i> command to wait for it (in
+effect, to bring the job out of the background). Pipelines, however,
+return the exit status of the last program in the pipeline.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.11. Pattern Matching in case Statements</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.13. Test Exit Status with the if Statement</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

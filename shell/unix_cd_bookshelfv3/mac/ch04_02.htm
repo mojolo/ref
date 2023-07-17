@@ -1,0 +1,647 @@
+<html><head><title>Compiling Unix Source Code (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.2. Compiling Unix Source Code</h2>
+
+<p><a name="mosxgeeks-IDXTERM-288" />Many of the differences between Mac OS X
+and other versions of Unix become apparent when you try to build
+Unix-based software on Mac OS X. Most Unix-based open source software
+uses GNU <em class="filename">autoconf</em><a name="IXT-4-476" /> or a similar facility, which generates
+a <em class="filename">configure</em> script that performs a number of
+tests of the system--especially of the installed Development
+Tools--and finishes by constructing one or more makefiles. After
+the <em class="filename">configure</em> script has done its job, you run
+the <em class="filename">make </em><a name="IXT-4-477" />command to first compile, and, if all
+goes well, install the resulting binaries.
+</p>
+
+
+<a name="ch04-11-fm2xml" /><blockquote><b>TIP:</b> 
+Most <a name="IXT-4-478" />tarballs will
+include a <em class="filename">configure</em> script, so you do not need
+to generate it yourself. However, if you retrieve
+<em class="filename">autoconf</em>-managed source code from a CVS archive,
+you will have to run <em class="filename">autoconf.sh</em> manually to
+generate the <em class="filename">configure</em> file.
+</p>
+</blockquote>
+
+<p>In most cases, performing the following three
+<a name="IXT-4-479" /> <a name="IXT-4-480" />
+<a name="IXT-4-481" />steps is
+all that is needed to successfully compile a Unix-based application
+on Mac OS X after you have unpacked the tarball and changed to the
+top-level source code directory:
+</p>
+
+<blockquote><pre class="code">./configure
+make 
+make install</pre></blockquote>
+
+<a name="ch04-12-fm2xml" /><blockquote><b>WARNING:</b> 
+Mac OS X web browsers are configured to invoke StuffIt on compressed
+archives. So, if you click on a link to a tarball, you may find that
+it gets downloaded to your desktop and extracted there. If
+you'd prefer to manage the download and extraction
+process yourself, Control-click or right-click on the link so you can
+specify a download location.
+</p>
+</blockquote>
+
+<p>The following sections deal with issues involved in successfully
+performing these steps. Determining how to improvise within that
+three-step procedure reveals some of the differences between Mac OS X
+and other Unix systems.
+</p>
+
+<a name="mosxgeeks-CHP-4-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">4.2.1. The First Line of Defense</h3>
+
+<p>Most tarballs will include the following files in the top-level
+directory: <em class="filename">README</em><a name="IXT-4-482" />,
+<em class="filename">INSTALL</em><a name="IXT-4-483" />, and a file named
+<em class="filename">PORT</em><a name="IXT-4-484" /> or <em class="filename">PORTING</em>. These
+files contain useful information that may help you get the
+application running on Mac OS X.
+</p>
+
+<dl>
+<dt><i><em class="filename">README</em></tt></i></dt>
+<dd>
+<a name="IXT-4-485" />This document is an introduction to the
+application and source code. Also, you'll often find
+copyright information in this document, notes about bug fixes or
+improvements made to different versions of the application, and
+pointers to web sites, FAQs, and mailing lists.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">INSTALL</em></tt></i></dt>
+<dd>
+<a name="IXT-4-486" />This document contains step-by-step
+installation instructions.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">PORT</em></tt> <em class="emphasis">or</em></tt> <em class="filename">PORTING</em></tt></i></dt>
+<dd>
+<a name="IXT-4-487" />If present, one of these documents will
+include tips for porting the application to another platform.
+</p>
+</dd>
+
+</dl>
+
+</div>
+<a name="mosxgeeks-CHP-4-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">4.2.2. Host Type</h3>
+
+<p>One of the first difficulties you may encounter in running a
+<em class="filename">configure</em></tt> script is when the script aborts with
+an error message stating that the host system cannot be determined.
+</p>
+
+<p>Strictly speaking, the <em class="filename">host type
+</em></tt><a name="IXT-4-488" />refers
+to the system on which software will run, and the <em class="filename">build
+type </em></tt><a name="IXT-4-489" />refers to the system on which the software
+is being built. It is possible to build software on one system to run
+on another system, but to do so requires a cross-compiler. We will
+not concern ourselves with cross-compiler issues. Thus, for our
+discussion, both the host type and the build (and target) types are
+the same:
+<tt class="literal">powerpc-apple-darwin</tt><tt><em class="replaceable"><tt>VERSION</tt></em></tt>,<em class="filename">
+</em></tt>where the <tt><em class="replaceable"><tt>VERSION</tt></em></tt> denotes the
+particular version of Darwin. In fact, a <em class="filename">configure
+</em></tt>script detects Mac OS X by the host/build type named
+<em class="filename">Darwin, </em></tt>since Darwin is the actual operating
+system underlying Mac OS X. This can be verified by issuing the
+<em class="filename">uname -v</em></tt> command, which tells you that
+you're running a Darwin kernel, the kernel version,
+and when it was last built.
+</p>
+
+<p>Many <em class="filename">configure</em></tt> scripts are designed to determine
+the host system, since the resulting makefiles will differ depending
+on the type of system for which the software is being built. The
+<em class="filename">configure</em></tt> script is designed to be used with two
+files related to the host type, usually residing in the same
+directory as the <em class="filename">configure </em></tt>script. These files
+are <em class="filename">config.guess</em></tt>, which is used to help guess
+the host type; and <em class="filename">config.sub</em></tt>, which is used to
+validate the host type and to put it into a canonical form (such as
+<em class="filename">CPUTYPE-MANUFACTURER-OS</em></tt>,<em class="filename"> </em></tt>as
+in <tt class="literal">powerpc-apple-darwin6.0</tt>).
+</p>
+
+<p>Since <a name="IXT-4-490" />Mac OS X and Darwin are
+relatively new, you may run across source code distributions that
+contain older <em class="filename">config.*</em></tt> files that
+don't work with Mac OS X. You can find out if these
+files support <a name="IXT-4-491" />Darwin by running the
+<em class="filename">./configure</em></tt> script. If the script complains
+about an unknown host type, you know that you have a set of
+<em class="filename">config.*</em></tt> files that don't
+support Darwin.
+</p>
+
+<p>In that case, you can replace the <em class="filename">config.guess
+</em></tt>and <em class="filename">config.sub </em></tt>files with the
+Apple-supplied, like-named versions residing in
+<em class="emphasis">/usr/share/automake-1.6</em></tt>. These replacement files
+originate from the FSF and include the code necessary to configure a
+<a name="IXT-4-492" />
+<a name="IXT-4-493" />source tree for Mac OS X. To copy these
+files into the <em class="filename">source </em></tt>directory, which contains
+the <em class="filename">configure </em></tt>script, simply issue the following
+commands from within the <em class="filename">sources
+</em></tt>directory:<a name="IXTR3-525" />
+</p>
+
+<blockquote><pre class="code">cp /usr/share/automake-1.6/config.sub .
+cp /usr/share/automake-1.6/config.guess .</pre></blockquote>
+
+<a name="mosxgeeks-CHP-4-SECT-2.2.1" /><div class="sect3">
+<h3 class="sect3">4.2.2.1. Macros</h3>
+
+<p>You can use a number of predefined
+<a name="IXT-4-494" />macros to detect
+Apple systems and
+<a name="IXT-4-495" />Mac OS X in particular. For example,
+<tt class="literal">_ _APPLE_ _</tt> is a macro that is defined on every
+Apple <em class="filename">gcc</em></tt>-based Mac OS X system, and <tt class="literal">_
+_MACH_ _</tt> is one of several macros specific to Mac OS X.
+<a href="ch04_02.htm#mosxgeeks-CHP-4-TABLE-1">Table 4-1</a> lists the predefined macros available on
+Mac OS X.
+</p>
+
+<a name="mosxgeeks-CHP-4-TABLE-1" /><h4 class="objtitle">Table 4-1. Mac OS X C macros  </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th width="33%">
+<p>Macro </p>
+</th>
+<th>
+<p>When defined</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">_ _OBJC_ _</tt><a name="IXT-4-496" />
+</p>
+</td>
+<td>
+<p>When the compiler is compiling Objective-C <em class="filename">.m
+</em></tt>files or Objective-C++ <em class="filename">.M </em></tt>files. (To
+override the file extension, use -<em class="filename">ObjC </em></tt>or
+-<em class="filename">ObjC++</em></tt>).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">_ _ASSEMBLER_ _</tt><a name="IXT-4-497" />
+</p>
+</td>
+<td>
+<p>When the compiler is compiling <em class="filename">.s </em></tt>files.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">_ _NATURAL_ALIGNMENT_ _</tt><a name="IXT-4-498" />
+</p>
+</td>
+<td>
+<p>When compiling for systems that use natural alignment, such as
+<em class="filename">powerpc</em></tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">_ _STRICT_BSD_ _</tt><a name="IXT-4-499" />
+</p>
+</td>
+<td>
+<p>If, and only if, the -<em class="filename">bsd </em></tt>flag is specified as
+an argument to the compiler.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">_ _MACH_ _</tt><a name="IXT-4-500" />
+</p>
+</td>
+<td>
+<p>When compiling for systems that support Mach system calls. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">_ _APPLE_ _</tt><a name="IXT-4-501" />
+</p>
+</td>
+<td>
+<p>When compiling for any Apple system. Currently defined only on Mac OS
+X systems running Apple's variant of the GNU C
+compiler. Do not rely on this macro to tell you that you are on
+Darwin or Mac OS X, since third-party compilers may not define this
+macro.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">_ _APPLE_CC_ _</tt><a name="IXT-4-502" />
+</p>
+</td>
+<td>
+<p>When compiling for any Apple system. Integer value that corresponds
+to the (Apple) version of the compiler.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">_ _VEC_ _</tt><a name="IXT-4-503" />
+</p>
+</td>
+<td>
+<p>When AltiVec support was enabled with the
+<em class="filename">-faltivec</em></tt> flag.
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="ch04-16-fm2xml" /><blockquote><b>WARNING:</b> 
+Do not rely on the presence of the <tt class="literal">_ _APPLE_ _</tt>
+macro to determine which compiler features or libraries are
+supported. Instead, we suggest that you use a package like GNU
+<em class="filename">autoconf</em></tt> to tell you which features the target
+operating system supports. This approach makes it more likely that
+your applications can compile out-of-the-box (or with little effort)
+on operating systems to which you don't have access.
+</p>
+</blockquote>
+
+</div>
+</div>
+<a name="mosxgeeks-CHP-4-SECT-2.3" /><div class="sect2">
+<h3 class="sect2">4.2.3. Supported Languages</h3>
+
+<p>When using the <em class="filename">cc </em></tt><a name="IXT-4-504" />
+<a name="IXT-4-505" />command, which
+supports more than one
+<a name="IXT-4-506" /> <a name="IXT-4-507" />language, the language is
+determined by either the filename suffix or by explicitly specifying
+the language using the -<em class="filename">x</em></tt> option. <a href="ch04_02.htm#mosxgeeks-CHP-4-TABLE-2">Table 4-2</a> lists some of the more commonly used filename
+suffixes and -<em class="filename">x </em></tt>arguments supported by
+Apple's version of GCC.
+</p>
+
+<a name="mosxgeeks-CHP-4-TABLE-2" /><h4 class="objtitle">Table 4-2. File suffixes recognized by cc  </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>File suffix</p>
+</th>
+<th>
+<p>Language</p>
+</th>
+<th>
+<p>-x argument</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><em class="filename">.c</em></tt></p>
+</td>
+<td>
+<p>C source code to be preprocessed and compiled</p>
+</td>
+<td>
+<blockquote><pre class="code">c</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">.C,</em></tt> <em class="filename">.cc</em></tt>,
+<em class="filename">.cxx</em></tt>, <em class="filename">.cpp</em></tt>
+</p>
+</td>
+<td>
+<p>C++ source code to be preprocessed and compiled</p>
+</td>
+<td>
+<blockquote><pre class="code">c++</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">.h</em></tt></p>
+</td>
+<td>
+<p>C header that should neither be compiled nor linked</p>
+</td>
+<td>
+<blockquote><pre class="code">c-header</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">.i</em></tt></p>
+</td>
+<td>
+<p>C source code that should be compiled but not preprocessed</p>
+</td>
+<td>
+<blockquote><pre class="code">cpp-output</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">.ii</em></tt></p>
+</td>
+<td>
+<p>Objective-C++ or C++ source code that should be compiled but not
+preprocessed
+</p>
+</td>
+<td>
+<blockquote><pre class="code">c++-cpp-output</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">.m</em></tt></p>
+</td>
+<td>
+<p>Objective-C source code</p>
+</td>
+<td>
+<blockquote><pre class="code">objective-c</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">.M</em></tt>, <em class="filename">.mm</em></tt></p>
+</td>
+<td>
+<p>Mixed Objective-C++ and Objective-C source code</p>
+</td>
+<td>
+<blockquote><pre class="code">objective-c++</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">.s</em></tt></p>
+</td>
+<td>
+<p>Assembler source that should be assembled but not preprocessed</p>
+</td>
+<td>
+<blockquote><pre class="code">assembler</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">.S</em></tt></p>
+</td>
+<td>
+<p>Assembler source to be preprocessed and assembled</p>
+</td>
+<td>
+<blockquote><pre class="code">assembler-with-cpp</pre></blockquote>
+</td>
+</tr>
+
+</table><p>
+
+<p>Although the HFS+ filesystem is case-insensitive, the
+<em class="filename">cc</em></tt> compile driver recognizes the uppercase C in
+a source file. For example, <em class="filename">cc foo.C </em></tt>invokes
+<em class="filename">cc</em></tt>'s C++ compiler because the
+file extension is an uppercase C, which denotes a C++ source file.
+(To <em class="filename">cc</em></tt>, it's just a
+command-line argument.) So, even though HFS+ will find the same file
+whether you type <em class="filename">cc foo.c </em></tt>or <em class="filename">cc
+foo.C</em></tt>, what you enter on the command line makes all the
+difference in the world, particularly to <em class="filename">cc</em></tt>.
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-4-SECT-2.4" /><div class="sect2">
+<h3 class="sect2">4.2.4. Preprocessing</h3>
+
+<p>When you invoke <em class="filename">cc</em></tt> without options, it initiates
+a sequence of four basic operations, or stages: preprocessing,
+compilation, assembly, and linking. In a multifile program, the first
+three stages are performed on each individual source code file,
+creating an object code file for each source code file. The final
+linking stage combines all the object codes that were created by the
+first three stages, along with user-specified object code that may
+have been compiled earlier into a single executable image file.
+</p>
+
+<p>Apple's compiler provides two preprocessors. The
+default preprocessor for both C and Objective-C is the
+<em class="filename">precompilation preprocessor </em></tt><a name="IXT-4-508" />
+<a name="IXT-4-509" />written by
+Apple, named <em class="filename">cpp-precomp</em></tt>. The standard
+<a name="IXT-4-510" />
+<a name="IXT-4-511" />GNU
+C preprocessor, named <em class="filename">cpp</em></tt>, is also available and
+is the default for Objective-C++ code.
+<em class="filename">cpp-precomp</em></tt> supports precompiled header files.
+(For more information about <em class="filename">cpp-precomp</em></tt>, see
+<a href="ch05_01.htm">Chapter 5</a>.) <em class="filename">cpp-precomp</em></tt> is
+faster than <em class="filename">cpp</em></tt>. However, some code may not
+compile with <em class="filename">cpp-precomp</em></tt>. In that case, you
+should invoke <em class="filename">cpp</em></tt> by instructing
+<em class="filename">cc</em></tt> not to use <em class="filename">cpp-precomp</em></tt>.
+For example, to compile the C program <em class="filename">myprog.c</em></tt>
+using the standard GNU preprocessor, <em class="filename">cpp</em></tt>, use
+the <a name="IXT-4-512" />-<em class="filename">no-cpp-precomp
+</em></tt>switch as follows:
+</p>
+
+<blockquote><pre class="code">cc -no-cpp-precomp myprog.c</pre></blockquote>
+
+<a name="ch04-18-fm2xml" /><blockquote><b>WARNING:</b> 
+Earlier versions of the Mac OS X Developer Tools used the
+<em class="filename">-traditional-cpp</em></tt><a name="IXT-4-513" /> switch, but this switch had undesirable
+side effects and is deprecated.
+</p>
+</blockquote>
+
+<p><a href="ch05_01.htm">Chapter 5</a> describes precompilation in more detail.</p>
+
+</div>
+<a name="mosxgeeks-CHP-4-SECT-2.5" /><div class="sect2">
+<h3 class="sect2">4.2.5. Frameworks</h3>
+
+<p>Object-oriented frameworks are critical in Mac OS X. Indeed Cocoa,
+the object-oriented toolkit for user interface development, consists
+of the Foundation and Application Kit (or AppKit) frameworks for
+Objective-C and Java. It is often necessary to let the preprocessor
+know where to search for <a name="IXT-4-514" />framework header files. You can do this
+with the -<em class="filename">F </em></tt>option, which is also accepted by
+the linker. Thus:
+</p>
+
+<blockquote><pre class="code">-F <tt><em class="replaceable"><tt>directoryname</tt></em></tt></pre></blockquote>
+
+<p>instructs the preprocessor to search the directory
+<tt><em class="replaceable"><tt>directoryname</em></tt><em class="filename"> </tt></em></tt>for
+framework header files. The search begins in
+<tt><em class="replaceable"><tt>directoryname</tt></em></tt> and, if necessary, continues
+in order in the following standard framework directories:
+</p>
+
+<ul><li>
+<p><em class="filename">/Library/Frameworks</em></tt> (if the
+-<em class="filename">no-cpp-precomp </em></tt>flag is specified)
+</p>
+</li><li>
+<p><em class="filename">/System/Library/Frameworks</em></tt> </p>
+</li></ul>
+<p>To include a framework object header in Objective-C, use
+<tt class="literal">#import</tt>. The format of the
+<tt class="literal">#import</tt> preprocessor directive in your Objective-C
+code is:
+</p>
+
+<blockquote><pre class="code">#import &lt;<tt><em class="replaceable"><tt>frameworkname</em></tt>/<tt><em class="replaceable">headerfilename</tt></em></tt>.h&gt;</pre></blockquote>
+
+<p>Here, <tt><em class="replaceable"><tt>frameworkname</tt></em></tt> is the name of the
+framework without the extension, and
+<tt><em class="replaceable"><tt>headerfilename</tt></em></tt><tt class="literal">.h</tt> is the
+source for the header file.
+</p>
+
+<p>The -<em class="filename">F</em></tt> option is accepted by the preprocessor
+and the linker, and is used in either case to specify directories in
+which to search for framework header files. (This is similar to the
+<em class="filename">-I</em></tt> option, which specifies directories to search
+for <em class="filename">.h</em></tt> files.) By default, the linker searches
+the standard directories,
+<em class="filename">/Local/Library/Frameworks</em></tt> and
+<em class="filename">/System/Library/Frameworks</em></tt>, for frameworks. The
+directory search order can be modified with -<em class="filename">F
+</em></tt>options. For example:
+</p>
+
+<blockquote><pre class="code">cc -F <tt><em class="replaceable"><tt>dir1</em></tt> -F <tt><em class="replaceable">dir2 </tt></em></tt>-no-cpp-precomp myprog.c </pre></blockquote>
+
+<p>will result in <tt><em class="replaceable"><tt>dir1</tt></em></tt> being searched first,
+followed by <tt><em class="replaceable"><tt>dir2</tt></em></tt>, followed by the standard
+framework directories. The other flag pertaining to frameworks is
+-<tt><em class="replaceable"><tt>framework</tt></em></tt>. Inclusion of this flag results
+in a search for the specified framework named when linking. <a href="ch04_02.htm#mosxgeeks-CHP-4-EX-1">Example 4-1</a> shows "Hello,
+World" in Objective-C. Notice that it
+<tt class="literal">#imports</tt> the AppKit framework.
+</p>
+
+<a name="mosxgeeks-CHP-4-EX-1" /><div class="example">
+<h4 class="objtitle">Example 4-1. Saying hello from Objective-C  
+
+</h4><a name="IXT-4-515" /><a name="IXT-4-516" /><a name="IXT-4-517" />
+<blockquote><pre class="code">#import &lt;Appkit/AppKit.h&gt;
+
+int main(int argc, const char *argv[])
+{
+  NSLog(@"Hello, World\n");
+  return 0;
+}</pre></blockquote>
+</div>
+
+<p>Save <a href="ch04_02.htm#mosxgeeks-CHP-4-EX-1">Example 4-1</a> as <em class="filename">hello.m</em></tt>. To
+compile it, use <em class="filename">-framework</em></tt> to pass in the
+framework name:
+</p>
+
+<blockquote><pre class="code">cc -framework AppKit -o hello hello.m </pre></blockquote>
+
+<p>The -<em class="filename">framework </em></tt>flag is accepted only by the
+linker and is used to name a framework. The flag -<em class="filename">nostdinc
+</em></tt>is used to prohibit the search for header files in any
+directory other than those specified via other options, such as
+-<em class="filename">I</em></tt>. Since strict ANSI-C does not allow many of
+the preprocessor constructs used in most software created nowadays,
+the preprocessors are designed to allow several nonstandard ANSI-C
+constructs by default. Although it is usually undesirable to do so,
+you must include the compile driver flags
+-<em class="filename">trigraphs</em></tt>, -<em class="filename">undef</em></tt>, and
+-<em class="filename">pedantic</em></tt> to enforce strict ANSI-C
+standards<em class="filename"> </em></tt>.
+</p>
+
+<p>There are also several undocumented features of the compiler. These
+include the following <em class="filename">cc</em></tt> command-line flags.
+</p>
+
+<dl>
+<dt><i>-fpascal-strings</i></dt>
+<dd>
+A flag that enables the compiler to recognize Pascal strings</p>
+</dd>
+
+
+
+<dt><i>-<em class="filename">Wmost</em></tt></i></dt>
+<dd>
+A Darwin-specific compiler flag, equivalent to -<em class="filename">Wall,
+</em></tt>with the exception that it does not turn on
+-<em class="filename">Wparenthesis</em></tt>
+</p>
+</dd>
+
+</dl>
+
+<p>Other compiler flags of particular interest in Mac OS X are related
+to the peculiarities of building shared code. For more details, see
+<a href="ch05_01.htm">Chapter 5</a>.
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4. Compiling Source Code</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.3. Architectural Issues</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

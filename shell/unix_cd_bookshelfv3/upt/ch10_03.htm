@@ -1,0 +1,148 @@
+<html><head><title>Files with Two or More Names (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.3. Files with Two or More Names</h2>
+
+<p><a name="upt3-IDXTERM-1705" />
+<a name="upt3-IDXTERM-1706" />We've talked <a name="upt3-IDXTERM-1707" /> <a name="upt3-IDXTERM-1708" />about
+hard <b class="emphasis-bold">links</b> (<a href="ch10_01.htm#upt3-CHP-10-SECT-1">Section 10.1</a>) and symbolic links in a number of places, but
+we've not discussed <em class="emphasis">why</em>
+you'd want a file with several names. It was easy to
+understand what a link would <em class="emphasis">do</em>, but why would
+you want one?
+</p>
+
+<p>There are many situations that links (and only links) are able to
+handle. Once you've seen a few of the problems that
+a link can solve, you'll start seeing even more
+situations in which they are appropriate.
+</p>
+
+<p>Consider a company phone list on a system that is shared by several
+users. Every user might want a copy of the phone list in his home
+directory. However, you wouldn't want to give each
+user a different phone list. In addition to wasting disk space, it
+would be a pain to modify all of the individual lists whenever you
+made a change. Giving each user a
+"link" to a master phone list is
+one way to solve the problem.
+</p>
+
+<p>Similarly, assume that you use several different systems that share
+files via NFS. Eventually, you get tired of editing five or six
+different <em class="filename">.login</em> and <em class="filename">.cshrc</em>
+files whenever you decide to add a new alias or change some element
+in your startup file; you'd like to have the exact
+same file appear in each of your home directories. You might also
+want to give several systems access to the same master database
+files.
+</p>
+
+<p>How about this: you have a program or script that performs several
+related functions. Why not perform them all with the same executable?
+The script or program just needs to check the name by which
+it's called and act accordingly.
+</p>
+
+<p>As another example, assume that you have two versions of a file: a
+current version, which changes from time to time, and one or more
+older versions. One good convention would be to name the files
+<em class="filename">data.</em><em class="replaceable"><tt>date</tt></em>, where
+<em class="replaceable"><tt>date</tt></em> shows when the file was created. For
+example, you might have the files <em class="filename">data.jul1</em>,
+<em class="filename">data.jul2</em>, <em class="filename">data.jul5</em>, and
+so on. However, when you access these files, you
+don't necessarily want to figure out the
+date -- not unless you have a better chronological sense than I
+do. To make it easier on yourself, create a link (either symbolic or
+hard) named <em class="filename">data.cur</em> that always refers to your
+most recent file. The following script runs the program
+<em class="filename">output</em>, puts the data into a dated file, and
+resets <em class="filename">data.cur</em>:
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+curfile=data.`date +%h%d`
+linkname=data.cur
+output &gt; $curfile
+rm -f $linkname
+ln -s $curfile $linkname</pre></blockquote>
+
+<p>Here's an analogous situation. When writing
+technical manuals at one company, I had two classes of readers: some
+insisted on referring to the manuals by name, and the others by part
+number. Rather than looking up part numbers all the time, I created a
+set of links so that I could look up a manual online via either its
+name or its part number. For example, if the manual was named
+"Programming" and had the part
+number 046-56-3343, I would create the file
+<em class="filename">/manuals/byname/programming</em>. I would then create
+the link <em class="filename">/manuals/bynumber/046-56-3343</em>:
+</p>
+
+<p><tt class="literal">..</tt> <a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd /manuals/bynumber</b></tt>
+% <tt class="userinput"><b>ln -s ../byname/programming 046-56-3343</b></tt></pre></blockquote>
+
+<p>Sometimes you simply want to collect an assortment of files in one
+directory. These files may really belong in other places, but you
+want to collect them for some temporary purpose: for example, to make
+a tape. Let's say that you want to make a tape that
+includes manual pages from
+<em class="filename">/development/doc/man/man1</em>, a manual from
+<em class="filename">/development/doc/product</em>, source files from
+<em class="filename">/src/ccode</em>, and a set of executables from
+<em class="filename">/release/68000/execs</em>. The following shell script
+creates links for all of these directories within the
+<em class="filename">/tmp/tape</em> directory and then creates a
+<em class="filename">tar</em> tape that can be sent to a customer or
+friend. Note that the <em class="filename">tar h</em> option tells
+<em class="filename">tar</em> to follow symbolic links and archive
+whatever is at the end of the link; otherwise,
+<em class="filename">tar</em> makes a copy of just the symbolic link:
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+dir=/tmp/tape.mike
+test -d $dir || mkdir $dir
+cd $dir
+rm -f man1 product ccode execs
+ln -s /development/doc/man/man1
+ln -s /development/doc/product
+ln -s /src/ccode
+ln -s /release/68000/execs
+tar ch ./man1 ./product ./ccode ./execs</pre></blockquote>
+
+<p>These examples only begin to demonstrate the use of linking in
+solving day-to-day tasks. Links provide neat solutions to many
+problems, including source control, filesystem layout, and so
+forth.<a name="IXTR3-6440" />
+<a name="IXTR3-6441" />
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.2. What's Really in a Directory?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.4. More About Links</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

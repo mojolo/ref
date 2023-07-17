@@ -1,0 +1,196 @@
+--------------------------------------------------------
+beets EXAMPLE
+--------------------------------------------------------
+
+directory: /var/mp3
+import:
+    copy: yes
+    write: yes
+    log: beetslog.txt
+art_filename: albumart
+plugins: bpd
+pluginpath: ~/beets/myplugins
+ui:
+    color: yes
+
+--------------------------------------------------------
+https://discourse.beets.io/t/lyrics-not-appearing-in-mediamonkey-or-not-embedding-at-all/1477
+--------------------------------------------------------
+
+directory: C:\Dropbox\MediaMonkey Library\Music
+art_filename: albumart
+plugins: bpd lyrics missing follow fetchart lastgenre
+pluginpath: ~/beets/myplugins
+
+original_date: yes
+
+per_disc_numbering: no
+
+ui:
+    color: yes
+
+import:
+    copy: no
+    write: yes
+    log: beetslog.txt
+    resume: yes
+    bell: yes
+    
+paths:
+    default: $albumartist/$year-$month-$day $album/$disc-$track $title
+    singleton: Singletons/$artist - $title
+    comp: $albumartist/$year-$month-$day $album/$disc-$track $title/
+    albumtype:soundtrack: $albumartist/$year-$month-$day $album/$disc-$track $title/
+
+lyrics:
+    auto: yes
+    
+--------------------------------------------------------
+https://discourse.beets.io/t/i-need-some-help-getting-the-full-potential-out-of-beets/58
+--------------------------------------------------------
+
+paths:
+    default: $genre/$albumartist/$album/$track $title
+    singleton: Singletons/$artist - $title
+    comp: $genre/$album/$track $title
+    albumtype:soundtrack: Soundtracks/$album/$track $title
+
+    
+directoy:       ~/Music
+library:        ~/.config/beets/library.db
+plugins:        discogs embedart fetchart lastgenre convert
+
+import:
+    move:       yes
+    copy:       yes
+    write:      yes
+
+paths:
+    default:    $genre/$albumartist - $album/$track. $title
+    singleton:  $genre/$artist - $title
+    comp:       $genre/$album/$track. $title
+
+lastgenre:
+    auto:       yes
+    canonical:  yes
+    whitelist:  ~/.config/beets/whitelist.yaml
+    canonical:  ~/.config/beets/genres-tree.yaml
+    force:      yes
+    
+convert:
+    auto:       no
+    command:    ffmpeg -i $source -acodec libopus -b:a 128k -vbr on -compression_level 10 $dest
+    extension:  opus
+
+--------------------------------------------------------
+https://discourse.beets.io/t/advanced-event-hooks/1205/9
+--------------------------------------------------------
+
+directory: /Volumes/data/My Documents/Music
+library: /Volumes/data/My Documents/Music/musiclibrary.db
+
+import:
+copy: yes
+autotag: yes
+bell: yes
+
+match:
+ignored_media: [‘Data CD’, ‘DVD’, ‘DVD-Video’, ‘Blu-ray’, ‘HD-DVD’, ‘VCD’, ‘SVCD’, ‘UMD’, ‘VHS’]
+
+threaded: yes
+
+ui:
+color: yes
+
+plugins: badfiles lastimport lastgenre replaygain fetchart embedart lyrics hook playlist smartplaylist
+
+lyrics:
+sources: google lyricwiki musixmatch genius
+
+embedart:
+remove_art_file: yes
+
+replaygain:
+backend: gstreamer
+
+lastgenre:
+canonical: yes
+source: track
+
+lastfm:
+user: me
+
+playlist:
+playlist_dir: /Volumes/data/My Documents/Music/playlists
+auto: yes
+
+paths:
+default: $albumartist/$album%aunique{}/$track $title
+
+hook:
+hooks:
+- event: after_write    
+command: ~/bin/createpar “{item.path}”
+
+--------------------------------------------------------
+discourse.beets.io/t/picard-and-beets/73
+--------------------------------------------------------
+
+$ beet config
+directory: ~/beet
+convert:
+    never_convert_lossy_files: yes
+    copy_album_art: yes
+    dest: ~/ogg
+    format: ogg
+    command: oggenc -q 6 $source -o $dest
+    auto: no
+    pretend: no
+    embed: yes
+    threads: 8
+    album_art_maxwidth: 0
+    quiet: no
+
+    paths: {}
+    formats:
+        mp3: ffmpeg -i $source -y -vn -aq 2 $dest
+        aac:
+            extension: m4a
+            command: ffmpeg -i $source -y -vn -acodec libfaac -aq 100 $dest
+        flac: ffmpeg -i $source -y -vn -acodec flac $dest
+        alac:
+            extension: m4a
+            command: ffmpeg -i $source -y -vn -acodec alac $dest
+        wma: ffmpeg -i $source -y -vn -acodec wmav2 -vn $dest
+        ogg: ffmpeg -i $source -y -vn -acodec libvorbis -aq 3 $dest
+        opus: ffmpeg -i $source -y -vn -acodec libopus -ab 96k $dest
+    max_bitrate: 500
+    tmpdir:
+
+plugins: play edit convert export mbcollection mbsubmit info
+
+paths:
+    albumtype:audiobook: Audiobooks/$album/$track $title
+library: ~/beetdata/musiclibrary.db
+play:
+    command: vlc
+    warning_threshold: 100
+    use_folders: no
+    raw: no
+    relative_to:
+
+import:
+    incremental: yes
+    languages: de
+export:
+    default_format: json
+    json:
+        formatting:
+            indent: 4
+            ensure_ascii: no
+            separators: [',', ': ']
+            sort_keys: yes
+edit:
+    itemfields: track title artist album
+    albumfields: album albumartist
+    ignore_fields: id path

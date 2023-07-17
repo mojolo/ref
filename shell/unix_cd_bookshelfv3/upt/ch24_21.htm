@@ -1,0 +1,116 @@
+<html><head><title>Terminal Windows Without Shells (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.21. Terminal Windows Without Shells</h2>
+
+<p><i class="command">xterm</i><a name="IXT-24-5439" /><a name="IXT-24-5440" /><a name="IXT-24-5441" /><a name="IXT-24-5442" /><a name="IXT-24-5443" /> is an X client that
+runs a Unix process on a <em class="emphasis">pty</em>
+"inside" a window. By default, this
+process is a shell: an instance of the same shell you log into the
+system with. But it can be basically any Unix process. As you saw in
+<a href="ch24_20.htm#upt3-CHP-24-SECT-20">Section 24.20</a>, when the process exits, the
+<i class="command">xterm</i> window closes because its child process has
+gone.
+</p>
+
+<p>To override the default shell process in an <i class="command">xterm</i>
+window, use the <b class="emphasis-bold">-e option</b> (<a href="ch05_22.htm#upt3-CHP-5-SECT-22">Section 5.22</a>), followed by the command line to run the
+process. This must be the last thing on the <i class="command">xterm</i>
+command line. If you want to open an <i class="command">xterm</i> window
+with no scrollbar (the <span class="option">+sb</span> option) and with the
+<i class="command">vi</i> editor in it, to edit the log file named
+<em class="emphasis">logfile</em>, run the command below:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xterm +sb -e vi logfile</b></tt>
+%</pre></blockquote>
+
+<p>An <i class="command">xterm</i> window should open with
+<i class="command">vi</i> running inside it. If you
+don't know how to use <em class="emphasis">vi</em>, the
+best thing to do is to leave it alone until you've
+finished this example -- then press the ESC key, type
+<tt class="literal">:q</tt>, and press ENTER to exit <i class="command">vi</i>.
+When <i class="command">vi</i> exits, its window should close too, and
+you'll get another shell prompt.
+</p>
+
+<p>I chose to have you run <i class="command">vi</i> in a window because the
+<i class="command">vi</i> process keeps running until you tell it to
+quit, and then the window closes. Other Unix processes that
+don't wait for a
+"quit" command will terminate as
+soon as they're done, and the window closes before
+you can see the process output. For example, let's
+say you want to display a file in an <i class="command">xterm</i> window
+with a scrollbar. Start by choosing a file and using <b class="emphasis-bold">wc -l</b> (<a href="ch16_06.htm#upt3-CHP-16-SECT-6">Section 16.6</a>) to count
+the number of lines. Then open an <i class="command">xterm</i> and a
+scrollbar, with the scrolling buffer length set to just the right
+number of lines:
+</p>
+
+<p><tt class="literal">cat</tt> <a href="ch12_02.htm#upt3-CHP-12-SECT-2">Section 12.2</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>wc -l somefile</b></tt>
+     74 somefile
+% <tt class="userinput"><b>xterm -sl 74 -sb -e cat somefile</b></tt>
+%</pre></blockquote>
+
+<p>What happened? Unless your window manager holds it there, the
+<i class="command">xterm</i> window closes just after it opens. Why? Its
+child <i class="command">cat</i> process exited, so the parent
+<i class="command">xterm</i> did too. One easy answer is to use a shell
+that runs three commands. First is the command you want to run (here,
+<i class="command">cat</i>). Next, echo a prompt. Finally, run the
+<b class="emphasis-bold">read command</b> (<a href="ch35_18.htm#upt3-CHP-35-SECT-18">Section 35.18</a>) to pause until you give a dummy
+value -- just pressing ENTER will be enough to satisfy
+<i class="command">read</i>, and then the shell will exit.
+Here's how: <a name="IXT-24-5444" />
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xterm -sl 76 -sb -e \</b></tt>
+    <tt class="userinput"><b>sh -c 'cat somefile; echo "Press RETURN to exit..."; read dummy'</b></tt></pre></blockquote>
+
+<p>(First, two notes. The backslash (<tt class="literal">\</tt>)
+isn't needed if you type the entire command on one
+line. And we've increased the scroll length to 76
+because the <i class="command">echo</i> and the newline after it add two
+lines of text.) Here, <i class="command">xterm</i> starts a shell, but
+it's not the default shell (whatever that happens to
+be): it's the <i class="command">sh</i> shell you
+specify after the <i class="command">xterm</i> -<span class="option">e</span>
+option. The <i class="command">sh</i> option <span class="option">-c</span> tells
+the Bourne shell to run the single command line from the following
+argument and then exit. The command line is in quotes to be sure the
+shell <em class="emphasis">inside</em> the <i class="command">xterm</i>
+interprets it. The three commands are separated by <b class="emphasis-bold">semicolons (;)</b> (<a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a>).
+If your command line is really complicated, you might want to change
+the <tt class="literal">sh -c '...'</tt> to run a little <b class="emphasis-bold">shell script</b> (<a href="ch35_01.htm#upt3-CHP-35-SECT-1">Section 35.1</a>)
+instead, like <tt class="literal">sh $HOME/lib/catter</tt>.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.20. The Process Chain to Your Window</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.22. Close a Window by Killing Its Process</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

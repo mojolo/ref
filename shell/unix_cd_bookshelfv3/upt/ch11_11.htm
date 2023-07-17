@@ -1,0 +1,84 @@
+<html><head><title>Even More Uses for make (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">11.11. Even More Uses for make</h2>
+
+<p>Thinking about <i class="command">make</i> will pay off in many ways. One
+way to get ideas about how to use it is to look at other
+<em class="emphasis">Makefiles</em>.
+</p>
+
+<p>One of my favorites is the <b class="emphasis-bold">Makefile for
+NIS</b> (<a name="IXT-11-6090" /><a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) (formerly called <span class="acronym">YP</span>, or
+"Yellow Pages"). I like this
+<em class="emphasis">Makefile</em> because it does something that
+you'd never think of doing (even though it suits
+<i class="command">make</i> perfectly):
+<a name="IXT-11-6091" /> <a name="IXT-11-6092" /><a name="IXT-11-6093" />updating a distributed database.
+</p>
+
+<p>The <em class="emphasis">Makefile</em> is fairly complicated, so I
+don't want to get into a line-by-line explication;
+but I will give you a sketch of how it works. Here's
+the problem: a system administrator updates one or more files
+(we'll say the <em class="emphasis">passwd</em> file) and
+wants to get her changes into the <span class="acronym">NIS</span> database. So
+you need to check whether the new password file is more recent than
+the database. Unfortunately, the database isn't
+represented by a single file, so there's nothing to
+"check" against. The
+<span class="acronym">NIS</span> <em class="emphasis">Makefile</em> handles this
+situation by creating empty files that serve as timestamps.
+There's a separate timestamp file for every database
+that NIS serves. When you type <i class="command">make</i>,
+<i class="command">make</i> checks every master file against the
+corresponding timestamp. If a master file is newer than the
+timestamp, <i class="command">make</i> knows that it has to rebuild part
+of the database. After rebuilding the database, the
+<em class="emphasis">Makefile</em>
+"touches" the timestamp, so that it
+reflects the time at which the database was built.
+</p>
+
+<p>The <em class="emphasis">Makefile</em> looks something like this:</p>
+
+<blockquote><pre class="code">passwd: passwd.time
+passwd.time:  /etc/master/passwd
+         @ <em class="replaceable"><tt>lots of commands that rebuild the database</tt></em>
+         @ touch passwd.time
+         @ <em class="replaceable"><tt>more commands to distribute the new database</tt></em>
+
+hosts: hosts.time
+hosts.time:  <em class="replaceable"><tt>similar stuff</tt></em></pre></blockquote>
+
+<p>You may never need to write a <em class="emphasis">Makefile</em> this
+complicated, but you should look for situations in which you can use
+<i class="command">make</i> profitably. It isn't just
+for <a name="IXTR3-6098" /> <a name="IXTR3-6099" /> <a name="IXTR3-6100" /> <a name="IXTR3-6101" />programming. 
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">11.10. make Isn't Just for Programmers!</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12. Showing What's in a File</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

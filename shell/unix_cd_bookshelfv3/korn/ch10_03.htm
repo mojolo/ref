@@ -1,0 +1,199 @@
+<html><head><title>Customizing the Editing Modes (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.3. Customizing the Editing Modes</h2>
+
+<p>
+
+<a name="korn2-IDXTERM-2005" />
+
+As we saw in <a href="ch02_01.htm">Chapter 2</a>,
+you have your choice of either emacs or vi editing modes
+when editing your command line.
+Besides the commands available in each mode,
+you can customize the behavior of the editing modes
+to suit your needs or environment.
+</p>
+
+<p>
+<a href="appa_01.htm">Appendix A</a> discusses a number of third party
+shells based on the Bourne and Korn shell design.
+Those shells generally provide command-line editing,
+as well as the ability to customize the editor via a special
+built-in command, a special start-up file, or both.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-2006" />
+<a name="korn2-IDXTERM-2007" />
+The Korn shell's approach is different.  It is based on a paradigm
+where you program the behavior you want from the shell.
+This is accomplished via a fake trap, named KEYBD.
+If it exists, the trap set for KEYBD is evaluated when
+<em class="emphasis">ksh</em> processes normal command-line input
+characters.<a href="#FOOTNOTE-140">[140]</a>
+Within the code executed for the trap, two special variables
+contain the text of the command line and the text being entered that
+caused the trap. Additional special variables
+allow you
+to distinguish between emacs- and vi-modes and
+indicate the current position on the input line.
+These variables are listed in <a href="ch10_03.htm#korn2-CHP-10-TABLE-2">Table 10-2</a>.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-140" /><p> [140]
+Characters for search strings and numeric arguments to vi- and emacs-mode
+commands do not trigger the KEYBD trap.
+</p>
+</blockquote>
+
+<a name="korn2-CHP-10-TABLE-2" /><h4 class="objtitle">Table 10-2. Special editing variables</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">.sh.edchar</tt></td>
+<td><p>
+The character or escape sequence entered by the user
+that caused the KEYBD trap.
+The value of <tt class="literal">.sh.edchar</tt> at the
+end of the trap is then used to direct the actions
+of the built-in editor.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">.sh.edcol</tt></td>
+<td><p>
+The position of the cursor on the current input line.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">.sh.edmode</tt></td>
+<td><p>
+Equal to ESC in vi-mode,
+empty otherwise.
+(Use <tt class="literal">[[ -n ${.sh.edmode} ]]</tt> to test it.)
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">.sh.edtext</tt></td>
+<td><p>
+The text of the current input line.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+Upon entering the KEYBD trap, the contents of <tt class="literal">.sh.edchar</tt> will
+be either a single character, ESC followed by a single character, or ESC, [,
+and a single character.
+You can assign a new value to <tt class="literal">.sh.edchar</tt> to change the input that
+the current editing mode receives.
+Thus, the KEYBD trap allows you to interpose a "filter" between what the user
+enters and what the shell editing modes actually process.
+The following example is from page 98 of
+<em class="emphasis">The New KornShell Command and Programming Language</em>.<a href="#FOOTNOTE-141">[141]</a>
+It presents a <em class="emphasis">keybind</em> function that allows you to bind
+new actions to input key sequences, similar to the built-in <em class="emphasis">bind</em>
+command of many other shells.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-141" /><p> [141]
+This is the book on <em class="emphasis">ksh93</em> written by David Korn and Morris Bolsky
+and published by Prentice Hall.
+</p>
+</blockquote>
+
+<blockquote><pre class="code">
+      # Quoted from Page 98 of
+      # The New KornShell Command and Programming Language
+
+ 1    typeset -A Keytable
+ 2    trap 'eval "${Keytable[${.sh.edchar}]}"' KEYBD
+ 3    function keybind # key [action]
+ 4    {
+ 5         typeset key=$(print -f "%q" "$2")
+ 6         case $# in
+ 7         2)      Keytable[$1]=' .sh.edchar=${.sh.edmode}'"$key"
+ 8                 ;;
+ 9         1)      unset Keytable[$1]
+10                 ;;
+11         *)      print -u2 "Usage: $0 key [action]"
+12                 return 2 # usage errors return 2 by default
+13                 ;;
+14         esac
+15    }
+</pre></blockquote>
+
+<p>
+This is an interesting function. Let's go through it line by line.
+Line 1 creates an associative array to act as a
+table of key/action pairs.
+Line 2 sets the KEYBD trap.  It gets the action
+out of the associative array and then executes it using <em class="emphasis">eval</em>.
+Line 3 starts the <em class="emphasis">keybind</em> function, which takes
+one or two arguments.
+With two arguments, the second argument is first quoted appropriately
+(line 5 -- the <tt class="literal">key</tt> variable would have
+been better-named <tt class="literal">action</tt>).
+Line 7 then creates the entry in the array, using <tt class="literal">$1</tt> (the user
+key sequence) as the index, and quoted action as the value to assign
+to <tt class="literal">.sh.edchar</tt>.
+Note how <tt class="literal">${.sh.mode}</tt> is also included.  This has the
+effect of forcing a switch to command mode for the vi editing mode.
+It is this generated assignment statement that is <em class="emphasis">eval</em>ed
+every time the trap executes.
+</p>
+
+<p>
+The rest of the function is mostly bookkeeping: with one argument (line 9),
+the given entry in the <tt class="literal">Keytable</tt> array is removed.
+If more than two arguments (line 11), <em class="emphasis">keybind</em> prints a message
+and then returns the (false) value 2.
+</p>
+
+<p>
+While somewhat unusual, the KEYBD trap mechanism for dealing with user input is
+both general and extensible; you can do whatever you want, as just a
+Simple Matter of Programming.  With
+other shells, you're limited to whatever built-in facilities they provide.
+<a name="IXTR3-426" />
+<a name="IXTR3-427" />
+<a name="IXTR3-428" />
+
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.2. Environment Customization</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.4. System Security Features</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,145 @@
+<html><head><title>Printing (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch44_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch45_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 45. Printing</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch45_01.htm#sect1">Introduction to Printing</a><br />
+<a href="ch45_02.htm">Introduction to Printing on Unix</a><br />
+<a href="ch45_03.htm">Printer Control with lpc</a><br />
+<a href="ch45_04.htm">Using Different Printers</a><br />
+<a href="ch45_05.htm">Using Symbolic Links for Spooling</a><br />
+<a href="ch45_06.htm">Formatting Plain Text: pr</a><br />
+<a href="ch45_07.htm">Formatting Plain Text: enscript</a><br />
+<a href="ch45_08.htm">Printing Over a Network</a><br />
+<a href="ch45_09.htm">Printing Over Samba</a><br />
+<a href="ch45_10.htm">Introduction to Typesetting</a><br />
+<a href="ch45_11.htm">A Bit of Unix Typesetting History</a><br />
+<a href="ch45_12.htm">Typesetting Manpages: nroff</a><br />
+<a href="ch45_13.htm">Formatting Markup Languages -- troff, LATEX, HTML, and So On</a><br />
+<a href="ch45_14.htm">Printing Languages -- PostScript, PCL, DVI, PDF</a><br />
+<a href="ch45_15.htm">Converting Text Files into a Printing Language</a><br />
+<a href="ch45_16.htm">Converting Typeset Files into a Printing Language</a><br />
+<a href="ch45_17.htm">Converting Source Files Automagically Within the Spooler</a><br />
+<a href="ch45_18.htm">The Common Unix Printing System (CUPS)</a><br />
+<a href="ch45_19.htm">The Portable Bitmap Package</a><br /></p></div><div class="sect1"><a name="upt3-CHP-45-SECT-1" />
+<h2 class="sect1"><a name="sect1" />45.1. Introduction to Printing</h2>
+
+<p><a name="upt3-IDXTERM-7192" />This
+chapter discusses printing, which is a surprisingly complicated
+subject. To understand why printing is so complicated, though,
+let's think a little bit about what you might want
+to print.
+</p>
+
+<p>First, in the "olden days," we had
+line printers and their relatives: daisy-wheel printers, dot-matrix
+printers, and other pieces of equipment that generated
+typewriter-like output. Printing a simple text file was easy: you
+didn't need any special processing; you only needed
+some software to shove the file into the printer. If you wanted, you
+might add a banner page and do a little simple formatting, but that
+was really pretty trivial.
+</p>
+
+<p>The one area of complexity in the printing system was the
+"<a name="IXT-45-1747" /><a name="IXT-45-1748" />spooling system," which
+had to do several things in addition to force-feeding the printer.
+Most printers were (and still are) shared devices. This means that
+many people can send jobs to the printer at the same time. There may
+also be several printers on which your file gets printed; you may
+care which one is used, or you may not. The spooling system needs to
+manage all this: receiving data from users, figuring out whether or
+not an appropriate printer is in use, and sending the file to the
+printer (if it's free) or storing the file somewhere
+(if the printer isn't free).
+</p>
+
+<p>Historical note: why is this called the "spooling
+system"? Dave Birnbaum, a Principal Scientist at
+Xerox, says:
+</p>
+<p>
+<blockquote>
+"SPOOL (Simultaneous Printing Off and On
+Line)" <a name="IXT-45-1749" />It was written for the
+early IBM mainframes (of the 3-digit, i.e., 709 kind) and extended to
+the early 1401 machines. Output for the printer was sent to the spool
+system, which either printed it directly or queued it (on tape) for
+later printing (hence the on/off line). There was also a 2nd
+generation version where the 1401 would act as the printer controller
+for the (by then) 7094. The two were usually connected by a
+switchable tape drive that could be driven by either
+machine." [There's some controversy
+about exactly what the acronym means, but Dave's is
+as good as any I've heard.
+ -- <em class="emphasis">JP</em>]
+</blockquote>
+</p>
+
+
+<p>The first few articles in this chapter, <a href="ch45_02.htm#upt3-CHP-45-SECT-2">Section 45.2</a>,
+<a href="ch45_03.htm#upt3-CHP-45-SECT-3">Section 45.3</a>, <a href="ch45_04.htm#upt3-CHP-45-SECT-4">Section 45.4</a>, and <a href="ch45_05.htm#upt3-CHP-45-SECT-5">Section 45.5</a>, discuss the basic Unix spooling system and
+how to work with it as a user.
+</p>
+
+<p>The next few articles talk about how to format articles for
+printing -- not the kind of fancy formatting people think of
+nowadays, but simpler things like pagination, margins, and so on, for
+text files that are to be sent to a line printer or a printer in
+line-printer emulation mode. <a href="ch45_06.htm#upt3-CHP-45-SECT-6">Section 45.6</a>
+describes this kind of simple formatting, and <a href="ch45_07.htm#upt3-CHP-45-SECT-7">Section 45.7</a> gets a little more complicated on the same
+subject.
+</p>
+
+<p><a name="IXT-45-1750" />Historical note number two: why is the
+print spooler called <i class="command">lp</i> or <i class="command">lpr</i>?
+It typically spooled text to a line printer, a fast printer that used
+a wide head to print an entire line at a time. These printers are
+still common in data processing applications, and they can really
+fly!
+</p>
+
+<p>In the mid-1970s, lots of Unix people got excited about
+<a name="IXT-45-1751" />typesetting.
+Some typesetters were available that could be connected to computers,
+most notably the C/A/T phototypesetter. Programs like
+<i class="command">troff</i> and T<sub class="subscript">E</sub>X were
+developed to format
+<a name="IXT-45-1752" />texts for phototypesetters.
+Typesetting tools are still with us, and still very valuable, though
+these days they generally work with laser printers via languages like
+PostScript. They're discussed in <a href="ch45_10.htm#upt3-CHP-45-SECT-10">Section 45.10</a> through <a href="ch45_17.htm#upt3-CHP-45-SECT-17">Section 45.17</a>, along
+with the ramifications of fancy printing on Unix.
+</p>
+
+<p>Finally, <a href="ch45_19.htm#upt3-CHP-45-SECT-19">Section 45.19</a> is about the
+<em class="emphasis">netpbm</em> package. It's a useful
+tool for people who deal with graphics files.
+<em class="emphasis">netpbm</em> converts between different graphics
+formats.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch44_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch45_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">44.14. Decapitating Your Machine -- Serial Consoles</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">45.2. Introduction to Printing on Unix</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

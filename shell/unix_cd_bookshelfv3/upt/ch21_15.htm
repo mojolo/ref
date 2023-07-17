@@ -1,0 +1,166 @@
+<html><head><title>Making Text in Columns with pr (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.15. Making Text in Columns with pr</h2>
+
+<p><a name="upt3-IDXTERM-3113" /> <a name="upt3-IDXTERM-3114" /> <a name="upt3-IDXTERM-3115" /> <a name="upt3-IDXTERM-3116" /> <a name="upt3-IDXTERM-3117" />The <b class="emphasis-bold">pr</b><b class="emphasis-bold"> command</b>
+(<a href="ch45_06.htm#upt3-CHP-45-SECT-6">Section 45.6</a>) is famous for printing a file neatly
+on a page -- with margins at top and bottom, filename, date, and
+page numbers. It can also print text in columns: one file per column
+or many columns for each file.
+</p>
+
+<p>The <span class="option">-t</span> option takes away the heading and margins at
+the top and bottom of each page. That's useful when
+"pasting" data into columns with no
+interruptions.
+</p>
+
+<a name="upt3-CHP-21-SECT-15.1" /><div class="sect2">
+<h3 class="sect2">21.15.1. One File per Column: -m</h3>
+
+<p><a name="IXT-21-5757" />The <span class="option">-m</span>
+option reads all files on the command line simultaneously and prints
+each in its own column, like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>pr -m -t <em class="emphasis">file1 file2 file3</em></b></tt>
+
+The lines              The lines              The lines
+of file1               of file2               of file3
+are here               are here               are here
+  ...                    ...                    ...</pre></blockquote>
+
+<p><i class="command">pr</i> may use TAB characters between columns. If that
+would be bad, you can pipe <i class="command">pr</i>'s
+output through <i class="command">expand</i>. Many versions of
+<i class="command">pr</i> have a
+<tt class="literal">-s</tt><a name="IXT-21-5758" /><em class="replaceable"><tt>X</tt></em> option that
+sets the column separator to the single character
+<em class="emphasis">X</em>.
+</p>
+
+<p>By default, <i class="command">pr</i> -<span class="option">m</span>
+doesn't put filenames in the heading. If you want
+that, use the <span class="option">-h</span><a name="IXT-21-5759" /> option to make your own heading. Or
+maybe you'd like to make a more descriptive heading.
+Here's an example using process substitution to
+compare a <a name="IXT-21-5760" />directory with its <b class="emphasis-bold">RCS</b> (<a href="ch39_05.htm#upt3-CHP-39-SECT-5">Section 39.5</a>)
+subdirectory:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>pr -m -h "working directory compared to RCS directory" &lt;(ls) &lt;(ls RCS)</b></tt>
+
+2000-11-22 23:57  working directory compared to RCS directory  Page    1
+
+0001.sgm                            0001.sgm,v
+0002.sgm                            0002.sgm,v
+0007.sgm                            0007.sgm,v
+0008.sgm                            0008.sgm,v
+             ...</pre></blockquote>
+
+<p>(The heading comes from the GNU version of <i class="command">pr</i>.
+Later examples in this article use a different version with a
+different heading format.)
+</p>
+
+</div>
+<a name="upt3-CHP-21-SECT-15.2" /><div class="sect2">
+<h3 class="sect2">21.15.2. One File, Several Columns: -number</h3>
+
+<p><a name="IXT-21-5761" />An option that's a
+number will print a file in that number of columns. For instance, the
+<span class="option">-3</span> option prints a file in three columns. The file
+is read, line by line, until the first column is full (by default,
+that takes 56 lines). Next, the second column is filled. Then, the
+third column is filled. If there's more of the file,
+the first column of page 2 is filled -- and the cycle repeats:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>pr -3 file1</b></tt>
+
+Nov  1 19:44 1992  file1  Page 1
+
+Line 1 here            Line 57 here           Line 115 here
+Line 2 here            Line 58 here           Line 116 here
+Line 3 here            Line 59 here           Line 117 here
+  ...                    ...                    ...</pre></blockquote>
+
+<p>The columns aren't balanced -- if the file will
+fit into one column, the other columns aren't used.
+You can change that by adjusting <span class="option">-l</span>, the page length
+option; see the section below.
+</p>
+
+</div>
+<a name="upt3-CHP-21-SECT-15.3" /><div class="sect2">
+<h3 class="sect2">21.15.3. Order Lines Across Columns: -l</h3>
+
+<p><a name="IXT-21-5762" />Do you want to arrange your data
+across the columns, so that the first three lines print across the
+top of each column, the next three lines are the second in each
+column, and so on, like this?
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>pr -l1 -t -3 file1</b></tt>
+Line 1 here            Line 2 here            Line 3 here
+Line 4 here            Line 5 here            Line 6 here
+Line 7 here            Line 8 here            Line 9 here
+  ...                    ...                    ...</pre></blockquote>
+
+<p>Use the <span class="option">-l1</span> (page length 1 line) and
+<span class="option">-t</span> (no title) options. Each
+"page" will be filled by three
+lines (or however many columns you set). You have to use
+<span class="option">-t</span>; otherwise, <i class="command">pr</i> will silently
+ignore any page lengths that don't leave room for
+the header and footer. That's just what you want if
+you want data in columns with no headings.
+</p>
+
+<p>If you want headings too, pipe the output of <i class="command">pr</i>
+through another <i class="command">pr</i>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>pr -l1 -t -3 file1 | pr -h file1</b></tt>
+
+Nov  1 19:48 1992  file1  Page 1
+
+Line 1 here            Line 2 here            Line 3 here
+Line 4 here            Line 5 here            Line 6 here
+Line 7 here            Line 8 here            Line 9 here
+  ...                    ...                    ...</pre></blockquote>
+
+<p>The <tt class="literal">-h file1</tt> puts the filename into the heading.</p>
+
+<p>Also see <b class="emphasis-bold">paste</b> (<a href="ch21_18.htm#upt3-CHP-21-SECT-18">Section 21.18</a>). Of course, programming languages like
+<b class="emphasis-bold">awk</b> (<a href="ch20_10.htm#upt3-CHP-20-SECT-10">Section 20.10</a>)
+and <b class="emphasis-bold">perl</b> (<a href="ch41_01.htm#upt3-CHP-41-SECT-1">Section 41.1</a>) can also make text into columns.<a name="IXTR3-5814" /> <a name="IXTR3-5815" /> <a name="IXTR3-5816" /> <a name="IXTR3-5817" /> <a name="IXTR3-5818" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.14. Cutting Columns or Fields</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.16. Make Columns Automatically with column</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

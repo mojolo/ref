@@ -1,0 +1,375 @@
+<html><head><title>Understanding
+Basic Operations (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 2. Understanding
+Basic Operations</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch02_01.htm#sect1">Awk, by Sed and Grep, out of Ed</a><br />
+<a href="ch02_02.htm">Command-Line Syntax</a><br />
+<a href="ch02_03.htm">Using sed</a><br />
+<a href="ch02_04.htm">Using awk</a><br />
+<a href="ch02_05.htm">Using sed and awk Together</a><br /></p></div><p>If you are starting out to learn sed and awk, you can benefit from
+looking at how much they have in common.</p><ul><li><p>They are invoked using similar syntax.</p></li>
+<li><p>They are both stream-oriented, reading input from text files one line
+at a time and directing the result to standard output.</p></li>
+<li><p>They use regular expressions for pattern matching.</p></li>
+<li><p>They allow the user to specify instructions in a script.</p></li></ul><p>
+<a name="ch02.ed" />
+One reason they have so much in common is that their origins can be
+found in the same line editor, <b class="emphasis-bold">ed</b>.  In this
+chapter, we begin by taking a brief look at <b class="emphasis-bold">ed</b> and
+show how sed and awk were logical steps towards the creation of a
+programmable editor.</p><p>Where sed and awk differ is in the kind of instructions that control
+the work they do.  Make no mistake--this is a major difference,
+and it affects the kinds of tasks that can best be performed with
+these programs.</p><p>This chapter looks at the command-line syntax of sed and awk and the
+basic structure of scripts.  It also offers a tutorial, using a
+mailing list, that will give you a taste of script writing.  It is
+valuable to see sed and awk scripts side-by-side before you
+concentrate on either one of them.</p><div class="sect1"><a name="sedawk-ch-2-sect-1" />
+<h2 class="sect1"><a name="sect1" />2.1. Awk, by Sed and Grep, out of Ed</h2>
+
+<p>You can trace the lineage of awk to sed and <b class="emphasis-bold">grep</b>,
+and through those two programs to <b class="emphasis-bold">ed</b>, the
+original UNIX line editor.</p>
+
+<p>
+<a name="IXT-2-265301" />
+Have you ever used a line editor?  If so, it will be much easier for
+you to understand the line orientation of sed and awk.  If you have
+used <b class="emphasis-bold">vi</b>, a full-screen editor, then you are
+familiar with a number of commands that are derived from its
+underlying line editor, <b class="emphasis-bold">ex</b> (which in turn is a
+superset of the features in <b class="emphasis-bold">ed</b>).</p>
+
+<p>Let's look at some basic operations using the line editor
+<b class="emphasis-bold">ed</b>.  Don't worry--this is an exercise intended
+to help you learn sed and awk, not an attempt to convince you of the
+wonders of line editors.  The <b class="emphasis-bold">ed</b> commands that are
+shown in this exercise are identical to the <b class="emphasis-bold">sed</b>
+commands you'll learn later on.  Feel free to experiment with
+<b class="emphasis-bold">ed</b> on your own to get a sense of how it works.  (If
+you're already familiar with <b class="emphasis-bold">ed</b>, feel free to skip
+to the next section.)</p>
+
+<p>To use a line editor, you work on one line at a time.  It is important
+to know what line you are positioned at in the file.  When you open a
+file using <b class="emphasis-bold">ed</b>, it displays the number of characters
+in the file and positions you at the last line.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ed test</b></tt>
+339</pre></blockquote>
+
+<p>
+<a name="IXT-2-265302" />
+There is no prompt.  If you enter a command that <b class="emphasis-bold">ed</b>
+does not understand, it prints a question mark as an error message.
+You can enter the print command, <b class="emphasis-bold">p</b>, to display
+the current line.</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>p</b></tt>
+label on the first box.</pre></blockquote>
+
+<p>
+<a name="IXT-2-265303" />
+<a name="IXT-2-265304" />
+By default, a command affects only the current line.  To make an edit,
+you move to the line that you want to edit and then apply the command.
+To move to a line, you specify its <em class="emphasis">address</em>.  An
+address might consist of a line number, a symbol indicating a specific
+position in the file, or a regular expression.  You can go to the
+first line by entering the line number 1.  Then you can enter the
+delete command to remove that line.</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>1</b></tt>
+You might think of a regular expression
+<tt class="userinput"><b>d</b></tt></pre></blockquote>
+
+<p>
+<a name="IXT-2-265305" />
+<a name="IXT-2-265306" />
+<a name="IXT-2-265307" />
+<a name="IXT-2-265308" />
+<a name="IXT-2-265309" />
+Entering "1" makes the first line the
+current line, displaying it on the screen.  The delete command in
+<b class="emphasis-bold">ed</b> is <b class="emphasis-bold">d</b> and here it deletes the current line.
+Rather than moving to a line and then editing it, you can prefix an
+editing command with an address that indicates which line or range of
+lines is the object of the command.  If you enter "1d", the first line
+would be deleted.</p>
+
+<p>
+<a name="IXT-2-265310" />
+<a name="IXT-2-265311" />
+<a name="IXT-2-265312" />
+<a name="IXT-2-265313" />
+You can also specify a regular expression as an address.  To delete a line 
+containing the word "regular," you could issue this command:</p>
+
+<blockquote><pre class="code">/regular/d</pre></blockquote>
+
+<p>
+<a name="IXT-2-265314" />
+<a name="IXT-2-265315" />
+where slashes delimit the regular expression and "regular" is the
+string you want to match.  This command deletes the first line
+containing "regular" and makes the line following it the current line.</p>
+
+<blockquote><b>NOTE:</b> 
+Make sure you understand that the delete command deletes the whole line. 
+It does not just delete the word "regular" on the line.</p>
+</blockquote>
+
+<p>
+<a name="IXT-2-265316" />
+To delete <em class="emphasis">all</em> the lines that contain the regular
+expression, you'd prefix the command with the letter <b class="emphasis-bold">g</b> for global.</p>
+
+<blockquote><pre class="code">g/regular/d</pre></blockquote>
+
+<p>
+<a name="IXT-2-265317" />
+The global command makes all lines that match the regular
+expression the object of the specified command.</p>
+
+<p>
+<a name="IXT-2-265318" />
+<a name="IXT-2-265319" />
+<a name="IXT-2-265320" />
+Deleting text can take you only so far. Substituting text (replacing
+one bit of text with another) is much more interesting.  The
+substitution command, <b class="emphasis-bold">s</b>, in <b class="emphasis-bold">ed</b>
+is:</p>
+
+<blockquote><pre class="code">[<em class="replaceable"><tt>address</em>]s/<em class="replaceable">pattern</em>/<em class="replaceable">replacement</em>/<em class="replaceable">flag</tt></em></pre></blockquote>
+
+<p>
+<a name="IXT-2-265321" />
+<em class="emphasis">pattern</em> is a regular expression that
+matches a string in the current line to be replaced by
+<em class="emphasis">replacement</em>.  For example, the following command
+replaces the first occurrence of "regular" with "complex" on the
+current line.</p>
+
+<blockquote><pre class="code">s/regular/complex/</pre></blockquote>
+
+<p>No address is specified, so it affects only the first occurrence on
+the current line.  It is an error if "regular" is not found on the
+current line.  To look for multiple occurrences on the
+<em class="emphasis">same</em> line, you must specify <b class="emphasis-bold">g</b> as a flag:
+<a name="IXT-2-265322" /></p>
+
+<blockquote><pre class="code">s/regular/complex/g</pre></blockquote>
+
+<p>This command changes all occurrences on the current line.  An address
+must be specified to direct this command to act upon more than the
+current line.  The following substitution command specifies an
+address:</p>
+
+<blockquote><pre class="code">/regular/s/regular/complex/g</pre></blockquote>
+
+<p>This command affects the first line that matches the address in the
+file.  Remember, the first "regular" is an address and the second is a
+pattern to match for the substitution command.  To make it apply to
+all lines, use the global command, putting <b class="emphasis-bold">g</b> before the address.</p>
+
+<blockquote><pre class="code">g/regular/s/regular/complex/g</pre></blockquote>
+
+<p>Now the substitution is made everywhere--all occurrences
+on all lines.</p>
+
+<blockquote><b>NOTE:</b> 
+
+<a name="IXT-2-265323" />
+Note the different meanings of "g."  The "g" at the beginning is the
+global command that means make the changes on all lines matched by the
+address.  The "g" at the end is a flag that means change each
+occurrence on a line, not just the first.</p>
+</blockquote>
+
+<p>The address and the pattern need not be the same.</p>
+
+<blockquote><pre class="code">g/regular expression/s/regular/complex/g</pre></blockquote>
+
+<p>
+<a name="IXT-2-265324" />
+<a name="IXT-2-265325" />
+<a name="IXT-2-265326" />
+<a name="IXT-2-265327" />
+On any line that contains the string "regular expression," replace
+"regular" with "complex." If the address and the pattern are the
+same, you can tell <b class="emphasis-bold">ed</b> by specifying two consecutive
+delimiters (//).</p>
+
+<blockquote><pre class="code">g/regular/s//complex/g</pre></blockquote>
+
+<p>In this example, "regular" is specified as the address and the pattern
+to be matched for substitution is the same.  If it seems that we've
+covered these commands quickly and that there is a lot to absorb,
+don't worry.  We will be covering these commands again later on.</p>
+
+<p>
+<a name="IXT-2-265328" />
+The familiar UNIX utility <b class="emphasis-bold">grep</b> is derived 
+from the following global command in <b class="emphasis-bold">ed</b>:</p>
+
+<blockquote><pre class="code">g/<em class="emphasis">re</em>/p</pre></blockquote>
+
+<p>which stands for "global regular expression print."  Grep is a
+line-editing command that has been extracted from
+<b class="emphasis-bold">ed</b> and made available as an external program.  It
+is hard-wired to perform one editing command.  It takes the regular
+expression as an argument on the command line and uses it as the
+address of lines to print.  Here's an example, looking for lines
+matching "box":</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep 'box' test</b></tt>
+You are given a series of boxes, the first one labeled "A",
+label on the first box.</pre></blockquote>
+
+<p>It prints all lines matching the regular expression.</p>
+
+<p>
+<a name="IXT-2-265329" />
+One more interesting feature of <b class="emphasis-bold">ed</b> is the ability
+to <em class="emphasis">script</em> your edits, placing them in a separate
+file and directing them as input to the line editor.  For instance, if
+a series of commands were put in a file named
+<em class="emphasis">ed-script</em>, the following command executes the
+script:</p>
+
+<blockquote><pre class="code">ed test &lt; ed-script</pre></blockquote>
+
+<p>This feature makes <b class="emphasis-bold">ed</b> a programmable editor--that is,
+you can script any action that you might perform manually.</p>
+
+<p>
+<a name="IXT-2-265330" />
+Sed was created as a special-purpose editor that was meant to execute
+scripts exclusively; unlike <b class="emphasis-bold">ed</b>, it cannot be used
+interactively.  Sed differs from <b class="emphasis-bold">ed</b> primarily in
+that it is stream-oriented.  By default, all of the input to sed
+passes through and goes to standard output.  The input file itself is
+not changed.  If you actually do want to alter the input file, you
+typically use the shell mechanism for output redirection, and when you
+are satisfied with the edits you've made, replace the original file
+with the modified version.</p>
+
+<p>
+<a name="IXT-2-265331" />
+<b class="emphasis-bold">ed</b> is not stream-oriented and changes are made to
+the file itself.  An <b class="emphasis-bold">ed</b> script must contain
+commands to save the file and quit the editor.  It produces no output
+to the screen, except what may be generated by a specific command.</p>
+
+<p>The stream orientation of sed has a major impact on how addressing is
+applied.  In <b class="emphasis-bold">ed</b>, a command without an address
+affects only the current line.  Sed goes through the file, a line at a
+time, such that each line becomes the current line, and the commands
+are applied to it.  The result is that sed applies a command without
+an address to <em class="emphasis">every</em> line in the file.</p>
+
+<p>Look at the following substitution command:</p>
+
+<blockquote><pre class="code">s/regular/complex/</pre></blockquote>
+
+<p>If you entered this command interactively in <b class="emphasis-bold">ed</b>,
+you'd substitute "complex" for the first occurrence of "regular" on
+the current line.  In an <b class="emphasis-bold">ed</b> script, if this was the
+first command in the script, it would be applied only to the last line
+of the file (<b class="emphasis-bold">ed</b>'s default current line).  However,
+in a sed script, the same command applies to all lines.  That is, sed
+commands are implicitly global.  In sed, the previous example has the
+same result as the following global command in <b class="emphasis-bold">ed</b>:</p>
+
+<blockquote><pre class="code">g/regular/s//complex/</pre></blockquote>
+
+<blockquote><b>NOTE:</b> 
+
+<a name="IXT-2-265332" />
+<a name="IXT-2-265333" />
+Understanding the difference between current-line addressing in
+<b class="emphasis-bold">ed</b> and global-line addressing in sed is very
+important.  In <b class="emphasis-bold">ed</b> you use addressing to
+<em class="emphasis">expand</em> the number of lines that are the object of
+a command; in sed, you use addressing to <em class="emphasis">restrict</em>
+the number of lines affected by a command.
+<a name="IXT-2-265334" /></p>
+</blockquote>
+
+<p>Sed also was designed with a number of additional commands that
+support script writing.  We will look at many of these commands in
+<a href="ch06_01.htm">Chapter 6, "Advanced sed
+Commands"</a>.</p>
+
+<p>
+<a name="IXT-2-265335" />
+<a name="IXT-2-265336" />
+<a name="IXT-2-265337" />
+Awk was developed as a programmable editor that, like sed, is
+stream-oriented and interprets a script of editing commands.  Where
+awk departs from sed is in discarding the line-editor command set.  It
+offers in its place a programming language modeled on the C language.
+
+The <b class="emphasis-bold">print</b> statement replaces the <b class="emphasis-bold">p</b>
+command, for example.  The concept of addressing is carried over, such that:</p>
+
+<blockquote><pre class="code">/regular/ { print }</pre></blockquote>
+
+<p>
+<a name="IXT-2-265338" />
+<a name="IXT-2-265339" />
+<a name="IXT-2-265340" />
+prints those lines matching "regular".  The braces
+({}) surround a series of one or more
+statements that are applied to the same address.</p>
+
+<p>The advantage of using a programming language in scripts is that it
+offers many more ways to control what the programmable editor can do.
+Awk offers expressions, conditional statements, loops, and other
+programming constructs.</p>
+
+<p>
+<a name="IXT-2-265341" />
+<a name="IXT-2-265342" />
+One of the most distinctive features of awk is that it
+<em class="emphasis">parses</em>, or breaks up, each input line and makes
+individual words available for processing with a script.  (An editor
+such as <b class="emphasis-bold">vi</b> also recognizes words, allowing you to
+move word by word, or make a word the object of an action, but these
+features can only be used interactively.)</p>
+
+<p>
+<a name="IXT-2-265343" />
+Although awk was designed as a programmable editor, users found that
+awk scripts could do a wide range of other tasks as well.  The authors
+of awk never imagined it would be used to write large programs.  But,
+recognizing that awk was being used in this way, the authors revised
+the language, creating <b class="emphasis-bold">nawk</b> to offer more support
+for writing larger programs and tackling general-purpose programming
+problems.  This new version, with minor improvements, is now codified
+by the POSIX standard.</p>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.4. Four Hurdles to Mastering sed and awk</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.2. Command-Line Syntax</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

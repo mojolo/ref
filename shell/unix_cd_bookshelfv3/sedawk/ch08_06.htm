@@ -1,0 +1,272 @@
+<html><head><title>System Variables That Are Arrays (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.6. System Variables That Are Arrays</h2>
+
+<p>
+<a name="ch08.sys" />
+<a name="IXT-8-266061" />
+Awk provides two system variables that are arrays:</p>
+
+<dl>
+<dt><b class="emphasis-bold">ARGV</b></i></dt><dd>
+<a name="IXT-8-266062" />
+<a name="IXT-8-266063" />
+An array of command-line arguments, excluding the script itself and
+any options specified with the invocation of awk.  The number of
+elements in this array is available in <b class="emphasis-bold">ARGC</b>.  The
+index of the first element of the array is 0 (unlike all other arrays
+in awk but consistent with C) and the last is <b class="emphasis-bold">ARGC - 
+1</b>.</p></dd>
+
+
+<dt><b class="emphasis-bold">ENVIRON</b></i></dt><dd>
+<a name="IXT-8-266064" />
+An array of environment variables.
+Each element of the array is the value in the current
+environment and the index is the name of the environment variable.</p></dd>
+
+</dl>
+
+<a name="sedawk-ch-8-sect-6.1" /><div class="sect2">
+<h3 class="sect2">8.6.1. An Array of Command-Line Parameters</h3>
+
+<p>
+<a name="ch08.comm" />
+You can write a loop to reference all the elements of the
+<b class="emphasis-bold">ARGV</b> array.</p>
+
+<blockquote><pre class="code"># argv.awk - print command-line parameters
+BEGIN { for (x = 0; x &lt; ARGC; ++x)
+	    print ARGV[x]
+	print ARGC
+}</pre></blockquote>
+
+<p>This example also prints out the value of <b class="emphasis-bold">ARGC</b>, the
+number of command-line arguments.  Here's an example of how it works
+on a sample command line:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f argv.awk 1234 "John Wayne" Westerns n=44 -</b></tt>
+awk
+1234
+John Wayne
+Westerns
+n=44
+- 
+6</pre></blockquote>
+
+<p>As you can see, there are six elements in the array.  The first
+element is the name of the command that invoked the script.  The last
+argument, in this case, is the filename, "-", for standard input.
+Note the "-f argv.awk" does not appear in the parameter list.</p>
+
+<p>Generally, the value of <b class="emphasis-bold">ARGC</b> will be at least 2.
+If you don't want to refer to the program name or the filename, you
+can initialize the counter to 1 and then test against <b class="emphasis-bold">ARGC -
+1</b> to avoid referencing the last parameter (assuming that
+there is only one filename).</p>
+
+<p>Remember that if you invoke awk from a shell script, the command-line
+parameters are passed to the shell script and not to awk.  You have to
+pass the shell script's command-line parameters to the awk program
+inside the shell script.  For instance, you can pass all command-line
+parameters from the shell script to awk, using "$*".  Look at the
+following shell script:</p>
+
+<blockquote><pre class="code">awk '
+# argv.sh - print command-line parameters
+BEGIN {
+	for (x = 0; x &lt; ARGC; ++x)
+		print ARGV[x]
+	print ARGC
+}' $*</pre></blockquote>
+
+<p>This shell script works the same as the first example of invoking awk.</p>
+
+<p>One practical use is to test the command-line parameters in the
+<b class="emphasis-bold">BEGIN</b> rule using a regular expression.  The
+following example tests that all the parameters, except the first, 
+are integers.</p>
+
+<blockquote><pre class="code"># number.awk - test command-line parameters
+BEGIN {
+	for (x = 1; x &lt; ARGC; ++x)
+		if ( ARGV[x] !~ /^[0-9]+$/ ) {
+			print ARGV[x], "is not an integer."
+			exit 1
+		}
+}</pre></blockquote>
+
+<p>If the parameters contain any character that is not a digit, the
+program will print the message and quit.</p>
+
+<p>After testing the value, you can, of course, assign it to a variable.
+For instance, we could write a <b class="emphasis-bold">BEGIN</b> procedure of a
+script that checks the command-line parameters before prompting the
+user.  Let's look at the following shell script that uses the phone
+and address database from the previous chapter:</p>
+
+<blockquote><pre class="code">awk '# phone - find phone number for person 
+# supply name of person on command line or at prompt.
+BEGIN { FS = "," 
+	# look for parameter
+	if ( ARGC &gt; 2 ){ 
+		name = ARGV[1]
+		delete ARGV[1]
+	} else { 
+
+		# loop until we get a name
+		while (! name) { 
+			printf("Enter a name? ")
+			getline name &lt; "-"
+		}
+	}
+}
+$1 ~ name {
+	print $1, $NF 
+}' $* phones.data</pre></blockquote>
+
+<p>We test the <b class="emphasis-bold">ARGC</b> variable to see if there are more
+than two parameters.  By specifying "$*", we can pass all the
+parameters from the shell command line inside to the awk command line.
+If this parameter has been supplied, we assume the second parameter,
+<b class="emphasis-bold">ARGV[1]</b>, is the one we want and it is assigned to
+the variable <b class="emphasis-bold">name</b>.  Then that parameter is deleted
+from the array.  This is very important if the parameter that is
+supplied on the command line is not of the form
+"<em class="replaceable"><tt>var=value</tt></em>"; otherwise, it will later be
+interpreted as a filename.  If additional parameters are supplied,
+they will be interpreted as filenames of alternative phone databases.
+If there are not more than two parameters, then we prompt for the
+name.  The <b class="emphasis-bold">getline</b> function is discussed in 
+<a href="ch10_01.htm">Chapter 10, "The Bottom Drawer"</a>; using this syntax, it reads the next line
+from standard input.</p>
+
+<p>Here are several examples of this script in action:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>phone John </b></tt>
+John Robinson 696-0987
+$ <tt class="userinput"><b>phone</b></tt>
+Enter a name? <tt class="userinput"><b>Alice</b></tt>
+Alice Gold (707) 724-0000
+$ <tt class="userinput"><b>phone Alice /usr/central/phonebase</b></tt>
+Alice Watson (617) 555-0000
+Alice Gold (707) 724-0000</pre></blockquote>
+
+<p>The first example supplies the name on the command line, the second
+prompts the user, and the third takes two command-line parameters and
+uses the second as a filename.  (The script will not allow you to
+supply a filename without supplying the person's name on the command
+line.  You could devise a test that would permit this syntax, though.)</p>
+
+<p>Because you can add to and delete from the <b class="emphasis-bold">ARGV</b>
+array, there is the potential for doing a lot of interesting
+manipulation.  You can place a filename at the end of the
+<b class="emphasis-bold">ARGV</b> array, for instance, and it will be opened as
+though it were specified on the command line.  Similarly, you can
+delete a filename from the array and it will never be opened.  Note
+that if you add new elements to <b class="emphasis-bold">ARGV</b>, you should
+also increment <b class="emphasis-bold">ARGC</b>; awk uses the value of
+<b class="emphasis-bold">ARGC</b> to know how many elements in
+<b class="emphasis-bold">ARGV</b> it should process.  Thus, simply decrementing
+<b class="emphasis-bold">ARGC</b> will keep awk from examining the final element
+in <b class="emphasis-bold">ARGV</b>.</p>
+
+<p>As a special case, if the value of an <b class="emphasis-bold">ARGV</b> element
+is the empty string (<tt class="literal">""</tt>), awk will skip
+over it and continue on to the next element.</p>
+
+<a name="IXT-8-266065" />
+</div>
+
+
+
+
+<a name="sedawk-ch-8-sect-6.2" /><div class="sect2">
+<h3 class="sect2">8.6.2. An Array of Environment Variables</h3>
+
+<p>
+<a name="IXT-8-266066" />
+<a name="IXT-8-266067" />
+<a name="IXT-8-266068" />
+The <b class="emphasis-bold">ENVIRON</b> array was added independently to both
+gawk and MKS awk.  It was then added to the System V Release 4 nawk,
+and is now included in the POSIX standard for awk.  It allows you to
+access variables in the environment.  The following script loops
+through the elements of the <b class="emphasis-bold">ENVIRON</b> array and
+prints them.</p>
+
+<blockquote><pre class="code"># environ.awk - print environment variable
+BEGIN {
+	for (env in ENVIRON)
+		print env "=" ENVIRON[env]
+}</pre></blockquote>
+
+<p>The index of the array is the variable name.  The script generates the
+same output produced by the <b class="emphasis-bold">env</b> command
+(<b class="emphasis-bold">printenv</b> on some systems).</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f environ.awk</b></tt>
+DISPLAY=scribe:0.0
+FRAME=Shell 3
+LOGNAME=dale
+MAIL=/usr/mail/dale
+PATH=:/bin:/usr/bin:/usr/ucb:/work/bin:/mac/bin:.
+TERM=mac2cs
+HOME=/work/dale
+SHELL=/bin/csh
+TZ=PST8PDT
+EDITOR=/usr/bin/vi</pre></blockquote>
+
+<p>You can reference any element, using the variable name as the index of
+the array:</p>
+
+<blockquote><pre class="code">ENVIRON["LOGNAME"]</pre></blockquote>
+
+<p>You can also change any element of the <b class="emphasis-bold">ENVIRON</b> array.</p>
+
+<blockquote><pre class="code">ENVIRON["LOGNAME"] = "Tom"</pre></blockquote>
+
+<p>However, this change does not affect the user's actual environment
+(i.e., when awk is done, the value of <b class="emphasis-bold">LOGNAME</b> will
+not be changed) nor does it affect the environment inherited by
+programs that are invoked from awk via the <b class="emphasis-bold">getline</b>
+or <b class="emphasis-bold">system()</b> functions, which are described
+in <a href="ch10_01.htm">Chapter 10, "The Bottom Drawer"</a>.</p>
+
+<p>This chapter has covered many
+important programming constructs.  You will continue to see examples
+in upcoming chapters that make use of these constructs.  If
+programming is new to you, be sure you take the time to run and modify
+the programs in this chapter, and write small programs of your own.
+It is essential, like learning how to conjugate verbs, that these
+constructs become familiar and predictable to you.</p>
+</div>
+
+
+
+
+<a name="IXT-8-266069" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.5. An Acronym Processor</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9. Functions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

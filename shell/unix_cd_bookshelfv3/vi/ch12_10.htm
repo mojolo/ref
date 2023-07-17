@@ -1,0 +1,398 @@
+<html><head><title>Interesting Features (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.10. Interesting Features</h2>
+
+<p>
+<a name="ch12.interesting" />
+<em class="emphasis">vile</em> has a number of interesting features that
+are the topic of this section.</p>
+
+<dl>
+<dt><i>The vile editing model</i></dt><dd><em class="emphasis">vile</em></tt>'s editing model is somewhat different
+from <em class="emphasis">vi</em></tt>'s. Based on concepts from
+<em class="emphasis">emacs</em></tt>, it provides key rebinding and a more dynamic
+command line.</p></dd>
+
+
+<dt><i>Major modes</i></dt><dd><em class="emphasis">vile</em></tt> supports editing "modes."
+These are groups of option settings that make it convenient
+for editing different kinds of files.</p></dd>
+
+
+<dt><i>The procedure language</i></dt><dd><em class="emphasis">vile</em></tt>'s procedure language allows you to
+define functions and macros that make the editor more programmable
+and flexible.</p></dd>
+
+
+<dt><i>Miscellaneous small features</i></dt><dd>A number of smaller features make day-to-day editing easier.</p></dd>
+
+</dl>
+
+<a name="vi6-ch-12-sect-10.1" /><div class="sect2">
+<h3 class="sect2">12.10.1. The vile Editing Model</h3>
+
+<p>
+<a name="IXT-12-282133" />
+<a name="IXT-12-282134" />
+<a name="IXT-12-282135" />
+In <em class="emphasis">vi</em> and the other clones,
+editing functionality is "hardwired"
+into the editor. The association between command characters and
+what they do is built into the code. For example,
+the <tt class="literal">x</tt> key deletes characters, and the <tt class="literal">i</tt>
+key enters insert mode.
+Without resorting to severe trickery, you cannot switch the
+functionality of the two keys (if it can even be done at all).</p>
+
+<p><em class="emphasis">vile</em>'s editing model, derived from <em class="emphasis">emacs</em>
+through MicroEMACS, is different.
+The editor has defined, named functions, each of which performs a single
+editing task, such as <tt class="literal">delete-next-character</tt>
+or <tt class="literal">delete-previous-character</tt>.
+Many of the functions are then bound to keystrokes, such as binding
+<tt class="literal">delete-next-character</tt> to <tt class="literal">x</tt>.</p>
+
+<p>
+<a name="IXT-12-282136" />
+Changing bindings is very easy to do. You use the
+<tt class="literal">:bind-key</tt> command. As arguments, you give it the
+name of the function, and then the key sequence to bind the
+function to. You might put the following commands into
+your <em class="filename">.vilerc</em> file:</p>
+
+<blockquote><pre class="code">bind-key incremental-search /
+bind-key reverse-incremental-search ?</pre></blockquote>
+
+<p>These commands change the <tt class="literal">/</tt> and <tt class="literal">?</tt>
+search commands to do incremental searching.</p>
+
+<p>In addition to pre-defined functions, <em class="emphasis">vile</em> contains a simple
+programming language that allows you to write procedures.
+You may then bind the command for executing a procedure to a keystroke
+sequence.
+GNU <em class="emphasis">emacs</em> uses a variant of Lisp for its language,
+which is extremely powerful.  <em class="emphasis">vile</em> has a somewhat simpler,
+less general-purpose language.</p>
+
+<p>Also, as in <em class="emphasis">emacs</em>, the <em class="emphasis">vile</em>
+command line is very interactive. Many commands display a default
+value for their operand, which you can edit if not appropriate, or
+select by hitting <span class="keycap">RETURN</span>.
+As you type <em class="emphasis">vi</em> mode editing commands, such as those that
+change or delete characters, you will see feedback about the
+operation in the status line.</p>
+
+<p>
+<a name="IXT-12-282137" />
+<a name="IXT-12-282138" />
+The "amazing" <em class="emphasis">ex</em> mode that Paul
+referred to earlier is best reflected in the behavior of the
+<tt class="literal">:s</tt> (substitute) command. It prompts for
+each part of the command: the search pattern, the replacement
+text, and any flags.</p>
+
+<p>As an example, let's assume
+you wish to change all instances of <em class="emphasis">perl</em>
+to <em class="emphasis">awk</em> everywhere in your file.
+In the other editors, you'd simply type
+<tt class="literal">:1,$s/perl/awk/g</tt><span class="keycap">RETURN</span>,
+and that's what would appear on the command line.
+The following set of screens describes what you see on the
+<em class="emphasis">vile</em> colon command line <em class="emphasis">as you
+type</em>:</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<th>Keystrokes</th>
+<th>Results</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">:1,$s</tt></td>
+<td><p>The first part of the substitute command.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">/</tt></td>
+<td><blockquote><pre class="code">substitute pattern: _</pre></blockquote>
+
+<p><em class="emphasis">vile</em> prompts you for the pattern to search for.
+Any previous pattern is placed there for you to re-use.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">perl/</tt></td>
+<td><blockquote><pre class="code">replacement string: _</pre></blockquote>
+
+<p>At the next <em class="emphasis">/</em> delimiter,
+<em class="emphasis">vile</em> prompts you for the replacement text.
+Any previous text is placed there for you to re-use.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">awk/</tt></td>
+<td><blockquote><pre class="code">(g)lobally, ([1-9])th occurrence on line, 
+(c)onfirm, and/or (p)rint result: _</pre></blockquote>
+
+<p>At the final delimiter,
+<em class="emphasis">vile</em> prompts for the optional flags. Enter any
+desired flags, then <span class="keycap">RETURN</span>.</p></td>
+</tr>
+
+
+</table><p>The last prompt line is broken for readability. <em class="emphasis">vile</em>
+prints it all on one line.</p>
+
+<p><em class="emphasis">vile</em> follows through with this style of behavior
+on all appropriate <em class="emphasis">ex</em> commands. For example, the
+read command (<tt class="literal">:r</tt>)
+will prompt you with the name of the
+last file you read.
+To read that file again, just hit <span class="keycap">RETURN</span>.</p>
+
+<p>Finally, <em class="emphasis">vile</em>'s <em class="emphasis">ex</em> command parser
+is weaker than in the other editors.
+For example, you cannot use search patterns to specify
+line ranges (<tt class="literal">:/now/,/forever/s/perl/awk/g</tt>),
+and the move command (<tt class="literal">m</tt>) is not implemented.
+In practice, what's not implemented does not seem to hinder
+you very much.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-10.2" /><div class="sect2">
+<h3 class="sect2">12.10.2. Major Modes</h3>
+
+<p>
+<a name="IXT-12-282139" />
+A <em class="emphasis">major mode</em> is a collection of option settings
+that apply when editing a certain class of file. Many of these options
+apply on a per-buffer basis, such as the tab-stop settings.
+The major mode concept was first introduced in <em class="emphasis">vile</em> 7.2,
+and is more fully developed in 7.4 and 8.0.</p>
+
+<p>
+<a name="IXT-12-282140" />
+<a name="IXT-12-282141" />
+<em class="emphasis">vile</em> has one pre-defined major mode,
+<tt class="literal">cmode</tt>,
+for editing C and C++ programs. With <tt class="literal">cmode</tt>,
+you can use <tt class="literal">%</tt> to match C preprocessor conditionals
+(<tt class="literal">#if</tt>, <tt class="literal">#else</tt>, and
+<tt class="literal">#endif</tt>).
+<em class="emphasis">vile</em> will do automatic source code indentation
+based on the placement of braces (<tt class="literal">{</tt>
+and <tt class="literal">}</tt>).
+And it will do smart formatting of C comments.
+The <tt class="literal">tabstop</tt> and <tt class="literal">shiftwidth</tt>
+options are set on a per-major-mode basis as well.</p>
+
+<p>Using major modes, you can apply the same features to programs
+written in other languages. This example, courtesy of
+<a name="IXT-12-282142" />
+Tom Dickey, defines a new major mode, <tt class="literal">shmode</tt>,
+for editing Bourne shell scripts.
+(This is useful for any Bourne-style shell, such as
+<em class="emphasis">ksh</em>, <em class="emphasis">bash</em>, or
+<em class="emphasis">zsh</em>.)</p>
+
+<blockquote><pre class="code">define-mode sh
+set shsuf "\.sh$"
+set shpre "^#!\\s*\/.*sh\\&gt;$"
+define-submode sh comment-prefix "^\\s*/[:#]"
+define-submode sh comments "^\\s*/\\?[:#]\\s+/\\?\\s*$"
+define-submode sh fence-if   "^\\s*\\&lt;if\\&gt;"
+define-submode sh fence-elif "^\\s*\\&lt;elif\\&gt;"
+define-submode sh fence-else "^\\s*\\&lt;else\\&gt;"
+define-submode sh fence-fi   "^\\s*\\&lt;fi\\&gt;"</pre></blockquote>
+
+<p>The <tt class="literal">shsuf</tt> (shell suffix) variable describes the
+file name suffix that indicates a file is a shell script.
+The <tt class="literal">shpre</tt> (shell preamble) variable describes a
+first line of the file that indicates that the file contains
+shell code.
+The <tt class="literal">define-submode</tt> commands then add options
+that apply only to buffers where the corresponding major mode is
+set. The examples here set up the smart comment formatting
+and the smart <tt class="literal">%</tt> command matching for shell programs.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-10.3" /><div class="sect2">
+<h3 class="sect2">12.10.3. The Procedure Language</h3>
+
+<p>
+<a name="IXT-12-282143" />
+<a name="IXT-12-282144" />
+<em class="emphasis">vile</em>'s procedure language is almost
+unchanged from that of MicroEMACS.
+Comments begin with a semi-colon or a double quote character.
+Environment variable names (editor options) start with a
+<tt class="literal">$</tt>, user variable names start with <tt class="literal">%</tt>.
+A number of built-in functions exist for doing comparisons and
+testing conditions; their names all begin with <tt class="literal">&amp;</tt>.
+Flow control commands and certain others begin with <tt class="literal">~</tt>.
+An <tt class="literal">@</tt> with a string prompts the user for input, and
+the user's answer is returned.
+This rather whimsical example from the <em class="filename">macros.doc</em>
+file should give you a taste of the language's flavor:</p>
+
+<blockquote><pre class="code">~if &amp;sequal %curplace "timespace vortex"
+	insert-string "First, rematerialize\n"
+~endif
+~if &amp;sequal %planet "earth"     ;If we have landed on earth...
+	~if &amp;sequal %time "late 20th century"  ;and we are then
+		write-message "Contact U.N.I.T."
+	~else
+		insert-string "Investigate the situation....\n"
+		insert-string "(SAY 'stay here Sara')\n"
+	~endif
+~elseif &amp;sequal %planet "luna"  ;If we have landed on our neighbor...
+	write-message "Keep the door closed"
+~else
+	setv %conditions @"Atmosphere conditions outside? "
+	~if &amp;sequal %conditions "safe"
+		insert-string &amp;cat "Go outside......" "\n"
+		insert-string "lock the door\n"
+	~else
+		insert-string "Dematerialize..try somewhen else"
+		newline
+	~endif
+~endif</pre></blockquote>
+
+<p>You can store these procedures into a numbered macro, or
+give them names that can be bound to keystrokes.
+The above procedure is most useful when using the Tardis
+<em class="emphasis">vile</em> port. <img src="figs/ct.smiley.gif" alt="Figure " /></p>
+
+<p>This more realistic example from Paul Fox
+runs <em class="emphasis">grep</em>, searching for the word under the cursor in all C
+source files. It then puts the results in a buffer named after the word,
+and sets things up so that the built-in error finder (<tt class="literal">^X ^X</tt>)
+will use this output as its list of lines to visit.
+Finally, the macro is bound to <tt class="literal">^A g</tt>.
+The <tt class="literal">~force</tt> command allows the following command
+to fail without generating an error message:</p>
+
+<blockquote><pre class="code">14 store-macro
+	set-variable %grepfor $identifier
+	edit-file &amp;cat "!egrep -n " &amp;cat %grepfor " *.[ch]"
+	~force rename-buffer %grepfor
+	error-buffer $cbufname
+~endm
+bind-key execute-macro-14 ^A-g</pre></blockquote>
+
+<p>
+<a name="IXT-12-282145" />
+<a name="IXT-12-282146" />
+Finally, the <tt class="literal">read-hook</tt> and <tt class="literal">write-hook</tt>
+variables can be set to names of procedures to run after reading and
+before writing a file, respectively.
+This allows you to do things similar to pre- and post-operation
+files in <em class="emphasis">elvis</em> and the autocommand
+facility in <em class="emphasis">vim</em>.</p>
+
+<p>The language is quite capable, including flow control and
+comparison features, and variables that provide access to a large
+amount of <em class="emphasis">vile</em>'s internal state.
+The <em class="filename">macros.doc</em> file in the <em class="emphasis">vile</em>
+distribution describes the language in detail.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-10.4" /><div class="sect2">
+<h3 class="sect2">12.10.4. Miscellaneous Small Features</h3>
+
+<p>Several other, smaller features are worth mentioning:</p>
+
+<dl>
+<dt><i>Piping into <em class="emphasis">vile</em></tt></i></dt><dd>
+<a name="IXT-12-282147" />
+If you make <em class="emphasis">vile</em></tt> the last command in a
+pipeline, it will create a buffer named
+<tt class="literal">[Standard Input]</tt> and edit that buffer for you.
+This is perhaps the "pager to end all pagers."</p></dd>
+
+
+<dt><i>Editing DOS files</i></dt><dd>When set to true, the
+<a name="IXT-12-282148" />
+<tt class="literal">dos</tt> option causes <em class="emphasis">vile</em>
+to strip carriage returns at the end of a line in files when reading,
+and to write them back out again.
+This makes it easy to edit DOS files on a UNIX or Linux system.</p></dd>
+
+
+<dt><i>Text reformatting</i></dt><dd>
+<a name="IXT-12-282149" />
+<a name="IXT-12-282150" />
+The <tt class="literal">^A f</tt> command reformats text, performing
+word wrapping on selected text. It understands C and shell
+comments (lines with a leading <tt class="literal">*</tt> or <tt class="literal">#</tt>)
+and quoted email (a leading <tt class="literal">&gt;</tt>).
+It is similar to the UNIX <em class="emphasis">fmt</em></tt> command, but
+faster.</p></dd>
+
+
+<dt><i>Formatting the information line</i></dt><dd>The <tt class="literal">modeline-format</tt> variable is a string
+<a name="IXT-12-282151" />
+which controls the way <em class="emphasis">vile</em> formats the
+mode line. This is the line at the bottom of each window that
+describes the buffer's status, such as its name, current major
+mode, modification status, insert versus command mode, and so on.</p>
+
+<p>The string consists of <tt class="literal">printf</tt>(3)
+style percent-sequences. For example, <tt class="literal">%b</tt>
+for the buffer name, <tt class="literal">%m</tt> for the
+major mode, and <tt class="literal">%l</tt> for the line number if
+<tt class="literal">ruler</tt> has been set.
+Characters in the string which are not part of a format specifier
+are output verbatim.</p></dd>
+
+</dl>
+
+<p><em class="emphasis">vile</em> has many other features.
+The <em class="emphasis">vi</em> finger-feel makes it easy to move to.
+The programmability provides flexibility, and its interactive
+nature and use of defaults is perhaps friendlier for the novice
+than traditional <em class="emphasis">vi</em>.</p>
+</div>
+
+
+
+
+<a name="IXT-12-282152" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.9. Programming Assistance</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12.11. Sources and Supported
+Operating Systems</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

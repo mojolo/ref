@@ -1,0 +1,149 @@
+<html><head><title>What's Really in a Directory? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.2. What's Really in a Directory?</h2>
+
+<p><a name="IXT-10-6330" /><a name="IXT-10-6331" />Before you can understand
+moving and copying files, you need to know a bit more about how files
+are represented in directories. What does it mean to say that a file
+is really "in" a directory?
+It's easy to imagine that files are actually inside
+of something (some special chunk of the disk that's
+called a directory). But that's precisely wrong, and
+it's one place where the filing cabinet model of a
+filesystem doesn't apply.
+</p>
+
+<p>A directory really is just another file, and it really
+isn't different from any other datafile. If you want
+to prove this, try the command <i class="command">od -c
+.</i><a name="IXT-10-6332" /> On some Unix
+systems, it dumps the current directory to the screen in raw form.
+The result certainly looks ugly (it's not a text
+file; it just has lots of binary characters). But, if your system
+allows it, <i class="command">od
+</i><em class="filename">-</em><i class="command">c</i> should let you
+see the names of the files that are in the current directory [and,
+probably, some names of files that have been deleted! Sorry,
+they're only the old directory entries; you
+can't get the files back
+ <em class="emphasis">-- JP</em>]. If <i class="command">od
+</i><em class="filename">-</em><i class="command">c .</i>
+doesn't work (and it won't on
+current versions of Linux, for example), use <i class="command">ls
+</i><em class="filename">-</em><i class="command">if</i> instead.
+</p>
+
+<p><a name="IXT-10-6333" />A directory is really
+just a list of files represented by filenames and inode numbers, as
+shown in the output in <a href="ch10_02.htm#upt3-CHP-10-EX-1">Example 10-1</a>.
+</p>
+
+<a name="upt3-CHP-10-EX-1" /><div class="example">
+<h4 class="objtitle">Example 10-1. Directory-content visualization </h4>
+<blockquote><pre class="code">The file named    .          is inode 34346
+The file named    ..         is inode 987
+The file named    mr.ed      is inode 10674
+The file named    joe.txt    is inode 8767
+The file named    grok       is inode 67871
+The file named    otherdir   is inode 2345</pre></blockquote>
+</div>
+
+<p>When you give a filename like <em class="filename">grok</em>, the kernel
+looks up <em class="filename">grok</em> in the current directory and finds
+out that this file has inode 67871; it then looks up this inode to
+find out who owns the file, where the data blocks are, and so on.
+</p>
+
+<p>What's more, some of these
+"files" may be directories in their
+own right. In particular, that's true of the first
+two entries: <tt class="literal">.</tt><a name="IXT-10-6334" /> and <tt class="literal">..</tt>. These
+entries are in <em class="emphasis">every</em> directory. The
+<a name="IXT-10-6335" /><a name="IXT-10-6336" />current
+directory is represented by <tt class="literal">.</tt>, while
+<tt class="literal">..</tt> refers to the
+"parent" of the current directory
+(i.e., the directory that
+"contains" the current directory).
+The file <em class="filename">otherdir</em> is yet another directory that
+happens to be "within" the current
+directory. However, there's no way you can tell that
+from its directory entry -- Unix doesn't know
+it's different until it looks up its inode.
+</p>
+
+<p>Now that you know what a directory is, think about some basic
+directory operations. What does it mean to move, or rename, a file?
+If the file is staying in the same directory, the
+<em class="filename">mv</em><a name="IXT-10-6337" /> command just changes the
+file's name in the directory; it
+doesn't touch the data at all.
+</p>
+
+<p><a name="IXT-10-6338" />Moving a file into another directory
+takes a little more work, but not much. A command like <em class="filename">mv
+dir1/foo dir2/foo</em> means "delete
+<em class="filename">foo</em>'s entry in
+<em class="filename">dir1</em> and create a new entry for
+<em class="filename">foo</em> in
+<em class="filename">dir2</em>." Again, Unix
+doesn't have to touch the data blocks or the inode
+at all.
+</p>
+
+<p><a name="IXT-10-6339" /> <a name="IXT-10-6340" />The only time you actually need to
+copy data is if you're moving a file into another
+filesystem. In that case, you have to copy the file to the new
+filesystem; delete its old directory entry; return the
+file's data blocks to the "free
+list," which means that they can be reused; and so
+on. It's a fairly complicated operation, but (still)
+relatively rare. (On some old versions of Unix,
+<em class="filename">mv</em> wouldn't let you move files
+between filesystems. You had to copy it and remove the old file by
+hand.)
+</p>
+
+<p>How does Unix find out the name of the current directory? In <a href="ch10_02.htm#upt3-CHP-10-EX-1">Example 10-1</a> there's an entry for
+<tt class="literal">.</tt>, which tells you that the current directory has
+inode 34346. Is the directory's name part of the
+inode? Sorry -- it isn't. The
+directory's name is included in the parent
+directory. The parent directory is <tt class="literal">..</tt>, which is
+inode 987. So Unix looks up inode 987, finds out where the data is,
+and starts reading every entry in the parent directory. Sooner or
+later, it will find one that corresponds to inode 34346. When it does
+that, it knows that it has found the directory entry for the current
+directory and can read its name.
+</p>
+
+<p>Complicated? Yes, but if you understand this, you have a pretty good
+idea of how Unix directories work.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10. Linking, Renaming, and Copying Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.3. Files with Two or More Names</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

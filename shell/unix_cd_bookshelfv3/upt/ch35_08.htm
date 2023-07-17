@@ -1,0 +1,117 @@
+<html><head><title>The DISPLAY Environment Variable (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.8. The DISPLAY Environment Variable</h2>
+
+<p><a name="IXT-35-3570" /> <a name="IXT-35-3571" /><a name="IXT-35-3572" />The most important environment
+variable for X Window System clients is DISPLAY. When a user logs in
+at an X terminal, the DISPLAY environment variable in each
+<i class="command">xterm</i> window is set to her X
+terminal's hostname followed by
+<tt class="literal">:0.0</tt>. 
+</p>
+
+<blockquote><pre class="code">ruby:joan % <tt class="userinput"><b>echo $DISPLAY</b></tt>
+ncd15.ora.com:0.0</pre></blockquote>
+
+<p>When the same user logs in at the console of the workstation named
+<em class="emphasis">sapphire</em> that's running X, the
+DISPLAY environment variable is defined as just
+<tt class="literal">:0.0</tt>:<a href="#FOOTNOTE-104">[104]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-104" /><p> [104]Before X11 Release 5, the
+DISPLAY variable might appear as <tt class="literal">unix:0.0</tt>.</p>
+</blockquote>
+
+<blockquote><pre class="code">sapphire:joan % <tt class="userinput"><b>echo $DISPLAY</b></tt>
+:0.0</pre></blockquote>
+
+<p>The DISPLAY environment variable is used by all X clients to
+determine what X server to display on. Since any X client can connect
+to any X server that allows it, all X clients need to know what
+display to connect to upon startup. If DISPLAY is not properly set,
+the client cannot execute:
+</p>
+
+<blockquote><pre class="code">sapphire:joan % <tt class="userinput"><b>setenv DISPLAY foo:0</b></tt>
+sapphire:joan % <tt class="userinput"><b>xterm</b></tt>
+xterm Xt error: Can't open display:</pre></blockquote>
+
+<p>You can override the value of DISPLAY by using the
+<span class="option">-display</span> command-line option. For example:
+</p>
+
+<blockquote><pre class="code">sapphire:joan % <tt class="userinput"><b>xterm -display sapphire:0.0 &amp;</b></tt></pre></blockquote>
+
+<p>The first part of the display name (up to and including the colon)
+identifies the type of connection to use and the host that the server
+is running on. The second part (in most cases, the string
+<tt class="literal">0.0</tt>) identifies <a name="IXT-35-3573" /> <a name="IXT-35-3574" /><a name="IXT-35-3575" />a
+<em class="emphasis">server number</em> and an optional <em class="emphasis">screen
+number</em>. In most cases, the server and screen numbers will
+both be 0. You can omit the screen number name if the default (screen
+0) is correct.
+</p>
+
+<p>Note that we used both <tt class="literal">:0.0</tt> and
+<tt class="literal">sapphire:0.0</tt> to access the local console display
+of the workstation named <em class="emphasis">sapphire</em>. Although both
+these names will work, they imply different ways of connecting to the
+X server.
+</p>
+
+<ul><li>
+<p>The : character without an initial hostname specifies that the client
+should connect using UNIX domain sockets (IPC).
+</p>
+
+<p>Since processes can communicate via IPC only if they are running on
+the same host, you can use a leading colon or the
+<tt class="literal">unix</tt> keyword in a display name only if both the
+client and server are running on the same host -- that is, for
+local clients displaying to the local console display of a
+workstation.
+</p>
+</li><li>
+<p>Using the hostname followed by a colon (e.g.,
+<tt class="literal">sapphire</tt>:) specifies that the client should
+connect using Internet domain sockets (TCP/IP). You can use TCP/IP
+connections for displaying clients on any X server on the TCP/IP
+network, as long as the client has permission to access that server.
+</p>
+</li></ul>
+<p>Note that like all other environment variables set in your shell
+environment, the DISPLAY environment variable will <b class="emphasis-bold">propagate</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) to
+all processes you start from that shell.
+</p>
+
+<p>When you run clients from remote machines, some additional problems
+with the DISPLAY environment variable need to be addressed. See
+<a href="ch06_10.htm#upt3-CHP-6-SECT-10">Section 6.10</a> for more information on running
+remote clients.<a name="IXTR3-3806" /> <a name="IXTR3-3807" />
+</p>
+
+<p><em class="emphasis">--LM and EP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.7. PATH and path</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.9. Shell Variables</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,497 @@
+<html><head><title>Creating and Installing Packages (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 6. Creating and Installing Packages</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch06_01.htm#sect1">Fink</a><br />
+<a href="ch06_02.htm">Creating Fink Packages</a><br />
+<a href="ch06_03.htm">GNU-Darwin</a><br />
+<a href="ch06_04.htm">Packaging Tools</a><br /></p></div><p>Just because you can build all your applications from source
+doesn't mean that you should. Linux users are
+spoiled by the wealth of applications that they can download as
+<a name="IXT-6-602" />Red Hat or
+<a name="IXT-6-603" />Debian packages.
+<a name="IXT-6-604" />FreeBSD users have
+the best of both worlds (packaged software and building from source)
+through the vast number of applications in
+<em class="filename">/usr/ports</em>. Mac OS X users can tap into this
+wealth of applications through the Fink and GNU-Darwin projects.
+</p><p>However, if you go through the trouble of building applications from
+source, you might want to package the resulting binaries for
+distribution so others can install the package, you can reinstall it
+at a later time without needing to rebuild it from source, or you can
+install it on multiple machines. Mac OS X is quite rich in the number
+of options available for packaging.
+</p><p>This chapter covers the Fink and GNU-Darwin distributions, as well as
+the packaging tools that come with Mac OS X's
+Developer Tools, and shows you how to package your application for
+distribution.
+</p><div class="sect1"><a name="mosxgeeks-CHP-6-SECT-1" />
+<h2 class="sect1"><a name="sect1" />6.1. Fink</h2>
+
+<p><a name="mosxgeeks-IDXTERM-416" /> <a name="mosxgeeks-IDXTERM-417" />Christoph
+<a name="IXT-6-605" />Pfisterer<a href="#FOOTNOTE-7">[7]</a> started the Fink project in
+December 2000. A number of other people continued the project after
+Pfisterer left it in 2002.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-7" /><p> [7]Pfisterer
+named the project Fink, the German word for finch, while thinking
+about Charles Darwin's study of finches on the
+Galapagos Islands.</p> </blockquote>
+
+<p>Fink is essentially a port of the <a name="IXT-6-606" /> <a name="IXT-6-607" />Debian Advanced Package Tool
+(APT), with some frontends and its own centralized collection site,
+which stores packaged binaries, source code, and patches needed to
+build software on Mac OS X. The Fink package manager allows you to
+install a package, choosing whether to install it from source or a
+binary package. Consistent with Debian, binary package files are in
+the <em class="filename">dpkg</em> format with a
+<em class="filename">.deb</em><a name="IXT-6-608" /> extension and are managed with the
+ported Debian tools <em class="filename">dpkg</em> and
+<em class="filename">apt-get</em>.
+</p>
+
+<p>Fink also provides new tools that create a <em class="filename">.deb</em>
+package from source. A database of installed software is maintained
+that identifies packages by the combination of name, version, and
+revision. Moreover, Fink understands dependencies, uses CVS to
+propagate software updates, supports uninstallation, and makes it
+easy to see available packages and installed packages. Fink can be
+used to install XFree86, as well as several hundred other popular
+Unix packages. If you already have a copy of XFree86 installed, Fink
+recognizes and supports it.
+</p>
+
+
+<a name="ch06-3-fm2xml" /><blockquote><b>TIP:</b> 
+Although Fink does not manage Mac OS X packages, it does require Mac
+OS X Developer Tools.
+</p>
+</blockquote>
+
+<p>Fink installs itself and all of its packages, with the exception of
+XFree86, in a directory named
+<em class="filename">/sw</em><a name="IXT-6-609" />, thus completely separating it from
+the main system directory <em class="filename">/usr</em>. A more
+traditional Unix practice is to place locally installed software in
+<em class="filename">/usr/local</em>. Installing software in
+<em class="filename">/sw</em> takes the usual practice one step further
+and is regarded as a safer policy. If problems occur with
+Fink-installed packages, you can then delete the entire
+<em class="filename">/sw</em> directory tree without affecting your
+system.
+</p>
+
+<p>You can install Fink from binary or source. Both methods of
+installation are simple. The binary installation involves the
+following steps:
+</p>
+
+<ol><li>
+<p>Download the binary installer disk image (a <em class="filename">.dmg</em>
+file) from <a name="IXT-6-610" /><a href="http://fink.sourceforge.net/download">http://fink.sourceforge.net/download</a>.
+</p>
+</li><li>
+<p>In the Finder, double-click the <em class="filename">.dmg</em> file to
+mount the disk image.
+</p>
+</li><li>
+<p>Open the mounted disk image and double-click the Fink Installer
+<em class="filename">.pkg</em> package inside.
+</p>
+</li><li>
+<p>Follow the instructions on the screen.</p>
+</li></ol>
+<p>To install Fink from source, perform the following steps.</p>
+
+<ol><li>
+<p>Download the source tarball from <a href="http://fink.sourceforge.net/download/srcdist.php">http://fink.sourceforge.net/download/srcdist.php</a>
+to a temporary directory using the command line. For example:
+</p>
+
+<blockquote><pre class="code">cd /tmp
+curl -O http://prdownloads.sourceforge.net/fink/fink-0.4.0a-full.tar.gz</pre></blockquote>
+
+<a name="ch06-4-fm2xml" /><blockquote><b>WARNING:</b> 
+Do not use StuffIt to unpack the tarball, as it will corrupt some
+files; you should unpack the tarball from the command line. Also,
+check the Fink site for the latest release.
+</p>
+</blockquote>
+</li>
+
+<li>
+<p>Issue the command <em class="filename">gnutar -xzf
+fink-0.4.0a-full.tar.gz</em>. This creates a directory with the
+same name as the archive, e.g.,
+<em class="filename">fink-0.4.0a-full/</em>. 
+</p>
+</li><li>
+<p>Change into that directory and run the <em class="filename">bootstrap</em>
+script:
+</p>
+
+<blockquote><pre class="code">cd fink-0.4.0a-full
+./bootstrap.sh</pre></blockquote>
+</li>
+<li>
+<p>Follow the instructions on the screen.</p>
+</li></ol>
+<p>To begin using Fink, you need to set up your <tt class="literal">PATH</tt>
+and some environment variables. Fink provides shell scripts to help
+with this. If you are using <em class="filename">tcsh</em> or
+<em class="filename">csh</em>, you can execute this command before using
+Fink applications (or add it to your <em class="filename">.cshrc</em> or
+<em class="filename">.tcshrc</em> file, depending on which one you have):
+</p>
+
+<blockquote><pre class="code">source /sw/bin/init.csh</pre></blockquote>
+
+<p>If you are using <em class="filename">sh</em>, <em class="filename">zsh</em>,
+<em class="filename">ksh</em>, or <em class="filename">bash</em>, you can run
+this command (or add it to your <em class="filename">.profile</em> or
+<em class="filename">.bash_profile </em>file):
+</p>
+
+<blockquote><pre class="code">. /sw/bin/init.sh</pre></blockquote>
+
+<p>Use the following command to perform additional post-install
+configuration (you will be prompted for your password):
+</p>
+
+<blockquote><pre class="code">fink scanpackages</pre></blockquote>
+
+<p>Fink can later be updated by entering the commands:</p>
+
+<blockquote><pre class="code">fink selfupdate
+fink update-all</pre></blockquote>
+
+<p>The first command updates Fink itself, including the list and
+descriptions of available packages, while the second command updates
+any installed packages. Once <a name="IXT-6-611" />Fink has been installed, you can see what
+packages are available by entering the command <em class="filename">fink
+list</em><a name="IXT-6-612" />.
+</p>
+
+<p>You can download and install binaries via <em class="filename">dselect
+</em>(shown in <a href="ch06_01.htm#mosxgeeks-CHP-6-FIG-1">Figure 6-1</a>), a console-based
+frontend to <em class="filename">dpkg</em>. To use
+<em class="filename">dselect</em>, you need to have superuser (or
+administrator) privileges, so you'll need to run
+<em class="filename">sudo dselect</em> in the Terminal. Once
+<em class="filename">dselect</em> has started, you can use the following
+options to maintain, install, and uninstall packages:
+</p>
+
+<a name="mosxgeeks-CHP-6-FIG-1" /><div class="figure"><img src="figs/mud_0601.gif" alt="Figure 6-1" width="417" /></div><h4 class="objtitle">Figure 6-1. The dselect program's main menu</h4>
+
+<dl>
+<dt><i><em class="filename">[A]ccess</em></tt></i></dt>
+<dd>
+Chooses the access method to use. Configures the network access
+method to use.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">[U]pdate</em></tt></i></dt>
+<dd>
+Downloads the list of available packages from the Fink site. This
+option is equivalent to running <em class="filename">apt-get update</em>.
+<a href="ch06_01.htm#mosxgeeks-CHP-6-TABLE-1">Table 6-1</a> lists the
+<em class="filename">apt-get</em><a name="IXT-6-613" /> and
+<em class="filename">dpkg</em><a name="IXT-6-614" /> command-line options.
+</p>
+</dd>
+
+</dl>
+
+<a name="mosxgeeks-CHP-6-TABLE-1" /><h4 class="objtitle">Table 6-1. Some apt-get and dpkg commands </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description </p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">apt-get update</tt></p>
+</td>
+<td>
+<p>Updates list of available packages. Do this first.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">apt-get install</tt> <em class="replaceable"><tt>foo</tt></em></p>
+</td>
+<td>
+<p>Downloads and installs package <em class="replaceable"><tt>foo</tt></em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">apt-get remove</tt> <em class="replaceable"><tt>foo</tt></em></p>
+</td>
+<td>
+<p>Deletes package <em class="replaceable"><tt>foo</tt></em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">dpkg --list</tt></p>
+</td>
+<td>
+<p>Lists all installed packages.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">dpkg --listfiles</tt> <em class="replaceable"><tt>foo</tt></em></p>
+</td>
+<td>
+<p>Lists all the files from package <em class="replaceable"><tt>foo</tt></em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">dpkg --install</tt> <em class="replaceable"><tt>foo</tt></em></p>
+</td>
+<td>
+<p>Installs package <em class="replaceable"><tt>foo</tt></em>. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">dpkg --remove</tt> <em class="replaceable"><tt>foo</tt></em></p>
+</td>
+<td>
+<p>Deletes package <em class="replaceable"><tt>foo</tt></em>. Leaves configuration
+files.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">dpkg --purge</tt> <em class="replaceable"><tt>foo</tt></em></p>
+</td>
+<td>
+<p>Deletes <em class="replaceable"><tt>foo</tt></em> and configuration files.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">dpkg -S</tt> <em class="replaceable"><tt>/path/to/file</tt></em></p>
+</td>
+<td>
+<p>Tells you which package owns a file.</p>
+</td>
+</tr>
+
+</table><p>
+
+
+
+<a name="ch06-7-fm2xml" /><blockquote><b>TIP:</b> 
+You must run <em class="filename">[U]pdate</em> at least once after
+installing Fink.
+</p>
+</blockquote>
+
+<dl>
+<dt><i><em class="filename">[S]elect</em></tt></i></dt>
+<dd>
+Requests the packages you want on your system. Displays the actual
+package listing, which is used to select and deselect the packages
+you want on your system.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">[I]nstall</em></tt></i></dt>
+<dd>
+Installs, upgrades, and configures selected packages. Also removes
+deselected packages.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">[C]onfig</em></tt></i></dt>
+<dd>
+Configures any packages that are unconfigured. Not actually needed,
+since [I]nstall does this after you've installed a
+package.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">[R]emove</em></tt></i></dt>
+<dd>
+Removes unwanted software. Not actually needed, since [I]nstall will
+do this.
+</p>
+</dd>
+
+
+
+<dt><i><em class="filename">[Q]uit</em></tt></i></dt>
+<dd>
+Quits deselect.</p>
+</dd>
+
+</dl>
+
+<p>The <em class="filename">fink</em></tt><a name="IXT-6-615" /> command is used from the command line
+to maintain, install, and uninstall packages. <a href="ch06_01.htm#mosxgeeks-CHP-6-TABLE-2">Table 6-2</a> lists some examples of its usage.
+</p>
+
+<a name="mosxgeeks-CHP-6-TABLE-2" /><h4 class="objtitle">Table 6-2. Various fink commands </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">fink selfupdate</tt></p>
+</td>
+<td>
+<p>Updates Fink along with package list. Do this first.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">fink update-all</tt></p>
+</td>
+<td>
+<p>Updates all installed packages.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">fink install</tt> <tt><em class="replaceable"><tt>foo</tt></em></tt></p>
+</td>
+<td>
+<p>Downloads source, then builds and installs Debian package
+<tt><em class="replaceable"><tt>foo</tt></em></tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">fink reinstall</tt> <tt><em class="replaceable"><tt>foo</tt></em></tt></p>
+</td>
+<td>
+<p>Reinstalls <tt><em class="replaceable"><tt>foo</tt></em></tt> using
+<em class="filename">dpkg</em></tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">fink describe</tt><em class="filename">
+</em></tt><tt><em class="replaceable"><tt>foo</tt></em></tt>
+</p>
+</td>
+<td>
+<p>Describes package <tt><em class="replaceable"><tt>foo</tt></em></tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">fink list</tt></p>
+</td>
+<td>
+<p>Lists available packages. "i" is
+placed next to installed packages.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">fink build</tt><em class="filename">
+</em></tt><tt><em class="replaceable"><tt>foo</tt></em></tt>
+</p>
+</td>
+<td>
+<p>Downloads and builds Debian package <tt><em class="replaceable"><tt>foo</tt></em></tt>.
+No installation is performed.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">fink rebuild</tt><em class="filename">
+</em></tt><tt><em class="replaceable"><tt>foo</tt></em></tt>
+</p>
+</td>
+<td>
+<p>Downloads and rebuilds Debian package <tt><em class="replaceable"><tt>foo</tt></em></tt>.
+Installation is performed.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">fink --remove</tt><em class="filename">
+</em></tt><tt><em class="replaceable"><tt>foo</tt></em></tt>
+</p>
+</td>
+<td>
+<p>Deletes package <tt><em class="replaceable"><tt>foo</tt></em></tt>, ignoring
+dependencies. Use <em class="filename">apt-get remove</em></tt> instead.
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>Using Fink, you can mix binary and source installations. That is, you
+can install some packages from their precompiled
+<em class="filename">.deb</em></tt> files and others from source. If you do
+this, you will need to first use <em class="filename">apt-get</em></tt> to
+update the available binaries and subsequently use <em class="filename">fink
+selfupdate</em></tt>, followed by <em class="filename">fink
+update-all</em></tt>, to update packages installed from source.
+</p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.7. Interesting and Important Libraries</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.2. Creating Fink Packages</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

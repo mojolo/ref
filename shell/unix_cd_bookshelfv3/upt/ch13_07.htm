@@ -1,0 +1,135 @@
+<html><head><title>Search RCS Files with rcsgrep (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.7. Search RCS Files with rcsgrep</h2>
+
+<p><a name="upt3-IDXTERM-2022" /> <a name="upt3-IDXTERM-2023" /> <a name="upt3-IDXTERM-2024" /><a name="IXT-13-5881" />Storing multiple versions of a file in
+<b class="emphasis-bold">RCS</b> (<a href="ch39_05.htm#upt3-CHP-39-SECT-5">Section 39.5</a>)
+saves space. How can you search a lot of those files at once? You
+could check out all the files, then run
+<i class="command">grep</i> -- but you'll have to
+remove the files after you're done searching. Or,
+you could search the RCS files themselves with a command like
+<tt class="literal">grep</tt> <tt class="literal">foo</tt>
+<tt class="literal">RCS/*,v</tt> -- but that can show you garbage lines
+from previous revisions, log messages, and other text that
+isn't in the latest revision of your file. This
+article has two ways to solve that problem.
+</p>
+
+<a name="upt3-CHP-13-SECT-7.1" /><div class="sect2">
+<h3 class="sect2">13.7.1. rcsgrep, rcsegrep, rcsfgrep</h3>
+
+<p>The <i class="command">rcsgrep</i><a name="IXT-13-5882" /> script -- and two links to it named
+<i class="command">rcsegrep</i> and <i class="command">rcsfgrep</i> -- run
+<i class="command">grep</i><a name="IXT-13-5883" /> <a name="IXT-13-5884" /> <a name="IXT-13-5885" />, <b class="emphasis-bold">egrep</b>
+(<a href="ch13_04.htm#upt3-CHP-13-SECT-4">Section 13.4</a>), and <i class="command">fgrep</i> on all
+files in the RCS directory. (You can also choose the files to
+search.)
+</p>
+
+<p>The script tests its name to decide whether to act like
+<i class="command">grep</i>, <i class="command">egrep</i>, or
+<i class="command">fgrep</i>. Then it checks out each file and pipes it
+to the version of grep you chose. The output looks just like
+<i class="command">grep</i>'s -- although, by
+default, you'll also see the messages from the
+<i class="command">co</i> command (the <span class="option">-s</span> option
+silences those messages).
+</p>
+
+<p>By default, <i class="command">rcsgrep</i> searches the latest revision
+of every file. With the <span class="option">-a</span> option,
+<i class="command">rcsgrep</i> will search all revisions of every file,
+from first to last. This is very handy when you're
+trying to see what was changed in a particular place and to find
+which revision(s) have some text that was deleted some time ago.
+(<i class="command">rcsgrep</i> uses <b class="emphasis-bold">rcsrevs</b> (<a href="ch39_06.htm#upt3-CHP-39-SECT-6">Section 39.6</a>) to
+implement <span class="option">-a</span>.)
+</p>
+
+<p>Some <i class="command">grep</i> options need special handling to work
+right in the script: <span class="option">-e</span>, <span class="option">-f</span>, and
+<span class="option">-l</span>. (For instance, <span class="option">-e</span> and
+<span class="option">-f</span> have an argument after them. The script has to
+pass both the option and its argument.) The script passes any other
+options you type to the <i class="command">grep</i> command. Your
+<i class="command">grep</i> versions may have some other options that
+need special handling, too. Just edit the script to handle them.
+</p>
+
+</div>
+<a name="upt3-CHP-13-SECT-7.2" /><div class="sect2">
+<h3 class="sect2">13.7.2. rcsegrep.fast</h3>
+
+<p>To search an RCS file, <i class="command">rcsgrep</i> and its cousins run
+several Unix processes: <i class="command">co</i>,
+<i class="command">grep</i>, <i class="command">sed</i>, and others. Each
+process takes time to start and run. If your directory has hundreds
+of RCS files (like our directory for this book does), searching the
+whole thing can take a lot of time. I could have cut the number of
+processes by rewriting <i class="command">rcsgrep</i> in Perl; Perl has
+the functionality of <i class="command">grep</i>, <i class="command">sed</i>,
+and others built in, so all it would need to do is run hundreds of
+<i class="command">co</i> processes . . . which would still make it too
+slow.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: rcsegrep.fast</p>
+
+<p>The solution I came up with was to do everything in (basically) one
+process: a <b class="emphasis-bold">gawk</b> (<a href="ch20_11.htm#upt3-CHP-20-SECT-11">Section 20.11</a>) script. Instead of using the RCS
+<i class="command">co</i> command to extract each file's
+latest revision, the
+<i class="command">rcsegrep.fast</i><a name="IXT-13-5886" /><a name="IXT-13-5887" />
+script reads each RCS file directly (The
+<em class="emphasis">rcsfile</em>(5) manpage explains the format of an RCS
+file.) An RCS file contains the latest revision of its working file
+as plain text, with one difference: each <tt class="literal">@</tt>
+character is changed to <tt class="literal">@@</tt>.
+<i class="command">rcsegrep.fast</i> searches the RCS file until it finds
+the beginning of the latest revision. Then it applies an
+<i class="command">egrep</i>-like regular expression to each line.
+Matching lines are written to standard output with the filename
+first; the <span class="option">-n</span> option gives a line number after the
+filename.
+</p>
+
+<p><i class="command">rcsegrep.fast</i> is sort of a kludge because
+it's accessing RCS files without using RCS tools.
+There's a chance that it won't work
+on some versions of RCS or that I've made some other
+programming goof. But it's worked very well for us.
+It's much faster than <i class="command">rcsgrep</i> and
+friends. I'd recommend using
+<i class="command">rcsegrep.fast</i> when you need to search the latest
+revisions of a lot of RCS files; otherwise, stick to the
+<i class="command">rcsgrep</i>s.<a name="IXTR3-5931" /> <a name="IXTR3-5932" /> <a name="IXTR3-5933" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.6. Approximate grep: agrep</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.8. GNU Context greps</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

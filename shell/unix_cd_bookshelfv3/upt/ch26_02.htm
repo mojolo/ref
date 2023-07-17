@@ -1,0 +1,113 @@
+<html><head><title>Timing Programs (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch26_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch26_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">26.2. Timing Programs</h2>
+
+<p><a name="IXT-26-4997" /><a name="IXT-26-4998" /><a name="IXT-26-4999" />Two commands, <i class="command">time</i>
+and <i class="command">/bin/time</i>, provide simple timings. Their
+information is highly accurate, because no profiling overhead
+distorts the program's performance. Neither program
+provides any analysis on the routine or trace level. They report the
+total execution time, some other global statistics, and nothing more.
+You can use them on any program.
+</p>
+
+<p><a name="IXT-26-5000" /> <a name="IXT-26-5001" /><i class="command">time</i> and
+<i class="command">/bin/time</i> differ primarily in that
+<i class="command">time</i> is built into many shells, including
+<i class="command">bash</i>. Therefore, it cannot be used in safely
+portable Bourne shell scripts or in makefiles. It also cannot be used
+if you prefer the Bourne shell (<i class="command">sh</i>).
+<i class="command">/bin/time</i> is an independent executable file and
+therefore can be used in any situation. To get a simple program
+timing, enter either <i class="command">time</i> or
+<i class="command">/bin/time</i>, followed by the command you would
+normally use to execute the program. For example, to time a program
+named <i class="command">analyze</i> (that takes two command-line
+arguments, an input file and an output file), enter the following
+command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>time analyze inputdata outputfile</b></tt>
+9.0u 6.7s 0:30 18% 23+24k 285+148io 625pf+0w</pre></blockquote>
+
+<p><a name="IXT-26-5002" /><a name="IXT-26-5003" /><a name="IXT-26-5004" /><a name="IXT-26-5005" />This result (in the default C shell
+format) indicates that the program spent 9.0 seconds on behalf of the
+user (user time), 6.7 seconds on behalf of the system (system time,
+or time spent executing Unix kernel routines on the
+user's behalf), and a total of 30 seconds elapsed
+time. Elapsed time is the wall clock time from the moment you enter
+the command until it terminates, including time spent waiting for
+other users, I/O time, etc.
+</p>
+
+<p>By definition, the elapsed time is greater than your total CPU time
+and can even be several times larger. You can set programs to be
+timed automatically (without typing <i class="command">time</i> first) or
+change the output format by setting shell variables.
+</p>
+
+<p><a name="IXT-26-5006" />The example above
+shows the CPU time as a percentage of the elapsed time (18 percent).
+The remaining data reports virtual memory management and I/O
+statistics. The meaning varies, depending on your shell; check your
+online <i class="command">csh</i> manual page or article.
+</p>
+
+<p>In this example, under SunOS 4.1.1, the other fields show the amount
+of shared memory used, the amount of nonshared memory used
+(<tt class="literal">k</tt>), the number of block input and output
+operations (<tt class="literal">io</tt>), and the number of page faults
+plus the number of swaps (<tt class="literal">pf</tt> and
+<tt class="literal">w</tt>). The memory management figures are unreliable
+in many implementations, so take them with a grain of salt.
+</p>
+
+<p><i class="command">/bin/time</i> reports only the real time (elapsed
+time), user time, and system time. For example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>/bin/time analyze inputdata outputfile</b></tt>
+       60.8 real        11.4 user         4.6 sys</pre></blockquote>
+
+<p>[If you use a shell without a built-in <i class="command">time</i>
+command, you can just type <tt class="literal">time</tt>.
+ -- <em class="emphasis">JP</em>] This reports that the program ran for
+60.8 seconds before terminating, using 11.4 seconds of user time and
+4.6 seconds of system time, for a total of 16 seconds of CPU time. On
+Linux and some other systems, that external <i class="command">time</i>
+command is in <i class="command">/usr/bin/time</i> and may make a more
+detailed report.
+</p>
+
+<p><a name="IXT-26-5007" />There's a third timer
+on some systems: <i class="command">timex</i>. It can give much more
+detail if your system has process accounting enabled. Check the
+<i class="command">timex</i>(1) manpage.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch26_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch26_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">26. System Performance and Profiling</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">26.3. What Commands Are Running and How Long Do They Take?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

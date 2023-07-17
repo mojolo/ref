@@ -1,0 +1,98 @@
+<html><head><title>Renaming, Copying, or Comparing a Set of Files (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.9. Renaming, Copying, or Comparing a Set of Files</h2>
+
+<p><a name="IXT-10-6404" />If you have a group of
+files whose names end with <em class="filename">.new</em> and you want to
+<a name="IXT-10-6405" /> <a name="IXT-10-6406" />rename them to end with
+<em class="filename">.old</em>, you might try something like the
+following:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>mv *.new *.old</b></tt> <i class="lineannotation">Wrong!</i></pre></blockquote>
+
+<p>However, this won't work because the shell
+can't match <em class="filename">*.old</em> and because
+the <i class="command">mv</i> command just doesn't work
+that way. Here's one way to do it that will work
+with most shells:
+</p>
+
+<p><tt class="literal">-d</tt> <a href="ch08_05.htm#upt3-CHP-8-SECT-5">Section
+8.5</a>, <tt class="literal">\(..\)..\1</tt> <a href="ch34_11.htm#upt3-CHP-34-SECT-11">Section 34.11</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls -d *.new | sed "s/\(.*\)\.new$/mv '&amp;' '\1.old'/" | sh</b></tt>
+% <tt class="userinput"><b>ls -d *.new | sed 's/\(.*\)\.new$/mv "&amp;" "\1.old"/' | sh</b></tt></pre></blockquote>
+
+<p><a name="IXT-10-6407" /><a name="IXT-10-6408" />That outputs a
+series of <em class="filename">mv</em> commands, one per file, and pipes
+them to a <b class="emphasis-bold">shell</b> (<a href="ch03_04.htm#upt3-CHP-3-SECT-4">Section 3.4</a>). The quotes help make
+sure that <b class="emphasis-bold">special characters</b> (<a href="ch27_17.htm#upt3-CHP-27-SECT-17">Section 27.17</a>) aren't touched by the
+shell -- this isn't always needed, but
+it's a good idea if you aren't sure
+what files you'll be renaming. Single quotes around
+the filenames are "strongest"; we
+use them in the Bourne-type shell version. Unfortunately,
+<em class="filename">csh</em><a name="IXT-10-6409" /> <a name="IXT-10-6410" /> and <em class="filename">tcsh</em>
+don't allow <tt class="literal">$</tt> inside double
+quotes unless it's the start of a shell variable
+name. So the C shell <a name="IXT-10-6411" />version
+puts double quotes around the filenames -- but the Bourne shell
+version can use the "stronger"
+single quotes, like this:
+</p>
+
+<blockquote><pre class="code">mv 'afile.new' 'afile.old'
+mv 'bfile.new' 'bfile.old'
+   ...</pre></blockquote>
+
+<p>To
+<a name="IXT-10-6412" />copy,
+change <em class="filename">mv</em> to <em class="filename">cp</em>. For
+safety, use <em class="filename">mv -i</em><a name="IXT-10-6413" /><a name="IXT-10-6414" /> or <em class="filename">cp -i</em> if your
+versions have the <b class="emphasis-bold">-i options</b> (<a href="ch14_15.htm#upt3-CHP-14-SECT-15">Section 14.15</a>). Using <b class="emphasis-bold">sh
+-v</b> (<a href="ch27_15.htm#upt3-CHP-27-SECT-15">Section 27.15</a>)<a name="IXT-10-6415" />
+will show the commands as the shell executes them.
+</p>
+
+<p><a name="IXT-10-6416" />This
+method works for any Unix command that takes a pair of filenames. For
+instance, to compare a set of files in the current directory with the
+original files in the <em class="filename">/usr/local/src</em> directory,
+use <em class="filename">diff</em><a name="IXT-10-6417" />:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -d *.c *.h | sed 's@.*@diff -c &amp; /usr/local/src/&amp;@' | sh</b></tt></pre></blockquote>
+
+<p>Note that <em class="filename">diff -r</em><a name="IXT-10-6418" />
+does let you compare entire
+<a name="IXT-10-6419" />directories, but you need a
+trick like this to only compare some of the files.
+</p>
+
+<p><em class="emphasis">--JP and DJPH</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.8. Showing the Actual Filenames for Symbolic Links</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.10. Renaming a List of Files Interactively</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

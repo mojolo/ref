@@ -1,0 +1,200 @@
+<html><head><title>RCS Basics (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch39_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch39_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">39.5. RCS Basics</h2>
+
+<p><a name="upt3-IDXTERM-6340" /> <a name="upt3-IDXTERM-6341" />
+<a name="upt3-IDXTERM-6342" />The Revision
+Control System (RCS) is a straightforward, file-based source-control
+system. It allows you to keep track of multiple snapshots or
+<em class="emphasis">revisions</em> of a file, so that you can back up to
+any previous version. It also allows you to note particular versions,
+so that you can do things such as reproduce the version of a file
+that you gave to someone else or released as part of a software
+release. Of course, it's useful for more than just
+software development; any time you want to change a file or set of
+files, revision control can be useful. To place a file under revision
+control using RCS:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ci</b></tt> <em class="replaceable"><tt>filename</tt></em></pre></blockquote>
+
+<p><a name="IXT-39-2858" /> <a name="IXT-39-2859" />The <i class="command">ci</i>
+(checkin) program will prompt you for a short description of the file
+and commit your changes. It will by default also delete the working
+copy; if you want to keep a read-only copy, use the
+<span class="option">-u</span> (unlocked) option.
+</p>
+
+<p>To then get a <em class="emphasis">working copy</em> of the file from
+scratch:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>co</b></tt> <em class="replaceable"><tt>filename</tt></em>
+% <tt class="userinput"><b>co -l</b></tt> <em class="replaceable"><tt>filename</tt></em></pre></blockquote>
+
+<p><a name="IXT-39-2860" />The
+<i class="command">co</i><a name="IXT-39-2861" /> <a name="IXT-39-2862" /> (checkout) command will get a read-only
+copy of the file from RCS. If you want to edit the file, use the
+<em class="emphasis">co -l</em> command (the option is a lowercase L and
+stands for <em class="emphasis">l</em>ock). While you have the file
+checked out and locked, no one else can edit it. When
+you're done, return the file to RCS (check it in)
+using <i class="command">ci</i> again. If you use the <span class="option">-l</span>
+option to <i class="command">ci</i>, it checks in your changes and checks
+out a new working copy, as if you did <em class="emphasis">co -l</em>
+again. When you check in the file, <i class="command">ci</i> asks for a
+brief description of your changes. These can be very useful, later,
+to learn the history of revisions and to find a particular revision
+you might want to recover; the command
+<tt class="literal">rlog</tt><em class="replaceable"><tt> filename</tt></em> gives all
+of the stored change descriptions.
+</p>
+
+<p>If you create a subdirectory called <em class="filename">RCS</em> in the
+directory where you keep the code or other text files you want to
+protect, the RCS files will be put there for you, rather than
+cluttering up your main directory.
+</p>
+
+<p>It's a good idea (but not required) to add the
+characters <tt class="literal">$Id $</tt><a name="IXT-39-2863" />
+somewhere in the file you want to place under RCS. Put this in a
+<a name="IXT-39-2864" />comment field. That is, use <tt class="literal">/*
+$Id $ */</tt><a name="IXT-39-2865" /> in a
+C program and <tt class="literal"># $Id $</tt><a name="IXT-39-2866" /> <a name="IXT-39-2867" /><a name="IXT-39-2868" /> in a shell or Perl script. RCS will
+substitute the revision of the file and other useful information
+wherever you put <tt class="literal">$Id: ch39_05.htm,v 1.3 2002/11/05 20:21:01 ellie Exp ellie $</tt> any time you check the file
+out; this allows you to look at a file later and know what revision
+it was.
+</p>
+
+<p><a name="IXT-39-2869" /><a name="IXT-39-2870" />If you
+check out a file for editing and later on decide you
+didn't want to change it, unlock the file using:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rcs -u</b></tt> <em class="replaceable"><tt>filename</tt></em>
+% <tt class="userinput"><b>rm</b></tt> <em class="replaceable"><tt>filename</tt></em></pre></blockquote>
+
+<p>If you want a list of all files currently checked out, use:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rlog -L -R RCS/*</b></tt></pre></blockquote>
+
+<p>(If you don't use RCS often, you may want to store
+those command lines in <b class="emphasis-bold">aliases or shell
+functions</b> (<a href="ch29_01.htm#upt3-CHP-29-SECT-1">Section 29.1</a>) with names like
+<em class="emphasis">Checkout</em>, <em class="emphasis">Checkedout</em>, and
+so on.) That's all there is to it!
+</p>
+
+<p><a name="IXT-39-2871" />If you are not using RCS or CVS, you
+should. They are an easy, ongoing way to protect yourself and do not
+require dozens of tapes. It is much easier just to type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>co -r1.12</b></tt> <em class="replaceable"><tt>filename</tt></em></pre></blockquote>
+
+<p><a name="IXT-39-2872" /> <a name="IXT-39-2873" /> <a name="IXT-39-2874" />than it is to try to restore that
+version from backup tapes after you've deleted it.
+With one command, version 1.12 is restored. If it's
+not the right one, restore the version before or after the one you
+just grabbed. (If you would just like to see the file rather than get
+a copy, you can add the <span class="option">-p</span> option to send the file
+to standard output. Don't forget to pipe the
+<em class="emphasis">co -p</em> output to <i class="command">less</i> or
+something similar, unless it is really short.)
+</p>
+
+<p>If you are worried that you are keeping 12 versions of the file on
+the disk and that this will use up a lot of disk space,
+don't be. RCS stores the differences between
+versions, not 12 separate copies of the file. It recovers earlier
+versions of the file on request by starting from a known point and
+applying patches, rather than just keeping every single revision.
+</p>
+
+<p><a name="IXT-39-2875" />Suppose you delete a file by accident.
+If the file is just checked out with <i class="command">co</i>, it will
+be retrieved and marked read-only, so trying to delete the file will
+cause <i class="command">rm</i> to ask you for confirmation. If you do
+delete it, you can just recover it with another <i class="command">co</i>
+command. Suppose, however, you checked out a file with <em class="emphasis">co
+-l</em>, because you planned to change it. If this file gets
+deleted accidentally, you would lose the most recent changes. This is
+why you should check your files back into RCS
+frequently -- several times a day or even more. Checking in a
+version whenever you make significant changes to the file, or if you
+make changes that would be difficult to remember, is the best
+insurance. Making hundreds of changes to a file without checking it
+back into the system is just begging for trouble.
+</p>
+
+<p>This brief overview left out a lot of features and helpful
+information. For example, RCS can:
+</p>
+
+<ul><li>
+<p>Merge two or more peoples' work into one with
+<i class="command">rcsmerge</i><a name="IXT-39-2876" /><a name="IXT-39-2877" /> <a name="IXT-39-2878" /> and <em class="emphasis">co -j</em>.
+</p>
+</li><li>
+<p>Build a tree of revisions with multiple branches and sub-branches.
+This lets you make and store multiple independent revisions.
+</p>
+</li><li>
+<p>Assign an arbitrary "state" to
+certain revisions -- for example, <em class="emphasis">alpha</em>,
+<em class="emphasis">released</em>, <em class="emphasis">stable</em>.
+</p>
+</li><li>
+<p>Name some or all revisions and refer to revisions by name instead of
+number. This is particularly good for naming files that went into a
+release.
+</p>
+</li><li>
+<p><a name="IXT-39-2879" />Keep a list of users who are allowed to
+manipulate a particular RCS file.
+</p>
+</li></ul>
+<p>To find out more, see the RCS manual pages.
+<em class="emphasis">rcsintro</em>(1) gives a more complete overview;
+manpages like <em class="emphasis">ci</em>(1) have details on the many
+other useful features. Finally, O'Reilly &amp;
+Associates' <em class="emphasis">Applying RCS and
+SCCS</em> is packed with tips and techniques for using revision
+control in group projects (where you'll need it even
+more). <a href="ch13_07.htm#upt3-CHP-13-SECT-7">Section 13.7</a> and <a href="ch39_06.htm#upt3-CHP-39-SECT-6">Section 39.6</a> explain tools for searching RCS files.
+</p>
+
+<p>If you're doing a larger project, take a look at
+<a href="ch39_07.htm#upt3-CHP-39-SECT-7">Section 39.7</a>, which discusses CVS. CVS is
+much better at large project coordination and provides a whole suite
+of useful features beyond the simple source control RCS provides.
+</p>
+
+<p>--<em class="emphasis">DJPH and BB</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch39_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch39_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">39.4. Managing and Sharing Files with RCS and CVS</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">39.6. List RCS Revision Numbers with rcsrevs</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

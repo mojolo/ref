@@ -1,0 +1,589 @@
+<html><head><title>Advanced sed
+Commands (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 6. Advanced sed
+Commands</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch06_01.htm#sect1">Multiline Pattern Space</a><br />
+<a href="ch06_02.htm">A Case for Study</a><br />
+<a href="ch06_03.htm">Hold That Line</a><br />
+<a href="ch06_04.htm">Advanced Flow Control Commands</a><br />
+<a href="ch06_05.htm">To Join a Phrase</a><br /></p></div><p>In this chapter, we cover the remaining sed commands.  These commands
+require more determination to master and are more difficult to learn
+from the standard documentation than any of the basic commands.  You
+can consider yourself a true sed-master once you understand the
+commands presented here.</p><p>The advanced commands fall into three groupings:
+<a name="IXT-6-265752" />
+<a name="IXT-6-265753" /></p><ol><li><p> 
+Working with a multiline pattern space
+(<b class="emphasis-bold">N</b>,<b class="emphasis-bold">D</b>,<b class="emphasis-bold">P</b>).</p></li><li><p>Using the <em class="emphasis">hold space</em> to preserve the contents of the
+pattern space and make it available for subsequent commands
+(<b class="emphasis-bold">H</b>,<b class="emphasis-bold">h</b>,<b class="emphasis-bold">G</b>,<b class="emphasis-bold">g</b>,<b class="emphasis-bold">x</b>).</p></li><li><p>Writing scripts that use branching and conditional instructions
+to change the flow of control (:,<b class="emphasis-bold">b</b>,<b class="emphasis-bold">t</b>).</p></li></ol><p>
+<a name="IXT-6-265754" />
+If the advanced scripts in this chapter have one thing in common, it
+is that they alter the sequential flow of execution or control.
+Normally, a line is read into the pattern space and each command in
+the script, one right after the other, is applied to that line.  When
+the bottom of the script is reached, the line is output and the
+pattern space is cleared.  Then a new line is read into the pattern
+space and control passes back to the top of the script.  That is
+the normal flow of control in a sed script.</p><p>The scripts in this chapter interrupt or break the normal flow of
+control for various reasons.  They might want to prevent commands in
+the script from executing except under certain circumstances, or to
+prevent the contents of the pattern space from being cleared out.
+Altering the flow of control makes a script much more difficult to
+read and understand.  In fact, the scripts may be easier to write than
+they are to read.  When you are writing a difficult script, you have
+the benefit of testing it to see how and why commands work.</p><p>We'd recommend that you test the scripts presented in this chapter and
+experiment by adding or removing commands to understand how the script
+is working.  Seeing the results for yourself will help you understand
+the script much better than simply reading about it.</p><div class="sect1"><a name="sedawk-ch-6-sect-1" />
+<h2 class="sect1"><a name="sect1" />6.1. Multiline Pattern Space</h2>
+
+<p>
+<a name="ch06.patt1" />
+<a name="ch06.patt2" />
+<a name="ch06.patt3" />
+We have emphasized in previous discussions of regular expressions that
+pattern matching is line-oriented.  A program like
+<b class="emphasis-bold">grep</b> attempts to match a pattern on a single line
+of input.  This makes it difficult to match a phrase, for instance,
+which can start at the end of one line and finish at the beginning of
+the next line.  Other patterns might be significant only when repeated
+on multiple lines.</p>
+
+<p>Sed has the ability to look at more than one line in the pattern
+space.  This allows you to match patterns that extend over multiple
+lines.  In this section, we will look at commands that create a
+multiline pattern space and manipulate its contents.  The three
+multiline commands
+(<b class="emphasis-bold">N</b>,<b class="emphasis-bold">D</b>,<b class="emphasis-bold">P</b>) all
+correspond to lowercase basic commands
+(<b class="emphasis-bold">n</b>,<b class="emphasis-bold">d</b>,<b class="emphasis-bold">p</b>) that
+were presented in the previous chapter.  The Delete
+(<b class="emphasis-bold">D</b>) command, for instance, is a multiline version
+of the delete command (<b class="emphasis-bold">d</b>).  The difference is that
+while <b class="emphasis-bold">d</b> deletes the contents of the pattern space,
+<b class="emphasis-bold">D</b> deletes only the first line of a multiline
+pattern space.</p>
+
+<a name="sedawk-ch-6-sect-1.1" /><div class="sect2">
+<h3 class="sect2">6.1.1. Append Next Line</h3>
+
+<p>
+<a name="ch06.n" />
+The multiline Next (<b class="emphasis-bold">N</b>) command creates a
+multiline pattern space by reading a new line of input and appending
+it to the contents of the pattern space.  The original contents of
+pattern space and the new input line are separated by a newline.  The
+embedded newline character can be matched in patterns by the escape
+sequence "\n".  In a multiline pattern space, the metacharacter "^"
+
+<a name="IXT-6-265755" />
+<a name="IXT-6-265756" />
+<a name="IXT-6-265757" />
+<a name="IXT-6-265758" />
+<a name="IXT-6-265759" />
+
+matches the very first character of the pattern space, and not the
+character(s) following any embedded newline(s). Similarly, "$" matches
+only the final newline in the pattern space, and not any embedded
+newline(s).  After the Next command is executed, control is then
+passed to subsequent commands in the script.</p>
+
+<p>The Next command differs from the next command, which outputs the
+contents of the pattern space and then reads a new line of input.  The
+next command does not create a multiline pattern space.</p>
+
+<p>For our first example, let's suppose that we wanted to change "Owner
+and Operator Guide" to "Installation Guide" but we found that it
+appears in the file on two lines, splitting between "Operator" and
+"Guide."</p>
+
+<p>For instance, here are a few lines of sample text:</p>
+
+<blockquote><pre class="code">Consult Section 3.1 in the Owner and Operator
+Guide for a description of the tape drives
+available on your system.</pre></blockquote>
+
+<p>The following script looks for "Operator" at the end of a line, reads
+the next line of input and then makes the replacement.</p>
+
+<blockquote><pre class="code">/Operator$/{
+N
+s/Owner and Operator\nGuide/Installation Guide/
+}</pre></blockquote>
+
+<p>In this example, we know where the two lines split and where to
+specify the embedded newline.  When the script is run on the sample
+file, it produces the two lines of output, one of which combines the
+first and second lines and is too long to show here.  This happens
+because the substitute command matches the embedded newline but does
+not replace it.  Unfortunately, you cannot use "\n" to
+insert a newline in the replacement string.  You must use
+a backslash to escape the newline, as follows:</p>
+
+<blockquote><pre class="code">s/Owner and Operator\nGuide /Installation Guide\
+/</pre></blockquote>
+
+<p>This command restores the newline after "Installation Guide". It is
+also necessary to match a space following "Guide" so the new
+line won't begin with a space.  Now we can show the output:</p>
+
+<blockquote><pre class="code">Consult Section 3.1 in the Installation Guide 
+for a description of the tape drives
+available on your system.</pre></blockquote>
+
+<p>Remember, you don't have to replace the newline but if you don't it
+can make for some long lines.</p>
+
+<p>What if there are other occurrences of "Owner and Operator Guide" that
+break over multiple lines in different places?  You could modify the
+regular expression to look for a space or a newline between words, as
+shown below:</p>
+
+<blockquote><pre class="code">/Owner/{
+N
+s/Owner *\n*and *\n*Operator *\n*Guide/Installation Guide/
+}</pre></blockquote>
+
+<p>The asterisk indicates that the space or newline is optional.  This
+seems like hard work, though, and indeed there is a more general way.
+We have also changed the address to match "Owner," the first word in
+the pattern instead of the last.  We can read the newline into the
+pattern space and then use a substitute command to remove the embedded
+newline, wherever it is.</p>
+
+<blockquote><pre class="code">s/Owner and Operator Guide/Installation Guide/
+/Owner/{
+N
+s/ *\n/ /
+s/Owner and Operator Guide */Installation Guide\
+/
+}</pre></blockquote>
+
+<p>The first line matches "Owner and Operator Guide" when it appears on a
+line by itself.  (See the discussion after the example about why this
+is necessary.)  If we match the string "Owner," we read the next line
+into the pattern space, and replace the embedded newline with a space.
+Then we attempt to match the whole pattern and make the replacement
+followed by a newline.  This script will match "Owner and Operator
+Guide" regardless of how it is broken across two lines.  Here's our
+expanded test file:</p>
+
+<blockquote><pre class="code">Consult Section 3.1 in the Owner and Operator
+Guide for a description of the tape drives
+available on your system.
+
+Look in the Owner and Operator Guide shipped with your system.
+
+Two manuals are provided including the Owner and
+Operator Guide and the User Guide.
+
+The Owner and Operator Guide is shipped with your system.</pre></blockquote>
+
+<p>Running the above script on the sample file produces the following
+result:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sedscr sample</b></tt>
+Consult Section 3.1 in the Installation Guide
+for a description of the tape drives
+available on your system.
+
+Look in the Installation Guide shipped with your system.
+
+Two manuals are provided including the Installation Guide
+and the User Guide.
+
+The Installation Guide is shipped with your system.</pre></blockquote>
+
+<p>In this sample script, it might seem redundant to have two substitute
+commands that match the pattern.  The first one matches it when the
+pattern is found already on one line and the second matches the
+pattern after two lines have been read into the pattern space.  Why
+the first command is necessary is perhaps best demonstrated by
+removing that command from the script and running it on the sample
+file:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sedscr2 sample</b></tt>
+Consult Section 3.1 in the Installation Guide
+for a description of the tape drives
+available on your system.
+
+Look in the Installation Guide
+shipped with your system.
+Two manuals are provided including the Installation Guide
+and the User Guide.</pre></blockquote>
+
+<p>Do you see the two problems?  The most obvious problem is that the
+last line did not print.  The last line matches "Owner" and when
+<b class="emphasis-bold">N</b> is executed, there is not another input line to
+read, so sed quits (immediately, without even outputting the line).  To
+fix this, the Next command should be used as follows to be safe:</p>
+
+<blockquote><pre class="code">$!N</pre></blockquote>
+
+<p>It excludes the last line ($) from the Next command.  As it is in our
+script, by matching "Owner and Operator Guide" on the last line, we
+avoid matching "Owner" and applying the <b class="emphasis-bold">N</b> command.
+However, if the word "Owner" appeared on the last line we'd have the
+same problem unless we use the "$!N" syntax.</p>
+
+<p>The second problem is a little less conspicuous.  It has to do with
+the occurrence of "Owner and Operator Guide" in the second paragraph.
+In the input file, it is found on a line by itself:</p>
+
+<blockquote><pre class="code">Look in the Owner and Operator Guide shipped with your system.</pre></blockquote>
+
+<p>In the output shown above, the blank line following "shipped with your
+system." is missing.  The reason for this is that this line matches
+"Owner" and the next line, a blank line, is appended to the pattern
+space.  The substitute command removes the embedded newline and the
+blank line has in effect vanished.  (If the line were not blank, the
+newline would still be removed but the text would appear on the same
+line with "shipped with your system.")  The best solution seems to be
+to avoid reading the next line when the pattern can be matched on one
+line.  So, that is why the first instruction attempts to match the
+case where the string appears all on one line.</p>
+
+<a name="sedawk-ch-6-sect-1.1.1" /><div class="sect3">
+<h3 class="sect3">6.1.1.1. Converting an Interleaf file</h3>
+
+<p>
+<a name="ch06.leaf1" />
+<a name="ch06.leaf2" />
+FrameMaker and Interleaf make WYSIWYG technical publishing packages.  Both
+of them have the ability to read and save the contents of a document
+in an ASCII-coded format as opposed to their normal binary file
+format.  In this example, we convert an Interleaf file into
+<b class="emphasis-bold">troff</b>; however, the same kind of script could be
+applied to convert a <b class="emphasis-bold">troff</b>-coded file to Interleaf
+format.  The same is true of FrameMaker.  Both place coding tags in the
+file, surrounded by angle brackets.</p>
+
+<p>In this example, our conversion demonstrates the effect of the change
+command on a multiline pattern space.  In the Interleaf file,
+"&lt;para&gt;" marks a paragraph.  Before and after the tag are blank
+lines.  Look at the sample file:</p>
+
+<blockquote><pre class="code">&lt;para&gt;
+
+This is a test paragraph in Interleaf style ASCII.  Another line 
+in a paragraph.  Yet another. 
+
+&lt;Figure Begin&gt;
+
+v.1111111111111111111111100000000000000000001111111111111000000
+100001000100100010001000001000000000000000000000000000000000000
+000000
+
+&lt;Figure End&gt;
+
+&lt;para&gt;
+
+More lines of text to be found after the figure.
+These lines should print.</pre></blockquote>
+
+<p>This file also contains a bitmap figure, printed as a series of 1s and
+0s.  To convert this file to <b class="emphasis-bold">troff</b> macros, we must
+replace the "&lt;para&gt;" code with a macro (.LP).  However, there's
+a bit more to do because we need to remove the blank line that follows
+the code.  There are several ways to do it, but we will use the Next
+command to create a multiline pattern space, consisting of
+"&lt;para&gt;" and the blank line, and then use the change command to
+replace what's in the pattern space with a paragraph macro.  Here's
+the part of the script that does it:</p>
+
+<blockquote><pre class="code">/&lt;para&gt;/{
+	N
+	c\
+.LP
+}</pre></blockquote>
+
+<p>The address matches lines with the paragraph tag.  The Next command
+appends the next line, which should be blank, to the pattern space.
+We use the Next command (<b class="emphasis-bold">N</b>) instead of next
+(<b class="emphasis-bold">n</b>) because we don't want to output the contents of
+the pattern space.  The change command overwrites the previous
+contents ("&lt;para&gt;" followed by a newline) of the pattern space,
+even when it contains multiple lines.</p>
+
+<p>In this conversion script, we'd like to extract the bitmapped figure
+data and write it to a separate file.  In its place, we insert figure
+macros that mark the figure in the file.</p>
+
+<blockquote><pre class="code">/&lt;Figure Begin&gt;/,/&lt;Figure End&gt;/{
+	w fig.interleaf
+	/&lt;Figure End&gt;/i\
+.FG\
+&lt;insert figure here&gt;\
+.FE
+	d
+}</pre></blockquote>
+
+<p>This procedure matches the lines between "&lt;Figure Begin&gt;" and
+"&lt;Figure End&gt;" and writes them to the file named
+<em class="filename">fig.interleaf</em>.  Each time this instruction is
+matched, the delete command will be executed, deleting the lines that
+have been written to file.  When "&lt;Figure End&gt;" is matched, a
+pair of macros are inserted in place of the figure in the output.
+Notice that the subsequent delete command does not affect the text
+output by the insert command.  It does, however, delete "&lt;Figure
+End&gt;" from the pattern space.</p>
+
+<p>Here's the entire script:</p>
+
+<blockquote><pre class="code">/&lt;para&gt;/{
+	N
+	c\
+.LP
+}
+/&lt;Figure Begin&gt;/,/&lt;Figure End&gt;/{
+	w fig.interleaf
+	/&lt;Figure End&gt;/i\
+.FG\
+&lt;insert figure here&gt;\
+.FE
+	d
+}
+/^$/d</pre></blockquote>
+
+<p>The third instruction simply removes unnecessary blank lines.  (Note
+that this instruction could be depended upon to delete the blank line
+following the "&lt;para&gt;" tag; but you don't always want to remove
+all blank lines, and we wanted to demonstrate the change command across
+a multiline pattern space.)</p>
+
+<p>The result of running this script on the test file produces:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sed.interleaf test.interleaf</b></tt>
+.LP
+This is a test paragraph in Interleaf style ASCII.  Another line 
+in a paragraph.  Yet another. 
+.FG
+&lt;insert figure here&gt;
+.FE
+.LP
+More lines of text to be found after the figure.
+These lines should print.</pre></blockquote>
+
+<a name="IXT-6-265760" />
+<a name="IXT-6-265761" />
+</div>
+</div>
+
+
+
+
+<a name="sedawk-ch-6-sect-1.2" /><div class="sect2">
+<h3 class="sect2">6.1.2. Multiline Delete</h3>
+
+<p>
+<a name="IXT-6-265762" />
+<a name="IXT-6-265763" />
+The delete command (<b class="emphasis-bold">d</b>) deletes the contents of the
+pattern space and causes a new line of input to be read with editing
+resuming at the top of the script.  The Delete command
+(<b class="emphasis-bold">D</b>) works slightly differently: it deletes a
+portion of the pattern space, up to the first embedded newline.  It
+does not cause a new line of input to be read; instead, it returns to
+the top of the script, applying these instructions to what remains in
+the pattern space.  We can see the difference by writing a script that
+looks for a series of blank lines and outputs a single blank line.
+The version below uses the delete command:</p>
+
+<blockquote><pre class="code"># reduce multiple blank lines to one; version using d command
+/^$/{
+	N
+	/^\n$/d
+}</pre></blockquote>
+
+<p>When a blank line is encountered, the next line is appended to the
+pattern space.  Then we try to match the embedded newline.  Note that
+the positional metacharacters, ^ and $, match the beginning and the
+end of the pattern space, respectively.  Here's a test file:</p>
+
+<blockquote><pre class="code">This line is followed by 1 blank line.
+
+This line is followed by 2 blank lines.
+
+
+This line is followed by 3 blank lines.
+
+
+
+This line is followed by 4 blank lines.
+
+
+
+
+This is the end.</pre></blockquote>
+
+<p>Running the script on the test file produces the following result:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sed.blank test.blank</b></tt>
+This line is followed by 1 blank line.
+
+This line is followed by 2 blank lines.
+This line is followed by 3 blank lines.
+
+This line is followed by 4 blank lines.
+This is the end.</pre></blockquote>
+
+<p>Where there was an even number of blank lines, all the blank lines
+were removed.  Only when there was an odd number was a single blank
+line preserved.  That is because the delete command clears the entire
+pattern space.  Once the first blank line is encountered, the next
+line is read in, and both are deleted.  If a third blank line is
+encountered, and the next line is not blank, the delete command is not
+applied, and
+
+thus a blank line is output.  If we use the multiline
+Delete command (<b class="emphasis-bold">D</b> rather than
+<b class="emphasis-bold">d</b>), we get the result we want:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sed2.blank test.blank</b></tt>
+This line is followed by 1 blank line.
+
+This line is followed by 2 blank lines.
+
+This line is followed by 3 blank lines.
+
+This line is followed by 4 blank lines.
+
+This is the end.</pre></blockquote>
+
+<p>The reason the multiline Delete command gets the job done is that
+when we encounter two blank lines, the Delete command removes only the
+first of the two.  The next time through the script, the blank line
+will cause another line to be read into the pattern space.  If that
+line is not blank, then both lines are output, thus ensuring that a
+single blank line will be output.  In other words, when there are two
+blank lines in the pattern space, only the first one is deleted.  When
+there is a blank line followed by text, the pattern space is output
+normally.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-6-sect-1.3" /><div class="sect2">
+<h3 class="sect2">6.1.3. Multiline Print</h3>
+
+<p>
+<a name="IXT-6-265764" />
+<a name="ch06.print1" />
+The multiline Print command differs slightly from its lowercase
+cousin.  This command outputs the first portion of a multiline
+pattern space, up to the first embedded newline.  After the last
+command in a script is executed, the contents of the pattern space are
+automatically output.  (The <span class="option">-n</span> option or
+<b class="emphasis-bold">#n</b> suppresses this default action.)  Therefore, print
+commands (<b class="emphasis-bold">P</b> or <b class="emphasis-bold">p</b>) are used when
+the default output is suppressed or when flow of control in a script
+changes such that the bottom of the script is not reached.  The Print
+command frequently appears after the Next command and before the
+Delete command.  These three commands can set up an input/output loop
+that maintains a two-line pattern space yet outputs only one line at a
+time.  The purpose of this loop is to output only the first line in
+the pattern space, then return to the top of the script to apply all
+commands to what had been the second line in the pattern space.
+Without this loop, when the last command in the script was executed,
+both lines in the pattern space would be output.  The flow through a
+script that sets up an input/output loop using the Next, Print, and
+Delete commands is illustrated in <a href="ch06_01.htm#sedawk-ch-6-fig-1">Figure 6.1</a>.
+A multiline pattern space is created to match "UNIX" at the end of
+the first line and "System" at the beginning of the second line.  If
+"UNIX System" is found across two lines, we change it to "UNIX
+Operating System".  The loop is set up to return to the top of the
+script and look for "UNIX" at the end of the second line.
+<a name="IXT-6-265765" />
+<a name="IXT-6-265766" />
+<a name="IXT-6-265767" /></p>
+
+<a name="sedawk-ch-6-fig-1" /><div class="figure"><img src="figs/sed_0601.gif" alt="Figure 6.1" width="503" /></div><h4 class="objtitle">Figure 6.1. The Next, Print, and Delete commands used to set up an input/output loop</h4><p>The Next command appends a new input line to the current line in the
+pattern space.  After the substitute command is applied to the
+multiline pattern space, the first part of the pattern space is
+output by the Print command and then removed by the Delete command.
+That means the current line is output and the new line becomes the
+current line.  The Delete command prevents the script from reaching
+bottom, which would output both lines and clear the contents of the
+pattern space.  The Delete command lets us preserve the second portion
+of the pattern space and pass control to the top of the script where
+all the editing commands can now be applied to that line.  One of
+those commands is the Next command which reads another new line into
+the pattern space.</p>
+
+<p>The following script implements the same loop:</p>
+
+<blockquote><pre class="code">/UNIX$/{
+        N
+        /\nSystem/{
+        s// Operating &amp;/
+        P
+        D
+        }
+}</pre></blockquote>
+
+<p>The substitute command matches "\nSystem" and replaces it with
+"Operating \nSystem."  It is important that the newline be
+maintained, or else there will be only a single line in the pattern
+space.  Note the order of the Print and Delete commands.  Here's our
+test file:</p>
+
+<blockquote><pre class="code">Here are examples of the UNIX
+System.  Where UNIX
+System appears, it should be the UNIX
+Operating System.</pre></blockquote>
+
+<p>Running the script on the test file produces:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sed.Print test.Print</b></tt>
+Here are examples of the UNIX Operating
+System.  Where UNIX Operating
+System appears, it should be the UNIX
+Operating System.</pre></blockquote>
+
+<p>The input/output loop lets us match the occurrence of UNIX at the end
+of the second line.  It would be missed if the two-line pattern space
+was output normally.</p>
+
+<p>If the relationship between the <b class="emphasis-bold">P</b> and
+<b class="emphasis-bold">D</b> commands remains unclear to you, we'll have
+another go at it in the next example.  You can also experiment by
+removing either command from the above script, or try using their
+lowercase cousins.</p>
+
+<a name="IXT-6-265768" />
+</div>
+
+
+
+
+<a name="IXT-6-265769" />
+<a name="IXT-6-265770" />
+<a name="IXT-6-265771" />
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.12. Quit</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.2. A Case for Study</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

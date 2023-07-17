@@ -1,0 +1,513 @@
+<html><head><title>Environment Customization (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.2. Environment Customization</h2>
+
+<p>
+<a name="IXT-10-288233" />
+<a name="korn2-IDXTERM-1961" />
+
+Like the Bourne shell, the Korn shell uses the file
+<em class="emphasis">/etc/profile</em> for system-wide customization.
+When a user logs in, the shell reads and runs <em class="emphasis">/etc/profile</em>
+before running the user's <em class="emphasis">.profile</em>.
+</p>
+
+<p>
+We don't cover all the possible commands you might
+want to put in <em class="emphasis">/etc/profile</em>. But the Korn shell
+has a few unique features that are particularly relevant
+to system-wide customization; we discuss them here.
+</p>
+
+<p>
+We'll start with two built-in commands that you can use
+in <em class="emphasis">/etc/profile</em>
+to tailor your users' environments and constrain their use
+of system resources. Users can also use these commands
+in their <em class="emphasis">.profile</em>, or at any other time, to override
+the default settings.
+</p>
+
+<a name="korn2-CHP-10-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">10.2.1. umask</h3>
+
+<p>
+<a name="korn2-IDXTERM-1962" />
+<a name="IXT-10-288234" />
+
+<em class="emphasis">umask</em>, like the same command in most other shells,
+lets you specify the default permissions that files have
+when users create them.
+
+With <em class="emphasis">ksh</em>,
+it takes the same types of
+arguments that the <em class="emphasis">chmod</em> command does, i.e.,
+absolute (octal numbers) or symbolic permission values.
+</p>
+
+<p>
+The <em class="emphasis">umask</em> contains the permissions that are
+turned off by default whenever a process creates
+a file, regardless of what permission the process
+specifies.<a href="#FOOTNOTE-138">[138]</a>
+Another way to think of this is as
+a bitwise borrow-free subtraction: <em class="emphasis">actual permissions =
+requested permissions - the umask</em>.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-138" /><p> [138]
+If you know C, C++, or Java, and are comfortable with bitwise
+operations, the umask operation works like this:
+<tt class="literal">actual_permission = requested_permission &amp; (~ umask)</tt>.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-10-288235" />
+
+We'll use octal notation to show how this works.
+As you should know, the digits in a permission number
+stand (left to right) for
+the permissions of the owner, the owner's group, and all
+other users, respectively. Each digit, in turn, consists
+of three bits, which specify read, write, and execute
+permissions from left to right. (If a file is a
+directory, the "execute" permission becomes "search"
+permission, i.e., permission to <em class="emphasis">cd</em> to it,
+and to traverse it as part of a pathname.)
+</p>
+
+<p>
+For example, the octal number 640 equals the binary number
+110 100 000. If a file has this permission, then its owner
+can read and write it; users in the owner's group can
+only read it; everyone else has no permission on it.
+A file with permission 755 (111 101 101 in binary) gives its owner the right
+to read, write, and execute it and everyone else the right
+to read and execute (but not write).
+<a name="IXTR3-421" />
+
+</p>
+
+<p>
+022 is a common <em class="emphasis">umask</em> value.
+This implies that when a file is created, the most
+permission it could possibly have is 755 -- which is
+the usual permission of an executable that a compiler
+might create. A text editor, on the other hand, might
+create a file with 666 permission (read and write for
+everyone), but the <em class="emphasis">umask</em> forces it to be 644 instead.
+</p>
+
+<p>
+The <em class="emphasis">-S</em> option to <em class="emphasis">umask</em>
+causes it to work with symbolic values instead of with octal numbers.
+When used without an argument, <em class="emphasis">umask -S</em> prints
+the umask in symbolic form.  With an argument, the mask is changed.
+In both cases, a symbolic mask represents the permissions to <em class="emphasis">keep</em>
+for a file.  (This ends up being the bitwise complement of the traditional
+octal umask, which represents permissions to remove.)
+If you're confused, some examples should clear things up:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>umask</b></tt>                       <i class="lineannotation">Print the current umask, in octal</i>
+0022
+$ <tt class="userinput"><b>umask -S</b></tt>                    <i class="lineannotation">Print the current umask, in symbolic form</i>
+u=rwx,g=rx,o=rx
+$ <tt class="userinput"><b>umask -S u=rwx,g=r,o=</b></tt>       <i class="lineannotation">Change the umask using the symbolic form</i>
+$ <tt class="userinput"><b>umask -S</b></tt>                    <i class="lineannotation">Print it back out symbolically</i>
+u=rwx,g=r,o=
+$ <tt class="userinput"><b>umask</b></tt>                       <i class="lineannotation">Print it in octal</i>
+0037
+</pre></blockquote>
+<a name="IXTR3-422" />
+</p>
+</div>
+
+<a name="korn2-CHP-10-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">10.2.2. ulimit</h3>
+
+<p>
+Early Unix systems didn't impose any limits on what resources a process could use.
+If a program wanted to run forever, it could.  If a program wanted to
+create large files and fill up a disk, it could.  And so on.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1967" />
+<a name="korn2-IDXTERM-1968" />
+
+As Unix developed and matured, it became possible to explicitly
+control, or <em class="emphasis">limit</em>, a variety of different
+system resources, such as CPU time and disk space.
+The <em class="emphasis">ulimit</em> command is the Korn shell's
+interface for viewing and changing the limits on system resources.
+<a href="ch10_02.htm#korn2-CHP-10-TABLE-1">Table 10-1</a> lists the options it accepts and
+the corresponding resources.
+Not all options are available on all Unix systems.
+Many won't be available on non-Unix systems.
+
+<a name="IXT-10-288236" />
+<a name="IXT-10-288237" />
+<a name="IXT-10-288238" />
+
+<a name="IXT-10-288239" />
+<a name="IXT-10-288240" />
+<a name="IXT-10-288241" />
+<a name="IXT-10-288242" />
+<a name="IXT-10-288243" />
+<a name="IXT-10-288244" />
+<a name="IXT-10-288245" />
+</p>
+
+<a name="korn2-CHP-10-TABLE-1" /><h4 class="objtitle">Table 10-1. ulimit resource options</h4><table border="1" cellpadding="3">
+
+
+
+
+
+<tr>
+<th>Option</th>
+<th>Resource limited</th>
+<th>Option</th>
+<th>Resource limited</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">-a</tt></td>
+<td>All (for printing values only)</td>
+<td><tt class="literal">-n</tt></td>
+<td>File descriptors</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-c</tt></td>
+<td>Core file size (<img src="figs/U00BD.gif" alt="Figure " /> kb blocks)</td>
+<td><tt class="literal">-p</tt></td>
+<td><p>
+Pipe buffer size (<img src="figs/U00BD.gif" alt="Figure " /> kb blocks)<a href="#FOOTNOTE-139">[139]</a>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-d</tt></td>
+<td>Process data segment (kb)</td>
+<td><tt class="literal">-s</tt></td>
+<td>Process stack segment (kb)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-f</tt></td>
+<td>File size (<img src="figs/U00BD.gif" alt="Figure " /> kb blocks)</td>
+<td><tt class="literal">-t</tt></td>
+<td>Process CPU time (seconds)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-m</tt></td>
+<td>Physical memory (kb)</td>
+<td><tt class="literal">-v</tt></td>
+<td>Virtual memory (kb)</td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-139" /><p> [139]
+Most Unix systems don't have this feature.
+</p>
+</blockquote>
+
+<p>
+
+Each takes a numerical argument that specifies the limit in
+units shown in the table.
+(You may use an arithmetic expression for the limit;
+<em class="emphasis">ksh</em> automatically evaluates the expression.)
+You can also give the argument
+"unlimited" (which may actually mean some physical limit),
+or you can omit the argument, in which case
+it prints the current limit.
+
+<tt class="literal">ulimit -a</tt> prints the
+limits (or "unlimited") for all types. You can only
+specify one type of resource at a time.
+If you don't specify any option, <em class="emphasis">-f</em> is assumed.
+</p>
+
+<p>
+Some of these options depend on operating system capabilities
+that don't exist in older Unix versions. In particular,
+some older versions have a fixed limit of 20 file descriptors
+per process (making <em class="emphasis">-n</em> irrelevant), and some don't
+support virtual memory (making <em class="emphasis">-v</em> irrelevant).
+</p>
+
+<p>
+
+
+The <em class="emphasis">-d</em> and <em class="emphasis">-s</em> options have to do with
+<em class="emphasis">dynamic memory allocation</em>, i.e., memory for which
+a process asks the operating system at runtime.
+It's not necessary for casual users to limit these,
+though software developers may want to do so
+to prevent buggy programs from
+trying to allocate endless amounts of memory due to
+infinite loops.
+</p>
+
+<p>
+
+The <em class="emphasis">-v</em> option is similar; it puts a limit on
+all uses of memory. You don't need this
+unless your system has severe memory constraints
+or you want to limit process size to avoid thrashing.
+</p>
+
+<p>
+
+You may want to specify limits on file size (<em class="emphasis">-f</em>
+and <em class="emphasis">-c</em>) if you have constraints on disk space.
+Sometimes users actually mean to create huge files,
+but more often than not, a huge file is the result of
+a buggy program that goes into an infinite loop.
+<a name="IXT-10-288246" />
+<a name="IXT-10-288247" />
+<a name="IXT-10-288248" />
+
+Software developers who use debuggers like <em class="emphasis">gdb</em>
+and <em class="emphasis">dbx</em> should not limit core file size, because
+core dumps are often helpful for debugging.
+</p>
+
+<p>
+
+The <em class="emphasis">-t</em> option is another possible guard against
+infinite loops.  On single-user systems, a program that is in an infinite
+loop but isn't allocating memory, writing files, or using the network
+is not particularly dangerous; it's better to leave this unlimited and
+just let the user kill the offending program.  However, on shared server
+systems, such programs definitely degrade the overall environment.
+The problem in that case is that it's difficult to know what limit to set:
+there are important and legitimate uses for long-running programs.
+</p>
+
+<p>
+<a name="IXT-10-288249" />
+<a name="IXT-10-288250" />
+
+In addition to the types of resources you can limit,
+<em class="emphasis">ulimit</em> lets you specify hard or soft
+limits.
+<a name="IXT-10-288251" />
+<a name="IXT-10-288252" />
+
+Hard limits can be lowered by any user but
+only raised by the <?troff .hw super-user?>superuser (<tt class="literal">root</tt>); users
+can lower soft limits and raise them -- but only as high
+as the hard limit for that resource.
+</p>
+
+<p>
+If you give <em class="emphasis">-H</em> along with one (or more)
+of the options above, <em class="emphasis">ulimit</em> sets hard limits;
+<em class="emphasis">-S</em> sets soft limits. Without either of these,
+<em class="emphasis">ulimit</em> sets both. For example, the following
+commands set the soft limit on file descriptors to 64
+and the hard limit<?troff .ne 10?> to unlimited:
+</p>
+
+<p>
+<blockquote><pre class="code">
+ulimit -Sn 64
+ulimit -Hn unlimited
+</pre></blockquote>
+</p>
+
+<p>
+When <em class="emphasis">ulimit</em> prints current limits, it prints the soft
+limits unless you specify <em class="emphasis">-H</em>.
+<a name="IXTR3-423" />
+<a name="IXTR3-424" />
+</p>
+</div>
+
+<a name="korn2-CHP-10-SECT-2.3" /><div class="sect2">
+<h3 class="sect2">10.2.3. Types of Global Customization</h3>
+
+<p>
+
+The best possible approach to globally available
+customization would be a system-wide environment file
+that is separate from each user's environment file -- just
+like <em class="emphasis">/etc/profile</em> is separate from each user's
+<em class="emphasis">.profile</em>.
+</p>
+
+<p>
+Unfortunately, the Korn shell doesn't
+have this feature.
+<a name="IXT-10-288253" />
+
+If you assign a filename to the
+<tt class="literal">ENV</tt> environment variable, it could be overridden
+in a user's <em class="emphasis">.profile</em>. This allows you to make
+a default environment file available for users
+who don't have their own, but it doesn't let you have
+a system-wide environment file that runs in addition
+to the users'.
+Furthermore, the environment file is only run for interactive shells,
+not all shells.
+</p>
+
+<p>
+<a name="IXT-10-288254" />
+
+Nevertheless, the shell gives you a few ways to set up
+customizations that are available to all users at
+all times.
+
+Environment variables are
+the most obvious; your <em class="emphasis">/etc/profile</em> file
+will undoubtedly contain definitions for several of
+them, including <tt class="literal">PATH</tt> and <tt class="literal">TERM</tt>.
+</p>
+
+<p>
+<a name="IXT-10-288255" />
+
+The variable <tt class="literal">TMOUT</tt> is useful when your system
+supports dialup lines.
+We have already seen that it affects the <em class="emphasis">read</em> command
+and the <tt class="literal">select</tt> menu loop.
+When set to a number <em class="emphasis">N</em>,
+if a user doesn't enter a command within <em class="emphasis">N</em> seconds
+after the shell last issued a prompt, the shell prints the warning message
+<tt class="literal">shell will timeout in 60 seconds due to inactivity</tt>.
+If, after a further 60 seconds, the user does not enter anything,
+the shell terminates. This feature is helpful in preventing people
+from "hogging" the dialup lines.
+Just make sure you set it to a reasonable value!
+</p>
+
+<p>
+<a name="IXT-10-288256" />
+<a name="IXT-10-288257" />
+
+You may want to include some more complex customizations
+involving environment variables, such as the prompt
+string <tt class="literal">PS1</tt> containing the current directory,
+user name, or hostname
+(as seen in <a href="ch04_01.htm">Chapter 4</a>).
+</p>
+
+<p>
+<a name="IXT-10-288258" />
+<a name="IXT-10-288259" />
+<a name="IXT-10-288260" />
+<a name="IXT-10-288261" />
+
+You can also turn on options, such as emacs or vi editing modes,
+<em class="emphasis">noclobber</em> to protect against inadvertent file
+overwriting, and perhaps <em class="emphasis">ignoreeof</em> to keep people
+from logging off by accident when they type too many CTRL-D characters.
+Any shell scripts you have written for general use also contribute to
+customization.
+</p>
+
+<p>
+<a name="IXT-10-288262" />
+<a name="IXT-10-288263" />
+
+
+Unfortunately, it's not possible to create a global
+alias.
+
+
+You can define aliases in <em class="emphasis">/etc/profile</em>,
+but there is no way to make them part of the environment
+so that their definitions will propagate to shell subprocesses.
+</p>
+
+<p>
+<a name="IXT-10-288264" />
+
+However, you can set up global functions.
+These are an excellent way to customize
+your system's environment, because functions are part
+of the shell, not separate processes.
+<a name="IXT-10-288265" />
+<a name="IXT-10-288266" />
+For example,
+you might wish to make
+<em class="emphasis">pushd</em> and <em class="emphasis">popd</em> (see
+<a href="ch04_01.htm">Chapter 4</a> through <a href="ch06_01.htm">Chapter 6</a>)
+globally available.
+</p>
+
+<p>
+<a name="IXT-10-288267" />
+<a name="IXT-10-288268" />
+
+The best way to create global functions is to use
+the built-in variable <tt class="literal">FPATH</tt> for autoloading of functions
+that we introduced in <a href="ch04_01.htm">Chapter 4</a>.
+
+Just define
+<tt class="literal">FPATH</tt> as a function library directory, perhaps
+<em class="emphasis">/usr/local/functions</em>, and make it an environment
+variable by <em class="emphasis">export</em>ing it.
+Then make sure that the directory listed in <tt class="literal">FPATH</tt>
+is also included in <tt class="literal">PATH</tt>.
+In other words, put
+this or similar code in <em class="emphasis">/etc/profile</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+FPATH=/usr/local/functions
+PATH=$PATH:$FPATH
+export FPATH PATH
+</pre></blockquote>
+</p>
+
+<p>
+Then put each global function's definition in
+a file in that directory with the same name as the function.
+</p>
+
+<p>
+In any case, we suggest using global functions for
+global customization instead of shell scripts. Given
+how cheap memory is nowadays, there is no reason why
+you shouldn't make generally useful functions part of
+your users' environment.
+<a name="IXTR3-425" />
+
+</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10. Korn Shell Administration</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.3. Customizing the Editing Modes</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

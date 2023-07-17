@@ -1,0 +1,215 @@
+<html><head><title>System Performance and Profiling (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch25_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch26_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 26. System Performance and Profiling</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch26_01.htm#sect1">Timing Is Everything</a><br />
+<a href="ch26_02.htm">Timing Programs</a><br />
+<a href="ch26_03.htm">What Commands Are Running and How Long Do They Take?</a><br />
+<a href="ch26_04.htm">Checking System Load: uptime</a><br />
+<a href="ch26_05.htm">Know When to Be "nice" to Other Users...and When Not To</a><br />
+<a href="ch26_06.htm">A nice Gotcha</a><br />
+<a href="ch26_07.htm">Changing a Running Job's Niceness</a><br /></p></div><div class="sect1"><a name="upt3-CHP-26-SECT-1" />
+<h2 class="sect1"><a name="sect1" />26.1. Timing Is Everything</h2>
+
+<p><a name="upt3-IDXTERM-3827" /> <a name="upt3-IDXTERM-3828" />Whether
+<a name="upt3-IDXTERM-3829" /> <a name="upt3-IDXTERM-3830" />you
+are a system administrator or user, the responsiveness of your Unix
+system is going to be the primary criterion of evaluating your
+machine. Of course,
+"responsiveness" is a loaded word.
+What about your system is responsive? Responsive to whom? How fast
+does the system need to be to be responsive? There is no one silver
+bullet that will slay all system latencies, but there are tools that
+isolate performance bottlenecks -- the most important of which you
+carry on your shoulders.
+</p>
+
+<p>This chapter deals with issues that affect system performance
+generally and how you go about finding and attenuating system
+bottlenecks. Of course, this chapter cannot be a comprehensive guide
+to how to maximize <em class="emphasis">your</em> system for
+<em class="emphasis">your</em> needs, since that is far too dependent on
+the flavors of Unix and the machines on which they run. However,
+there are principles and programs that are widely available that will
+help you assess how much more performance you can expect from your
+hardware.
+</p>
+
+<p>One of the fundamental illusions in a multiuser, multiprocessing
+operating system like Unix is that every user and every process is
+made to think that they are alone on the machine. This is by design.
+At the kernel level, a program called the
+<a name="IXT-26-4985" /><a name="IXT-26-4986" />scheduler attempts to juggle the needs
+of each user, providing overall decent performance of:
+</p>
+
+<ul><li>
+<p>Keeping interactive sessions responsive</p>
+</li><li>
+<p>Processing batch jobs promptly</p>
+</li><li>
+<p>Maximizing CPU utilization<a href="#FOOTNOTE-81">[81]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-81" /><p> [81]This list is modified from
+Tanenbaum and Woodhull's <em class="emphasis">Operating
+Systems: Design and Implementation</em>, Second Edition (Upper
+Saddle River: Prentice-Hall, Inc. 1997], 83).</p> </blockquote>
+</li><li>
+<p>Cranking through as many processes per hour as possible</p>
+</li><li>
+<p>Preventing any particular process for dominating CPU time</p>
+</li></ul>
+<p>System performance degrades when one of these goals overwhelms the
+others. These problems are very intuitive: if there are five times
+the normal number of users logged into your system, chances are that
+your session will be less responsive than at less busy times.
+</p>
+
+<p>Performance tuning is a multifaceted problem. At its most basic,
+<a name="IXT-26-4987" />performance issues can be looked at
+as being either <em class="emphasis">global</em> or
+<em class="emphasis">local</em> problems. Global problems affect the
+system as a whole and can generally be fixed only by the system
+administrator. These problems include insufficient RAM or hard drive
+space, inadequately powerful CPUs, and scanty network bandwidth. The
+global problems are really the result of a host of local issues,
+which all involve how each process on the system consumes resources.
+Often, it is up to the users to fix the bottlenecks in their own
+processes.
+</p>
+
+<p>Global problems are diagnosed with tools that report system-wide
+statistics. For instance, when a system appears sluggish, most
+administrators run <b class="emphasis-bold">uptime</b>
+(<a name="IXT-26-4988" /><a href="ch26_04.htm#upt3-CHP-26-SECT-4">Section 26.4</a>) to see how many processes were recently
+trying to run. If these numbers are significantly higher than normal
+usage, something is amiss (perhaps your web server has been
+slashdotted).
+</p>
+
+<p>If <i class="command">uptime</i> suggests increased activity, the next
+tool to use is either <i class="command">ps</i> or
+<i class="command">top</i><a name="IXT-26-4989" /> to see if you can find the set of
+processes causing the trouble. Because it shows you
+"live" numbers,
+<i class="command">top</i> can be particularly useful in this situation.
+I also recommend checking the amount of available
+<a name="IXT-26-4990" /> <a name="IXT-26-4991" />free disk space with
+<i class="command">df</i>, since a full filesystem is often an unhappy
+one, and its misery spreads quickly.
+</p>
+
+<p>Once particular processes have been isolated as being problematic,
+it's time to think locally. Process performance
+suffers when either there isn't more CPU time
+available to finish a task (this is known as a
+<em class="emphasis">CPU-bound</em><a name="IXT-26-4992" /> process) or the process is waiting for
+some <a name="IXT-26-4993" />I/O
+resource (i.e., <em class="emphasis">I/O-bound</em> ), such as the hard
+drive or network. One strategy for dealing with CPU-bound processes,
+if you have the source code for them, is to use a
+<a name="IXT-26-4994" /><a name="IXT-26-4995" />profiler like
+GNU's <i class="command">gprof</i>. Profilers give an
+accounting for how much CPU time is spent in each subroutine of a
+given program. For instance, if I want to profile one of my programs,
+I'd first compile it with <i class="command">gcc</i> and
+use the <em class="emphasis">-pg</em> compilation flag. Then
+I'd run the program. This creates the
+<em class="filename">gmon.out</em> data file that <i class="command">gprof</i>
+can read. Now I can use <i class="command">gprof</i> to give me a report
+with the following invocation:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gprof -b <em class="replaceable"><tt>executable</tt></em> gmon.out</b></tt></pre></blockquote>
+
+<p>Here's an abbreviated version of the output:</p>
+
+<blockquote><pre class="code">Flat profile:
+
+Each sample counts as 0.01 seconds.
+ no time accumulated
+
+  %   cumulative   self              self     total
+ time   seconds   seconds    calls  Ts/call  Ts/call  name
+  0.00      0.00     0.00        2     0.00     0.00  die_if_fault_occurred
+  0.00      0.00     0.00        1     0.00     0.00  get_double
+  0.00      0.00     0.00        1     0.00     0.00  print_values</pre></blockquote>
+
+<p>Here, we see that three subroutines defined in this program
+(<tt class="literal">die_if_fault_occurred</tt>,
+<tt class="literal">get_double</tt>, and <tt class="literal">print_values</tt>)
+were called. In fact, the first subroutine was called twice. Because
+this program is neither processor- nor I/O-intensive, no significant
+time is shown to indicate how long each subroutine took to run. If
+one subroutine took a significantly longer time to run than the
+others, or one subroutine is called significantly more often than the
+others, you might want to see how you can make that problem
+subroutine faster. This is just the tip of the profiling iceberg.
+Consult your language's profiler documentation for
+more details.
+</p>
+
+<p>One less detailed way to look at processes is to get an accounting of
+how much time a program took to run in user space, in kernel space,
+and in real time. For this, the <b class="emphasis-bold">time</b>
+(<a name="IXT-26-4996" /><a href="ch26_02.htm#upt3-CHP-26-SECT-2">Section 26.2</a>) command exists as part of both C and
+<i class="command">bash</i> shells. As an external program,
+<i class="command">/bin/time</i> gives a slightly less detailed report.
+No special compilation is necessary to use this program, so
+it's a good tool to use to get a first approximation
+of the bottlenecks in a particular process.
+</p>
+
+<p>Resolving I/O-bound issues is difficult for users. Only adminstrators
+can both tweak the low-level system settings that control system I/O
+buffering and install new hardware, if needed. CPU-bound processes
+might be improved by dividing the program into smaller programs that
+feed data to each other. Ideally, these smaller programs can be
+spread across several machines. This is the basis of distributed
+computing.
+</p>
+
+<p>Sometimes, you want a particular process to hog all the system
+resources. This is the definition of a dedicated server, like one
+that hosts the Apache web server or an Oracle database. Often, server
+software will have configuration switches that help the administrator
+allocate system resources based on typical usage. This, of course, is
+far beyond the scope of this book, but do check out <em class="emphasis">Web
+Performance Tuning</em> and <em class="emphasis">Oracle Performance
+Tuning</em> from O'Reilly for more details.
+For more system-wide tips, pick up <em class="emphasis">System Performance
+Tuning</em>, also from O'Reilly.
+</p>
+
+<p>As with so many things in life, you can improve performance only so
+much. In fact, by improving performance in one area,
+you're likely to see performance degrade in other
+tasks. Unless you've got a machine
+that's dedicated to a very specific task, beware the
+temptation to over-optimize.<a name="IXTR3-5051" /> <a name="IXTR3-5052" /> 
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch25_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch26_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">25.9. Waiting a Little While: sleep</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">26.2. Timing Programs</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

@@ -1,0 +1,199 @@
+<html><head><title>Kill Processes Interactively (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.16. Kill Processes Interactively</h2>
+
+<p><a name="IXT-24-5393" /><a name="IXT-24-5394" /><a name="IXT-24-5395" />When you want to kill processes,
+it's a pain in the neck to run <b class="emphasis-bold">ps</b> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>), figure out
+the process ID, and then kill the process -- although <b class="emphasis-bold">sometimes you have to do it that way</b> (<a href="ch24_15.htm#upt3-CHP-24-SECT-15">Section 24.15</a>). We'll look at two easier
+ways.
+</p>
+
+<a name="upt3-CHP-24-SECT-16.1" /><div class="sect2">
+<h3 class="sect2">24.16.1. killall -i</h3>
+
+<p>Many systems have a command named
+<i class="command">killall</i><a name="IXT-24-5396" /> with a
+<span class="option">-i</span> ("interactive")
+option. <b class="emphasis-bold">Be careful</b>, though, because
+there are several versions, and the most basic does just what it
+says: kills all processes on the system (when run as the <b class="emphasis-bold">superuser</b> (<a href="ch01_18.htm#upt3-CHP-1-SECT-18">Section 1.18</a>)).
+Check <i class="command">killall</i>'s manual page on
+your system.
+</p>
+
+<p>The version of <i class="command">killall</i> we're
+talking about here accepts multiple process-name arguments on its
+command line. Without its <span class="option">-i</span> option, the command
+sends a signal (by default,
+<em class="emphasis">TERM</em><a name="IXT-24-5397" />) to any process name that matches. The
+process name you give has to match completely. Unfortunately,
+<i class="command">killall</i> sends a signal to any process with that
+name -- even processes owned by other users, which you
+can't kill (unless you're the
+superuser); you'll get the error <tt class="literal">Operation
+not permitted</tt>. For example:
+</p>
+
+<p><tt class="literal">&amp;</tt> <a href="ch23_02.htm#upt3-CHP-23-SECT-2">Section 23.2</a>, <tt class="literal">[5]</tt> <a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a></p>
+
+<blockquote><pre class="code">1$ <tt class="userinput"><b>cruncher &amp; sleep 60 &amp;</b></tt>
+[5] 2714
+[6] 2715
+$ <tt class="userinput"><b>killall crunch eep</b></tt>
+crunch: no process killed
+eep: no process killed
+$ <tt class="userinput"><b>killall cruncher sleep</b></tt>
+sleep(2708): Operation not permitted
+sleep(2710): Operation not permitted
+sleep(2712): Operation not permitted
+[5]   Terminated              cruncher
+[6]   Terminated              sleep 60</pre></blockquote>
+
+<p>With <span class="option">-i</span>, <i class="command">cruncher</i> lists the
+<span class="acronym">PID</span> number and gives you a choice of typing
+<em class="emphasis">y</em> to kill a process or <em class="emphasis">n</em> to
+leave it alone:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cruncher &amp; sleep 60 &amp;</b></tt>
+[5] 2732
+[6] 2733
+$ <tt class="userinput"><b>killall -i cruncher sleep</b></tt>
+Kill sleep(2727) ? (y/n) <tt class="userinput"><b>y</b></tt>
+sleep(2727): Operation not permitted
+Kill cruncher(2732) ? (y/n) <tt class="userinput"><b>y</b></tt>
+Kill sleep(2733) ? (y/n) <tt class="userinput"><b>y</b></tt>
+Kill sleep(2734) ? (y/n) <tt class="userinput"><b>n</b></tt>
+[5]   Terminated              cruncher
+[6]   Terminated              sleep 60</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-24-SECT-16.2" /><div class="sect2">
+<h3 class="sect2">24.16.2. zap</h3>
+
+<p><a name="IXT-24-5398" /> <a name="IXT-24-5399" /><a name="IXT-24-5400" />A more flexible way to kill processes
+interactively is the <i class="command">zap</i> <a name="IXT-24-5401" />shell script,
+presented by <a name="IXT-24-5402" /> <a name="IXT-24-5403" />Brian Kernighan and Rob Pike in their
+classic book <em class="citetitle">The UNIX Programming Environment</em>.
+The script uses <b class="emphasis-bold">egrep</b>
+(<a name="IXT-24-5404" /><a href="ch13_04.htm#upt3-CHP-13-SECT-4">Section 13.4</a>) to pick the processes to kill;
+<a name="IXT-24-5405" />you can type <b class="emphasis-bold">extended expressions</b> (<a href="ch32_15.htm#upt3-CHP-32-SECT-15">Section 32.15</a>) that match more than one process. The
+expressions can match partial or complete command names, any
+arguments to the commands, or, actually, any part of the
+command's line in the <i class="command">ps</i> output.
+For example:
+</p>
+
+
+
+<blockquote><pre class="code">% <tt class="userinput"><b>zap 'troff|fmat'</b></tt>
+   PID TTY TIME CMD
+ 22117  01 0:02 fmat somefile? <tt class="userinput"><b>n</b></tt>
+ 22126  01 0:15 sqtroff -ms somefile? <tt class="userinput"><b>y</b></tt></pre></blockquote>
+
+<p>We reprint the script by permission of the authors:</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: zap</p>
+<p><tt class="literal">'...'</tt> <a href="ch36_24.htm#upt3-CHP-36-SECT-24">Section 36.24</a></p>
+
+<blockquote><pre class="code">#! /bin/sh
+# zap pattern:  kill all processes matching pattern
+
+PATH=/bin:/usr/bin
+IFS='
+'                   # just a newline
+case $1 in
+"")   echo 'Usage: zap [-2] pattern' 1&gt;&amp;2; exit 1 ;;
+-*)   SIG=$1; shift
+esac
+
+echo '   PID TTY TIME CMD'
+kill $SIG `pick \`ps -ag | egrep "$*"\` | awk '{print $1}'`</pre></blockquote>
+
+<p><a name="IXT-24-5406" />The
+<tt class="literal">ps -ag</tt> command displays all processes on the
+system. Leave off the <tt class="literal">a</tt> to get just your
+processes. Your version of <i class="command">ps</i> may need <b class="emphasis-bold">different options</b> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>). 
+</p>
+
+<p><a name="IXT-24-5407" />This shell
+version of <i class="command">zap</i> calls another script,
+<i class="command">pick</i>, shown below.<a href="#FOOTNOTE-75">[75]</a> <i class="command">pick</i>
+shows each of its command-line arguments and waits for you to type
+<em class="emphasis">y</em>, <em class="emphasis">q</em>, or anything else.
+Answering <em class="emphasis">y</em> writes the line to standard output,
+answering <em class="emphasis">q</em> aborts <i class="command">pick</i>
+without showing more lines, and any other answer shows the next input
+line without printing the current one. <i class="command">zap</i> uses
+<b class="emphasis-bold">awk</b> (<a href="ch20_10.htm#upt3-CHP-20-SECT-10">Section 20.10</a>)
+to print the first argument (the process ID number) from any
+<i class="command">ps</i> line you've selected with
+<i class="command">pick</i>. The inner set of <b class="emphasis-bold">nested</b> (<a href="ch36_24.htm#upt3-CHP-36-SECT-24">Section 36.24</a>)
+<b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) in <i class="command">zap</i> pass
+<i class="command">pick</i> the output of <i class="command">ps</i>, filtered
+through <i class="command">egrep</i>. Because the <i class="command">zap</i>
+script has set the <b class="emphasis-bold">IFS variable</b>
+(<a href="ch36_23.htm#upt3-CHP-36-SECT-23">Section 36.23</a>) to just a newline,
+<i class="command">pick</i> gets and displays each line of
+<i class="command">ps</i> output as a single argument. The outer set of
+backquotes passes <b class="emphasis-bold">kill</b> (<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>) the output of <i class="command">pick</i>,
+filtered through <i class="command">awk</i>.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-75" /><p> [75]The MH email
+system also has a command named <i class="command">pick</i>. If you use
+MH, or frontends like <i class="command">exmh</i> or mh-e, you could
+rename this script to something like
+<i class="command">choose</i>.</p> </blockquote>
+
+<p>If you're interested in shell programming and that
+explanation wasn't detailed enough, take a careful
+look at the scripts -- they're really worth
+studying. (This book's shell programming chapters,
+44 through 46, may help, too.) Here's the
+<i class="command">pick</i> script:
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: pick</p>
+<p><tt class="literal">/dev/tty</tt> <a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a></p>
+
+<blockquote><pre class="code">#!/bin/sh
+# pick:  select arguments
+
+PATH=/bin:/usr/bin
+
+for i
+do
+    echo -n "$i? " &gt;/dev/tty
+    read response
+    case $response in
+    y*)    echo $i ;;
+    q*)    break
+    esac
+done &lt;/dev/tty</pre></blockquote>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.15. Killing Processes by Name?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.17. Processes Out of Control? Just STOP Them</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

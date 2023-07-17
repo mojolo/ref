@@ -1,0 +1,95 @@
+<html><head><title>Printing with Samba (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch47_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch47_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">47.5. Printing with Samba</h2>
+
+<p><a name="IXT-47-2044" /><a name="IXT-47-2045" />Sharing Unix printers with a SMB network
+is pretty straightforward. You can use
+<i class="command">swat</i><a name="IXT-47-2046" /> to select the printer you want to
+share. If your <em class="filename">/etc/printcap</em> is configured
+correctly, <i class="command">swat</i> will allow you to select one of
+those printers from a drop-down menu. You will then be able to set
+access controls over that printer, as well as make the printer
+browsable. Be sure to click the Commit Changes button when
+you're finished to save your settings. If
+you're running the SMB
+<a name="IXT-47-2047" />daemons as standalone
+processes, you can restart them from the <em class="emphasis">status</em>
+section of <i class="command">swat</i>. In any case, your printers
+won't be shared until the daemons are restarted.
+</p>
+
+<p>Of course, you can also edit the
+<em class="filename">smb.conf</em><a name="IXT-47-2048" /> file directly.
+Here's how to share your default printer with the
+SMB network:
+</p>
+
+<blockquote><pre class="code">[lp]
+        printable = Yes
+        printer name = lp
+        ; printing = BSD
+        ; print command = /usr/bin/lpr -r %s
+        path = /var/spool/samba
+        guest ok = Yes
+        read only = No
+        comment = hp</pre></blockquote>
+
+<p>The block should start off with the <i class="command">lpr</i> queue
+name. The most important directive for print shares is
+<tt class="literal">printable</tt>, which identifies this block as defining
+a print share. The <tt class="literal">printer name</tt> needs to match the
+Unix printer queue name for the printer you wish to share. If you
+have defined a global directive <tt class="literal">printing</tt> (which
+defaults to BSD style print queues), you don't need
+to worry about explicitly telling Samba how to print to the queue. In
+the commented-out <tt class="literal">print command</tt> directive, the
+<tt class="literal">%s</tt> stands for the file you wish to print. The
+<tt class="literal">path</tt> directive defines the samba print spool
+directory. This directory needs to be writable by the
+<i class="command">smbd</i> process. Both <tt class="literal">guest ok</tt> and
+<tt class="literal">read only</tt> directives are simple access controls.
+The <tt class="literal">comment</tt> block is self-explanatory.
+</p>
+
+<p>After saving your changes and restarting the Samba servers (if
+needed), your shares should be browsable by the SMB network. From
+Unix, you can print to SMB printers with the following command:
+</p>
+
+<blockquote><pre class="code">$ smbclient //<em class="replaceable"><tt>netbios-name</em>/<em class="replaceable">printer</tt></em>
+smb: \&gt; print <em class="replaceable"><tt>filename-to-print</tt></em></pre></blockquote>
+
+<p>Here the <i class="command">smbclient</i><a name="IXT-47-2049" /> program (described in more detail
+below) is used to connect to the SMB printer. Using the interactive
+shell, the <em class="emphasis">print</em> command will send any file you
+specify to the printer. On some systems, you may find a program
+called <i class="command">smbprint</i> that is a Bourne shell wrapper
+around <i class="command">smbclient</i>.
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch47_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch47_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">47.4. SWAT and GUI SMB Browsers</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">47.6. Connecting to SMB Shares from Unix</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

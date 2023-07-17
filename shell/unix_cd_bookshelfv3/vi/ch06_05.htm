@@ -1,0 +1,393 @@
+<html><head><title>A Final Look at Pattern Matching  (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.5. A Final Look at Pattern Matching </h2>
+
+<p>We conclude this chapter by presenting sample tasks that involve
+complex pattern-matching concepts.
+Rather than solve the problems right away, we'll work toward
+the solutions step by step.</p>
+
+<a name="vi6-ch-6-sect-4.4.1" /><div class="sect2">
+<h3 class="sect2">6.5.1. Deleting an Unknown Block of Text</h3>
+
+<p>Suppose you have a few lines with this general form:</p>
+
+<blockquote><pre class="code">the best of times; the worst of times:  moving
+The coolest of times; the worst of times:  moving</pre></blockquote>
+
+<p>The lines that you're concerned with always end
+with <em class="emphasis">moving</em>, but you never know what the first two words
+might be. You want to change
+any line that ends with <em class="emphasis">moving</em> to read:</p>
+
+<blockquote><pre class="code">The greatest of times; the worst of times:  moving</pre></blockquote>
+
+<p>Since the changes must occur on certain lines, you need to
+specify a context-sensitive global replacement. Using
+<tt class="literal">:g/moving$/</tt> will match lines that end with <em class="emphasis">moving</em>.
+Next, you realize that your search pattern could be any number of
+any character, so the metacharacters <tt class="literal">.*</tt> come to mind.
+But these will match the whole line unless you somehow restrict
+the match. Here's your first attempt:</p>
+
+<blockquote><pre class="code">:g/moving$/s/.*of/The<img src="figs/squ.gif" alt="Figure " />greatest<img src="figs/squ.gif" alt="Figure " />of/</pre></blockquote>
+
+<p>This search string, you decide, will match from the beginning of
+the line to the first <em class="emphasis">of</em>.  Since you needed to specify the
+word <em class="emphasis">of</em> to restrict the search, you simply repeat it in the
+replacement. Here's the resulting line:</p>
+
+<blockquote><pre class="code">The greatest of times:  moving</pre></blockquote>
+
+<p>Something went wrong. The replacement gobbled the line up to the second
+<em class="emphasis">of</em> instead of the first. Here's why. When given a
+choice, the action of "match any number of any character" will
+match as much text as possible.
+In this case, since the word <em class="emphasis">of</em> appears twice,
+your search string finds:</p>
+
+<blockquote><pre class="code">the best of times; the worst of</pre></blockquote>
+
+<p>rather than:</p>
+
+<blockquote><pre class="code">the best of</pre></blockquote>
+
+<p>Your search pattern needs to be more restrictive:</p>
+
+<blockquote><pre class="code">:g/moving$/s/.*of times;/The greatest of times;/</pre></blockquote>
+
+<p>Now the <tt class="literal">.*</tt> will match all characters up to
+the instance of the phrase <em class="emphasis">of times;</em>.
+Since there's only one instance, it has to be the first.</p>
+
+<p>There are cases, though, when it is
+inconvenient, or even incorrect, to use the <tt class="literal">.*</tt> metacharacters.
+For example, you might find yourself typing
+many words to restrict your search pattern, or you might
+be unable to restrict the pattern by specific words (if the text
+in the lines varies widely). The next section presents such a
+case.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-6-sect-4.4.2" /><div class="sect2">
+<h3 class="sect2">6.5.2. Switching Items in a Database</h3>
+
+<p>
+<a name="IXT-6-280190" />
+<a name="IXT-6-280191" />
+<a name="IXT-6-280192" />
+<a name="IXT-6-280193" />
+Suppose you want to switch the order of all last names
+and first names in a (text) database.
+The lines look like this:</p>
+
+<blockquote><pre class="code">Name: Feld, Ray; Areas: PC, UNIX; Phone: 123-4567
+Name: Joy, Susan S.; Areas: Graphics; Phone: 999-3333</pre></blockquote>
+
+<p>The name of each field ends with a colon, and each field is
+separated by a semicolon. Using the top line as an example, you
+want to change <em class="emphasis">Feld, Ray</em> to <em class="emphasis">Ray Feld</em>.
+We'll present some commands that look promising but don't work.
+After each command, we show you the line the way it looked before
+the change and after the change.</p>
+
+<blockquote><pre class="code">:%s/: \(.*\), \(.*\);/: \2 \1;/
+
+Name: <b class="emphasis-bold">Feld, Ray; Areas: PC</b>, <em class="emphasis">UNIX</em>; Phone: 123-4567	<i class="lineannotation">Before</i>
+Name: <em class="emphasis">UNIX</em> <b class="emphasis-bold">Feld, Ray; Areas: PC</b>; Phone: 123-4567	<i class="lineannotation">After</i></pre></blockquote>
+
+<p>We've highlighted the contents of the first hold buffer in
+<tt class="userinput"><b>bold</b></tt>
+and the contents of the second hold buffer in <em class="replaceable"><tt>italic</tt></em>.
+Note that the first hold buffer contains more than you want.
+Since it was not sufficiently restricted by the pattern that
+follows it, the hold buffer was able to save up to the second comma.
+Now you try to restrict the contents of the first hold buffer:</p>
+
+<blockquote><pre class="code">:%s/: \(....\), \(.*\);/: \2 \1;/
+
+Name: <b class="emphasis-bold">Feld</b>, <em class="emphasis">Ray; Areas: PC, UNIX</em>; Phone: 123-4567	<i class="lineannotation">Before</i>
+Name: <em class="emphasis">Ray; Areas: PC, UNIX</em> <b class="emphasis-bold">Feld</b>; Phone: 123-4567	<i class="lineannotation">After</i></pre></blockquote>
+
+<p>Here you've managed to save the last name in the first hold
+buffer, but now the second hold buffer will save anything
+up to the last semicolon on the line. Now you restrict the
+second hold buffer, too:</p>
+
+<blockquote><pre class="code">:%s/: \(....\), \(...\);/: \2 \1;/
+
+Name: <b class="emphasis-bold">Feld</b>, <em class="emphasis">Ray</em>; Areas: PC, UNIX; Phone: 123-4567	<i class="lineannotation">Before</i>
+Name: <em class="emphasis">Ray</em> <b class="emphasis-bold">Feld</b>; Areas: PC, UNIX; Phone: 123-4567	<i class="lineannotation">After</i></pre></blockquote>
+
+<p>This gives you what you want, but only in the specific case of a
+four-letter last name and a three-letter first name. (The
+previous attempt included the same mistake.) Why not just return
+to the first attempt, but this time be more selective about the
+end of the search pattern?</p>
+
+<blockquote><pre class="code">:%s/: \(.*\), \(.*\); Area/: \2 \1; Area/
+
+Name: <b class="emphasis-bold">Feld</b>, <em class="emphasis">Ray</em>; Areas: PC, UNIX; Phone: 123-4567	<i class="lineannotation">Before</i>
+Name: <em class="emphasis">Ray</em> <b class="emphasis-bold">Feld</b>; Areas: PC, UNIX; Phone: 123-4567	<i class="lineannotation">After</i></pre></blockquote>
+
+<p>This works, but we'll continue the discussion by
+introducing an additional concern. Suppose that the <em class="emphasis">Area</em>
+field isn't always present or isn't always the second field.
+The above command won't work on such lines.</p>
+
+<p>We introduce this problem to make a point. Whenever you rethink
+a pattern match, it's usually better to work toward refining the
+variables (the metacharacters), rather than using specific text
+to restrict patterns. The more variables you use in your
+patterns,
+the more powerful your commands will be.</p>
+
+<p>In the current example,
+think again about the patterns you want to switch.
+Each word starts with an uppercase letter and is followed by any
+number of lowercase letters, so you can match the names like this:</p>
+
+<blockquote><pre class="code">[A-Z][a-z]*</pre></blockquote>
+
+<p>A last name might also have more than one uppercase letter
+(<em class="emphasis">McFly</em>, for example),
+so you'd want to search for this possibility in the second and
+succeeding letters:</p>
+
+<blockquote><pre class="code">[A-Z][A-Za-z]*</pre></blockquote>
+
+<p>It doesn't hurt to use this for the first name, too (you never
+know when <em class="emphasis">McGeorge Bundy</em> will turn up).
+Your command now becomes:</p>
+
+<blockquote><pre class="code">:%s/: \([A-Z][A-Za-z]*\), \([A-Z][A-Za-z]*\);/: \2 \1;/</pre></blockquote>
+
+<p>Quite forbidding, isn't it?
+It still doesn't cover the case of a name like <em class="emphasis">Joy, Susan S.</em>
+Since the first-name field might include a middle initial, you need to
+add a space and a period within the second pair of brackets.
+But enough is enough.
+Sometimes, specifying exactly what
+you want is more difficult than specifying what you <em class="emphasis">don't</em>
+want. In your sample database, the last names end with a comma,
+so a last-name field can be thought of as a string of characters
+that are <em class="emphasis">not</em> commas:</p>
+
+<blockquote><pre class="code">[^,]*</pre></blockquote>
+
+<p>This pattern matches characters up until the first comma.
+Similarly, the first-name field is a string of characters that
+are <em class="emphasis">not</em> semicolons:</p>
+
+<blockquote><pre class="code">[^;]*</pre></blockquote>
+
+<p>Putting these more efficient patterns back into your previous
+command, you get:</p>
+
+<blockquote><pre class="code">:%s/: \([^,]*\), \([^;]*\);/: \2 \1;/</pre></blockquote>
+
+
+<?troff .Nd 10?><p>The same command could also be entered as a
+context-sensitive replacement.
+If all lines begin with <em class="emphasis">Name</em>, you can say:</p>
+
+<blockquote><pre class="code">:g/^Name/s/: \([^,]*\), \([^;]*\);/: \2 \1;/</pre></blockquote>
+
+<p>You can also add an asterisk after the first space,
+in order to match a colon that has extra spaces (or no spaces)
+after it:</p>
+
+<blockquote><pre class="code">:g/^Name/s/: *\([^,]*\), \([^;]*\);/: \2 \1;/</pre></blockquote>
+</div>
+
+
+
+
+<a name="vi6-ch-6-sect-4.4.3" /><div class="sect2">
+<h3 class="sect2">6.5.3. Using :g to Repeat a Command </h3>
+
+<p>
+<a name="IXT-6-280194" />
+<a name="IXT-6-280195" />
+As we've usually seen the <tt class="literal">:g</tt> command used, it selects lines that
+are typically then edited by subsequent commands on the same line&#8212;for
+example, we select lines with <tt class="literal">g</tt>, and then make substitutions
+on them, or select them and delete them:</p>
+
+<blockquote><pre class="code">:g/mg[ira]box/s/box/square/g
+:g/^$/d</pre></blockquote>
+
+<p>However, in his two-part tutorial in <em class="citetitle">UNIX World</em>,<a href="#FOOTNOTE-26">[26]</a>
+<a name="IXT-6-280196" />
+Walter Zintz makes an interesting point about the <tt class="literal">g</tt>
+command. This command selects lines&#8212;but the associated editing
+commands need not actually affect the lines that are selected.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-26" /><p> [26]Part 1, "<i class="command">vi</i> Tips for Power Users," appears in the April 1990
+issue of <em class="citetitle">UNIX World</em>.  Part&#160;2, "Using <i class="command">vi</i> to Automate
+Complex Edits," appears in the May 1990 issue.
+The examples presented are from Part&#160;2.</p>
+
+</blockquote>
+
+<p>Instead, he demonstrates a technique by which you can repeat
+<i class="command">ex</i> commands
+some arbitrary number of times. For example, suppose you want to place
+ten copies of lines 12 through 17 of your file at the end of your
+current file. You could type:</p>
+
+<blockquote><pre class="code">:1,10g/^/ 12,17t$</pre></blockquote>
+
+<p>This is a very unexpected use of <tt class="literal">g</tt>, but it works! The
+<tt class="literal">g</tt> command
+selects line 1, executes the specified <tt class="literal">t</tt> command, then goes on to
+line&#160;2, to execute the next copy command. When line 10 is
+reached, <i class="command">ex</i> will have made ten copies.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-6-sect-4.4.4" /><div class="sect2">
+<h3 class="sect2">6.5.4. Collecting Lines</h3>
+
+<p>
+<a name="IXT-6-280197" />
+<a name="IXT-6-280198" />
+Here's another advanced <tt class="literal">g</tt> example, again building on
+suggestions provided in Zintz's article.
+Suppose you're editing a document that consists of several parts.
+Part&#160;2 of this file is shown below, using ellipses to
+show omitted text and displaying line numbers for reference:</p>
+
+<blockquote><pre class="code">301  Part 2
+302  Capability Reference
+303  .LP
+304  Chapter 7
+305  Introduction to the Capabilities
+<b class="emphasis-bold">306  This and the next three chapters ...</b>
+
+400  ... and a complete index at the end.
+401  .LP
+402  Chapter 8
+403  Screen Dimensions
+<b class="emphasis-bold">404  Before you can do anything useful</b>
+405  on the screen, you need to know ...
+
+555  .LP
+556  Chapter 9
+557  Editing the Screen
+<b class="emphasis-bold">558  This chapter discusses ...</b>
+
+821  .LP
+822  Part 3:
+823  Advanced Features
+824  .LP
+825  Chapter 10</pre></blockquote>
+
+<p>The chapter numbers appear on one line, their
+titles appear on the line below, and the chapter text
+(highlighted for emphasis)
+begins on the line below that.
+The first thing you'd like to do is copy the beginning line
+of each chapter, sending it to an already existing file called
+<em class="filename">begin</em>.</p>
+
+<p>Here's the command that does this:</p>
+
+<blockquote><pre class="code">:g /^Chapter/ .+2w &gt;&gt; begin</pre></blockquote>
+
+<p>You must be at the top of your file before issuing this command.
+First you search for <em class="emphasis">Chapter</em> at the start of a line,
+but then you want to run the command on the beginning line of each
+chapter&#8212;the second line below <em class="emphasis">Chapter</em>.
+Because a line beginning with <em class="emphasis">Chapter</em> is now selected as
+the current line,
+the line address <tt class="literal">.+2</tt> will indicate the second line below it.
+The equivalent line
+addresses <tt class="literal">+2</tt> or <tt class="literal">++</tt> work as well.
+You want to write these lines to an existing file named
+<em class="filename">begin</em>, so you issue the <tt class="literal">w</tt> command with the append operator
+<tt class="literal">&gt;&gt;</tt>.</p>
+
+<p>Suppose you want to send the beginnings of chapters that are only
+within Part 2. You need to restrict the lines selected by <tt class="literal">g</tt>,
+so you change your command to this:</p>
+
+<blockquote><pre class="code">:/^Part 2/,/^Part 3/g /^Chapter/ .+2w &gt;&gt; begin</pre></blockquote>
+
+<p>Here, the <tt class="literal">g</tt> command selects the lines that begin with
+<em class="emphasis">Chapter</em>, but it searches
+only that portion of the file from a line
+starting with <em class="emphasis">Part 2</em> through a line
+starting with <em class="emphasis">Part 3</em>.
+If you issue the above command,
+the last lines of the file <em class="filename">begin</em> will read as follows:</p>
+
+<blockquote><pre class="code">This and the next three chapters ...
+Before you can do anything useful
+This chapter discusses ...</pre></blockquote>
+
+<p>These are the lines that begin Chapters 7, 8, and 9.</p>
+
+<p>In addition to the lines you've just sent,
+you'd like to copy chapter titles to the end of
+the document, in preparation for making a table of contents.
+You can use the vertical bar to tack a second command after
+your first command, like so:</p>
+
+<blockquote><pre class="code">:/^Part 2/,/^Part 3/g /^Chapter/ .+2w &gt;&gt; begin | +t$</pre></blockquote>
+
+<p>Remember that with any subsequent command, line addresses are
+relative to the previous command. The first command has marked
+lines
+(within Part 2) that start with <em class="emphasis">Chapter</em>, and the chapter titles
+appear on a line below such lines. Therefore,
+to access chapter titles in the second command, the line
+address is <tt class="literal">+</tt> (or the equivalents <tt class="literal">+1</tt> or <tt class="literal">.+1</tt>).
+Then use <tt class="literal">t$</tt> to copy the chapter titles to the end of the
+file.</p>
+
+<p>As these examples illustrate, thought and
+experimentation may lead you to some unusual editing solutions.
+Don't be afraid to try things! Just be sure to back up your file
+first!</p>
+</div>
+
+
+
+
+<a name="IXT-6-280199" />
+<a name="IXT-6-280200" />
+<a name="IXT-6-280201" />
+<a name="IXT-6-280202" />
+<a name="IXT-6-280203" />
+<a name="IXT-6-280204" />
+<a name="IXT-6-280205" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.4. Pattern-Matching Examples </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7. Advanced Editing</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,256 @@
+<html><head><title>Directing Output to Files and Pipes (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.5. Directing Output to Files and Pipes</h2>
+
+<p>
+<a name="ch10.out1" />
+<a name="ch10.out3" />
+<a name="ch10.out4" />
+<a name="IXT-10-266168" />
+<a name="IXT-10-266169" />
+<a name="IXT-10-266170" />
+<a name="IXT-10-266171" />
+<a name="IXT-10-266172" />
+<a name="IXT-10-266173" />
+The output of any <b class="emphasis-bold">print</b> or
+<b class="emphasis-bold">printf</b> statement can be directed to a file, using
+the output redirection operators "&gt;" or "&gt;&gt;". For example, the
+following statement writes the current record to the file
+<em class="filename">data.out</em>:</p>
+
+<blockquote><pre class="code">print &gt; "data.out"</pre></blockquote>
+
+<p>The filename can be any expression that evaluates to a valid filename.
+A file is opened by the first use of the redirection operator, and
+subsequent uses append data to the file.  The difference between
+"&gt;" and "&gt;&gt;" is the same as between the shell redirection
+operators.  A right-angle bracket ("&gt;") truncates
+the file when opening it while "&gt;&gt;" preserves whatever the file
+contains and appends data to it.</p>
+
+<p>Because the redirection operator "&gt;" is the same as the relational
+operator, there is the potential for confusion when you specify an
+expression as an argument to the <b class="emphasis-bold">print</b> command.
+The rule is that "&gt;" will be interpreted as a redirection operator
+when it appears in an argument list for any of the print statements.
+To use "&gt;" as a relational operator in an expression that appears
+in the argument list, put either the expression or the argument list
+in parentheses.  For example, the following example uses parentheses
+around the conditional expression to make sure that the relational
+expression is evaluated properly:</p>
+
+<blockquote><pre class="code">print "a =", a, "b =", b, "max =", (a &gt; b ? a : b) &gt; "data.out"</pre></blockquote>
+
+<p>The conditional expression evaluates whether <b class="emphasis-bold">a</b> is
+greater than <b class="emphasis-bold">b</b>; if it is, then the value of
+<b class="emphasis-bold">a</b> is printed as the maximum value; otherwise,
+<b class="emphasis-bold">b</b>'s value is used.</p>
+
+<a name="sedawk-ch-10-sect-5.1" /><div class="sect2">
+<h3 class="sect2">10.5.1. Directing Output to a Pipe</h3>
+
+<p>
+<a name="IXT-10-266174" />
+<a name="IXT-10-266175" />
+<a name="IXT-10-266176" />
+<a name="IXT-10-266177" />
+You can also direct output to a pipe.  The command</p>
+
+<blockquote><pre class="code"><tt class="literal">print |</tt> <em class="replaceable"><tt>command</tt></em></pre></blockquote><p>opens a pipe the first time it is executed and sends the current
+record as input to that command.  In other words, the command is only
+invoked once, but each execution of the <b class="emphasis-bold">print</b>
+command supplies another line of input.</p>
+
+<p>The following script strips <b class="emphasis-bold">troff</b> macros and
+requests from the current input line and then sends the line as input
+to <b class="emphasis-bold">wc</b> to determine how many words are in the file:</p>
+
+<blockquote><pre class="code">{# words.awk - strip macros then get word count
+sub(/^\.../,"")
+print | "wc -w" 
+}</pre></blockquote>
+
+<p>By removing formatting codes, we get a truer word count.</p>
+
+<p>In most cases, we prefer to use a shell script to pipe the output of
+the awk command to another command rather than do it inside the awk
+script.  For instance, we'd write the previous example as a shell
+script invoking awk and piping its output to <b class="emphasis-bold">wc</b>:</p>
+
+<blockquote><pre class="code">awk '{ # words -- strip macros 
+sub(/^\.../,"")
+print 
+}' $* | 
+# get word count
+wc -w</pre></blockquote>
+
+<p>This method seems simpler and easier to understand.
+Nonetheless, the other method has the advantage of accomplishing the
+same thing without creating a shell script.</p>
+
+<p>Remember that you can only have so many pipes open at a time.  Use the
+<b class="emphasis-bold">close()</b> function to close the pipe when you
+are done with it.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-10-sect-5.2" /><div class="sect2">
+<h3 class="sect2">10.5.2. Working with Multiple Files</h3>
+
+<p>
+<a name="ch10.file1" />
+<a name="ch10.file2" />
+A file is opened whenever you read from or write to a file.  Every
+operating system has some limit on the number of files a running
+program may have open.  Furthermore, each implementation of awk may
+have an internal limit on the number of open files; this number could
+be smaller than the system's limit.<a href="#FOOTNOTE-69">[69]</a> 
+
+<a name="IXT-10-266179" />
+<a name="IXT-10-266180" />
+<a name="IXT-10-266181" />
+So that you don't run out of open files, awk provides a
+<b class="emphasis-bold">close()</b> function that allows you to close
+an open file.  Closing files that you have finished processing allows
+your program to open more files later on.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-69" /><p> [69] 
+
+
+
+
+Gawk will attempt to appear to have more files open than the system
+limit by closing and reopening files as needed. Even though gawk is
+"smart," it is still more efficient to close your files when you're
+done with them.  
+<a name="IXT-10-266178" /></p>
+
+</blockquote>
+
+<p>A common use for directing output to files is to split up a large file
+into a number of smaller files.  Although UNIX provides
+utilities, <b class="emphasis-bold">split</b> and <b class="emphasis-bold">csplit</b>,
+that do a similar job, they do not have the ability to give the new
+file a useful filename.</p>
+
+<p>Similarly, sed can be used to write to a
+file, but you must specify a fixed filename.  With awk, you can use a
+variable to specify the filename and pick up the value from a pattern
+in the file.  For instance, if $1 provided a string that could be used
+as a filename, you could write a script to output each record to its
+own file:</p>
+
+<blockquote><pre class="code">print $0 &gt; $1</pre></blockquote>
+
+<p>You should perhaps test the filename, either to determine its length
+or to look for characters that cannot be used in a filename.</p>
+
+<p>If you don't close your files, such a program would eventually run out
+of available open files, and have to give up.  The example we are
+going to look at works because it uses the
+<b class="emphasis-bold">close()</b> function so that you will not run
+into any open-file limitations.</p>
+
+<p>The following script was used to split up a large file containing
+dozens of manpages.  Each manual page began by setting a number
+register and ended with a blank line:</p>
+
+<blockquote><pre class="code">.nr X 0</pre></blockquote>
+
+<p>(Although they used the <b class="emphasis-bold">-man</b> macros for the most
+part, the beginning of a manpage was strangely coded, making things a
+little harder.)  The line that provides the filename looks like this:</p>
+
+<blockquote><pre class="code">.if \nX=0 .ds x}  XDrawLine "" "Xlib - Drawing Primitives"</pre></blockquote>
+
+<p>The fifth field on this line, "XDrawLine," contains the filename.
+Perhaps the only difficulty in writing the script is that the first
+line is not the one that provides the filename.  Therefore, we collect
+the lines in an array until we get a filename.  Once we get the
+filename, we output the array, and from that point on we simply write
+each input line to the new file.  Here's the
+<b class="emphasis-bold">man.split</b> script:</p>
+
+<blockquote><pre class="code"># man.split -- split up a file containing X manpages. 
+BEGIN { file = 0; i = 0; filename = "" }
+
+# First line of new manpage is ".nr X 0"
+# Last line is blank
+/^\.nr X 0/,/^$/ {
+	# this conditional collects lines until we get a filename.
+	if (file == 0)
+		line[++i] = $0
+	else
+		print $0 &gt; filename
+
+	# this matches the line that gives us the filename
+	if ($4 == "x}") {
+		# now we have a filename
+		filename = $5 
+		file = 1
+		# output name to screen 
+		print filename 
+		# print any lines collected
+		for (x = 1; x &lt;= i; ++x){
+			print line[x] &gt; filename
+		}
+		i = 0
+	}
+
+	# close up and clean up for next one
+	if ($0 ~ /^$/) {
+		close(filename)
+		filename = ""
+		file = 0
+		i = 0
+	}
+}</pre></blockquote>
+
+<p>As you can see, we use the variable <b class="emphasis-bold">file</b> as a flag
+to convey whether or not we have a valid filename and can write to the
+file.  Initially, <b class="emphasis-bold">file</b> is 0, and the current input
+line is stored in an array. The variable <b class="emphasis-bold">i</b> is a
+counter used to index the array.  When we encounter the line that sets
+the filename, then we set <b class="emphasis-bold">file</b> to 1.  The name of
+the new file is printed to the screen so that the user can get some
+feedback on the progress of the script.  Then we loop through the
+array and output it to the new file.  When the next input line is
+read, <b class="emphasis-bold">file</b> will be set to 1 and the
+<b class="emphasis-bold">print</b> statement will output it to the named file.</p>
+
+<a name="IXT-10-266182" />
+<a name="IXT-10-266183" />
+</div>
+
+
+
+
+<a name="IXT-10-266184" />
+<a name="IXT-10-266185" />
+<a name="IXT-10-266186" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.4. A Menu-Based Command Generator</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.6. Generating Columnar Reports</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

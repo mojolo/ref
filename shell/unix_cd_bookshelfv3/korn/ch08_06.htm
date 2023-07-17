@@ -1,0 +1,349 @@
+<html><head><title>Shell Subprocesses and Subshells (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.6. Shell Subprocesses and Subshells</h2>
+
+<p>
+<a name="korn2-IDXTERM-1817" />
+Coroutines clearly represent the most complex relationship between
+processes that the Korn shell defines. To conclude this chapter, we will
+look at a much simpler type of interprocess relationship:
+that of a shell subprocess with its parent shell.
+We saw in <a href="ch03_01.htm">Chapter 3</a> that whenever you run a shell script, you actually
+invoke another copy of the shell that is a subprocess
+of the main, or <em class="emphasis">parent</em>, shell process. Now let's look at
+them in more detail.
+</p>
+
+<a name="korn2-CHP-8-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">8.6.1. Shell Subprocess Inheritance</h3>
+
+<p>
+<a name="korn2-IDXTERM-1818" />
+The most important things you need to know about shell subprocesses are what
+characteristics they get, or <em class="emphasis">inherit</em>, from their parents.
+These are as follows:
+<a name="IXT-8-288148" />
+<a name="IXT-8-288149" />
+
+</p>
+
+<ul>
+
+<li><p>
+The current directory
+</p></li>
+
+
+<li><p>
+Environment variables
+</p></li>
+
+
+<li><p>
+Standard input, output, and error plus any other open file descriptors
+</p></li>
+
+
+<li><p>
+Any characteristics defined in the environment file (see <a href="ch03_01.htm">Chapter 3</a>).
+Note that only interactive shells execute the environment file
+</p></li>
+
+
+<li><p>
+Signals that are ignored
+</p></li>
+
+</ul>
+
+<p>
+The first three characteristics are inherited by all subprocesses, while
+the last two are unique to shell subprocesses.
+Just as important are the things that a shell subprocess does not inherit
+from its parent:
+<a name="IXT-8-288150" />
+<a name="IXT-8-288151" />
+
+</p>
+
+<ul>
+
+<li><p>
+Shell variables, except environment variables and those
+defined in the environment file
+</p></li>
+
+
+<li><p>
+Handling of signals that are not ignored
+</p></li>
+
+</ul>
+
+<p>
+We covered some of this earlier (in <a href="ch03_01.htm">Chapter 3</a>), but these
+points are common sources of confusion, so they bear repeating.
+<a name="IXTR3-387" />
+</p>
+</div>
+
+
+
+
+<a name="korn2-CHP-8-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">8.6.2. Subshells</h3>
+
+<p>
+<a name="korn2-IDXTERM-1824" />
+<a name="IXT-8-288152" />
+<a name="IXT-8-288153" />
+
+A special kind of shell subprocess is the <em class="emphasis">subshell</em>.
+The subshell is started
+within the same script (or function)
+as the parent. You do this
+in a manner very similar to the code blocks we saw in the last chapter.
+Just surround some shell code with parentheses (instead
+of curly braces), and that code runs in a subshell.
+</p>
+
+<p>
+For example, here is the calculator program, from above,
+with a subshell instead of a code block:
+</p>
+
+<p>
+<blockquote><pre class="code">
+( while read line'?adc&gt; '; do
+      print "$(alg2rpn $line)"
+  done
+) | dc
+</pre></blockquote>
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1827" />
+The code inside the parentheses runs as a separate process.<a href="#FOOTNOTE-125">[125]</a>
+This is usually less efficient than a code block.
+The differences in functionality between subshells and code blocks
+are very few; they primarily pertain to issues of scope, i.e.,
+the domains in which definitions of things like shell variables
+and signal traps are known. First, code inside a subshell obeys
+the above rules of shell subprocess inheritance, except that it knows about variables
+defined in the surrounding shell; in contrast, think of blocks
+as code units that inherit <em class="emphasis">everything</em> from the outer shell.
+Second, variables
+and traps defined inside a code block are known to the shell
+code after the block, whereas those defined in a subshell are not.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-125" /><p> [125]
+For performance reasons, the Korn shell tries very hard to avoid
+actually creating a separate process to run code in parentheses and
+inside <tt class="literal">$(</tt>...<tt class="literal">)</tt>.  But the
+results should always be the same <em class="emphasis">as if</em> the code
+ran in a separate process.
+</p>
+</blockquote>
+
+<p>
+For example, consider this code:
+</p>
+
+<p>
+<blockquote><pre class="code">
+{
+    fred=bob
+    trap 'print "You hit CTRL-C!"' INT
+}
+while true; do
+    print "\$fred is $fred"
+    sleep 60
+done
+</pre></blockquote>
+</p>
+
+<p>
+
+<a name="IXT-8-288154" />
+<a name="IXT-8-288155" />
+If you run this code, you will see the message <tt class="literal">$fred is bob</tt> every
+60 seconds, and if you type CTRL-C, you will see the message, <tt class="literal">You hit
+CTRL-C!</tt>.
+You will need to type CTRL-\ to stop it (don't forget to
+remove the <em class="emphasis">core</em> file). Now let's change it to a subshell:
+</p>
+
+<p>
+<blockquote><pre class="code">
+(
+    fred=bob
+    trap 'print "You hit CTRL-C!"' INT
+)
+while true; do
+    print "\$fred is $fred"
+    sleep 60
+done
+</pre></blockquote>
+</p>
+
+<p>
+
+If you run this, you will see the message <tt class="literal">$fred is</tt>; the outer shell
+doesn't know about the subshell's definition of <tt class="literal">fred</tt> and therefore
+thinks it's null. Furthermore, the outer shell doesn't know about
+the subshell's trap of the INT signal, so if you<?troff .ne 10?> hit CTRL-C, the script
+terminates.
+</p>
+
+<p>
+If a language supports code nesting,
+definitions inside a nested unit should
+have a scope limited to that nested unit. In other words,
+subshells give you better control than code blocks
+over the scope of variables and signal traps.
+Therefore we feel that you should use
+subshells instead of code blocks if they are to contain variable
+definitions or signal traps -- unless efficiency is a concern.
+<a name="IXTR3-388" />
+<a name="IXTR3-389" />
+<a name="IXTR3-390" />
+<a name="IXTR3-391" />
+
+</p>
+
+<p>
+This has been a long chapter, and it has covered a lot of territory.
+Here are some exercises that should help you make sure you have a
+firm grasp on the material. The last exercise is especially
+difficult for those without backgrounds in compilers, parsing
+theory, or formal language theory.
+</p>
+
+<ol>
+
+<li><p>
+<a name="IXT-8-288156" />
+<a name="IXT-8-288157" />
+<a name="IXT-8-288158" />
+<a name="IXT-8-288159" />
+
+Write a function called <em class="emphasis">pinfo</em> that combines the <em class="emphasis">jobs</em>
+and <em class="emphasis">ps</em> commands by printing a list of jobs with their job numbers,
+corresponding process IDs, running times, and full commands.
+Extra credit: describe why this has to be a function and not a script.
+</p></li>
+
+
+<li><p>
+Take the latest version of our C compiler shell script -- or
+some other non-trivial shell script -- and "bullet-proof" it with signal
+traps.
+</p></li>
+
+
+<li><p>
+<a name="IXT-8-288160" />
+Redo the <em class="emphasis">findterms</em> program in the last chapter using a
+subshell instead of a code block.
+</p></li>
+
+
+<li><p>
+The following doesn't have that much to do with the material in this chapter
+per se, but it is a classic programming exercise, and it will give
+you some good practice if you do it:
+</p>
+
+<ol>
+
+<li><p>
+Write the function <em class="emphasis">alg2rpn</em> used in <em class="emphasis">adc</em>. Here's
+how to do this:
+<a name="IXT-8-288161" />
+<a name="IXT-8-288162" />
+<a name="IXT-8-288163" />
+<a name="IXT-8-288164" />
+
+arithmetic expressions in algebraic notation have the form
+<em class="emphasis">expr op expr</em>, where each <em class="emphasis">expr</em> is either a number or another
+expression (perhaps in parentheses), and <em class="emphasis">op</em> is +, -, x, /,
+or <tt class="literal">%</tt> (remainder).
+In RPN, expressions have the form <em class="emphasis">expr expr op</em>. For example:
+the algebraic expression
+<tt class="literal">2+3</tt>
+is <tt class="literal">2 3 +</tt> in RPN; the RPN equivalent of
+<tt class="literal">(2+3) x  (9-5)</tt> is
+<tt class="literal">2 3 + 9 5 - x</tt>.
+
+The main advantage of RPN is that it obviates the need for parentheses
+and operator precedence rules (e.g., the rule that x is evaluated before +).
+The <em class="emphasis">dc</em> program accepts standard RPN, but each expression should
+have "p" appended to it: this tells <em class="emphasis">dc</em> to print its result, e.g.,
+the first example above should be given to
+<em class="emphasis">dc</em> as <tt class="literal">2 3 + p</tt>.
+</p></li>
+
+
+<li><p>
+<a name="IXT-8-288165" />
+You need to write a routine that converts algebraic notation to RPN.
+This should be (or include) a function that calls itself
+(known as a <em class="emphasis">recursive</em> function) whenever it encounters a
+subexpression. It is especially important that this function keep
+track of where it is in the input string and how much of the string it
+eats up during its processing. (Hint: make use of the<?troff .ne 10?> pattern
+matching operators discussed in <a href="ch04_01.htm">Chapter 4</a> to ease the task of parsing
+input strings.)
+</p>
+
+<p>
+To make your life easier, don't worry about operator precedence for now;
+just convert to RPN from left to right.
+e.g., treat <tt class="literal">3+4x5</tt>
+as <tt class="literal">(3+4)x5</tt> and
+<tt class="literal">3x4+5</tt> as <tt class="literal">(3x4)+5</tt>.  This makes it
+possible for you to convert the input string on the fly, i.e., without
+having to read in the whole thing before doing any processing.
+</p></li>
+
+
+<li><p>
+Enhance your solution to the previous exercise so that it supports
+operator precedence in the usual
+order: x, /, % (remainder) +, -.
+e.g., treat
+<tt class="literal">3+4x5</tt> as
+<tt class="literal">3+(4x5)</tt>
+and <tt class="literal">3x4+5</tt>
+as <tt class="literal">(3x4)+5</tt>.
+</p></li>
+</ol>
+
+</li>
+</ol>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.5. Coroutines</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9. Debugging Shell Programs</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

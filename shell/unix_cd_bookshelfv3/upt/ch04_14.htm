@@ -1,0 +1,138 @@
+<html><head><title>dirs in Your Prompt: Better Than $cwd (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_15.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.14. dirs in Your Prompt: Better Than $cwd</h2>
+
+<p><a name="IXT-4-6843" /><a name="IXT-4-6844" /><a name="IXT-4-6845" /><a name="IXT-4-6846" /><a name="IXT-4-6847" /><a name="IXT-4-6848" /><a name="IXT-4-6849" />Many people use the current directory
+in their prompts. If you use the <b class="emphasis-bold">pushd</b> <b class="emphasis-bold">and</b>
+<b class="emphasis-bold">popd</b> (<a href="ch30_07.htm#upt3-CHP-30-SECT-7">Section 30.7</a>)
+commands, you may not always remember exactly what's
+in your directory stack (I don't, at least).
+Here's how: run the <i class="command">dirs</i> command,
+and use its output in your prompt. A simple <i class="command">csh</i>
+and <i class="command">tcsh</i> alias looks like this:
+</p>
+
+<blockquote><pre class="code">alias cd 'chdir \!* &amp;&amp; set prompt="`dirs`% "'</pre></blockquote>
+
+<p>and the prompts look like:</p>
+
+<blockquote><pre class="code">/work/project % <tt class="userinput"><b>cd</b></tt>
+~ % <tt class="userinput"><b>cd bin</b></tt>
+~/bin %</pre></blockquote>
+
+<p><a name="IXT-4-6850" />Here's what to put in
+<em class="filename">.cshrc</em> or
+<em class="filename">.tcshrc</em><a name="IXT-4-6851" /> to make a <b class="emphasis-bold">multiline prompt</b> (<a href="ch04_07.htm#upt3-CHP-4-SECT-7">Section 4.7</a>) that shows the directory stack:
+</p>
+
+<p><tt class="literal">uname -n</tt> <a href="ch02_05.htm#upt3-CHP-2-SECT-5">Section 2.5</a>, <tt class="literal">expr</tt> <a href="ch36_21.htm#upt3-CHP-36-SECT-21">Section 36.21</a></p>
+
+<blockquote><pre class="code"># PUT hostname.domain.name IN $hostname AND hostname IN $HOST:
+set hostname=`uname -n`
+setenv HOST `expr $hostname : '\([^.]*\).*'`
+alias setprompt 'set prompt="\\</pre></blockquote>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: dirs-prompt.cshdirs-prompt.sh</p>
+
+<blockquote><pre class="code">${USER}@${HOST} `dirs`\\
+\! % "'
+alias cd  'chdir \!* &amp;&amp; setprompt'
+alias pushd  'pushd \!* &amp;&amp; setprompt'
+alias popd  'popd  \!* &amp;&amp; setprompt'
+setprompt   # SET THE INITIAL PROMPT</pre></blockquote>
+
+<p><a name="IXT-4-6852" />Because <i class="command">bash</i>
+can run a command each time it sets its prompt, and because it has
+<b class="emphasis-bold">built-in prompt operators</b> (<a href="ch04_03.htm#upt3-CHP-4-SECT-3">Section 4.3</a>) like <tt class="literal">\u</tt>, the
+<i class="command">bash</i> version of all the previous stuff fits on one
+line:
+</p>
+
+<p><tt class="literal">$(...)</tt> <a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a></p>
+
+<blockquote><pre class="code">PS1='\n\u@\h $(dirs)\n\! \$ '</pre></blockquote>
+
+<p>That makes a blank line before each prompt; if you
+don't want that, join the
+<a name="IXT-4-6853" /><a name="IXT-4-6854" />first
+and second lines of the <em class="emphasis">setprompt</em> alias or
+remove the first <tt class="literal">\n</tt>. Let's push a
+couple of directories and watch the prompt:
+</p>
+
+<blockquote><pre class="code">jerry@ora ~
+1 % <tt class="userinput"><b>pushd /work/src/perl</b></tt>
+/work/src/perl ~
+
+jerry@ora /work/src/perl ~
+2 % <tt class="userinput"><b>cd ../cnews</b></tt>
+
+jerry@ora /work/src/cnews ~
+3 % <tt class="userinput"><b>pushd ~/bin</b></tt>
+~/bin /work/src/cnews ~
+
+jerry@ora ~/bin /work/src/cnews ~
+4 %</pre></blockquote>
+
+<p><a name="IXT-4-6855" />Of course, the
+prompt looks a little redundant here because each
+<i class="command">pushd</i> command also shows the
+<i class="command">dirs</i> output. A few commands later, though, having
+your directory stack in the prompt will be handy. If your directory
+stack has a lot of entries, the first line of the prompt can get
+wider than the screen. In that case, store the
+<i class="command">dirs</i> output in a shell array, and edit it with a
+command like <i class="command">sed</i> or with the <b class="emphasis-bold">built-in</b> <b class="emphasis-bold">csh</b>
+<b class="emphasis-bold">string editing</b> (<a href="ch28_05.htm#upt3-CHP-28-SECT-5">Section 28.5</a>). 
+</p>
+
+<p>For example, to show just the <a name="IXT-4-6856" /><a name="IXT-4-6857" />tail of each
+path in the <i class="command">dirs</i> output, use the following alias;
+the <a name="IXT-4-6858" /> <a name="IXT-4-6859" /><a name="IXT-4-6860" />C shell operator <tt class="literal">:gt</tt>
+globally edits all words, to the tail of each pathname:
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: dirstail-prompt.csh</p>
+
+<blockquote><pre class="code">alias setprompt 'set dirs=(`dirs`); set prompt="\\
+${USER}@${HOST} $dirs:gt\\
+\! % "'</pre></blockquote>
+
+<p>Watch the prompt. If you forget what the names in the prompt mean,
+just type <tt class="literal">dirs</tt>:
+</p>
+
+<blockquote><pre class="code">jerry@ora bin cnews jerry
+5 % <tt class="userinput"><b>pushd ~/tmp/test</b></tt>
+~/tmp/test ~/bin /work/src/cnews ~
+   ...
+jerry@ora test bin cnews jerry
+12 % <tt class="userinput"><b>dirs</b></tt>
+~/tmp/test ~/bin /work/src/cnews ~</pre></blockquote>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_15.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.13. What Good Is a Blank Shell Prompt?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.15. External Commands Send Signals to Set Variables</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

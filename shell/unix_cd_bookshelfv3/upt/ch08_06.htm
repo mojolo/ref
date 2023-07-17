@@ -1,0 +1,279 @@
+<html><head><title>Color ls (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.6. Color ls</h2>
+
+<p>The <a name="upt3-IDXTERM-1338" /> <a name="upt3-IDXTERM-1339" /> <a name="upt3-IDXTERM-1340" />GNU <i class="command">ls</i>
+command -- which is on a lot of systems, including
+<a name="IXT-8-6567" />Linux -- can display
+names in colors. For instance, when I enable color listings on my
+system, directory names are in dark blue, symbolic links are in sky
+blue, executable files (scripts, programs, etc.) are in green, and so
+on.
+</p>
+
+<p><i class="command">tcsh</i><a name="IXT-8-6568" /> <a name="IXT-8-6569" />'s built-in
+<i class="command">ls -F</i> command can display in colors, too. Just
+<em class="emphasis">set color</em> in your
+<em class="filename">.cshrc</em><a name="IXT-8-6570" /> to
+enable it, and configure it using <tt class="literal">LS_COLORS</tt> as
+described later in this section. You may also want to look at <a href="ch08_06.htm#upt3-CHP-8-SECT-6.4">Section 8.6.4</a> for another
+way to configure colors if <span class="option">- -
+color</span><a name="IXT-8-6571" /> doesn't seem to work.
+</p>
+
+<a name="upt3-CHP-8-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">8.6.1. Trying It</h3>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: GNU ls</p>
+
+<p>Has your system been set up for this? Simply try this command:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls --color / /bin</b></tt></pre></blockquote>
+
+<p>If you don't get an error (<em class="emphasis">ls: no such
+option  -- color</em>, or something similar), you should see
+colors. If you don't get an error, but you also
+don't get colors, try one of these commands, and see
+what you get:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls --color=always / /bin | cat -v</b></tt>
+^[[00m/:
+^[[01;34mbin^[[00m
+^[[01;34mboot^[[00m
+   <i class="lineannotation">...</i>
+^[[01;34mvar^[[00m
+
+/bin:
+^[[01;32march^[[00m
+^[[01;36mawk^[[00m
+^[[01;32mbasename^[[00m
+   <i class="lineannotation">...</i>
+
+$ <tt class="userinput"><b>ls --color=yes / /bin | cat -v</b></tt>
+   <i class="lineannotation">...same kind of output...</i></pre></blockquote>
+
+<p>Those extra characters surrounding the filenames, such as
+<tt class="literal">^[[01;34m</tt><a name="IXT-8-6572" /> and
+<tt class="literal">^[[00m</tt>, are the escape sequences that (you hope)
+make the colors. (The <b class="emphasis-bold">cat -v</b>
+(<a name="IXT-8-6573" /><a href="ch21_04.htm#upt3-CHP-21-SECT-4">Section 12.4</a>) command
+makes the sequences visible, if there are any to see.) The
+<tt class="literal">^[</tt><a name="IXT-8-6574" /> is an ESC character; the next
+<tt class="literal">[</tt> starts a formatting code; the
+<tt class="literal">01</tt><a name="IXT-8-6575" /> code means
+"boldface"; the
+<a name="IXT-8-6576" />semicolon
+(<tt class="literal">;</tt>) is a code separator; the <tt class="literal">34</tt>
+means "blue"; and the
+<tt class="literal">m</tt><a name="IXT-8-6577" /> ends the escape sequence.
+<tt class="literal">^[[00m</tt> is an escape sequence that resets the
+attributes to normal. If you see the escape sequences when you use
+<tt class="literal">cat -v</tt>, but you haven't gotten
+any
+<a name="IXT-8-6578" />highlighting
+effects when you don't use it,
+there's probably some kind of mismatch between your
+<b class="emphasis-bold">termcap or terminfo entry</b> (<a href="ch05_02.htm#upt3-CHP-5-SECT-2">Section 5.2</a>) (which should define the sequences) and the
+color database (see later in this section). If you
+don't see the escape sequences at all, take a look
+at <a href="ch08_06.htm#upt3-CHP-8-SECT-6.4">Section 8.6.4</a> for another way to configure color
+<i class="command">ls</i>.
+</p>
+
+</div>
+<a name="upt3-CHP-8-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">8.6.2. Configuring It</h3>
+
+<p><a name="IXT-8-6579" />How are the colors set? Both
+<a name="IXT-8-6580" /> <a name="IXT-8-6581" />GNU <i class="command">ls</i> and
+<i class="command">tcsh</i>'s <i class="command">ls -F</i>
+use the <em class="emphasis">LS_COLORS</em><a name="IXT-8-6582" /><a name="IXT-8-6583" /><a name="IXT-8-6584" /> environment variable to decide how
+to format filenames. Here's a sample (truncated and
+split onto three lines for printing):
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo $LS_COLORS</b></tt>
+LS_COLORS=no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:
+bd=40;33;01:cd=40;33;01:or=01;05;37;41:mi=01;05;37;41:ex=01;32:
+*.cmd=01;32:*.exe=01;32:*.com=01;32:*.btm=01;32:*.bat=01;32:
+    ...</pre></blockquote>
+
+<p>The <em class="emphasis">LS_COLORS</em> value is a series of
+<em class="replaceable"><tt>item</em><a name="IXT-8-6585" />=<em class="replaceable">attribute</tt></em>
+values with a colon (:) between each pair. For instance,
+<tt class="literal">fi=00</tt> means that files have the attribute (color)
+<em class="emphasis">00</em>; <tt class="literal">di=01;34</tt> means that
+directories have the attributes <em class="emphasis">01</em> (bold) and
+<em class="emphasis">34</em> (blue); and <tt class="literal">*.exe=01;32</tt>
+means that filenames ending with <em class="emphasis">.exe</em> have the
+attributes <em class="emphasis">01</em> (bold) and <em class="emphasis">32</em>
+(green). There can be up to three numbers. The first is an
+<a name="IXT-8-6586" />attribute code (bold, underscore, etc.);
+the second is a <a name="IXT-8-6587" />foreground color; the third is a
+<a name="IXT-8-6588" />background
+color. So, <tt class="literal">01;37;41</tt> indicates boldfaced white
+foreground (<em class="emphasis">37</em>) text on a red background
+(<em class="emphasis">41</em>).
+</p>
+
+<p>The format is fairly obtuse, so you won't want to
+set <em class="emphasis">LS_COLORS</em><a name="IXT-8-6589" /> <a name="IXT-8-6590" /> directly if you
+don't have to. The easy way to set it is with the
+<i class="command">dircolors</i> command -- typically in a <b class="emphasis-bold">shell setup file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>): 
+</p>
+
+<p><tt class="literal">eval</tt> <a href="ch27_08.htm#upt3-CHP-27-SECT-8">Section
+27.8</a><tt class="literal">'...'</tt> <a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a> 
+</p>
+
+<blockquote><pre class="code">eval `dircolors`</pre></blockquote>
+
+<p>There, <i class="command">dircolors</i> is reading the default database
+and outputting a command to set <em class="emphasis">LS_COLORS</em>. What
+if you don't want the default database settings? You
+can make your own. An easy place to start is with
+<i class="command">dircolors</i><a name="IXT-8-6591" />
+-<span class="option">p</span>, which outputs a copy of the database. You can
+redirect the output to a file; a good option is to use a
+<em class="filename">.dircolorsrc</em><a name="IXT-8-6592" /> file in your home directory.
+<a name="IXT-8-6593" />Then take
+a look at it:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>dircolors -p &gt; $HOME/.dircolorsrc</b></tt>
+$ <tt class="userinput"><b>cat $HOME/.dircolorsrc</b></tt>
+    <i class="lineannotation">...</i>
+# Below should be one TERM entry for each colorizable termtype
+TERM linux
+    <i class="lineannotation">...</i>
+TERM vt100
+
+# Below are the color init strings for the basic file types. A color
+# init string consists of one or more of the following numeric codes:
+# Attribute codes:
+# 00=none 01=bold 04=underscore 05=blink 07=reverse 08=concealed
+# Text color codes:
+# 30=black 31=red 32=green 33=yellow 34=blue 35=magenta 36=cyan 37=white
+# Background color codes:
+# 40=black 41=red 42=green 43=yellow 44=blue 45=magenta 46=cyan 47=white
+NORMAL 00     # global default, although everything should be something.
+FILE 00       # normal file
+DIR 01;34     # directory
+LINK 01;36    # symbolic link
+    ...
+
+# List any file extensions like '.gz' or '.tar' that you would like ls
+# to colorize below. Put the extension, a space, and the color init string.
+# (and any comments you want to add after a '#')
+.tar 01;31 # archives or compressed (bright red)
+.tgz 01;31
+    ...</pre></blockquote>
+
+<p>The file starts with a listing of <b class="emphasis-bold">terminal
+type</b> (<a href="ch05_03.htm#upt3-CHP-5-SECT-3">Section 5.3</a>) names that understand
+the color escape sequences listed in this file. Fortunately, the
+escape sequences are almost universal; there are some old terminals
+(like my old Tektronix 4106, I think . . . R.I.P.) that
+don't understand these, but not many. (If you have a
+different terminal or an odd terminal emulator, you can <b class="emphasis-bold">select a setup file automatically as you log
+in</b> (<a href="ch03_10.htm#upt3-CHP-3-SECT-10">Section 3.10</a>).) The second section has
+a commented-out list of the attributes that these terminals
+recognize. You can use that list in the third section -- which has
+standard attributes for files, directories, and so on. The fourth
+section lets you choose attributes for files by their filename
+"extensions" -- that is, the
+part of the filename after the final dot (like
+<em class="emphasis">.tar</em>).
+</p>
+
+<p>If you make your own database, you'll need to use it
+(again, typically in a shell setup file) to set
+<em class="emphasis">LS_COLORS</em>:
+</p>
+
+<blockquote><pre class="code">eval `dircolors $HOME/.dircolorsrc`</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-8-SECT-6.3" /><div class="sect2">
+<h3 class="sect2">8.6.3. The  -- color Option</h3>
+
+<p>For better or for worse, the way to activate color
+<i class="command">ls</i> is by using the <tt class="literal">--color</tt>
+option on the command line. Because almost no one will want to type
+those characters every time they run <i class="command">ls</i>, most
+users need to make an <b class="emphasis-bold">alias</b> (<a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>, <a href="ch29_04.htm#upt3-CHP-29-SECT-4">Section 29.4</a>) for
+<i class="command">ls</i> that runs <tt class="literal">ls --color</tt>. For
+example, here are the three aliases defined for
+<i class="command">bash</i> on my Linux system:
+</p>
+
+<blockquote><pre class="code">alias l.='ls .[a-zA-Z]* --color=auto'
+alias ll='ls -l --color=auto'
+alias ls='ls --color=auto'</pre></blockquote>
+
+<p>If you're using <i class="command">tcsh</i>, setting the
+<tt class="literal">color</tt> variable to enable <i class="command">ls
+-F</i>'s color also arranges to send
+<span class="option"> -- color=auto</span> to regular <i class="command">ls</i>.
+</p>
+
+<p>The <span class="option"> -- color</span> option gives you three choices of
+when the <i class="command">ls</i> output should be colored:
+<span class="option"> -- color=never</span> to never output color,
+<span class="option"> -- color=always</span> to always output color, and
+<span class="option"> -- color=auto</span> to only output color escape
+sequences if the standard output of <i class="command">ls</i> is a
+terminal. I suggest using <span class="option"> -- color=auto</span>, because
+<span class="option"> -- color=always</span> means that when you pipe the
+output of <i class="command">ls</i> to a printer or redirect it to a
+file, it will still have the ugly escape sequences you saw earlier in
+this article.
+</p>
+
+</div>
+<a name="upt3-CHP-8-SECT-6.4" /><div class="sect2">
+<h3 class="sect2">8.6.4. Another color ls</h3>
+
+<p>Some systems have another way to configure and use color
+<i class="command">ls</i>. My FreeBSD systems use this scheme; if none of
+the configuration techniques described earlier work, use <em class="emphasis">ls
+-G</em><a name="IXT-8-6594" /><a name="IXT-8-6595" /> <a name="IXT-8-6596" /> or set
+the <tt class="literal">CLICOLOR</tt> environment variable. If this works,
+you'll want to use the
+<tt class="literal">LSCOLORS</tt><a name="IXT-8-6597" /> <a name="IXT-8-6598" />
+environment variable to configure color information instead of
+<tt class="literal">LS_COLORS</tt> as described earlier. Spend a little
+time perusing your <i class="command">ls(1)</i> manpage for further
+details if your <i class="command">ls</i> seems to work this way, as
+configuring it is likely to be completely different from what we
+described previously.<a name="IXTR3-6698" /> <a name="IXTR3-6699" /> <a name="IXTR3-6700" /> 
+</p>
+
+<p><em class="emphasis">--JP and DJPH</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.5. The ls -d Option</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.7. Some GNU ls Features</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

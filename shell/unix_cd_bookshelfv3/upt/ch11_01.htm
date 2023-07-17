@@ -1,0 +1,209 @@
+<html><head><title>Comparing Files (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 11. Comparing Files</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch11_01.htm#sect1">Checking Differences with diff</a><br />
+<a href="ch11_02.htm">Comparing Three Different Versions with diff3</a><br />
+<a href="ch11_03.htm">Context diffs</a><br />
+<a href="ch11_04.htm">Side-by-Side diffs: sdiff</a><br />
+<a href="ch11_05.htm">Choosing Sides with sdiff</a><br />
+<a href="ch11_06.htm">Problems with diff and Tabstops</a><br />
+<a href="ch11_07.htm">cmp and diff</a><br />
+<a href="ch11_08.htm">Comparing Two Files with comm</a><br />
+<a href="ch11_09.htm">More Friendly comm Output</a><br />
+<a href="ch11_10.htm">make Isn't Just for Programmers!</a><br />
+<a href="ch11_11.htm">Even More Uses for make</a><br /></p></div><div class="sect1"><a name="upt3-CHP-11-SECT-1" />
+<h2 class="sect1"><a name="sect1" />11.1. Checking Differences with diff</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: diff</p>
+
+<p><a name="upt3-IDXTERM-1813" /> <a name="upt3-IDXTERM-1814" /> <a name="upt3-IDXTERM-1815" />The <i class="command">diff</i> command
+displays different versions of lines that are found when comparing
+two files. It prints a message that uses <i class="command">ed</i>-like
+notation (<em class="emphasis">a</em> for append, <em class="emphasis">c</em>
+for change, and <em class="emphasis">d</em> for delete) to describe how a
+set of lines has changed. The lines themselves follow this output.
+The <tt class="literal">&lt;</tt> character precedes lines from the first
+file and <tt class="literal">&gt;</tt> precedes lines from the second file.
+</p>
+
+<p>Let's create an example to explain the output
+produced by <i class="command">diff</i>. Look at the contents of three
+sample files:
+</p>
+
+<a name="ch11-2-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>test1</p>
+</th>
+<th>
+<p>test2</p>
+</th>
+<th>
+<p>test3</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>apples</p>
+</td>
+<td>
+<p>apples</p>
+</td>
+<td>
+<p>oranges</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>oranges</p>
+</td>
+<td>
+<p>oranges</p>
+</td>
+<td>
+<p>walnuts</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>walnuts</p>
+</td>
+<td>
+<p>grapes</p>
+</td>
+<td>
+<p>chestnuts</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>When you run <i class="command">diff</i> on <em class="emphasis">test1</em>
+and <em class="emphasis">test2</em>, the following output is produced:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff test1 test2</b></tt>
+3c3
+&lt; walnuts
+--
+&gt; grapes</pre></blockquote>
+
+<p>The <i class="command">diff</i> command displays the only line that
+differs between the two files. To understand the report, remember
+that <i class="command">diff</i> is prescriptive, describing what changes
+need to be made to the first file to make it the same as the second
+file. This report specifies that only the third line is affected,
+exchanging <tt class="literal">walnuts</tt> for <tt class="literal">grapes</tt>.
+This is more apparent if you use the
+<span class="option">-e</span><a name="IXT-11-6060" />
+option, which produces an editing script that can be submitted to
+<i class="command">ed</i><a name="IXT-11-6061" />, the Unix line editor. (You must
+<b class="emphasis-bold">redirect standard output</b> (<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>) to capture this script in a file.)
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff -e test1 test2</b></tt>
+3c
+grapes
+.</pre></blockquote>
+
+<p>This script, if run on <em class="emphasis">test1</em>, will bring
+<em class="emphasis">test1</em> into agreement with
+<em class="emphasis">test2</em>. (To do this, feed the script to the
+standard input of <b class="emphasis-bold">ed</b> (<a href="ch20_06.htm#upt3-CHP-20-SECT-6">Section 20.6</a>) or <i class="command">ex</i>; add a <b class="emphasis-bold">w command</b> (<a href="ch20_04.htm#upt3-CHP-20-SECT-4">Section 20.4</a>) at
+the end of the script to write the changes, if you want to.)
+</p>
+
+<p>If you compare the first and third files, you find more differences:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff test1 test3</b></tt>
+1dO
+&lt; apples
+3a3
+&gt; chestnuts</pre></blockquote>
+
+<p>To make <em class="emphasis">test1</em> the same as
+<em class="emphasis">test3</em>, you'd have to delete the
+first line (<tt class="literal">apples</tt>) and append the third line from
+<em class="emphasis">test3</em> after the third line in
+<em class="emphasis">test1</em>. Again, this can be seen more clearly in
+the editing script produced by the <span class="option">-e</span> option. Notice
+that the script specifies editing lines in reverse order; otherwise,
+changing the first line would alter all subsequent line numbers.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff -e test1 test3</b></tt>
+3a
+chestnuts
+.
+1d</pre></blockquote>
+
+<p>So what's this good for? Here's one
+example.
+</p>
+
+<p>When working on a document, it is common practice to make a copy of a
+file and edit the copy rather than the original. This might be done,
+for example, if someone other than the writer is inputing edits from
+a written copy. The <i class="command">diff</i> command can be used to
+compare the two versions of a document. A writer could use it to
+proof an edited copy against the original.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff brochure brochure.edits</b></tt>
+49c43,44
+&lt; environment for program development and communications,
+--
+&gt; environment for multiprocessing, program development
+&gt; and communications, programmers
+56c51
+&lt; offering even more power and productivity for commericial
+--
+&gt; offering even more power and productivity for commercial
+76c69
+&lt; Languages such as FORTRAN, COBOL, Pascal, and C can be
+--
+&gt; Additional languages such as FORTRAN, COBOL, Pascal, and</pre></blockquote>
+
+<p>Using <i class="command">diff</i> in this manner is a simple way for a
+writer to examine changes without reading the entire document. By
+redirecting <i class="command">diff</i> output to a file, you can keep a
+record of changes made to any document. In fact, just that technique
+is used by both <b class="emphasis-bold">RCS and CVS</b> (<a href="ch39_04.htm#upt3-CHP-39-SECT-4">Section 39.4</a>) to manage multiple revisions of source code
+and documents.
+</p>
+
+<p><em class="emphasis">--DD, from <em class="emphasis">Unix Text Processing</em> (Hayden
+Books, 1987)</em>
+</p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.13. Copying Directory Trees with tar and Pipes</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11.2. Comparing Three Different Versions with diff3</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

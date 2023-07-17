@@ -1,0 +1,312 @@
+<html><head><title>Grabbing Parts of a String (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_22.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_24.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">36.23. Grabbing Parts of a String</h2>
+
+<p><a name="upt3-IDXTERM-5966" /> <a name="upt3-IDXTERM-5967" />How can you parse (split, search) a
+string of text to find the last word, the second column, and so on?
+There are a lot of different ways. Pick the one that works best for
+you -- or invent another one! (Unix has lots of ways to work with
+strings of text.)
+</p>
+
+<a name="upt3-CHP-36-SECT-23.1" /><div class="sect2">
+<h3 class="sect2">36.23.1. Matching with expr</h3>
+
+<p><a name="IXT-36-3373" /><a name="IXT-36-3374" /><a name="IXT-36-3375" /><a name="IXT-36-3376" />The
+<b class="emphasis-bold">expr command</b>
+<a name="IXT-36-3377" /><a name="IXT-36-3378" />(<a href="ch36_21.htm#upt3-CHP-36-SECT-21">Section 36.21</a>) can grab part of a string with a
+<a name="IXT-36-3379" />regular expression. The example below
+is from a shell script whose last command-line argument is a
+filename. The two commands below use <i class="command">expr</i> to grab
+the last argument and all arguments except the last one. The
+<tt class="literal">"$*"</tt> gives <i class="command">expr</i> a list of all
+command-line arguments in a single word. (Using <b class="emphasis-bold">"$@"</b> (<a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>) here
+wouldn't work because it gives individually quoted
+arguments. <i class="command">expr</i> needs all arguments in one word.)
+</p>
+
+<blockquote><pre class="code">last=`expr "$*" : '.* \(.*\)'`     # LAST ARGUMENT
+first=`expr "$*" : '\(.*\) .*'`    # ALL BUT LAST ARGUMENT</pre></blockquote>
+
+<p>Let's look at the regular expression that gets the
+last word. The leading part of the expression, <tt class="literal">.*</tt>
+, matches as many characters as it can, followed by a
+space. This includes all words up to and including the last space.
+After that, the end of the expression, <tt class="literal">\(.*\)</tt>,
+matches the last word.
+</p>
+
+<p>The regular expression that grabs the first words is the same as the
+previous one -- but I've moved the <tt class="literal">\(
+\)</tt> pair. Now it grabs all words up to but not including the
+last space. The end of the regular expression, 
+<tt class="literal">.*</tt>, matches the last space and last word -- and
+<i class="command">expr</i> ignores them. So the final
+<tt class="literal">.*</tt> really isn't needed here
+(though the space is). I've included the final
+<tt class="literal">.*</tt> because it follows from the first example.
+</p>
+
+<p><i class="command">expr</i> is great when you want to split a string into
+just two parts. The <tt class="literal">.*</tt> also makes
+<i class="command">expr</i> good for skipping a variable number of words
+when you don't know how many words a string will
+have. But <i class="command">expr</i> is poor at getting, say, the fourth
+word in a string. And it's almost useless for
+handling more than one line of text at a time.
+</p>
+
+</div>
+<a name="upt3-CHP-36-SECT-23.2" /><div class="sect2">
+<h3 class="sect2">36.23.2. Using echo with awk or cut</h3>
+
+<p><a name="IXT-36-3380" /> <a name="IXT-36-3381" /><i class="command">awk</i>
+<a name="IXT-36-3382" />can split lines into words, but it has a
+lot of overhead and can take some time to execute, especially on a
+busy system. The <b class="emphasis-bold">cut</b>
+(<a name="IXT-36-3383" /><a href="ch21_14.htm#upt3-CHP-21-SECT-14">Section 21.14</a>) command starts more quickly than
+<i class="command">awk</i> but it can't do as much.
+</p>
+
+<p>Both those utilities are designed to handle multiple lines of text.
+You can tell <i class="command">awk</i> to handle a single line with its
+pattern-matching operators and its <em class="emphasis">NR</em> variable.
+You can also run those utilities with a single line of text, fed to
+the standard input through a pipe from <i class="command">echo</i>. For
+example, to get the third field from a colon-separated string:
+</p>
+
+<blockquote><pre class="code">string="this:is:just:a:dummy:string"
+field3_awk=`echo "$string" | awk -F: '{print $3}'`
+field3_cut=`echo "$string" | cut -d: -f3`</pre></blockquote>
+
+<p>Let's combine two <i class="command">echo</i> commands.
+One sends text to <i class="command">awk</i> or <i class="command">cut</i>
+through a pipe; the utility ignores all the text from columns 1-24,
+then prints columns 25 to the end of the variable
+<em class="emphasis">text</em>. The outer <i class="command">echo</i> prints
+<em class="emphasis">The answer is</em> and that answer. Notice that the
+inner double quotes are escaped with backslashes to keep the Bourne
+shell from interpreting them before the inner <i class="command">echo</i>
+runs:
+</p>
+
+<blockquote><pre class="code">echo "The answer is `echo \"$text\" | awk '{print substr($0,25)}'`"
+echo "The answer is `echo \"$text\" | cut -c25-`"</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-36-SECT-23.3" /><div class="sect2">
+<h3 class="sect2">36.23.3. Using set and IFS</h3>
+
+<p><a name="IXT-36-3384" /><a name="IXT-36-3385" /><a name="IXT-36-3386" />The Bourne shell <b class="emphasis-bold">set</b> (<a href="ch35_25.htm#upt3-CHP-35-SECT-25">Section 35.25</a>) command can
+be used to parse a single-line string and
+<a name="IXT-36-3387" />store it in the <b class="emphasis-bold">command-line parameters</b> (<a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>) <tt class="literal">"$@"</tt>,
+<tt class="literal">$*</tt>, <tt class="literal">$1</tt>, <tt class="literal">$2</tt>,
+and so on. Then you can also loop through the words with a <b class="emphasis-bold">for loop</b> (<a href="ch35_21.htm#upt3-CHP-35-SECT-21">Section 35.21</a>) and
+use everything else the shell has for dealing with command-line
+parameters. Also, you can set the Bourne shell's
+<em class="emphasis">IFS</em> variable to control how the shell splits the
+string.
+</p>
+
+<a name="ch36-6-fm2xml" /><blockquote><b>NOTE:</b> 
+The formats used by <i class="command">stty</i> and the behavior of
+<i class="command">IFS</i> may vary from platform to platform.
+</p>
+</blockquote>
+
+<p><a name="IXT-36-3388" /> <a name="IXT-36-3389" /><a name="IXT-36-3390" />By default, the
+<em class="emphasis">IFS</em> (internal field separator) shell variable
+holds three characters: SPACE, TAB, and NEWLINE. These are the places
+that the shell parses command lines.
+</p>
+
+<p><a name="IXT-36-3391" />If you have a line of text -- say,
+from a database -- and you want to split it into fields, you can
+put the field separator into <em class="emphasis">IFS</em> temporarily,
+use the shell's <b class="emphasis-bold">set</b>
+(<a href="ch35_25.htm#upt3-CHP-35-SECT-25">Section 35.25</a>) command to store the fields in
+command-line parameters, then restore the old
+<em class="emphasis">IFS</em>.
+</p>
+
+<p>For example, the chunk of a shell script below gets current terminal
+settings from <em class="emphasis">stty -g</em><a name="IXT-36-3392" />, which looks like this:
+</p>
+
+<blockquote><pre class="code">2506:5:bf:8a3b:3:1c:8:15:4:0:0:0:11:13:1a:19:12:f:17:16:0:0</pre></blockquote>
+
+<p>In the next example, the shell parses the line returned from
+<i class="command">stty</i> by the <b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>). It
+stores <em class="emphasis">x</em> in <tt class="literal">$1</tt>, which stops
+errors if <i class="command">stty</i> fails for some reason. (Without the
+<em class="emphasis">x</em>, if <i class="command">stty</i> made no standard
+output, the shell's <i class="command">set</i> command
+would print a list of all shell variables.) Then
+<em class="emphasis">2506</em> goes into <tt class="literal">$2</tt>,
+<em class="emphasis">5</em> into <tt class="literal">$3</tt>, and so on. The
+original Bourne shell can handle only nine parameters (through
+<tt class="literal">$9</tt>); if your input lines may have more than nine
+fields, this isn't a good technique. But this script
+uses the Korn shell, which (along with most other Bourne-type shells)
+doesn't have that limit<a name="IXT-36-3393" />.
+</p>
+
+<blockquote><pre class="code">#!/bin/ksh
+oldifs="$IFS"
+# Change IFS to a colon:
+IFS=:
+# Put x in $1, stty -g output in $2 thru ${23}:
+set x `stty -g`
+IFS="$oldifs"
+# Window size is in 16th field (not counting the first "x"):
+echo "Your window has ${17} rows."</pre></blockquote>
+
+<p>Because you don't need a subprocess to parse the
+output of <i class="command">stty</i>, this can be faster than using an
+external command like <b class="emphasis-bold">cut</b> (<a href="ch21_14.htm#upt3-CHP-21-SECT-14">Section 21.14</a>) or <b class="emphasis-bold">awk</b>
+(<a href="ch20_10.htm#upt3-CHP-20-SECT-10">Section 20.10</a>).
+</p>
+
+<p><a name="IXT-36-3394" />There are
+places where <em class="emphasis">IFS</em> can't be used
+because the shell separates command lines at spaces before it splits
+at <em class="emphasis">IFS</em>. It doesn't split the
+results of variable substitution or <b class="emphasis-bold">command
+substitution</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) at spaces,
+though. Here's an example -- three different ways
+to parse a line from <em class="emphasis">/etc/passwd</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat splitter</b></tt>
+#!/bin/sh
+IFS=:
+line='larry:Vk9skS323kd4q:985:100:Larry Smith:/u/larry:/bin/tcsh'
+set x $line
+echo "case 1: \$6 is '$6'"
+set x `grep larry /etc/passwd`
+echo "case 2: \$6 is '$6'"
+set x larry:Vk9skS323kd4q:985:100:Larry Smith:/u/larry:/bin/tcsh
+echo "case 3: \$6 is '$6'"
+
+% <tt class="userinput"><b>./splitter</b></tt>
+case 1: $6 is 'Larry Smith'
+case 2: $6 is 'Larry Smith'
+case 3: $6 is 'Larry'</pre></blockquote>
+
+<p>Case 1 used variable substitution and case 2 used command
+substitution; the sixth field contained the space. In case 3, though,
+with the colons on the command line, the sixth field was split:
+<tt class="literal">$6</tt> became <em class="emphasis">Larry</em> and
+<tt class="literal">$7</tt> was <em class="emphasis">Smith</em>. Another problem
+would have come up if any of the fields had been empty (as in
+<tt class="literal">larry::985:100</tt>:<em class="emphasis">etc...</em>) -- the
+shell would "eat" the empty field
+and <tt class="literal">$6</tt> would contain
+<em class="emphasis">/u/larry</em>. Using <i class="command">sed</i> with its
+<b class="emphasis-bold">escaped parentheses</b> (<a href="ch34_11.htm#upt3-CHP-34-SECT-11">Section 34.11</a>) to do the searching and the parsing could
+solve the last two problems.
+</p>
+
+</div>
+<a name="upt3-CHP-36-SECT-23.4" /><div class="sect2">
+<h3 class="sect2">36.23.4. Using sed</h3>
+
+<p><a name="IXT-36-3395" /> <a name="IXT-36-3396" /><a name="IXT-36-3397" />The Unix <b class="emphasis-bold">sed</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) utility is
+good at parsing input that you may or may not otherwise be able to
+split into words, at finding a single line of text in a group and
+outputting it, and many other things. In this example, I want to get
+the percentage-used of the filesystem mounted on
+<em class="emphasis">/home</em>. That information is buried in the
+<a name="IXT-36-3398" />output of the <b class="emphasis-bold">df</b> (<a href="ch15_08.htm#upt3-CHP-15-SECT-8">Section 15.8</a>) command. On
+my system,<a href="#FOOTNOTE-115">[115]</a><i class="command"> df</i> output looks like:
+</p><blockquote class="footnote"> <a name="FOOTNOTE-115" /><p> [115]If you are using something other than GNU
+<i class="command">df</i>, you may need to use the <span class="option">-k</span>
+switch.</p> </blockquote>
+
+<blockquote><pre class="code">+% <tt class="userinput"><b>df</b></tt>
+Filesystem            kbytes    used   avail capacity  Mounted on
+   ...
+/dev/sd3c            1294854  914230  251139    78%    /work
+/dev/sd4c             597759  534123    3861    99%    /home
+   ...</pre></blockquote>
+
+<p><a name="IXT-36-3399" />I want the number
+<em class="emphasis">99</em> from the line ending with
+<em class="emphasis">/home</em>. The <i class="command">sed</i> address
+<tt class="literal">/ \/home$/</tt> will find that line (including a space
+before the <em class="emphasis">/home</em> makes sure the address
+doesn't match a line ending with
+<em class="emphasis">/something/home</em>). The <span class="option">-n</span> option
+keeps <i class="command">sed</i> from printing any lines except the line
+we ask it to print (with its <em class="emphasis">p</em> command). I know
+that the "capacity" is the only
+word on the line that ends with a percent sign
+(<tt class="literal">%</tt>). A space after the first <tt class="literal">.*</tt>
+makes sure that <tt class="literal">.*</tt> doesn't
+"eat" the first digit of the number
+that we want to match by <tt class="literal">[0-9]</tt>. The
+<i class="command">sed</i> <b class="emphasis-bold">escaped-parenthesis
+operators</b> (<a name="IXT-36-3400" /><a href="ch34_11.htm#upt3-CHP-34-SECT-11">Section 34.11</a>)
+grab that number:
+</p>
+
+<blockquote><pre class="code">usage=`df | sed -n '/ \/home$/s/.* \([0-9][0-9]*\)%.*/\1/p'`</pre></blockquote>
+
+<p><a name="IXT-36-3401" />Combining <i class="command">sed</i> with
+<b class="emphasis-bold">eval</b> (<a href="ch27_08.htm#upt3-CHP-27-SECT-8">Section 27.8</a>)
+lets you set several <a name="IXT-36-3402" />shell variables at once from parts of the
+same line. Here's a command line that sets two shell
+variables from the <i class="command">df</i> output:
+</p>
+
+<blockquote><pre class="code">eval `df |
+sed -n '/ \/home$/s/^[^ ]*  *\([0-9]*\)  *\([0-9]*\).*/kb=\1 u=\2/p'`</pre></blockquote>
+
+<p>The left-hand side of that substitution command has a regular
+expression that uses <i class="command">sed</i>'s
+escaped parenthesis operators. They grab the
+"kbytes" and
+"used" columns from the
+<i class="command">df</i> output. The right-hand side outputs the two
+<i class="command">df</i> values with Bourne shell variable-assignment
+commands to set the <em class="emphasis">kb</em> and
+<em class="emphasis">u</em> variables. After <i class="command">sed</i>
+finishes, the resulting command line looks like this:
+</p>
+
+<blockquote><pre class="code">eval kb=597759 u=534123</pre></blockquote>
+
+<p><a name="IXT-36-3403" />Now
+<tt class="literal">$kb</tt> gives you <em class="emphasis">597759,</em> and
+<tt class="literal">$u</tt> contains <em class="emphasis">534123</em>.
+</p>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-3449" /> <a name="IXTR3-3450" /></em> 
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_22.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_24.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.22. Testing Characters in a String with expr</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.24. Nested Command Substitution</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

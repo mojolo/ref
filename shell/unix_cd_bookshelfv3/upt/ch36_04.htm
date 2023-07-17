@@ -1,0 +1,100 @@
+<html><head><title>Making #! Search the PATH (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">36.4. Making #! Search the PATH</h2>
+
+<p><a name="IXT-36-3195" /> <a name="IXT-36-3196" /> <a name="IXT-36-3197" />As <a href="ch36_03.htm#upt3-CHP-36-SECT-3">Section 36.3</a>
+explains, you can use
+<tt class="literal">#!</tt><em class="replaceable"><tt>/path/name</tt></em> to run a
+script with the interpreter located at
+<em class="filename">/path/name</em> in the filesystem. The problem comes
+if a new version of the interpreter is installed somewhere else or if
+you run the script on another system that has a different location.
+It's usually not a problem for Bourne shell
+programmers: <em class="filename">/bin/sh</em> exists on every Unix-type
+system I've seen. But some newer shells -- and
+interpreters like Perl -- may be lurking almost anywhere (although
+this is becoming more and more standardized as Perl and other tools
+like it become part of standard Linux distributions and the like). If
+the interpreter isn't found, you'll
+probably get a cryptic message like <tt class="literal">scriptname:</tt>
+<tt class="literal">Command not found</tt>, where
+<em class="emphasis">scriptname</em> is the name of the script file.
+</p>
+
+<p>The <i class="command">env</i><a name="IXT-36-3198" /><a name="IXT-36-3199" />
+command will search your <b class="emphasis-bold">PATH</b> (<a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a>) for an interpreter, then execute (<b class="emphasis-bold">exec</b> (<a href="ch24_02.htm#upt3-CHP-24-SECT-2">Section 24.2</a>), replace
+itself) with the interpreter. If you want to try this, type
+<tt class="literal">env</tt> <tt class="literal">ls</tt>; <i class="command">env</i>
+will find and run <i class="command">ls</i> for you. This is pretty
+useless when you have a shell around to interpret your
+commands -- because the shell can do the same thing without
+getting <i class="command">env</i> involved. But when the kernel
+interprets an executable file that starts with <tt class="literal">#!</tt>,
+there's no shell (yet!). That's
+where you can use <i class="command">env</i>. For instance, to run your
+script with <i class="command">zsh</i>, you could start its file with:
+</p>
+
+<blockquote><pre class="code">#!/usr/bin/env zsh
+   <i class="lineannotation">...zsh script here...</i></pre></blockquote>
+
+<p>The kernel <i class="command">exec</i>s <i class="command">/usr/bin/env</i>,
+then <i class="command">env</i> finds and <i class="command">exec</i>s the
+<i class="command">zsh</i> it found. Nice trick, eh? What do you think
+the problem is? (You have ten seconds... tick, tick, tick...) The
+catch is: if the <i class="command">env</i> command
+isn't in <em class="filename">/usr/bin</em> on your
+system, this trick won't work. So
+it's not as portable as it might be, but
+it's still handy and probably still better than
+trying to specify the pathname of a less common interpreter like
+<i class="command">zsh</i>.
+</p>
+
+<p>Running an interpreter this way can also be a security problem.
+Someone's <em class="emphasis">PATH</em> might be wrong;
+for instance, it might execute some random command named
+<i class="command">zsh</i> in the user's
+<em class="filename">bin</em> directory. An intruder could change the
+<em class="emphasis">PATH</em> to make the script use a completely
+different interpreter with the same name.
+</p>
+
+<p>One more problem worth mentioning: you can't specify
+any options for the interpreter on the first line. Some shell options
+can be set later, as the script starts, with a command like
+<i class="command">set</i>, <i class="command">shopt</i>, and so
+on -- check the shell's manual page.
+</p>
+
+<p>Finally, understand that using <i class="command">env</i> like this
+pretty much erases any performance gains you may have achieved using
+the trick in the previous article.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.3. Don't Need a Shell for Your Script? Don't Use One</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.5. The exec Command</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

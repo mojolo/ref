@@ -1,0 +1,177 @@
+<html><head><title>Initialization (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">11.4. Initialization</h2>
+
+<p>
+<a name="ch11.init1" />
+<a name="ch11.init2" />
+This section describes <em class="emphasis">vim</em>'s
+initialization steps, including those taken for the GUI
+versions of <em class="emphasis">vim</em>.</p>
+
+<a name="vi6-ch-11-sect-4.1" /><div class="sect2">
+<h3 class="sect2">11.4.1. Initialization for All vim Invocations</h3>
+
+<p><em class="emphasis">vim</em> performs the following initialization steps:</p>
+
+<ol><li><p>
+<a name="IXT-11-281662" />
+<a name="IXT-11-281663" />
+<a name="IXT-11-281664" />
+<a name="IXT-11-281665" />
+Set the <tt class="literal">shell</tt> and <tt class="literal">term</tt> options
+from the <tt class="literal">SHELL</tt> and <tt class="literal">TERM</tt>
+environment variables, respectively. On MS-DOS and Win32, use
+<a name="IXT-11-281666" />
+<tt class="literal">COMSPEC</tt> to set <tt class="literal">shell</tt>
+if <tt class="literal">SHELL</tt> is not set.</p></li><li><p>
+<a name="IXT-11-281667" />
+<a name="IXT-11-281668" />
+If <tt class="literal">-u</tt> was supplied, execute the given file, and
+skip the rest of the startup file based initializations.
+The <tt class="literal">-s</tt> option has the same effect for <em class="emphasis">ex</em>
+mode; only the <tt class="literal">-u</tt> option will be interpreted.
+Use of <tt class="literal">-u NONE</tt> causes <em class="emphasis">vim</em> to
+skip <em class="emphasis">all</em> further initializations.</p></li><li><p>
+<a name="IXT-11-281669" />
+Execute the system-wide <em class="emphasis">vimrc</em> file. 
+The exact path is set when
+<em class="emphasis">vim</em> is compiled. A typical value is
+<em class="filename">/usr/local/share/vim/vimrc</em>.</p></li><li><p>Execute instructions in the first place that exists of the following four:</p>
+
+<ul><li><p>	The environment variable <tt class="literal">VIMINIT</tt>.
+<a name="IXT-11-281670" /></p></li><li><p>	The user <em class="emphasis">vimrc</em> file, 
+        <em class="filename">$HOME/.vimrc</em> under
+	UNIX (or Linux). The location will be different on non-UNIX systems.
+	If <em class="filename">.vimrc</em> does not exist, <em class="emphasis">vim</em>
+	looks for <em class="filename">_vimrc</em>. On the non-UNIX systems,
+	the order is reversed.</p></li><li><p>	The environment variable <tt class="literal">EXINIT</tt>.
+<a name="IXT-11-281671" /></p></li><li><p>
+<a name="IXT-11-281672" />
+<a name="IXT-11-281673" />
+<a name="IXT-11-281674" />
+	The user <em class="emphasis">exrc</em> file, 
+        <em class="filename">$HOME/.exrc</em>.
+	On non-UNIX systems, <em class="filename">_exrc</em> is tried.
+	However, in this case, <em class="emphasis">vim</em> only looks for
+	one or the other, not both.</p></li></ul></li><li><p>If the <tt class="literal">exrc</tt> option has been set, then
+<em class="emphasis">vim</em> looks in the current directory
+for the first file that exists of the following four. 
+The others are ignored.</p>
+
+<ul><li><p>	<em class="filename">.vimrc</em></p></li><li><p>	<em class="filename">_vimrc</em></p></li><li><p>	<em class="filename">.exrc</em></p></li><li><p>	<em class="filename">_exrc</em></p></li></ul><p>On MS-DOS and Win32 systems, the <em class="filename">_xxxrc</em>
+files are looked for before the <em class="filename">.xxxrc</em> files.
+</p></li><li><p>
+<a name="IXT-11-281675" />
+<a name="IXT-11-281676" />
+If they have not yet been set,
+the <tt class="literal">shellpipe</tt> and <tt class="literal">shellredir</tt>
+options are initialized based on the value of the
+<tt class="literal">shell</tt> option.
+The <tt class="literal">shellredir</tt> option is discussed
+in <a href="ch11_09.htm#vi6-ch-11-sect-9.1">Section 11.9.1</a>.</p></li><li><p>
+<a name="IXT-11-281677" />
+<a name="IXT-11-281678" />
+If <tt class="literal">-n</tt> was given on the command line,
+<tt class="literal">updatecount</tt> is set to zero.
+(This option controls how often the swap file is updated.
+The more often, the more the swap file is synchronized with all
+your changes, but possibly with decreased performance.
+Zero means never.)</p></li><li><p>
+<a name="IXT-11-281679" />
+If <tt class="literal">-b</tt> was supplied, set the appropriate options
+for editing binary files.</p></li><li><p>Perform GUI initializations. See the next subsection.</p></li><li><p>If <tt class="literal">viminfo</tt> is set, read the file indicated there.</p></li><li><p>
+<a name="IXT-11-281680" />
+If <tt class="literal">-q</tt> was supplied, read the named quick fix file.
+The quick fix facility is described in
+<a href="ch11_09.htm#vi6-ch-11-sect-9.1">Section 11.9.1</a>.</p></li><li><p>Open and fill all windows, as per the <tt class="literal">-o</tt> option.
+If <tt class="literal">-q</tt> was supplied, go to the first error.</p></li><li><p>
+<a name="IXT-11-281681" />
+Jump to the tag given by the <tt class="literal">-t</tt> option, if supplied.
+Execute any commands given with <tt class="literal">-c</tt>.</p></li></ol><p>That's a lot of steps. As in other areas,
+<em class="emphasis">vim</em>'s extra
+facilities also provide extra flexibility and customizability.</p>
+
+<p>As for <em class="emphasis">nvi</em>, you can place
+common initialization actions into your <em class="filename">.exrc</em>
+file (i.e., options and commands for UNIX <em class="emphasis">vi</em>
+and/or the other clones),
+and have your <em class="filename">.vimrc</em> file
+execute <tt class="literal">:source .exrc</tt> before or after the
+<em class="emphasis">vim</em>-specific initializations.</p>
+
+<p>
+<a name="IXT-11-281682" />
+The <em class="filename">viminfo</em> file is much like the 
+<em class="emphasis">elvis</em> session
+file. It can be used to save a large part of the state of your
+editing session in between logins.
+The <em class="filename">viminfo</em> file stores the following items:</p>
+
+<ul><li><p>The command-line history</p></li><li><p>The search string history</p></li><li><p>Contents of registers</p></li><li><p>File marks, pointing to locations in files</p></li><li><p>Last search/substitute pattern (for <tt class="literal">n</tt>
+and <tt class="literal">&amp;</tt>)</p></li></ul><p><em class="emphasis">vim</em> reads this file at startup, and when exiting,
+merges its current state with the contents of the file and then
+rewrites it.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-11-sect-4.2" /><div class="sect2">
+<h3 class="sect2">11.4.2. Initialization for the GUI</h3>
+
+<p>
+<a name="IXT-11-281683" />
+<a name="IXT-11-281684" />
+If running the GUI version of <em class="emphasis">vim</em>, usually
+<em class="emphasis">vim</em> will fork a new process in order to run
+in the background, so that you can continue to give commands to the
+parent shell. The <tt class="literal">-f</tt> option disables this behavior.
+<a name="IXT-11-281685" /></p>
+
+<p>
+<a name="IXT-11-281686" />
+If <tt class="literal">-U</tt> was supplied, <em class="emphasis">vim</em> executes the given file and
+skips the rest of the GUI startup file based initializations.
+Use of <tt class="literal">-U NONE</tt> causes <em class="emphasis">vim</em> to
+skip <em class="emphasis">all</em> further initializations.</p>
+
+<p>Without <tt class="literal">-U</tt>, <em class="emphasis">vim</em> reads the
+system-wide <em class="filename">gvimrc</em> file (typically
+<em class="filename">/usr/local/share/vim/ gvimrc</em>)
+and then the user <em class="filename">gvimrc</em> file,
+<em class="filename">$HOME/.gvimrc</em>.</p>
+
+<p>These files can be used to configure the GUI. In particular,
+you can set up your own menus at this point.</p>
+</div>
+
+
+
+
+<a name="IXT-11-281687" />
+<a name="IXT-11-281688" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">11.3. Online Help and Other Documentation</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11.5. Multiwindow Editing</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,178 @@
+<html><head><title>Checking on a Process (Learning the Unix Operating System, 5th Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Jerry Peek, John Strang and Grace Todino-Gonguet" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00261-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Unix Operating System, 5th Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning Unix" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.2. Checking on a Process</h2>
+
+<p>
+<a name="lunix5-IDXTERM-797" />
+<a name="lunix5-IDXTERM-798" />
+If a background process takes too long, or you
+change your mind and want to stop a process, you can check the status
+of the process and even cancel it.
+</p>
+
+<a name="lunix5-CHP-7-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">7.2.1. ps</h3>
+
+<p>
+<a name="lunix5-IDXTERM-799" />
+<a name="IXT-7-280027" />
+<a name="lunix5-IDXTERM-801" />
+When you enter the command <b class="emphasis-bold">ps</b>,
+you can see how long a process has been running, the
+process ID of the background
+process and the terminal from which it was run.
+<a name="IXT-7-280028" />
+The <b class="emphasis-bold">tty</b> program shows the name of the
+terminal where it's running; this is especially helpful when you're
+using a window system or you're logged into multiple terminals. <a href="ch07_02.htm#lunix5-CHP-7-EX-1">Example 7-1</a> shows this in more detail. 
+</p>
+
+<a name="lunix5-CHP-7-EX-1" /><div class="example">
+<h4 class="objtitle">Example 7-1. Output of ps and tty programs</h4>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>ps</b></tt>
+   PID TTY      TIME CMD
+ 27285 pts/3    0:01 csh
+ 27285 pts/3    0:01 ps
+ 29771 pts/2    0:00 csh
+ 29792 pts/2    0:54 sort
+$ <tt class="userinput"><b>tty</b></tt>
+/dev/pts/3
+</pre></blockquote>
+</div>
+
+<p>
+In its basic form, <b class="emphasis-bold">ps</b> lists
+the following:
+</p>
+
+<dl>
+
+<dt><i><em class="emphasis">Process ID (PID)</em></tt></i></dt>
+<dd>
+
+A unique number assigned by Unix to the
+process.
+</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">Terminal name (TTY)</em></tt></i></dt>
+<dd>
+
+The Unix name for the terminal from which the process was
+started.
+</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">Run time (TIME)</em></tt></i></dt>
+<dd>
+
+The amount of computer time (in minutes and seconds)
+that the process has used.
+</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">Command (CMD)</em></tt></i></dt>
+<dd>
+
+The name of the process.
+</p>
+</dd>
+
+</dl>
+
+<p>
+In a window system, each terminal window has its own terminal name.
+<a href="ch07_02.htm#lunix5-CHP-7-EX-1">Example 7-1</a> shows processes running on two terminals:
+<em class="emphasis">pts/3</em> and <em class="emphasis">pts/2</em>.
+Some versions of <b class="emphasis-bold">ps</b> list only the
+processes on the same terminal where you run <b class="emphasis-bold">ps</b>;
+other versions list processes on all terminals where you're logged in.
+If you have more than one terminal window open, but all the entries in the
+TTY column show the same terminal name, try typing either
+"<b class="emphasis-bold">ps x</b>" or
+"<b class="emphasis-bold">ps -u</b> <em class="emphasis">username</em>",
+where <em class="emphasis">username</em> is your username.
+If you need to find out the name of a particular terminal, run the
+<b class="emphasis-bold">tty</b> program from a shell prompt in that
+window, as shown in <a href="ch07_02.htm#lunix5-CHP-7-EX-1">Example 7-1</a>.
+</p>
+
+<p>
+While using a window system, you may see quite a few processes you don't
+recognize; they're probably helping the window manager do its job.
+You may also see the names of any other programs running in the
+background and the name of your shell's process
+(<b class="emphasis-bold">sh</b>,
+<b class="emphasis-bold">csh</b>, and so on)--although
+different versions of <b class="emphasis-bold">ps</b> may show
+fewer processes by default.
+<b class="emphasis-bold">ps</b> may or may not list its own process.
+</p>
+
+<p>
+<a name="IXT-7-280029" />
+<a name="IXT-7-280030" />
+<a name="IXT-7-280031" />
+You should be aware that there are two types of programs on Unix
+systems: directly executable programs and interpreted programs.
+Directly executable programs are written in a programming language
+such as C or Pascal and stored in a file that the system can read
+directly.
+Interpreted programs, such as shell scripts and Perl scripts, are sequences of
+commands that are read by an interpreter program.
+If you execute an interpreted program, you will see an additional
+command (such as <b class="emphasis-bold">perl</b>,
+<b class="emphasis-bold">sh</b>, or
+<b class="emphasis-bold">csh</b>) in the
+<b class="emphasis-bold">ps</b> listing, as well
+as any Unix commands that the interpreter is executing now.
+<a name="IXTR3-129" />
+<a name="IXTR3-130" />
+</p>
+
+<p>
+<a name="IXT-7-280032" />
+Shells with job control have a command called
+<b class="emphasis-bold">jobs</b> which lists background processes
+started from that shell.
+As mentioned earlier, there are commands to change the foreground/background
+status of jobs.
+There are other job control commands as well.
+See the references in
+<a href="ch08_01.htm#lunix5-CHP-8-SECT-1">Section 8.1</a> in <a href="ch08_01.htm">Chapter 8</a>.
+<a name="IXTR3-131" />
+<a name="IXTR3-132" />
+<a name="IXTR3-133" />
+</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7. Multitasking</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.3. Cancelling a Process</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

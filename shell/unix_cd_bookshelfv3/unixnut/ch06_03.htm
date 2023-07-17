@@ -1,0 +1,177 @@
+<html><head><title>Metacharacters (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">6.3. Metacharacters</h2>
+<a name="unut-ch-6-sect-3.1" /><div class="sect2"><h3 class="sect2">6.3.1. Search Patterns</h3><p>The characters in the following table have special meaning only in search patterns.</p>
+<table border="1" cellpadding="3">
+
+<tr><th><em class="emphasis">Character</em></th><th><em class="emphasis">Pattern</em></th></tr>
+
+<tr><td><tt class="literal">.</tt></td><td><p>Match any <em class="emphasis">single</em> character except newline.
+Can match newline in <tt class="literal">awk</tt>.
+<a name="IXT-6-123100" />
+<a name="IXT-6-123101" /></p>
+</td></tr>
+<tr><td><tt class="literal">*</tt></td><td><p>Match any number (or none) of the single character that
+immediately precedes it.  The preceding character can also be a regular
+expression; e.g., since <tt class="literal">.</tt>  (dot) means any character,
+<tt class="literal">.*</tt> means &#8220;match any number of any
+character.&#8221;
+<a name="IXT-6-123102" /></p>
+</td></tr>
+<tr><td><tt class="literal">^</tt></td><td><p>Match the following regular expression at the beginning of the line
+or string.
+<a name="IXT-6-123103" /></p>
+</td></tr>
+<tr><td><tt class="literal">$</tt></td><td><p>Match the preceding regular expression at the end of the line
+or string.
+<a name="IXT-6-123104" /></p>
+</td></tr>
+<tr><td><tt class="literal">[  ]</tt></td><td><p>Match any <em class="emphasis">one</em> of the enclosed
+characters.</p>
+<p>A hyphen (<tt class="literal">-</tt>) indicates a
+range of consecutive
+<a name="IXT-6-123105" />
+<a name="IXT-6-123106" />
+characters.  A circumflex (<tt class="literal">^</tt>) as the first character in the
+brackets reverses the sense:  it matches any one character
+<em class="emphasis">not</em> in the list.  A hyphen or close bracket (<tt class="literal">]</tt>)
+as the first character is treated as a member of the list.  All other
+metacharacters are treated as members of the list
+(i.e., literally).</p>
+</td></tr>
+<tr><td><tt class="literal">{</tt><em class="replaceable"><tt>n</em><tt class="literal">,</tt><em class="replaceable">m</tt></em><tt class="literal">}</tt></td><td><p>
+<a name="IXT-6-123107" />Match a range of occurrences of the single character that
+immediately precedes it.  The preceding character can also be a metacharacter.
+<tt class="literal">{</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">}</tt>
+matches exactly <em class="emphasis">n</em> occurrences,
+<tt class="literal">{</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">,}</tt>
+matches at least <em class="emphasis">n</em> occurrences, and
+<tt class="literal">{</tt><em class="replaceable"><tt>n</em><tt class="literal">,</tt><em class="replaceable">m</tt></em><tt class="literal">}</tt>
+matches any number of
+occurrences between <em class="emphasis">n</em> and <em class="emphasis">m</em>.  <em class="emphasis">n</em>
+and <em class="emphasis">m</em> must be between 0 and 255, inclusive.</p>
+</td></tr>
+<tr><td><tt class="literal">\{</tt><em class="replaceable"><tt>n</em><tt class="literal">,</tt><em class="replaceable">m</tt></em><tt class="literal">\}</tt></td><td><p>Just like
+<tt class="literal">{</tt><em class="replaceable"><tt>n</em><tt class="literal">,</tt><em class="replaceable">m</tt></em><tt class="literal">}</tt>,
+above, but with backslashes in front of the braces.</p>
+</td></tr>
+<tr><td><tt class="literal">\</tt></td><td>Turn off the special meaning of the character that follows.</td></tr>
+<tr><td><tt class="literal">\( \)</tt></td><td><p>
+<a name="IXT-6-123108" />Save the pattern enclosed between <tt class="literal">\(</tt>
+and <tt class="literal">\)</tt> into a
+special holding space.  Up to nine patterns can be saved on a single
+line.  The text matched by the subpatterns
+can be &#8220;replayed&#8221; in substitutions by the escape
+sequences <tt class="literal">\1</tt> to <tt class="literal">\9</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">\</tt><em class="replaceable"><tt>n</em></td><td><p>Replay the <em class="emphasis">n</tt></em>th subpattern enclosed in <tt class="literal">\(</tt>
+and <tt class="literal">\)</tt> into the pattern at this point.
+<em class="emphasis">n</em> is a number from 1 to 9, with 1 starting on the left.
+See the following Examples.</p>
+</td></tr>
+<tr><td><tt class="literal">\&lt; \&gt;</tt></td><td><p>Match characters at beginning (<tt class="literal">\&lt;</tt>)
+or end (<tt class="literal">\&gt;</tt>) of a word.</p>
+</td></tr>
+<tr><td><tt class="literal">+</tt></td><td>Match one or more instances of preceding regular expression.</td></tr>
+<tr><td><tt class="literal">?</tt></td><td><p>Match zero or one instances of preceding regular expression.</p>
+</td></tr>
+<tr><td><tt class="literal">|</tt></td><td><p>Match the regular expression specified before or after.</p>
+</td></tr>
+<tr><td><tt class="literal">( )</tt></td><td><p>Apply a match to the enclosed group of regular expressions.</p>
+</td></tr>
+</table><p>
+<p>
+<a name="IXT-6-123109" />
+<a name="IXT-6-123110" />Many Unix systems allow the use of POSIX &#8220;character classes&#8221;
+within the square brackets that enclose a group of characters.
+These classes, listed here, are typed enclosed in <tt class="literal">[:</tt> and <tt class="literal">:]</tt>.
+For example, <tt class="literal">[[:alnum:]]</tt> matches a single
+alphanumeric character.</p>
+<table border="1" cellpadding="3"><tr><th><em class="emphasis">Class</em></th><th><em class="emphasis">Characters Matched</em></th></tr>
+
+<tr><td><tt class="literal">alnum</tt></td><td><p>Alphanumeric characters</p>
+</td></tr>
+<tr><td><tt class="literal">alpha</tt></td><td><p>Alphabetic characters</p>
+</td></tr>
+<tr><td><tt class="literal">blank</tt></td><td><p>Space or tab</p>
+</td></tr>
+<tr><td><tt class="literal">cntrl</tt></td><td><p>Control characters</p>
+</td></tr>
+<tr><td><tt class="literal">digit</tt></td><td><p>Decimal digits</p>
+</td></tr>
+<tr><td><tt class="literal">graph</tt></td><td><p>Nonspace characters</p>
+</td></tr>
+<tr><td><tt class="literal">lower</tt></td><td><p>Lowercase characters</p>
+</td></tr>
+<tr><td><tt class="literal">print</tt></td><td><p>Printable characters</p>
+</td></tr>
+<tr><td><tt class="literal">space</tt></td><td><p>Whitespace characters</p>
+</td></tr>
+<tr><td><tt class="literal">upper</tt></td><td><p>Uppercase characters</p>
+</td></tr>
+<tr><td><tt class="literal">xdigit</tt></td><td><p>Hexadecimal digits</p>
+</td></tr>
+</table><p>
+</div>
+
+<a name="unut-ch-6-sect-3.2" /><div class="sect2"><h3 class="sect2">6.3.2. Replacement Patterns</h3><p>The characters in this table have special meaning only in replacement
+patterns.</p>
+<table border="1" cellpadding="3">
+<tr><th><em class="emphasis">Character</em></th><th><em class="emphasis">Pattern</em></th></tr>
+
+<tr><td><tt class="literal">\</tt></td><td><p>Turn off the special meaning of the character that follows.</p>
+</td></tr>
+<tr><td><tt class="literal">\</tt><em class="replaceable"><tt>n</em></td><td><p>Restore the text matched by the <em class="emphasis">n</tt></em>th pattern previously saved by
+<tt class="literal">\(</tt> and <tt class="literal">\)</tt>.
+<em class="emphasis">n</em> is a number from 1 to 9, with 1 starting on the left.</p>
+</td></tr>
+<tr><td><tt class="literal">&amp;</tt></td><td><p>Reuse the text matched by the search pattern as part of the replacement pattern.
+<a name="IXT-6-123111" /></p>
+</td></tr>
+<tr><td><tt class="literal">~</tt></td><td><p>
+<a name="IXT-6-123112" />Reuse the previous replacement pattern in the current replacement pattern.
+Must be the only character in the replacement pattern.
+(<tt class="literal">ex</tt> and <tt class="literal">vi</tt>)</p>
+</td></tr>
+<tr><td><tt class="literal">%</tt></td><td><p>
+<a name="IXT-6-123113" />Reuse the previous replacement pattern in the current replacement pattern.
+Must be the only character in the replacement pattern.
+(<tt class="literal">ed</tt>)</p>
+</td></tr>
+<tr><td><tt class="literal">\u</tt></td><td><p>Convert first character of replacement pattern to uppercase.</p>
+</td></tr>
+<tr><td><tt class="literal">\U</tt></td><td><p>Convert entire replacement pattern to uppercase.</p>
+</td></tr>
+<tr><td><tt class="literal">\l</tt></td><td><p>Convert first character of replacement pattern to lowercase.</p>
+</td></tr>
+<tr><td><tt class="literal">\L</tt></td><td><p>Convert entire replacement pattern to lowercase.</p>
+</td></tr>
+<tr><td><tt class="literal">\e, \E</tt></td><td><p>Turn off previous <tt class="literal">\u</tt>,
+<tt class="literal">\U</tt>, <tt class="literal">\l</tt>, and <tt class="literal">\L</tt>.</p>
+</td></tr>
+</table><p>
+<a name="IXT-6-123114" /></div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.2. Metacharacters, Listed by Unix Program</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.4. Examples of Searching</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

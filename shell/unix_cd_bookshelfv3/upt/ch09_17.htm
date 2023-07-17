@@ -1,0 +1,78 @@
+<html><head><title>Duplicating a Directory Tree (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.17. Duplicating a Directory Tree</h2>
+
+<p><a name="IXT-9-105" /><a name="IXT-9-106" />In many versions of
+<em class="filename">find</em>, the operator
+<tt class="literal">{}</tt><a name="IXT-9-107" /><a name="IXT-9-108" />, used with the
+<em class="filename">-exec</em> operator, only works when
+it's separated from other arguments by whitespace.
+So, for example, the following command will <em class="emphasis">not</em>
+do what you thought it would:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -type d -exec mkdir /usr/project/{} \;</b></tt></pre></blockquote>
+
+<p>You might have thought this command would make a duplicate set of
+(empty) directories, from the current directory and down, starting at
+the directory <em class="filename">/usr/project</em>. For instance, when
+the <em class="filename">find</em> command finds the directory
+<em class="filename">./adir</em>, you would have it execute
+<em class="filename">mkdir /usr/project/./adir</em>
+(<em class="filename">mkdir</em> will ignore the dot; the result
+is <em class="emphasis">/usr/project/adir</em>).
+</p>
+
+<p>That doesn't work because those versions of
+<em class="filename">find</em> don't recognize the
+<tt class="literal">{}</tt> in the pathname. The GNU version
+<em class="emphasis">does</em> expand <tt class="literal">{}</tt> in the middle
+of a string. On versions that don't, though, the
+trick is to pass the directory names to
+<em class="filename">sed</em><a name="IXT-9-109" /> <a name="IXT-9-110" /> <a name="IXT-9-111" />, which substitutes in the leading
+pathname:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -type d -print | sed 's@^@/usr/project/@' | xargs mkdir</b></tt>
+% <tt class="userinput"><b>find . -type d -print | sed 's@^@mkdir @' | (cd /usr/project; sh)</b></tt></pre></blockquote>
+
+<p>Let's start with the first example. Given a list of
+directory names, <em class="filename">sed</em> substitutes the desired
+path to that directory at the beginning of the line before passing
+the completed filenames to <em class="emphasis">xargs</em>
+and <em class="filename">mkdir</em>. An <tt class="literal">@</tt> is used as a
+<em class="filename">sed</em> delimiter because slashes
+(<tt class="literal">/</tt>) are needed in the actual text of the
+substitution. If you don't have
+<em class="filename">xargs</em>, try the second example. It uses
+<em class="filename">sed</em> to insert the <em class="filename">mkdir</em>
+command, then it changes to the target directory in a subshell where
+the <em class="filename">mkdir</em> commands will actually be executed.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.16. Searching by Owner and Group</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.18. Using "Fast find" Databases</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

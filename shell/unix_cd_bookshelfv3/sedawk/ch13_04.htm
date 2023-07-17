@@ -1,0 +1,101 @@
+<html><head><title>mailavg--Check Size of Mailboxes (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.4. mailavg--Check Size of Mailboxes</h2>
+
+<p><em class="emphasis">Contributed by Wes Morgan</em></p>
+
+<p>
+<a name="ch13.a" />
+While tuning our mail system, we needed to take a "snapshot" of the
+users' mailboxes at regular intervals over a 30-day period.  This
+script simply calculates the average size and prints the arithmetic
+distribution of user mailboxes.</p>
+
+<blockquote><pre class="code">#! /bin/sh
+#
+# mailavg - average size of files in /usr/mail
+#
+# Written by Wes Morgan, morgan@engr.uky.edu, 2 Feb 90
+ls -Fs /usr/mail | awk '
+   { if(NR != 1) {
+       total += $1; 
+       count += 1;
+       size = $1 + 0; 
+       if(size == 0) zercount+=1;
+       if(size &gt; 0 &amp;&amp; size &lt;= 10) tencount+=1;
+       if(size &gt; 10 &amp;&amp; size &lt;= 19) teencount+=1;
+       if(size &gt; 20 &amp;&amp; size &lt;= 50) uptofiftycount+=1;
+       if(size &gt; 50) overfiftycount+=1;
+       }
+   }
+   END { printf("/usr/mail has %d mailboxes using %d blocks,",
+            count,total) 
+         printf("average is %6.2f blocks\n", total/count)
+         printf("\nDistribution:\n")
+         printf("Size      Count\n")
+         printf(" O           %d\n",zercount)
+         printf("1-10         %d\n",tencount)
+         printf("11-20        %d\n",teencount)
+         printf("21-50        %d\n",uptofiftycount)
+         printf("Over 50      %d\n",overfiftycount)
+       }'
+exit 0</pre></blockquote>
+
+<p>Here's a sample output from <b class="emphasis-bold">mailavg</b>:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>mailavg</b></tt>
+/usr/mail has 47 mailboxes using 5116 blocks,
+average is 108.85 blocks
+Distribution:
+Size      Count
+ O           1
+1-10         13
+11-20        1
+21-50        5
+Over 50      27</pre></blockquote>
+
+<a name="sedawk-ch-13-sect-0.0.0.4" /><div class="sect2">
+<h3 class="sect2">13.4.1. Program Notes for mailavg</h3>
+
+<p>This administrative program is similar to the <b class="emphasis-bold">filesum</b> program in <a href="ch07_01.htm">Chapter 7, "Writing Scripts
+for awk"</a>.  It processes the output of the <b class="emphasis-bold">ls</b> command.</p>
+
+<p>The conditional expression "NR != 1" could have been 
+put outside the main procedure as a pattern.  While the
+logic is the same, using the expression as a pattern 
+clarifies how the procedure is accessed, making the
+program easier to understand.</p>
+
+<p>In that procedure, Morgan uses a series of conditionals that
+allow him to collect distribution statistics on the size of
+each user's mailbox.</p>
+</div>
+
+
+
+
+<a name="IXT-13-266390" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.3. combine--Extract Multipart uuencoded Binaries</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.5. adj--Adjust Lines for Text Files</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

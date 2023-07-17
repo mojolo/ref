@@ -1,0 +1,541 @@
+<html><head><title>Pipes and Filters (Learning the Unix Operating System, 5th Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Jerry Peek, John Strang and Grace Todino-Gonguet" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00261-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Unix Operating System, 5th Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning Unix" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.2. Pipes and Filters</h2>
+
+<p>
+<a name="lunix5-IDXTERM-636" />
+We've seen how to redirect input from a file and output to a file.
+You can also connect two <em class="emphasis">programs</em>
+together so that the output from one program
+becomes the input of the next program.
+Two or more programs connected in this way form a <em class="emphasis">pipe</em>.
+<a name="lunix5-IDXTERM-637" />
+<a name="lunix5-IDXTERM-638" />
+<a name="lunix5-IDXTERM-639" />
+To make a pipe, put a vertical bar (<tt class="literal">|</tt>) on the command
+line between two commands.
+When a pipe is set up between two commands, the standard output of the
+command to the left of the pipe symbol becomes the standard input of the
+command to the right of the pipe symbol.
+Any two commands can form a pipe as long as the first program writes to
+standard output and the second program reads from standard input.
+</p>
+
+<p>
+When a program takes its input from another program, performs some
+operation on that input, and writes the result to the standard output
+(which may be piped to yet another program), it is referred to as a
+<em class="emphasis">filter</em>.
+A common use of filters is to modify output.
+Just as a common filter culls unwanted items, Unix filters can
+restructure output.
+</p>
+
+<p>
+Most Unix programs can be used to form pipes.
+Some programs that are commonly used as filters are described in the next sections.
+Note that these programs aren't used only as filters or parts of pipes.
+They're also useful on their own.
+</p>
+
+<a name="lunix5-CHP-5-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">5.2.1. grep</h3>
+
+<p>
+<a name="lunix5-IDXTERM-640" />
+<a name="lunix5-IDXTERM-641" />
+<a name="lunix5-IDXTERM-642" />
+<a name="lunix5-IDXTERM-643" />
+<a name="lunix5-IDXTERM-644" />
+The <b class="emphasis-bold">grep</b> program searches a file or
+files for lines that have a certain pattern.
+The syntax is:
+</p>
+
+
+<p>
+<b class="emphasis-bold">grep</b> <em class="emphasis">"pattern" file(s)</em>
+</p>
+
+
+<p>
+
+<a name="IXT-5-279940" />
+
+
+The name "grep" derives from the <b class="emphasis-bold">ed</b>
+(a Unix line editor) command
+<b class="emphasis-bold">g/re/p</b>, which means
+"<em class="emphasis">g</em>lobally search for a
+<em class="emphasis">r</em>egular <em class="emphasis">e</em>xpression and
+<em class="emphasis">p</em>rint all lines containing it."
+A <em class="emphasis">regular expression</em> is either some plain text
+(a word, for example) and/or special characters used for pattern matching.
+When you learn more about regular expressions, you can use them to
+specify complex patterns of text.
+</p>
+
+<p>
+The simplest use of <b class="emphasis-bold">grep</b> is to
+look for a pattern consisting of a single word.
+It can be used in a pipe so that only those lines of the input files
+containing a given string are sent to the standard output.
+But let's start with an example reading from files:
+searching all files in the working directory for a word--say,
+<em class="emphasis">Unix</em>.
+We'll use the wildcard <tt class="literal">*</tt> to quickly give
+<b class="emphasis-bold">grep</b> all filenames in the directory.
+</p>
+
+<p><blockquote><pre class="code">
+$ <tt class="userinput"><b>grep "Unix" *</b></tt>
+ch01:Unix is a flexible and powerful operating system
+ch01:When the Unix designers started work, little did
+ch05:What can we do with Unix?
+$
+</pre></blockquote></p>
+
+<p>
+When <b class="emphasis-bold">grep</b> searches multiple files,
+it shows the filename where it finds each matching line of text.
+Alternatively,
+if you don't give <b class="emphasis-bold">grep</b> a filename to
+read, it reads its standard input; that's the way all filter programs
+work:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>ls -l | grep "Aug"</b></tt>
+-rw-rw-rw-   1 john  doc     11008 Aug  6 14:10 ch02
+-rw-rw-rw-   1 john  doc      8515 Aug  6 15:30 ch07
+-rw-rw-r--   1 john  doc      2488 Aug 15 10:51 intro
+-rw-rw-r--   1 carol doc      1605 Aug 23 07:35 macros
+$
+</pre></blockquote>
+</p>
+
+
+<p>
+First, the example runs <b class="emphasis-bold">ls -l</b> to
+list your directory.
+The standard output of <b class="emphasis-bold">ls -l</b> is piped
+to <b class="emphasis-bold">grep</b>, which only outputs lines that
+contain the string <em class="emphasis">Aug</em>
+(that is, files that were last modified in August).
+Because the standard output of <b class="emphasis-bold">grep</b>
+isn't redirected, those lines go to the terminal screen.
+</p>
+
+<p>
+<b class="emphasis-bold">grep</b> options let you modify the search.
+<a href="ch05_02.htm#lunix5-CHP-5-TABLE-1">Table 5-1</a>
+lists some of the options.
+</p>
+
+<a name="lunix5-CHP-5-TABLE-1" /><h4 class="objtitle">Table 5-1. Some grep options</h4><table border="1" cellpadding="3">
+
+
+<tr>
+<th><p>Option</p></th>
+<th><p>Description</p></th>
+</tr>
+
+
+
+
+<tr>
+<td><p><b class="emphasis-bold">-v</b></p></td>
+<td><p>Print all lines that do not match pattern.</p></td>
+</tr>
+
+<tr>
+<td><p>-n</p></td>
+<td><p>
+<a name="IXT-5-279941" />
+
+Print the matched line and its line number.</p></td>
+</tr>
+
+<tr>
+<td><p><b class="emphasis-bold">-l</b></p></td>
+<td>
+<p>
+<a name="IXT-5-279942" />
+
+Print only the names of files with matching lines 
+(lowercase letter "L").
+</p>
+</td>
+</tr>
+
+<tr>
+<td>
+<p>
+<a name="IXT-5-279943" />
+
+-c</p></td>
+<td><p>Print only the count of matching lines.</p></td>
+</tr>
+
+<tr>
+<td>
+<p>
+<a name="IXT-5-279944" />
+
+-i</p></td>
+<td><p>Match either upper- or lowercase.</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+Next, let's use a regular expression that tells
+<b class="emphasis-bold">grep</b> to find lines with <em class="emphasis">carol</em>,
+followed by zero or more other characters (abbreviated in a regular
+expression as "<tt class="literal">.*</tt>"),<a href="#FOOTNOTE-15">[15]</a>
+then followed by <em class="emphasis">Aug</em>:
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-15" /><p> [15]
+Note that
+the regular expression for "zero or more characters," "<tt class="literal">.*</tt>",
+is different than the corresponding filename wildcard "<tt class="literal">*</tt>".
+See
+<a href="ch04_02.htm#lunix5-CHP-4-SECT-2">Section 4.2</a> in <a href="ch04_01.htm">Chapter 4</a>.
+We can't cover regular expressions in enough depth here to explain the
+difference--though more-detailed books do.
+As a rule of thumb, remember that
+the first argument to <b class="emphasis-bold">grep</b> is a regular
+expression; other arguments, if any, are filenames that can
+use wildcards.
+</p>
+
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>ls -l | grep "carol.*Aug"</b></tt>
+-rw-rw-r--   1 carol doc      1605 Aug 23 07:35 macros
+$
+</pre></blockquote>
+</p>
+
+<p>For more about regular expressions, see the references in 
+<a href="ch08_01.htm#lunix5-CHP-8-SECT-1">Section 8.1</a> (<a href="ch08_01.htm">Chapter 8</a>).
+<a name="IXTR3-93" />
+<a name="IXTR3-94" />
+<a name="IXTR3-95" />
+<a name="IXTR3-96" />
+<a name="IXTR3-97" />
+</p>
+</div>
+
+
+
+
+<a name="lunix5-CHP-5-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">5.2.2. sort</h3>
+
+<p>
+<a name="IXT-5-279945" />
+<a name="IXT-5-279946" />
+<a name="IXT-5-279947" />
+The <b class="emphasis-bold">sort</b> program arranges lines of
+text alphabetically or numerically.
+The following example sorts the lines in the <em class="emphasis">food</em>
+file (from <a href="ch04_05.htm#lunix5-CHP-4-SECT-5">Section 4.5</a>
+in <a href="ch04_01.htm">Chapter 4</a>) alphabetically.
+<b class="emphasis-bold">sort</b> doesn't modify the file itself;
+it reads the file and writes the sorted text to the standard output.
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>sort food</b></tt>
+Afghani Cuisine
+Bangkok Wok
+Big Apple Deli
+Isle of Java
+Mandalay
+Sushi and Sashimi
+Sweet Tooth
+Tio Pepe's Peppers
+</pre></blockquote>
+</p>
+
+<p>
+By default, <b class="emphasis-bold">sort</b> arranges lines of text
+alphabetically.
+Many options control the sorting, and
+<a href="ch05_02.htm#lunix5-CHP-5-TABLE-2">Table 5-2</a> lists some of them.
+</p>
+
+<a name="lunix5-CHP-5-TABLE-2" /><h4 class="objtitle">Table 5-2. Some sort options</h4><table border="1" cellpadding="3">
+
+
+<tr>
+<th><p>Option</p></th>
+<th><p>Description</p></th>
+</tr>
+
+
+
+
+<tr>
+<td><p><b class="emphasis-bold">-n</b></p></td>
+<td>
+<p>
+Sort numerically (example: 10 sorts after 2), ignore blanks and tabs.
+</p>
+</td>
+</tr>
+
+<tr>
+<td><p><b class="emphasis-bold">-r</b></p></td>
+<td><p>Reverse the sorting order.</p></td>
+</tr>
+
+<tr>
+<td><p><b class="emphasis-bold">-f</b></p></td>
+<td><p>Sort upper- and lowercase together.</p></td>
+</tr>
+
+<tr>
+<td><p><b class="emphasis-bold">+</b><em class="emphasis">x</em></p></td>
+<td>
+<p>
+Ignore first <em class="emphasis">x</em> fields when sorting.
+</p>
+</td>
+</tr>
+
+
+</table><p>
+
+<p>
+More than two commands may be linked up into a pipe.
+Taking a previous pipe example using <b class="emphasis-bold">grep</b>,
+we can further sort the files modified in August by order of size.
+The following pipe uses the commands
+<b class="emphasis-bold">ls</b>,
+<b class="emphasis-bold">grep</b>,
+and <b class="emphasis-bold">sort</b>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>ls -l | grep "Aug" | sort +4n</b></tt>
+-rw-rw-r--  1 carol doc      1605 Aug 23 07:35 macros
+-rw-rw-r--  1 john  doc      2488 Aug 15 10:51 intro
+-rw-rw-rw-  1 john  doc      8515 Aug  6 15:30 ch07
+-rw-rw-rw-  1 john  doc     11008 Aug  6 14:10 ch02
+$
+</pre></blockquote>
+</p>
+
+<p>
+This pipe sorts all files in your directory modified in August by
+order of size, and prints them to the terminal screen.
+The <b class="emphasis-bold">sort</b> option
+<b class="emphasis-bold">+4n</b> skips four fields (fields are
+separated by blanks), then sorts the lines in numeric order.
+So, the output of <b class="emphasis-bold">ls</b>,
+filtered by <b class="emphasis-bold">grep</b>,
+is sorted by the file size (this is the fifth column, starting with 1605).
+Both <b class="emphasis-bold">grep</b> and
+<b class="emphasis-bold">sort</b> are used here as filters to
+modify the output of the <b class="emphasis-bold">ls -l</b> command.
+<a name="IXT-5-279948" />
+If you wanted to email this listing to someone, you could add a
+final pipe to the <b class="emphasis-bold">mail</b> program.
+Or you could print the listing by piping the
+<b class="emphasis-bold">sort</b> output
+to your printer command (either <b class="emphasis-bold">lp</b> or
+<b class="emphasis-bold">lpr</b>).
+</p>
+</div>
+
+
+
+
+<a name="lunix5-CHP-5-SECT-2.3" /><div class="sect2">
+<h3 class="sect2">5.2.3. Piping to a Pager</h3>
+
+<p>
+<a name="IXT-5-279949" />
+<a name="IXT-5-279950" />
+
+The <b class="emphasis-bold">less</b>
+program, which you saw in <a href="ch03_02.htm#lunix5-CHP-3-SECT-2">Section 3.2</a>
+in <a href="ch03_01.htm">Chapter 3</a>, can also be used as a filter.
+A long output normally zips by you on the screen, but if you run text
+through <b class="emphasis-bold">less</b>,
+the display stops after
+each screenful of text.
+</p>
+
+<p>
+Let's assume that you have a long directory listing.
+(If you want to try this example and need a directory with lots of
+files, use <b class="emphasis-bold">cd</b> first to change to a
+system directory such as <em class="emphasis">/bin</em> or
+<em class="emphasis">/usr/bin</em>.)
+To make it easier to read the sorted listing,
+pipe the output through <b class="emphasis-bold">less</b>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>ls -l | grep "Aug" | sort +4n | less</b></tt>
+-rw-rw-r--  1 carol doc      1605 Aug 23 07:35 macros
+-rw-rw-r--  1 john  doc      2488 Aug 15 10:51 intro
+-rw-rw-rw-  1 john  doc      8515 Aug  6 15:30 ch07
+-rw-rw-r--  1 john  doc     14827 Aug  9 12:40 ch03
+	.
+	.
+	.
+-rw-rw-rw-  1 john  doc     16867 Aug  6 15:56 ch05
+:
+</pre></blockquote>
+</p>
+
+<p>
+<b class="emphasis-bold">less</b> reads a screenful of text from
+the pipe (consisting of lines sorted by order of file size), then
+prints a colon (<tt class="literal">:</tt>) prompt.
+At the prompt, you can type a <b class="emphasis-bold">less</b>
+command to move through the sorted text.
+<b class="emphasis-bold">less</b>
+reads more text from the pipe and shows it to you, as well as saves
+a copy of what it has read, so you can go backwards to reread previous text
+if you want to.
+(The simpler pager programs <b class="emphasis-bold">more</b> and
+<b class="emphasis-bold">pg</b> generally can't back up while reading
+from a pipe.)
+When you're done seeing the sorted text, the
+<b class="emphasis-bold">q</b> command quits
+<b class="emphasis-bold">less</b>.
+</p>
+
+
+
+
+
+<a name="lunix5-CHP-5-SECT-2.3.1" /><div class="sect3">
+
+<h3 class="sect3">5.2.3.1. Exercise: redirecting input/output</h3>
+
+<p>
+In the following exercises you redirect output, create a simple
+pipe, and use filters to modify output.
+</p>
+
+<table border="1" cellpadding="3">
+
+
+
+<tr>
+<td><p>Redirect output to a file.</p></td>
+<td><p>Enter <tt class="userinput"><b>who &gt; users</b></tt></p></td>
+</tr>
+
+
+<tr>
+<td><p>
+Email that file to yourself.
+(Replace <em class="emphasis">username</em> with your own username.)</p></td>
+<td>
+<p>
+Enter <tt class="userinput"><b>mail </b></tt><em class="replaceable"><tt>username</tt></em><tt class="userinput"><b> &lt; users</b></tt>
+</p>
+</td>
+</tr>
+
+
+<tr>
+<td><p>Sort output of a program.</p></td>
+<td><p>Enter <tt class="userinput"><b>who | sort</b></tt></p></td>
+</tr>
+
+
+<tr>
+<td><p>Append sorted output to a file.</p></td>
+<td>
+<p>
+Enter <tt class="userinput"><b>who | sort &gt;&gt; users</b></tt>
+</p>
+</td>
+</tr>
+
+
+<tr>
+<td><p> Display output to screen.</p></td>
+<td>
+<p>
+Enter <tt class="userinput"><b>less users</b></tt> (or
+<tt class="userinput"><b>more users</b></tt> or <tt class="userinput"><b>pg users</b></tt>)
+</p>
+</td>
+</tr>
+
+
+<tr>
+<td><p>Display long output to screen.</p></td>
+<td>
+<p>Enter <tt class="userinput"><b>ls -l /bin | less</b></tt>
+(or <tt class="userinput"><b>more</b></tt> or <tt class="userinput"><b>pg</b></tt>)
+</p>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<p>Format and print a file with <tt class="userinput"><b>pr</b></tt>.
+</p>
+</td>
+<td>
+<p>
+Enter <tt class="userinput"><b>pr users | lp</b></tt> or
+<tt class="userinput"><b>pr users | lpr</b></tt>
+<a name="IXTR3-98" />
+<a name="IXTR3-99" />
+<a name="IXTR3-100" />
+<a name="IXTR3-101" />
+<a name="IXTR3-102" />
+<a name="IXTR3-103" />
+<a name="IXTR3-104" />
+<a name="IXTR3-105" />
+</p></td>
+</tr>
+
+
+</table><p>
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5. Redirecting I/O </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6. Using the Internet and Other Networks</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

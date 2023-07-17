@@ -1,0 +1,307 @@
+<html><head><title>Background Jobs (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">1.8. Background Jobs</h2>
+
+<p>
+Pipes are actually a special case of a more general feature:
+doing more than one thing at a time. 
+any other commercial operating systems don't have this capability, because
+of the rigid limits that they tend to impose upon users.
+Unix, on the other hand,
+was developed in a research lab and meant for internal use,
+so it does relatively little to impose limits on the resources available
+to users on a computer -- as usual, leaning towards uncluttered simplicity
+rather than overcomplexity.
+</p>
+
+<p>
+"Doing more than one thing at a time" means running more than
+one program at the same time. You do this when you invoke a
+pipeline; you can also do it by logging on to a Unix system
+as many times simultaneously as you wish.
+<a name="IXT-1-287086" />
+(If you try that on an IBM VM/CMS system, for example, you get an
+obnoxious "already logged in" message.)
+</p>
+
+<p>
+The shell also lets you run more than one command at a time
+during a single login session. Normally, when you type a command
+and hit ENTER, the shell lets the command have control of your
+terminal until it is done; you can't run further commands until
+the first one finishes. But if you want to run a command that does
+not require user input and you want to do other things while the
+command is running, put an ampersand (<tt class="literal">&amp;</tt>) after the command.
+<a name="IXT-1-287087" />
+<a name="IXT-1-287088" />
+<a name="IXT-1-287089" />
+<a name="IXT-1-287090" />
+<a name="IXT-1-287091" />
+<a name="IXT-1-287092" />
+<a name="korn2-IDXTERM-202" />
+</p>
+
+<p>
+<a name="IXT-1-287093" />
+
+This is called running the command in the background, and a command
+that runs in this way is called a <em class="emphasis">background job</em>; for
+contrast, a job run the normal way is called a <em class="emphasis">foreground job</em>.
+When you start a background job, you get your shell prompt back
+immediately, enabling you to enter other commands.
+</p>
+
+<p>
+<a name="IXT-1-287094" />
+<a name="IXT-1-287095" />
+
+The most obvious use for background jobs is programs that can
+take a long time to run, such as <em class="emphasis">sort</em> or
+<em class="emphasis">gunzip</em> on large files. For example, assume you
+just got an enormous compressed file loaded into your directory
+from magnetic tape.
+<a name="IXT-1-287096" />
+Today, the <em class="emphasis">gzip</em> utility is the de-facto
+file compression utility.  <em class="emphasis">gzip</em> often achieves
+50% to 90% compression of its input files.
+The compressed files
+have names of the form <em class="emphasis">filename.gz</em>, where <em class="emphasis">filename</em> is
+the name of the original uncompressed file.
+Let's say the file is <em class="emphasis">gcc-3.0.1.tar.gz</em>, which is a
+compressed archive file that contains well over 36 MB of
+source code files.
+</p>
+
+<p>
+Type <tt class="literal">gunzip gcc-3.0.1.tar.gz &amp;</tt>,
+and the system starts a job in the
+background that uncompresses the data "in place" and ends
+up with the file <em class="emphasis">gcc-3.0.1.tar</em>.
+Right after you type the command, you see a line like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+[1]     4692
+</pre></blockquote>
+</p>
+
+<p>
+followed by your shell prompt, meaning that you can enter
+other commands. Those numbers give you
+ways of referring to your background job; <a href="ch08_01.htm">Chapter 8</a>
+explains them in detail.
+</p>
+
+<p>
+<a name="IXT-1-287097" />
+You can check on background jobs with the command <em class="emphasis">jobs</em>.
+For each background job, <em class="emphasis">jobs</em> prints a line similar
+to the above but with an indication of the job's status:
+</p>
+
+<p>
+<blockquote><pre class="code">
+[1]  +  Running                 gunzip gcc-3.0.1.tar.gz
+</pre></blockquote>
+</p>
+
+<p>
+When the job finishes, you see a message
+like this right before your shell prompt:
+</p>
+
+<p>
+<blockquote><pre class="code">
+[1] +  Done                     gunzip gcc-3.0.1.tar.gz
+</pre></blockquote>
+</p>
+
+<p>
+The message changes if your background job terminated with
+an error; again, see <a href="ch08_01.htm">Chapter 8</a> for details.
+</p>
+
+<a name="korn2-CHP-1-SECT-8.1" /><div class="sect2">
+<h3 class="sect2">1.8.1. Background I/O</h3>
+
+<p>
+<a name="IXT-1-287098" />
+
+Jobs you put in the
+background should not do I/O to your terminal.
+Just think about it for a moment and you'll understand why.
+</p>
+
+<p>
+By definition, a background job doesn't have control over
+your terminal. Among other things, this means that only the
+foreground process (or, if none, the shell itself) is "listening"
+for input from your keyboard. If a background job needs keyboard
+input, it will often just sit there doing nothing until you
+do something about it (as described in <a href="ch08_01.htm">Chapter 8</a>).
+</p>
+
+<p>
+If a background job produces screen output, the output will just appear on your screen.
+If you are running a job in the foreground that also produces output, the output from the two jobs will be randomly
+(and often annoyingly) interspersed.
+</p>
+
+<p>
+If you want to run a job in the background that expects standard
+input or produces standard output, the obvious solution is
+to redirect it so that it comes from or goes to a file. The only
+exception is that some programs produce small, one-line messages
+(warnings, "done" messages, etc.); you may not mind if these are
+interspersed with whatever other output you are seeing at a
+given time.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-209" />
+For example, the <em class="emphasis">diff</em> utility examines two files,
+whose names are given as arguments, and prints a summary of
+their differences on the standard output. If the files are
+exactly the same, <em class="emphasis">diff</em> is silent. Usually, you invoke
+<em class="emphasis">diff</em> expecting to see a few lines that are different.
+</p>
+
+<p>
+
+<em class="emphasis">diff</em>, like <em class="emphasis">sort</em> and <em class="emphasis">gzip</em>,
+can take a long
+time to run if the input files are very large. Suppose you have
+two large files called <em class="emphasis">warandpeace.html</em>
+and <em class="emphasis">warandpeace.html.old</em>.
+The command <tt class="literal">diff warandpeace.html.old warandpeace.html</tt>
+reveals that the author decided to change the name "Ivan"
+to "Aleksandr" throughout the entire file -- i.e., hundreds of
+differences, resulting in large amounts of output.
+</p>
+
+<p>
+If you type <tt class="literal">diff warandpeace.html.old warandpeace.html &amp;</tt>,
+then the system will spew lots and lots of output at you,
+which it will be very difficult to stop -- even with the techniques
+explained in <a href="ch07_01.htm">Chapter 7</a>.  However, if you type:
+</p>
+
+<p>
+<blockquote><pre class="code">
+diff warandpeace.html.old warandpeace.html &gt; wpdiff &amp;
+</pre></blockquote>
+</p>
+
+<p>
+the differences will be saved in the file <em class="emphasis">wpdiff</em>
+for you to examine later.
+<a name="IXTR3-56" />
+</p>
+
+</div>
+
+<a name="korn2-CHP-1-SECT-8.2" /><div class="sect2">
+<h3 class="sect2">1.8.2. Background Jobs and Priorities</h3>
+
+<p>
+Background jobs can save you a lot of thumb-twiddling time
+(or can help you diet by eliminating excuses to run to the
+candy machine).
+But remember that there is no free lunch; background
+jobs take resources that become unavailable to you or
+other users on your system.
+Just because you're running several jobs at once
+doesn't mean
+that they will run faster than they
+would if run sequentially -- in fact, it's usually worse.
+</p>
+
+<p>
+<a name="IXT-1-287099" />
+<a name="IXT-1-287100" />
+
+Every job on the system is assigned a <em class="emphasis">priority</em>, a number
+that tells the operating system how much priority to give the
+job when it doles out resources (the higher the number, the lower
+the priority). Foreground commands that you enter
+from the shell usually have the same, standard priority.
+But background jobs, by default,<?troff .ne 10?> have lower priority.<a href="#FOOTNOTE-14">[14]</a>
+You'll find out in <a href="ch03_01.htm">Chapter 3</a> how you can override this priority assignment
+so that background jobs run at the same priority as foreground
+jobs.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-14" /><p> [14]
+This feature was borrowed from the C shell; it is not
+present in most Bourne shells.
+</p>
+</blockquote>
+
+<p>
+If you're on a large multiuser system, running lots
+of background jobs may eat up more than your fair
+share of the shared resources, and you should consider whether having
+your job run as fast as possible is really more important than
+being a good citizen.
+</p>
+
+<p>
+On the other hand, if you have a dedicated workstation with a fast
+processor and loads of memory and disk, then you probably have cycles to spare
+and shouldn't worry about it as much.
+The typical usage pattern on such systems largely obviates the need for
+background processes anyway: you can just start a job and then open another
+window and keep working.
+</p>
+
+<a name="korn2-CHP-1-SECT-8.2.1" /><div class="sect3">
+<h3 class="sect3">1.8.2.1. nice</h3>
+
+<p>
+<a name="korn2-IDXTERM-213" />
+Speaking of good citizenship, there is also a shell command
+that lets you lower the priority of any job: the aptly-named
+<em class="emphasis">nice</em>. If you type the following, the command will
+run at a lower priority:
+
+<blockquote><pre class="code">
+nice <em class="replaceable"><tt>command</tt></em>
+</pre></blockquote></p><p>
+
+You can control just how much lower
+by giving <em class="emphasis">nice</em> a numerical argument; consult the man
+page for details.<a href="#FOOTNOTE-15">[15]</a>
+<a name="IXTR3-57" />
+<a name="IXTR3-58" />
+<a name="IXTR3-59" />
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-15" /><p> [15]
+If you are a system administrator logged in as <tt class="literal">root</tt>, you can also use <em class="emphasis">nice</em> to raise a job's priority.
+</p>
+</blockquote>
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.7. Input and Output</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.9. Special Characters and Quoting</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

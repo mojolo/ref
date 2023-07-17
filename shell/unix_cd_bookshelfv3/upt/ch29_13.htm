@@ -1,0 +1,376 @@
+<html><head><title>Propagating Shell Functions (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch29_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch29_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">29.13. Propagating Shell Functions</h2>
+
+<p><a name="upt3-IDXTERM-4574" /> <a name="upt3-IDXTERM-4575" />
+<a name="upt3-IDXTERM-4576" />One easy way to define shell functions
+that you'll have every time you start a new shell is
+by defining them in your <b class="emphasis-bold">shell setup
+files</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>). Here are two other
+ways.
+</p>
+
+<a name="upt3-CHP-29-SECT-13.1" /><div class="sect2">
+<h3 class="sect2">29.13.1. Exporting bash Functions</h3>
+
+<p><a name="IXT-29-4482" /> <a name="IXT-29-4483" /> <a name="IXT-29-4484" />In
+<i class="command">bash</i><a name="IXT-29-4485" /> <a name="IXT-29-4486" />, you can export functions to
+other <b class="emphasis-bold">bash subshells</b> (<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>). (The original Korn shell, but not the
+public-domain version, supposedly does this too, but I
+haven't had much luck with it.) Just use the command
+<i class="command">typeset</i> -<span class="option">fx</span>
+<em class="emphasis">funcname</em>, where <em class="emphasis">funcname</em> is
+the name of the function.
+</p>
+
+<p>How does this work? It stores the function in an <b class="emphasis-bold">environment variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) whose value starts with <tt class="literal">(
+)</tt>. You can see this with <b class="emphasis-bold">printenv or
+env</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>). For example,
+let's define a simple function named
+<i class="command">dir</i>, export it, start a subshell, run the
+function, and look for it in the environment:
+</p>
+
+<blockquote><pre class="code">bash$ <tt class="userinput"><b>function dir( ) { ls -F "$@"; }</b></tt>
+bash$ <tt class="userinput"><b>typeset -fx dir</b></tt>         <i class="lineannotation">...export the function</i>
+bash$ <tt class="userinput"><b>bash</b></tt>                    <i class="lineannotation">...start subshell</i>
+bash$ <tt class="userinput"><b>dir</b></tt>                     <i class="lineannotation">...the function still works</i>
+,ptbk.last            ch14.sgm    ch36.ps.gz          fmt/
+,xrefs.list           ch15.ps.gz  ch36.sgm            gmatlogs/
+bash$ <tt class="userinput"><b>printenv</b></tt>
+   <i class="lineannotation">...lots of environment variables...</i>
+dir=( ) {  ls -F "$@"
+}</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-29-SECT-13.2" /><div class="sect2">
+<h3 class="sect2">29.13.2. FPATH Search Path</h3>
+
+<p><a name="upt3-IDXTERM-4582" /> <a name="upt3-IDXTERM-4583" /> <a name="upt3-IDXTERM-4584" /> <a name="upt3-IDXTERM-4585" />Both <i class="command">ksh</i> and
+<i class="command">zsh</i> will automatically search for functions in the
+<b class="emphasis-bold">PATH variable</b>
+(<a name="IXT-29-4487" /><a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a>). So you can
+put a function in a file with the same name as the function (for
+instance, put the function <i class="command">foo</i> in a file named
+<em class="emphasis">foo</em>), and make the file executable (with
+<b class="emphasis-bold">chmod +x foo</b> (<a href="ch35_01.htm#upt3-CHP-35-SECT-1">Section 35.1</a>)), and then the shell can find the function.
+</p>
+
+<p><a name="IXT-29-4488" /><a name="IXT-29-4489" /><a name="IXT-29-4490" />I don't like to use
+<em class="emphasis">PATH</em> for function-searching, though. One reason
+is that <em class="emphasis">PATH</em> is passed to
+<em class="emphasis">all</em> Unix processes -- but if the process
+isn't a shell and it tries to execute a function
+file, it'll probably fail in an ugly way.<a href="#FOOTNOTE-94">[94]</a>
+Also, making a file executable if you don't tell the
+kernel how to execute it seems to me a recipe for trouble. A better
+way to help the shell find functions is to set a function search path
+in the <em class="emphasis">FPATH</em><a name="upt3-IDXTERM-4590" /> <a name="upt3-IDXTERM-4591" />
+environment variable; it has the same syntax as
+<em class="emphasis">PATH</em>. (In <i class="command">zsh</i>, you can also
+set the <em class="emphasis">fpath</em> array -- with the same syntax
+as <em class="emphasis">path</em>.) In <em class="emphasis">FPATH</em>, list
+directories that hold function files. In <em class="emphasis">ksh</em>,
+those files don't even need execute permission! Then
+<i class="command">ksh</i> and <i class="command">zsh</i> will search the
+<em class="emphasis">FPATH</em> directories if they can't
+find an executable file in the <em class="emphasis">PATH</em>.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-94" /><p> [94]<i class="command">zsh</i> lets you define a function in a function
+file without the enclosing
+<em class="replaceable"><tt>funcname</tt></em><tt class="literal">( ) {</tt> and
+<tt class="literal">}</tt> syntax. Then the file could be directly executed
+in a subshell by some shell that doesn't understand
+functions. I'm not sure I'd ever
+use this because running a function this way -- as an <b class="emphasis-bold">external command instead of an internal
+command</b> (<a href="ch01_09.htm#upt3-CHP-1-SECT-9">Section 1.9</a>) -- means the
+function can't access or modify the environment of
+the shell that's running it, which is one of the
+reasons for writing a shell function in the first place! But, like
+everything in <i class="command">zsh</i>, I'm sure
+someone had a good reason for making this work.</p> </blockquote>
+
+<p>Would you like the shells to search <em class="emphasis">FPATH</em> before
+<em class="emphasis">PATH</em>, so that a function will be executed before
+a standard command with the same name? (I would. After all, if I
+define a function from a shell prompt or shell setup file like
+<em class="filename">.zshrc</em>, that function will be run instead of a
+standard executable.) Here's how to set that up.
+Tell the shell to
+<em class="emphasis">autoload</em><a name="IXT-29-4491" /> the function. Autoloading happens
+automatically <em class="emphasis">if</em> there's no
+match found in <em class="emphasis">PATH</em> -- because, as I said
+above, the shell falls back to <em class="emphasis">FPATH</em> if it
+doesn't find a match in <em class="emphasis">PATH</em>.
+But if you want the shell to look for a particular name in
+<em class="emphasis">FPATH</em> before it tries <em class="emphasis">PATH</em>,
+you have to autoload the function. Autoloading a function
+doesn't actually define the function (read the
+function body into the shell); it simply declares that the function
+exists -- so the shell will remember that when you eventually want
+to execute the function.
+</p>
+
+<p>This has a few twists, so let's look at each shell
+separately. You might want to do this yourself and follow along: When
+I first played with <em class="emphasis">FPATH</em>, I made two
+subdirectories of <em class="filename">/tmp</em> named
+<em class="emphasis">a</em> and <em class="emphasis">b</em>. Each directory had
+three simple function files named <em class="emphasis">func1</em>,
+<em class="emphasis">func2</em>, and <i class="command">foo</i>. The functions
+<em class="emphasis">func1</em> and <em class="emphasis">func2</em> simply
+<i class="command">echo</i> a message with their name and location.
+<i class="command">foo</i> invokes a shell script of the same name, but
+first uses <b class="emphasis-bold">set -xv</b> (<a href="ch37_01.htm#upt3-CHP-37-SECT-1">Section 37.1</a>) for debugging. <i class="command">func1</i> was a
+single-line function and <i class="command">func2</i> was multiline. The
+files in <em class="filename">/tmp/a</em> weren't
+executable, and the ones in <em class="filename">/tmp/b</em> were
+executable. I set the <em class="emphasis">FPATH</em> environment variable
+(set the shell variable and <i class="command">export</i>ed it) to
+<tt class="literal">/tmp/a:/tmp/b</tt> -- so the shells should try the
+nonexecutable function files before falling back to the executables.
+After setting that up, I started a <i class="command">ksh</i> subshell
+and played around. Then I <i class="command">exit</i>ed the
+<i class="command">ksh</i> and started a <i class="command">zsh</i>.
+</p>
+
+<a name="upt3-CHP-29-SECT-13.2.1" /><div class="sect3">
+<h3 class="sect3">29.13.2.1. Korn shell</h3>
+
+<p><a name="IXT-29-4492" /><a name="IXT-29-4493" /><a name="IXT-29-4494" /><a name="IXT-29-4495" />Here's what happened in
+<i class="command">pdksh</i><a name="IXT-29-4496" />. The standard
+<i class="command">ksh</i> is similar but not as verbose:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo $FPATH</b></tt>
+/tmp/a:/tmp/b
+$ <tt class="userinput"><b>type func1</b></tt>
+func1 is a undefined (autoload from /tmp/a/func1) function
+$ <tt class="userinput"><b>func1</b></tt>
+This is func1 from /tmp/a, a single-line unexecutable function
+$ <tt class="userinput"><b>type func1</b></tt>
+func1 is a function
+
+$ <tt class="userinput"><b>typeset -f func2</b></tt>
+$ <tt class="userinput"><b>type func2</b></tt>
+func2 is a undefined (autoload from /tmp/a/func2) function
+$ <tt class="userinput"><b>func2</b></tt>
+This is func2 from /tmp/a, a multi-line unexecutable function
+$ <tt class="userinput"><b>typeset -f func2</b></tt>
+func2( ) {
+    echo "This is func2 from /tmp/a, a multi-line unexecutable function"
+}
+
+$ <tt class="userinput"><b>type foo</b></tt>
+foo is /home/jpeek/.bin/foo
+$ <tt class="userinput"><b>autoload foo</b></tt>
+$ <tt class="userinput"><b>type foo</b></tt>
+foo is a undefined (autoload from /tmp/a/foo) function
+$ <tt class="userinput"><b>cat /tmp/a/foo</b></tt>
+foo( ) { sh -xv $HOME/.bin/foo "$@"; }
+$ <tt class="userinput"><b>foo</b></tt>
+#!/bin/sh
+echo "Welcome to the exciting $0 program..."
++ echo Welcome to the exciting /home/jpeek/.bin/foo program...
+Welcome to the exciting /home/jpeek/.bin/foo program...
+$ <tt class="userinput"><b>type foo</b></tt>
+foo is a function</pre></blockquote>
+
+<p>Here's what happened with <i class="command">func1</i>,
+<i class="command">func2</i>, and <i class="command">foo</i>:
+</p>
+
+<ul><li>
+<p>First, without autoloading, I use <b class="emphasis-bold">type</b> (<a href="ch02_06.htm#upt3-CHP-2-SECT-6">Section 2.6</a>) to see if
+the shell has found <i class="command">func1</i> anywhere.
+There's no <i class="command">func1</i> along the
+<em class="emphasis">PATH</em>, so the shell searches
+<em class="emphasis">FPATH</em> -- and finds it. So
+<i class="command">func1</i> is automatically marked for autoloading;
+note that I didn't have to autoload it myself
+because there's no <i class="command">func1</i> in a
+<em class="emphasis">PATH</em> directory. I run <i class="command">func1</i>,
+then use <i class="command">type</i> again; now the shell confirms that
+it's read the function definition and
+<i class="command">func</i> has been loaded into the shell.
+</p>
+</li><li>
+<p>Next I played with <i class="command">func2</i>. <b class="emphasis-bold">typeset -f</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>)
+shows that the shell doesn't have a definition for
+the function yet, but <i class="command">type</i> shows that the function
+declaration has been autoloaded. (This isn't just
+academic. If you edit a function definition file,
+it's good to know whether the shell has already
+loaded a copy of a previous definition.) I run the function, then use
+<i class="command">typeset</i> to display the function, which has been
+loaded (of course!) by now.
+</p>
+</li>
+
+<li>
+<p>Because there's a program named
+<i class="command">foo</i> in my <em class="emphasis">PATH</em>,
+<i class="command">type</i> shows that. But I want the shell to use my
+front-end <i class="command">foo</i> function, so I run
+<em class="emphasis">autoload</em> -- and then <i class="command">type</i>
+confirms that the shell looked down <em class="emphasis">FPATH</em> and
+found the function in <em class="filename">/tmp/a</em>. The function
+definition hasn't been loaded yet, so I use
+<b class="emphasis-bold">cat</b> (<a href="ch12_02.htm#upt3-CHP-12-SECT-2">Section 12.2</a>)
+to display the function file. I run the <i class="command">foo</i>
+function; because it set the shell's verbose and
+echo flags, you can see the contents of the <i class="command">foo</i>
+shell script and the commands that are executed. Finally,
+<i class="command">type</i> shows that the shell will now run the
+function when I execute <i class="command">foo</i>.
+</p>
+</li>
+</ul>
+
+<p>If you'd like to be sure that all the functions in
+your <em class="emphasis">FPATH</em> are autoloaded -- especially if
+you add new ones pretty often -- here's a way to
+do it. Put code like this in your <b class="emphasis-bold">ENV</b> <b class="emphasis-bold">setup
+file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>):
+</p>
+
+<p><tt class="literal">IFS</tt> <a href="ch36_23.htm#upt3-CHP-36-SECT-23">Section 36.23</a>, <tt class="literal">for</tt> <a href="ch28_09.htm#upt3-CHP-28-SECT-9">Section 28.9</a></p>
+
+
+<blockquote><pre class="code"># Autoload all functions in FPATH directories.
+# Temporarily add a colon (:) to IFS to parse FPATH:
+old_ifs="$IFS"; IFS=":$IFS"
+for d in $FPATH
+do autoload `ls $d`
+done
+IFS="$oldifs"; unset old_ifs</pre></blockquote>
+
+<p>If a directory in <em class="emphasis">FPATH</em> is empty,
+<i class="command">autoload</i><a name="IXT-29-4497" />
+gets no arguments and, in that case, shows the function definitions
+it has already autoloaded. I only put a directory in my
+<em class="emphasis">FPATH</em> if it has functions to load. If you might
+have an empty directory in yours, you can avoid seeing the
+<i class="command">autoload</i> output by editing that code to store the
+output of <i class="command">ls</i> in a shell variable and running
+<i class="command">autoload</i> only if the variable
+isn't empty.</p>
+
+</div>
+
+<a name="upt3-CHP-29-SECT-13.2.2" /><div class="sect3">
+<h3 class="sect3">29.13.2.2. zsh</h3>
+
+<p><a name="IXT-29-4498" /><a name="IXT-29-4499" /><a name="IXT-29-4500" /><a name="IXT-29-4501" />The
+<i class="command">zsh</i><a name="IXT-29-4502" /> system
+is mostly like <i class="command">ksh</i>. The difference is that
+<i class="command">zsh</i> doesn't automatically search
+<em class="emphasis">FPATH</em>. You have to manually autoload any
+function that you want <i class="command">zsh</i> to search for in
+<em class="emphasis">FPATH</em>.
+</p>
+
+<blockquote><pre class="code">zsh$ <tt class="userinput"><b>echo $FPATH</b></tt>
+/tmp/a:/tmp/b
+zsh$ <tt class="userinput"><b>type func1</b></tt>
+func1 not found
+zsh$ <tt class="userinput"><b>func1</b></tt>
+zsh: command not found: func1
+zsh$ <tt class="userinput"><b>autoload func1</b></tt>
+zsh$ <tt class="userinput"><b>type func1</b></tt>
+func1 is a shell function
+zsh$ <tt class="userinput"><b>func1</b></tt>
+This is func1 from /tmp/a, a single-line unexecutable function
+zsh$ <tt class="userinput"><b>type func1</b></tt>
+func1 is a shell function
+
+zsh$ <tt class="userinput"><b>autoload func2</b></tt>
+zsh$ <tt class="userinput"><b>typeset -f func2</b></tt>
+undefined func2 ( ) { }
+zsh$ <tt class="userinput"><b>func2</b></tt>
+This is func2 from /tmp/a, a multi-line unexecutable function
+zsh$ <tt class="userinput"><b>typeset -f func2</b></tt>
+func2 ( ) {
+   echo "This is func2 from /tmp/a, a multi-line unexecutable function"
+}
+
+zsh$ <tt class="userinput"><b>type foo</b></tt>
+foo is /home/jpeek/.bin/foo
+zsh$ <tt class="userinput"><b>autoload foo</b></tt>
+zsh$ <tt class="userinput"><b>foo</b></tt>
+#!/bin/sh
+echo "Welcome to the exciting $0 program..."
++ echo Welcome to the exciting /home/jpeek/.bin/foo program...
+Welcome to the exciting /home/jpeek/.bin/foo program...
+zsh$ <tt class="userinput"><b>type foo</b></tt>
+foo is a shell function</pre></blockquote>
+
+<p>I won't repeat all of the explanation from the
+<i class="command">ksh</i> section. Instead, let's just
+look at the differences:
+</p>
+
+<ul><li>
+<p>The first examples show that <i class="command">zsh</i>
+won't look down <em class="emphasis">FPATH</em> for
+<i class="command">func1</i>. Once you autoload the function,
+<i class="command">type</i> doesn't give you a clue
+whether the function has been defined or just declared.
+</p>
+</li><li>
+<p>In <i class="command">zsh</i>, you can see whether a function has been
+defined by using <i class="command">typeset</i> -<span class="option">f</span>
+(instead of <i class="command">type</i>). After autoloading it,
+<i class="command">func2</i> has been declared but not defined. As the
+example shows, running the function once loads the definition.
+</p>
+</li></ul>
+<p>If you'd like to be sure that all the functions in
+your <em class="emphasis">FPATH</em> are autoloaded -- especially if
+you add new ones pretty often -- here's how to do
+it in <i class="command">zsh</i>. Put code like this in a per-shell
+<b class="emphasis-bold">setup file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) -- typically <em class="emphasis">.zshrc</em>:
+</p>
+
+<blockquote><pre class="code"># Autoload all functions in fpath directories:
+for d in $fpath
+do autoload `ls $d`
+done</pre></blockquote>
+
+<p>The code is simpler than in <i class="command">ksh</i> because we can
+step through the <em class="emphasis">fpath</em> array without parsing it
+at colon (:) characters. As in <i class="command">ksh</i>, though,
+you'll want to tweak the code if a directory in
+<em class="emphasis">fpath</em> might be empty: store the output of
+<i class="command">ls</i> in an array and run <i class="command">autoload</i>
+only if the <a name="IXTR3-4524" /> <a name="IXTR3-4525" />array has <a name="IXTR3-4526" /> <a name="IXTR3-4527" /> <a name="IXTR3-4528" /> <a name="IXTR3-4529" />members.<a name="IXTR3-4530" /> <a name="IXTR3-4531" /> <a name="IXTR3-4532" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch29_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch29_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">29.12. Shell Function Specifics</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">29.14. Simulated Bourne Shell Functions and Aliases</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

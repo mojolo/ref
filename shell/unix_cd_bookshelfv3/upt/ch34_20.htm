@@ -1,0 +1,120 @@
+<html><head><title>Making Edits Everywhere Except... (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.20. Making Edits Everywhere Except...</h2>
+
+<p><a name="IXT-34-796" />There are two ways in
+<i class="command">sed</i> to avoid specified portions of a document
+while making the edits everywhere else. You can use the
+<i class="command">!</i><a name="IXT-34-797" /> command to specify that the edit
+applies only to lines that <em class="emphasis">do not</em> match the
+pattern. Another approach is to use the
+<em class="emphasis">b</em><a name="IXT-34-798" /> <a name="IXT-34-799" /> (branch) command to skip over
+portions of the editing script. Let's look at an
+example.
+</p>
+
+<p>We've used <i class="command">sed</i> to preprocess the
+input to <i class="command">troff</i> so that <a name="IXT-34-800" />double dashes ( -- ) are converted
+automatically to em-dashes ( -- ) and straight
+<a name="IXT-34-801" />quotes are
+converted to curly quotes.
+However, program examples in technical books are usually shown in a
+constant-width font that clearly shows each character as it appears
+on the computer screen. When typesetting a document, we
+don't want <i class="command">sed</i>
+to apply the same editing rules within these examples as it does to
+the rest of the document. For instance, straight quotes should not be
+replaced by curly quotes.
+</p>
+
+<p>Because program examples are set off by a pair of macros (something
+like .ES and .EE, for "Example
+Start" and "Example
+End"), we can use those as the basis for exclusion.
+Here's some sample text that includes an example:
+</p>
+
+<blockquote><pre class="code">.LP
+The \fItrue\fP command returns a zero exit status.
+As Joe says, "this is only useful in programming":
+.ES
+% \fBtrue\fP
+% \fBecho "the status was $status"\fP
+the status was 0
+.EE</pre></blockquote>
+
+<p>So you can say:</p>
+
+<blockquote><pre class="code">/^\.ES/,/^\.EE/!{
+   s/^"/``/
+       ...
+   s/\\(em"/\\(em``/g
+}</pre></blockquote>
+
+<p>All of the commands enclosed in braces
+(<tt class="literal">{}</tt><a name="IXT-34-802" />) will be subject to the initial pattern
+address.
+</p>
+
+<p>There is another way to accomplish the same thing. The
+<em class="emphasis">b</em><a name="IXT-34-803" /> <a name="IXT-34-804" /> command allows you to transfer
+control to another line in the script that is marked with an optional
+label. Using this feature, you could write the previous script like
+this:
+</p>
+
+<blockquote><pre class="code">/^\.ES/,/^\.EE/bend
+s/^"/``/
+   ...
+s/\\(em"/\\(em``/g
+:end</pre></blockquote>
+
+<p>A label consists of a colon (:) followed by up to seven characters.
+If the label is missing, the <em class="emphasis">b</em> command branches
+to the end of the script. (In the example above, the label
+<tt class="literal">end</tt> was included just to show how to use one, but
+a label is not really necessary here.)
+</p>
+
+<p>The <em class="emphasis">b</em> command is designed for flow control
+within the script. It allows you to create subscripts that will be
+applied only to lines matching certain patterns and not elsewhere.
+However, as in this case, it also provides a powerful way to exempt
+part of the text from the action of a single-level script.
+</p>
+
+<p>The advantage of <em class="emphasis">b</em> over <em class="emphasis">!</em>
+for this application is that you can more easily specify multiple
+conditions to avoid. The <em class="emphasis">!</em> command can be
+applied to a single command or to the set of commands, enclosed in
+braces, that immediately follows. On the other hand,
+<em class="emphasis">b</em> gives you almost unlimited control over
+movement around the script.
+</p>
+
+<p> <em class="emphasis">-- TOR</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.19. Multiline Delete</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.21. The sed Test Command</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

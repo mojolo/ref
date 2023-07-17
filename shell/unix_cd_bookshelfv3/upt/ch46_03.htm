@@ -1,0 +1,204 @@
+<html><head><title>Status and Troubleshooting (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch46_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch46_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">46.3. Status and Troubleshooting</h2>
+
+<p><i class="command">ifconfig</i><a name="upt3-IDXTERM-7372" /> can be used to configure
+<b class="emphasis-bold">network devices</b>
+(<a name="IXT-46-474" /><a name="IXT-46-475" /><a name="IXT-46-476" /><a href="ch44_08.htm#upt3-CHP-44-SECT-8">Section 44.8</a>), but it also can be used to see the current
+network device configuration. <em class="emphasis">ifconfig -a</em> is
+very useful for this. Here's some sample output on a
+<a name="IXT-46-477" />FreeBSD machine:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ifconfig -a</b></tt>
+rl0: flags=8843&lt;UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+        inet 192.168.1.1 netmask 0xffffffc0 broadcast 192.168.1.255
+        inet 192.168.1.5 netmask 0xffffffff broadcast 192.168.1.255
+        inet 192.168.1.6 netmask 0xffffffff broadcast 192.168.1.255
+        inet 192.168.1.7 netmask 0xffffffff broadcast 192.168.1.255
+        ether 0a:5c:da:a3:53:11
+        media: autoselect (100baseTX &lt;full-duplex&gt;) status: active
+        supported media: autoselect 100baseTX &lt;full-duplex&gt; 100baseTX 10baseT/UTP
+        &lt;full-duplex&gt; 10baseT/UTP 100baseTX &lt;hw-loopback&gt;
+lo0: flags=8049&lt;UP,LOOPBACK,RUNNING,MULTICAST&gt; mtu 16384
+        inet 127.0.0.1 netmask 0xff000000</pre></blockquote>
+
+<p>This shows two network devices: <tt class="literal">rl0</tt>, which is an
+Ethernet card, and <tt class="literal">lo0</tt>, which is the loopback
+device. <tt class="literal">rl0</tt>'s primary IP address
+is 192.168.1.1, and it has aliases (that is, it also answers to)
+192.168.1.5 through 192.168.1.6. This also shows me that both network
+devices believe that they're actively sending and
+receiving packets (<tt class="literal">UP</tt>) and shows various options
+set on each device.
+</p>
+
+<p>The output on <a name="IXT-46-478" />Linux is slightly different, but
+similar enough to easily find the same information. Linux also adds a
+few statistics to its <i class="command">ifconfig</i> output that
+otherwise require a <i class="command">netstat</i> to see. Especially
+useful are packets received and transmitted:
+</p>
+
+<blockquote><pre class="code">eth0      Link encap:Ethernet  HWaddr 0a:5c:da:a3:53:11
+          inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:18999386 errors:28965 dropped:0 overruns:0 frame:28965
+          TX packets:33955631 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:29132 txqueuelen:100
+          RX bytes:1496731954 (1.3 GiB)  TX bytes:2477239809 (2.3 GiB)
+          Interrupt:10 Base address:0xda00
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:3924  Metric:1
+          RX packets:107211318 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:107211318 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:2880669120 (2.6 GiB)  TX bytes:2880669120 (2.6 GiB)</pre></blockquote>
+
+<p>Note that on <a name="IXT-46-479" />Linux 2.4
+kernels, <i class="command">ipconfig</i> and <i class="command">route</i>
+(see below) are being phased out in favor of
+<i class="command">iproute2</i>. See the manpage for
+<i class="command">iproute2</i> if you're on a 2.4
+machine and want to be up to date.
+</p>
+
+<p><i class="command">netstat</i><a name="IXT-46-480" /><a name="IXT-46-481" /> can be used to get a variety of
+useful information. By default, <i class="command">netstat</i> displays a
+list of active sockets, thus showing you what is currently connected
+to your machine (and what your machine is currently connected to).
+<i class="command">netstat -r</i> can show your
+<a name="IXT-46-482" />routing tables, which is particularly useful
+when trying to understand why your machine can't
+seem to talk to anything. If the interface appears to be up, and you
+can <b class="emphasis-bold">ping</b> (<a href="ch46_04.htm#upt3-CHP-46-SECT-4">Section 46.4</a>) other machines on your local network, but you
+can't get out, check your routing tables.
+It's quite possible that you don't
+have a default route, or your default route doesn't
+point to your <b class="emphasis-bold">gateway</b> (<a href="ch46_11.htm#upt3-CHP-46-SECT-11">Section 46.11</a>). For a private LAN running <b class="emphasis-bold">NAT</b> (<a href="ch46_11.htm#upt3-CHP-46-SECT-11">Section 46.11</a>), your
+routing table might look something like
+<a name="IXT-46-483" />this (the <span class="option">-n</span>
+option says to show IP addresses instead of attempting to resolve
+them into hostnames):
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>netstat -rn</b></tt>
+Routing tables
+
+Internet:
+Destination        Gateway            Flags     Refs     Use     Netif Expire
+default            192.168.1.1        UGSc       17   543792      rl0
+127.0.0.1          127.0.0.1          UH          2  2869882      lo0
+192.168.1.0/24     link#1             UC          0        0      rl0 =&gt;</pre></blockquote>
+
+<p>Again, on <a name="IXT-46-484" />Linux the
+output is slightly different but similar to interpret. The only thing
+to note is that 0.0.0.0 represents the default route when we use
+<span class="option">-n</span>:
+</p>
+
+<blockquote><pre class="code">Kernel IP routing table
+Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+192.168.1.0     0.0.0.0         255.255.255.0   U         0 0          0 eth0
+0.0.0.0         192.168.1.1     0.0.0.0         UG        0 0          0 eth0</pre></blockquote>
+
+<p><i class="command">route</i><a name="IXT-46-485" /> lets you manipulate the routing table.
+If, for example, you didn't see the default route
+when you used <em class="emphasis">netstat -rn</em>, you could add it
+with:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>route add default 192.168.1.1</b></tt></pre></blockquote>
+
+<p><i class="command">route</i> allows a variety of ways to manipulate the
+routing table; see its manpage for details. Note that
+<a name="IXT-46-486" />Linux's
+<i class="command">route</i> has a syntax for some commands
+that's slightly different than any other
+<i class="command">route</i>.
+</p>
+
+<p>Finally, <i class="command">dig</i><a name="IXT-46-487" /><a name="IXT-46-488" /> allows you to easily make very specific
+<b class="emphasis-bold">DNS</b> (<a href="ch46_09.htm#upt3-CHP-46-SECT-9">Section 46.9</a>)
+queries. For example, to find out information about <em class="emphasis">www.oreilly.com</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>dig www.oreilly.com</b></tt>
+...
+;; ANSWER SECTION:
+www.oreilly.com.        6H IN A         209.204.146.22
+
+;; AUTHORITY SECTION:
+oreilly.com.            6H IN NS        ns.oreilly.com.
+oreilly.com.            6H IN NS        ns1.sonic.net.
+...</pre></blockquote>
+
+<p><a name="IXT-46-489" /> <a name="IXT-46-490" />This shows us the address
+(<tt class="literal">A</tt>) record and the <a name="IXT-46-491" />nameservers (<tt class="literal">NS</tt>) that
+have authority over this particular address. If we want to find out
+the <a name="IXT-46-492" />hostname for
+that IP address, we can do this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>dig -x 209.204.146.22</b></tt>
+;; ANSWER SECTION:
+...
+22.146.204.209.in-addr.arpa.  6H IN PTR  www.oreilly.com.
+
+;; AUTHORITY SECTION:
+146.204.209.in-addr.arpa.  6H IN NS  ns.oreilly.com.
+146.204.209.in-addr.arpa.  6H IN NS  ns1.sonic.net.
+...</pre></blockquote>
+
+<p>This automatically deals with the details of reverse DNS lookups for
+us and shows us the
+<a name="IXT-46-493" /> <a name="IXT-46-494" />pointer (<tt class="literal">PTR</tt>) record
+for that IP address, which tells us the canonical hostname. If we
+want to find out where mail should go:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>dig oreilly.com mx</b></tt>
+...
+;; ANSWER SECTION:
+oreilly.com.            6H IN MX        20 smtp2.oreilly.com.
+
+;; AUTHORITY SECTION:
+oreilly.com.            6H IN NS        ns.oreilly.com.
+oreilly.com.            6H IN NS        ns1.sonic.net.
+...</pre></blockquote>
+
+<p>This shows us the <a name="IXT-46-495" /><a name="IXT-46-496" />mail exchanger (<tt class="literal">MX</tt>)
+record, which is where we ought to be sending mail. Any information
+stored in DNS can be found out with the right <i class="command">dig</i>
+query; browse the manpage to get an idea.
+</p>
+
+<p><em class="emphasis">DJPH<a name="IXTR3-630" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch46_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch46_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">46.2. /etc/services Is Your Friend</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">46.4. Where, Oh Where Did That Packet Go?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

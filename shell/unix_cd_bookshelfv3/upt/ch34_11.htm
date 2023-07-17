@@ -1,0 +1,109 @@
+<html><head><title>Referencing Portions of a Search String (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.11. Referencing Portions of a Search String</h2>
+
+<p><a name="IXT-34-741" /><a name="IXT-34-742" /><a name="IXT-34-743" />In <i class="command">sed</i>, the
+<a name="IXT-34-744" />substitution command
+provides metacharacters to select any individual portion of a string
+that is matched and recall it in the replacement string. A pair of
+escaped parentheses are used in <i class="command">sed</i> to enclose any
+part of a regular expression and save it for recall. Up to nine
+"saves" are permitted for a single
+line. <tt class="literal">\</tt><em class="replaceable"><tt>n</tt></em> is used to
+recall the portion of the match that was saved, where
+<em class="replaceable"><tt>n</tt></em> is a number from 1 to 9 referencing a
+particular "saved" string in order
+of use. (<a href="ch32_13.htm#upt3-CHP-32-SECT-13">Section 32.13</a> has more information.)
+</p>
+
+<p><a name="IXT-34-745" />For example, when converting a
+plain-text document into HTML, we could convert section numbers that
+appear in a cross-reference into an HTML hyperlink. The following
+expression is broken onto two lines for printing, but you should type
+all of it on one line:
+</p>
+
+<blockquote><pre class="code">s/\([sS]ee \)\(Section \)\([1-9][0-9]*\)\.\([1-9][0-9]*\)/
+   \1&lt;a href="#SEC-\3_\4"&gt;\2\3.\4&lt;\/a&gt;/</pre></blockquote>
+
+<p>Four pairs of escaped parentheses are specified. String 1 captures
+the word <em class="emphasis">see</em> with an upper- or lowercase
+<em class="emphasis">s</em>. String 2 captures the section number (because
+this is a fixed string, it could have been simply retyped in the
+replacement string). String 3 captures the part of the section number
+before the decimal point, and String 4 captures the part of the
+section number after the decimal point. The replacement string
+recalls the first saved substring as <tt class="literal">\1</tt>. Next
+starts a link where the two parts of the section number,
+<tt class="literal">\3</tt> and <tt class="literal">\4</tt>, are separated by an
+underscore (<tt class="literal">_</tt>) and have the string
+<tt class="literal">SEC-</tt> before them. Finally, the link text replays
+the section number again -- this time with a decimal point between
+its parts. Note that although a dot (.) is special in the search
+pattern and has to be quoted with a backslash there,
+it's not special on the replacement side and can be
+typed literally. Here's the script run on a short
+test document, using <b class="emphasis-bold">checksed</b> (<a href="ch34_04.htm#upt3-CHP-34-SECT-4">Section 34.4</a>): 
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>checksed testdoc</b></tt>
+********** &lt; = testdoc    &gt; = sed output **********
+8c8
+&lt; See Section 1.2 for details.
+---
+&gt; See &lt;a href="#SEC-1_2"&gt;Section 1.2&lt;/a&gt; for details.
+19c19
+&lt; Be sure to see Section 23.16!
+---
+&gt; Be sure to see &lt;a href="#SEC-23_16"&gt;Section 23.16&lt;/a&gt;!</pre></blockquote>
+
+<p>We can use a similar technique to match parts of a line and swap
+them. For instance, let's say there are two parts of
+a line separated by a colon. We can match each part, putting them
+within escaped parentheses and swapping them in the replacement:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat test1</b></tt>
+first:second
+one:two
+% <tt class="userinput"><b>sed 's/\(.*\):\(.*\)/\2:\1/' test1</b></tt>
+second:first
+two:one</pre></blockquote>
+
+<p>The larger point is that you can recall a saved substring in any
+order and multiple times. If you find that you need more than nine
+saved matches, or would like to be able to group them into matches
+and submatches, take a look at Perl.
+</p>
+
+<p><a href="ch43_10.htm#upt3-CHP-43-SECT-10">Section 43.10</a>, <a href="ch31_10.htm#upt3-CHP-31-SECT-10">Section 31.10</a>,
+<a href="ch10_09.htm#upt3-CHP-10-SECT-9">Section 10.9</a>, and <a href="ch36_23.htm#upt3-CHP-36-SECT-23">Section 36.23</a> have
+examples.
+</p>
+
+<p>--<em class="emphasis">DD and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.10. Referencing the Search String in a Replacement</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.12. Search and Replacement: One Match Among Many</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,182 @@
+<html><head><title>Differences Between Bourne and C Shell Quoting (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch27_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">27.13. Differences Between Bourne and C Shell Quoting</h2>
+
+<p>This <a name="upt3-IDXTERM-4074" />
+<a name="upt3-IDXTERM-4075" /> <a name="upt3-IDXTERM-4076" />article explains quoting in C-type
+shells by comparing them to Bourne-type shell quoting. If you
+haven't read <a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>
+about Bourne shell quoting, please do so now.
+</p>
+
+<p>As in the Bourne shell, the overall idea of C shell quoting is this:
+<em class="emphasis">quoting turns off (disables) the special meaning of
+characters</em>. There are three quoting characters: a
+<a name="IXT-27-4908" /> <a name="IXT-27-4909" /><a name="IXT-27-4910" />single quote (<tt class="literal">'</tt>), a
+double quote (<tt class="literal">"</tt>), and a backslash
+(<tt class="literal">\</tt>).
+</p>
+
+<a name="upt3-CHP-27-SECT-13.1" /><div class="sect2">
+<h3 class="sect2">27.13.1. Special Characters</h3>
+
+<p><a name="IXT-27-4911" />The <a name="IXT-27-4912" /><a name="IXT-27-4913" />C shell
+has a few more special characters in addition to the original Bourne
+shell:
+</p>
+
+<blockquote><pre class="code">! { } ~</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-27-SECT-13.2" /><div class="sect2">
+<h3 class="sect2">27.13.2. How Quoting Works</h3>
+
+<p><a href="ch27_13.htm#upt3-CHP-27-TABLE-2">Table 27-2</a> <a name="upt3-IDXTERM-4083" /> <a name="upt3-IDXTERM-4084" />summarizes the rules; you might want to
+look back at it while you read the examples.
+</p>
+
+<a name="upt3-CHP-27-TABLE-2" /><h4 class="objtitle">Table 27-2. C shell quoting characters </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Quoting character</p>
+</th>
+<th>
+<p>Explanation</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>'<em class="replaceable"><tt>xxx</tt></em>'</p>
+</td>
+<td>
+<p>Disable all special characters in <em class="replaceable"><tt>xxx</tt></em>
+except <tt class="literal">!</tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>"<em class="replaceable"><tt>xxx</tt></em>"</p>
+</td>
+<td>
+<p>Disable all special characters in <em class="replaceable"><tt>xxx</tt></em>
+except <tt class="literal">$</tt>, ', and <tt class="literal">!</tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>\<em class="replaceable"><tt>x</tt></em></p>
+</td>
+<td>
+<p>Disable special meaning of character <em class="replaceable"><tt>x</tt></em>. At
+end of line, a <tt class="literal">\</tt> treats the newline character like
+a space (continues line).
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>The major differences between C and Bourne shell quoting are the
+following:
+</p>
+
+<ul><li>
+<p><a name="IXT-27-4914" />The exclamation
+point (<tt class="literal">!</tt>) character can be quoted only with a
+backslash. That's true inside and outside single or
+double quotes. So you can use <b class="emphasis-bold">history
+substitution</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>) inside quotes.
+For example:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>grep intelligent engineering file*.txt</b></tt>
+grep: engineering: No such file or directory
+% <tt class="userinput"><b>grep '!:1-2' !:3</b></tt>
+grep 'intelligent engineering' file*.txt
+    ...</pre></blockquote>
+</li>
+
+<li>
+<p>In the Bourne shell, inside double quotes, a backslash
+(<tt class="literal">\</tt>) stops variable and command substitution (it
+turns off the special meaning of<a name="IXT-27-4915" /> <a name="IXT-27-4916" /> <a name="IXT-27-4917" /> <tt class="literal">$</tt> and
+<tt class="literal">'</tt>).
+</p>
+
+<p>In the C shell, you can't disable the special
+meaning of <tt class="literal">$</tt> or <tt class="literal">'</tt> inside double
+quotes. You'll need a mixture of single and double
+quotes. For example, searching for the string <em class="emphasis">use the
+`-c' switch</em> takes some
+work:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>fgrep "use the \`-c' switch" *.txt</b></tt>
+Unmatched \`.
+% <tt class="userinput"><b>fgrep 'use the \`-c\' switch' *.txt</b></tt>
+Unmatched '.
+% <tt class="userinput"><b>fgrep "use the "'`-c'"' switch" *.txt</b></tt>
+hints.txt:Be sure to use the `-c' switch.</pre></blockquote>
+
+<p><a href="ch29_10.htm#upt3-CHP-29-SECT-10">Section 29.10</a> shows an amazing pair of aliases
+that automate complicated C shell quoting problems like this.
+</p>
+</li>
+
+<li>
+<p><a name="IXT-27-4918" />In the Bourne shell,
+single and double quotes include newline characters. Once you open a
+single or double quote, you can type multiple lines before the
+closing quote.
+</p>
+
+<p>In the C shell, if the quotes on a command line
+don't match, the shell will print an error unless
+the line ends with a backslash. <a name="IXT-27-4919" />In other words, to quote
+more than one line, type a backslash at the end of each line before
+the last line. Inside single or double quotes, the backslash-newline
+becomes a newline. Unquoted, backslash-newline is an
+<a name="IXT-27-4920" />argument separator:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo "one\</b></tt>
+? <tt class="userinput"><b>two" three\</b></tt>
+? <tt class="userinput"><b>four</b></tt>
+one
+two three four</pre></blockquote>
+</li></ul>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-4968" /> <a name="IXTR3-4969" /></em> 
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch27_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">27.12. Bourne Shell Quoting</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">27.14. Quoting Special Characters in Filenames</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

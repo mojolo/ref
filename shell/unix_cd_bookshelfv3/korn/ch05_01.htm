@@ -1,0 +1,1854 @@
+<html><head><title>Flow Control (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 5. Flow Control</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch05_01.htm#sect1">if/else</a><br />
+<a href="ch05_02.htm">for</a><br />
+<a href="ch05_03.htm">case</a><br />
+<a href="ch05_04.htm">select</a><br />
+<a href="ch05_05.htm">while and until</a><br /></p></div><p><a name="korn2-IDXTERM-995" />
+
+
+If you are a programmer, you may have read the last chapter -- with
+its claim at the outset that the Korn shell has an advanced
+set of programming capabilities -- and wondered where many features
+from conventional languages are.
+Perhaps the most glaringly obvious "hole" in our coverage
+thus far concerns <em class="emphasis">flow control</em> constructs
+like <tt class="literal">if</tt>, <tt class="literal">for</tt>, <tt class="literal">while</tt>, and so on.
+</p><p>
+Flow control gives a programmer the power to specify that
+only certain portions of a program run, or that certain portions
+run repeatedly, according to conditions such as the values
+of variables, whether or not commands execute properly, and others.
+We call this the ability to control the flow of
+a program's execution.
+</p><p>
+Almost every shell script or function shown thus far has had no flow
+control -- they have just been lists of commands to be run! Yet the Korn
+shell, like the C and Bourne shells, has all the flow control abilities
+you would expect and more; we examine them in this chapter. We'll
+use them to enhance the solutions to some of the programming tasks we
+saw in the last chapter and to solve tasks that we introduce here.
+</p><p>
+Although we have attempted to explain flow control so that nonprogrammers
+can understand it, we also sympathize with programmers who dread
+having to slog through yet another <em class="emphasis">tabula rasa</em>
+explanation. For this reason, some of our discussions relate the Korn
+shell's flow-control mechanisms to those that programmers should know
+already. Therefore you will be in a better position to understand this
+chapter if you already have a basic knowledge of flow control concepts.
+</p><p>
+<a name="korn2-IDXTERM-996" />
+The Korn shell supports the following flow control constructs:
+
+<a name="IXT-5-287607" />
+<a name="IXT-5-287608" />
+<a name="IXT-5-287609" />
+<a name="IXT-5-287610" />
+<a name="IXT-5-287611" />
+
+</p><dl>
+<dt><tt class="literal">if</tt>/<tt class="literal">else</tt></dt>
+<dd>
+Execute a list of statements if a certain condition is/is not true.
+</p></dd>
+
+
+<dt><tt class="literal">for</tt></dt>
+<dd>
+Execute a list of statements a fixed number of times.
+</p></dd>
+
+
+<dt><tt class="literal">while</tt></dt>
+<dd>
+Execute a list of statements repeatedly <em class="emphasis">while</em></tt> a certain condition
+holds true.
+</p></dd>
+
+
+<dt><tt class="literal">until</tt></dt>
+<dd>
+Execute a list of statements repeatedly <em class="emphasis">until</em> a certain condition
+holds true.
+</p></dd>
+
+
+<dt><tt class="literal">case</tt></dt>
+<dd>
+Execute one of several lists of statements depending on the value
+of a variable.
+</p></dd>
+
+</dl><p>
+In addition, the Korn shell provides a new type of flow-control
+construct:
+</p><dl>
+<dt><tt class="literal">select</tt></dt>
+<dd>
+Allow the user to select one of a list of possibilities from a menu.
+<a name="IXTR3-221" />
+</p></dd>
+
+</dl><p>
+We will cover each of these, but be warned:
+the syntax is unusual.
+</p><div class="sect1"><a name="korn2-CHP-5-SECT-1" />
+<h2 class="sect1"><a name="sect1" />5.1. if/else</h2>
+
+<p>
+<a name="korn2-IDXTERM-1003" />
+<a name="IXT-5-287612" />
+<a name="IXT-5-287613" />
+<a name="IXT-5-287614" />
+The simplest type of flow control construct is the
+<em class="emphasis">conditional</em>, embodied in the Korn shell's
+<tt class="literal">if</tt> statement. You use a conditional when you
+want to choose whether or not to do something, or to choose among
+a small number of things to do, according to the truth or falsehood
+of <em class="emphasis">conditions</em>. Conditions test values of shell
+variables, characteristics of files, whether or not commands run
+successfully, and other factors. The shell has a large set of built-in
+tests that are relevant to the task of shell programming.
+</p>
+
+<p>
+<a name="IXT-5-287615" />
+The <tt class="literal">if</tt> construct has the following syntax:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if <em class="replaceable"><tt>condition</tt></em>
+then
+    <em class="replaceable"><tt>statements</tt></em>
+[elif <em class="replaceable"><tt>condition</tt></em>
+    then <em class="replaceable"><tt>statements</tt></em> ...]
+[else
+    <em class="replaceable"><tt>statements</tt></em>]
+fi
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-5-287616" />
+
+The simplest form (without the <tt class="literal">elif</tt> and
+<tt class="literal">else</tt> parts, a.k.a. <em class="emphasis">clauses</em>)
+executes the <em class="emphasis">statements</em> only if
+the <em class="emphasis">condition</em> is true.  If you add an
+<tt class="literal">else</tt> clause, you get the ability to execute one set
+of statements if a condition is true or another set of statements if
+the condition is false. You can use as many <tt class="literal">elif</tt>
+(a contraction of "else if") clauses as you wish; they introduce
+more conditions and thus more choices for which set of statements
+to execute. If you use one or more <tt class="literal">elif</tt> s, you
+can think of the <tt class="literal">else</tt> clause as the "if all
+<em class="emphasis">else</em> fails" part.
+</p>
+
+<a name="korn2-CHP-5-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">5.1.1. Exit Status and Return</h3>
+
+<p>
+<a name="korn2-IDXTERM-1009" />
+Perhaps the only aspect of this syntax that differs from that
+of conventional languages like C and Pascal is
+that the "condition" is really a list of statements rather than the
+more usual Boolean (true or false) expression.
+How is the truth or falsehood of the condition determined?
+It has to do with a general Unix concept that we haven't
+covered yet: the <em class="emphasis">exit status</em> of commands.
+</p>
+
+<p>
+Every Unix command, whether it comes from source code in C,
+some other language, or a shell script/function, returns an
+integer code to its calling process -- the shell in this case -- when
+it finishes. This is called the exit status. 0 is <em class="emphasis">usually</em>
+the "OK" exit status, while anything else (1 to 255)
+<em class="emphasis">usually</em> denotes an error.<a href="#FOOTNOTE-66">[66]</a>
+The way <em class="emphasis">ksh</em> handles exit statuses for built-in commands
+is described in more detail later in this section.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-66" /><p> [66]
+<a name="IXT-5-287617" />
+Because this is a "convention" and not a "law," there are exceptions.
+For example, <em class="emphasis">diff</em>(1) (find differences between two files)
+returns 0 for "no differences," 1 for "differences found," or 2 for
+an error such as an invalid filename argument.
+</p>
+</blockquote>
+
+<p>
+<tt class="literal">if</tt> checks the exit status of the <em class="emphasis">last</em> statement in the list
+following the <tt class="literal">if</tt> keyword.<a href="#FOOTNOTE-67">[67]</a>
+(The list is usually just a single statement.)
+If the status is 0, the condition evaluates to true; if it is anything else,
+the condition is considered false. The same is true
+for each condition attached to an <tt class="literal">elif</tt> statement (if any).
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-67" /><p> [67]
+<a name="IXT-5-287618" />
+LISP programmers will find this idea familiar.
+</p>
+</blockquote>
+
+<p>
+This enables us to write code of the form:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if <em class="replaceable"><tt>command ran successfully</tt></em>
+then
+    <em class="replaceable"><tt>normal processing</tt></em>
+else
+    <em class="replaceable"><tt>error processing</tt></em>
+fi
+</pre></blockquote>
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1012" />
+
+More specifically, we can now improve on the <em class="emphasis">pushd</em> function
+that we saw in the last chapter:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function pushd {       # push current directory onto stack
+    dirname=$1
+    cd ${dirname:?"missing directory name."}
+    DIRSTACK="$dirname $DIRSTACK"
+    print "$DIRSTACK"
+}
+</pre></blockquote>
+</p>
+
+<p>
+This function requires a valid directory as its argument.  Let's look
+at how it handles error conditions: if no argument is given, the second
+line of code prints an error message and exits. This is fine.
+</p>
+
+<p>
+However, the function reacts deceptively when an argument is given that
+isn't a valid directory. In case you didn't figure it out when reading
+the last chapter, here is what happens: the <em class="emphasis">cd</em> fails,
+leaving you in the same directory you were in. This is also appropriate.
+But then the third line of code pushes the bad directory onto the stack
+anyway, and the last line prints a message that leads you to believe
+that the push was successful.
+</p>
+
+<p>
+We need to prevent the bad directory from being pushed and to
+print an error message. Here is how we can do this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function pushd {                # push current directory onto stack
+    dirname=$1
+    if cd ${dirname:?"missing directory name."}   # if cd was successful
+    then
+        DIRSTACK="$dirname $DIRSTACK"
+        print $DIRSTACK
+    else
+        print still in $PWD.
+    fi
+}
+</pre></blockquote>
+</p>
+
+<p>
+The call to <em class="emphasis">cd</em> is now inside an <tt class="literal">if</tt>
+construct.  If <em class="emphasis">cd</em> is successful, it
+returns 0; the next two lines of code are run, finishing the
+<em class="emphasis">pushd</em> operation.  But if the <em class="emphasis">cd</em>
+fails, it returns with exit status 1, and <em class="emphasis">pushd</em>
+prints a message saying that you haven't gone anywhere.
+<a name="IXTR3-222" />
+</p>
+
+<p>
+You can usually rely on built-in commands and standard
+Unix utilities to return appropriate exit statuses, but what
+about your own shell scripts and functions?
+For example, we'd like <em class="emphasis">pushd</em> to return an appropriate
+status so that it too can be used in an <tt class="literal">if</tt> statement:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if pushd some-directory
+then
+    <em class="replaceable"><tt>what we need to do</tt></em>
+else
+    <em class="replaceable"><tt>handle problem case</tt></em>
+fi
+</pre></blockquote>
+</p>
+
+<p>
+The problem is that the exit status is reset by every command,
+so it "disappears" if you don't save it immediately. In this function,
+the built-in <em class="emphasis">cd</em>'s exit status disappears when the <em class="emphasis">print</em>
+statement runs (and sets its own exit status).
+</p>
+
+<p>
+Therefore, we need to save the status that <em class="emphasis">cd</em>
+sets and use it as the entire function's exit status.
+Two shell features we haven't seen yet provide the way.
+<a name="IXT-5-287619" />
+<a name="IXT-5-287620" />
+
+First is the special shell variable <tt class="literal">?</tt>, whose value
+(<tt class="literal">$?</tt>) is the exit status of the last<?troff .ne 10?> command that
+ran. For example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+cd <em class="replaceable"><tt>baddir</tt></em>
+print $?
+</pre></blockquote>
+</p>
+
+<p>
+causes the shell to print <tt class="literal">1</tt>, while:
+</p>
+
+<p>
+<blockquote><pre class="code">
+cd <em class="replaceable"><tt>gooddir</tt></em>
+print $?
+</pre></blockquote>
+</p>
+
+<p>
+causes the shell to print <tt class="literal">0</tt>.
+</p>
+
+<a name="korn2-CHP-5-SECT-1.1.1" /><div class="sect3">
+<h3 class="sect3">5.1.1.1. Return</h3>
+
+<p>
+<a name="korn2-IDXTERM-1016" />
+The second feature we need is the statement <em class="emphasis">return</em>
+<em class="emphasis">N</em>, which causes the surrounding script or function
+to exit with exit status <em class="emphasis">N</em>.  <em class="emphasis">N</em>
+is actually optional; it defaults to the exit value of the last
+command that was run. Scripts that finish without
+a <em class="emphasis">return</em> statement (i.e., every one we have
+seen so far) return whatever the last statement returned.  If you use
+<em class="emphasis">return</em> within a function, it just exits the
+function.
+(In contrast, the statement <em class="emphasis">exit</em> <em class="emphasis">N</em> exits
+the entire script, no matter how deeply you are nested in functions.)
+</p>
+
+<p>
+Getting back to our example: we save the exit status in both branches of
+the <tt class="literal">if</tt>, so that we can use it when we're done:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function pushd {                # push current directory onto stack
+    dirname=$1
+    if cd ${dirname:?"missing directory name."}   # if cd was successful
+    then
+        es=$?
+        DIRSTACK="$dirname $DIRSTACK"
+        print $DIRSTACK
+    else
+        es=$?
+        print still in $PWD.
+    fi
+    return $es
+}
+</pre></blockquote>
+</p>
+
+<p>
+The assignment <tt class="literal">es=$?</tt>
+saves the exit status of <em class="emphasis">cd</em> in the variable
+<tt class="literal">es</tt>; the last line returns it as the function's exit status.
+</p>
+
+<p>
+<a name="IXTR3-223" />
+Exit statuses aren't very useful for anything other than their intended
+purpose. In particular, you may be tempted to use them as "return values"
+of functions, as you would with functions in C or Pascal. That won't work;
+you should use variables or command substitution instead to simulate
+this effect.
+</p>
+</div>
+
+<a name="korn2-CHP-5-SECT-1.1.2" /><div class="sect3">
+<h3 class="sect3">5.1.1.2. Advanced example: overriding a built-in command</h3>
+
+<p>
+Using the exit status and the <em class="emphasis">return</em> command,
+and taking advantage of the shell's command search order,
+we can write
+a <em class="emphasis">cd</em> function that
+overrides the built-in command.
+</p>
+
+<p>
+Suppose we want our <em class="emphasis">cd</em> function to print the
+old and new directories automatically.
+Here is a version to put in your <em class="emphasis">.profile</em>
+or environment file:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function cd {
+        command cd "$@"
+        es=$?
+        print "$OLDPWD -&gt; $PWD"
+        return $es
+}
+</pre></blockquote>
+</p>
+
+<p>
+
+This function relies on the search order for commands listed in the last chapter.
+<em class="emphasis">cd</em> is a non-special built-in command, which means that it's
+found <em class="emphasis">after</em> functions.  Thus, we can name our function <em class="emphasis">cd</em>,
+and the shell will find it first.
+</p>
+
+<p>
+But how do we get to the "real" <em class="emphasis">cd</em> command?
+We need it to do the actual changing of directories.  The answer is the
+built-in command named, oddly enough, <em class="emphasis">command</em>.
+Its job is to do exactly what we need: skip any functions named by the first argument,
+instead finding the built-in or external command and running it with the supplied arguments.
+In the Korn shell, using <em class="emphasis">command</em> followed by one of the special
+built-in commands keeps errors in that command from aborting the script.
+(This happens to be mandated by POSIX.)
+</p>
+
+<blockquote><b>WARNING:</b> 
+
+The <em class="emphasis">command</em> built-in is <em class="emphasis">not</em> special.
+If you define a function named <em class="emphasis">command</em>, there's no way to get
+to the real one anymore (except by removing the function, of course).
+</p>
+</blockquote>
+
+<p>
+Anyway, back to the example.  The first line uses <em class="emphasis">command</em>
+to run <em class="emphasis">cd</em>.  It then saves the exit status in <tt class="literal">es</tt>,
+as we did earlier, so that it can be returned to the calling program or
+interactive shell.
+Finally, it prints the desired message and then returns the saved exit status.
+We'll see a more substantial "wrapper" for <em class="emphasis">cd</em>
+in <a href="ch07_01.htm">Chapter 7</a>.
+</p>
+</div>
+
+<a name="korn2-CHP-5-SECT-1.1.3" /><div class="sect3">
+<h3 class="sect3">5.1.1.3. Pipeline exit status</h3>
+
+<p>
+The exit status for a single command is just a simple number, whose value,
+as we've seen, is available in the special variable <tt class="literal">$?</tt>.
+But what about a pipeline?  After all, you can hook an
+arbitrary number of commands together with pipes.  Is the exit status
+of a pipeline that of the first command, the last command, or
+some<?troff .ne 10?> command
+in between?
+By default, it is the exit status of the <em class="emphasis">last</em> command
+in the pipeline.
+(This is required by POSIX.)
+</p>
+
+<p>
+The advantage to this behavior is that it's well-defined. If a pipeline
+fails, you know that it was the last command that failed.
+But if some intermediate process in the pipeline failed, you don't know about it.
+The <em class="emphasis">set -o pipefail</em> option allows you to change this
+behavior.<a href="#FOOTNOTE-68">[68]</a>
+When you enable this option,
+the exit status of the pipeline is changed to that of the last command to
+fail.  If no command fails, the exit status is 0.
+This still doesn't tell you which command in a pipeline failed, but at
+least you can tell that something went wrong somewhere and attempt to
+take corrective action.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-68" /><p> [68]
+This option is available starting with <em class="emphasis">ksh93g</em>.
+</p>
+</blockquote>
+
+</div>
+
+<a name="korn2-CHP-5-SECT-1.1.4" /><div class="sect3">
+<h3 class="sect3">5.1.1.4. Interpreting exit status values</h3>
+
+<p>
+For <em class="emphasis">ksh93</em>, the exit status values for built-in commands
+and several exceptional cases have been regularized as follows:
+</p>
+
+<table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td>1-125</td>
+<td>Command exited with failure</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>Invalid usage, with usage message (built-in commands)</td>
+</tr>
+
+<tr>
+<td>126</td>
+<td>Command found, but file is not executable</td>
+</tr>
+
+<tr>
+<td>127</td>
+<td>Command not found</td>
+</tr>
+
+<tr>
+<td>128-255</td>
+<td>External command exited with failure</td>
+</tr>
+
+<tr>
+<td><img src="figs/U2265.gif" alt="Figure " /> 256</td>
+<td>Command died with a signal; subtract 256 to get signal number</td>
+</tr>
+
+
+</table><p>
+
+<p>
+Signals are a more advanced feature; they are described in
+<a href="ch08_01.htm">Chapter 8</a>.
+</p>
+
+</div>
+</div>
+
+<a name="korn2-CHP-5-SECT-1.2" /><div class="sect2">
+<h3 class="sect2">5.1.2. Combinations of Exit Statuses</h3>
+
+<p>
+<a name="korn2-IDXTERM-1018" />
+One of the more obscure parts of Korn shell syntax allows you
+to combine exit statuses logically, so that you can test more
+than one thing at a time.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1019" />
+<a name="korn2-IDXTERM-1020" />
+<a name="korn2-IDXTERM-1021" />
+<a name="korn2-IDXTERM-1022" />
+
+The syntax <em class="replaceable"><tt>statement1</tt></em>
+<tt class="literal">&amp;&amp;</tt> <em class="replaceable"><tt>statement2</tt></em>
+means, "execute <em class="emphasis">statement1</em>, and if its exit
+status is 0, execute <em class="emphasis">statement2</em>."  The syntax
+<em class="replaceable"><tt>statement1</tt></em> <tt class="literal">||</tt>
+<em class="replaceable"><tt>statement2</tt></em> is the converse: it means,
+"execute <em class="emphasis">statement1</em>, and if its exit status is
+<em class="emphasis">not</em> 0, execute <?troff .hw statement2?><em class="emphasis">statement2</em>."
+</p>
+
+<p>
+At first, these look like "if/then" and "if not/then" constructs,
+respectively. But they are really intended for use within
+conditions of <tt class="literal">if</tt> constructs -- as C programmers will
+readily understand.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+It's much more useful to think of these constructs as "and" and
+"or," respectively. Consider this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if <em class="replaceable"><tt>statement1</em> &amp;&amp; <em class="replaceable">statement2</tt></em>
+then
+    ...
+fi
+</pre></blockquote>
+</p>
+
+<p>
+In this case, <em class="emphasis">statement1</em> is executed. If it
+returns a 0 status, then presumably it ran without error. Then
+<em class="emphasis">statement2</em> runs. The <tt class="literal">then</tt>
+clause is executed if <em class="emphasis">statement2</em> returns a 0
+status. Conversely, if <em class="emphasis">statement1</em> fails (returns a
+nonzero exit status), <em class="emphasis">statement2</em> doesn't even run;
+the "last statement" in the condition was <em class="emphasis">statement1</em>,
+which failed -- so the <tt class="literal">then</tt> clause doesn't
+run. Taken all together, it's fair to conclude that the
+<tt class="literal">then</tt> clause runs if <em class="emphasis">statement1</em>
+and <em class="emphasis">statement2</em> both succeeded.
+</p>
+
+<p>
+Similarly, consider this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if <em class="replaceable"><tt>statement1</em> || <em class="replaceable">statement2</tt></em>
+then
+    ...
+fi
+</pre></blockquote>
+</p>
+
+<p>
+If <em class="emphasis">statement1</em> succeeds,
+<em class="emphasis">statement2</em> does <em class="emphasis">not</em>
+run. This makes <em class="emphasis">statement1</em> the last
+statement, which means that the <tt class="literal">then</tt> clause
+runs. On the other hand, if <em class="emphasis">statement1</em>
+fails, <em class="emphasis">statement2</em> runs, and whether
+the <tt class="literal">then</tt> clause runs or not depends on the
+success of <em class="emphasis">statement2</em>. The upshot is that
+the <tt class="literal">then</tt> clause runs if <em class="emphasis">statement1</em> or
+<em class="emphasis">statement2</em> succeeds.
+</p>
+
+<p>
+<a name="IXT-5-287621" />
+
+As a simple example, assume that we need to write a script that checks
+a file for the presence of two words and just prints a message
+saying whether <em class="emphasis">either</em> word is in the file or not. We can use <em class="emphasis">grep</em> for this: it returns exit status 0 if
+it found the given string in its input, nonzero if not:
+</p>
+
+<p>
+<blockquote><pre class="code">
+filename=$1
+word1=$2
+word2=$3
+if grep $word1 $filename &gt; /dev/null || grep $word2 $filename &gt; /dev/null
+then
+    print "$word1 or $word2 is in $filename."
+fi
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-5-287622" />
+To ensure that all we get is the exit status,
+we've redirected the output of both <em class="emphasis">grep</em> invocations to
+the special file
+<em class="emphasis">/dev/null</em>,
+which is colloquially known as the "bit bucket."
+Any output directed to <em class="emphasis">/dev/null</em> effectively disappears.
+Without this redirection, the output would include the matching lines that contain
+the words, as well as our message.  (Some versions of <em class="emphasis">grep</em> support
+a <em class="emphasis">-s</em> option for "silent," meaning no output.
+POSIX <em class="emphasis">grep</em> uses
+<em class="emphasis">-q</em>, meaning "quiet," for this.
+The most portable solution is to redirect output to <em class="emphasis">/dev/null</em>,
+as we've done here.)
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+The <tt class="literal">then</tt> clause of this code runs if either <em class="emphasis">grep</em>
+statement succeeds. Now assume that we want the script to say
+whether or not the input file contains <em class="emphasis">both</em> words.
+Here's how to do it:
+</p>
+
+<p>
+<blockquote><pre class="code">
+filename=$1
+word1=$2
+word2=$3
+if grep $word1 $filename &gt; /dev/null &amp;&amp; grep $word2 $filename &gt; /dev/null 
+then
+    print "$word1 and $word2 are both in $filename."
+fi
+</pre></blockquote>
+</p>
+
+<p>
+A minor note:
+when used with commands, <tt class="literal">&amp;&amp;</tt> and <tt class="literal">||</tt>
+have equal precedence.
+However, when used inside
+<tt class="literal">[[</tt>...<tt class="literal">]]</tt> (discussed shortly),
+<tt class="literal">&amp;&amp;</tt> has higher precedence than <tt class="literal">||</tt>.
+</p>
+
+<p>
+We'll see more examples of these logical operators later in
+this chapter and in the code for the <em class="emphasis">kshdb</em> debugger in
+<a href="ch09_01.htm">Chapter 9</a>.
+<a name="IXTR3-224" />
+<a name="IXTR3-225" />
+
+<a name="IXTR3-226" />
+<a name="IXTR3-227" />
+<a name="IXTR3-228" />
+<a name="IXTR3-229" />
+</p>
+</div>
+
+<a name="korn2-CHP-5-SECT-1.3" /><div class="sect2">
+<h3 class="sect2">5.1.3. Reversing the Sense of a Test</h3>
+
+<p>
+Sometimes, the most natural way to phrase a condition is in the negative.
+("If Dave isn't there, then ...")
+Suppose we need to know that neither of two words is in a source file.
+In most scripts, when such is the case, you will see code like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if grep $word1 $filename &gt; /dev/null || grep $word2 $filename &gt; /dev/null 
+then
+    :  # do nothing
+else
+    print "$word1 and $word2 are both absent from $filename."
+fi
+</pre></blockquote>
+</p>
+
+<p>
+The <em class="emphasis">:</em> command does nothing.  The meaning, then, is
+"if word1 or word2 are present in filename, do nothing; otherwise,
+print a message."
+The Korn shell lets you do this more elegantly using the <tt class="literal">!</tt> keyword
+(introduced in POSIX):
+</p>
+
+<p>
+<blockquote><pre class="code">
+filename=$1
+word1=$2
+word2=$3
+if ! grep $word1 $filename &gt; /dev/null &amp;&amp;
+   ! grep $word2 $filename &gt; /dev/null
+then
+    print "$word1 and $word2 are both absent from $filename."
+fi
+</pre></blockquote>
+</p>
+
+</div>
+
+<a name="korn2-CHP-5-SECT-1.4" /><div class="sect2">
+<h3 class="sect2">5.1.4. Condition Tests</h3>
+
+<p>
+<a name="korn2-IDXTERM-1031" />
+
+<a name="korn2-IDXTERM-1032" />
+<a name="korn2-IDXTERM-1033" />
+<a name="korn2-IDXTERM-1034" />
+
+
+Exit statuses are the only things
+an <tt class="literal">if</tt> construct can test. But that doesn't mean you can
+check only whether or not commands ran properly. The shell provides
+a way of testing a variety of conditions with the <tt class="literal">[[</tt>...<tt class="literal">]]</tt>
+construct.<a href="#FOOTNOTE-69">[69]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-69" /><p> [69]
+<a name="IXT-5-287623" />
+<a name="IXT-5-287624" />
+<a name="IXT-5-287625" />
+<a name="IXT-5-287626" />
+<a name="IXT-5-287627" />
+
+The Korn shell also accepts the <tt class="literal">[</tt>...<tt class="literal">]</tt> and
+<em class="emphasis">test</em> commands.
+(There are built-in commands in all versions of <em class="emphasis">ksh</em>;
+they behave like the original external versions.)
+<a name="IXT-5-287628" />
+<a name="IXT-5-287629" />
+The <tt class="literal">[[</tt>...<tt class="literal">]]</tt> construct has many more options and
+is better integrated into the Korn shell language:
+specifically, word splitting and wildcard expansion
+aren't done within <tt class="literal">[[</tt> and <tt class="literal">]]</tt>, making quoting
+less necessary.
+In addition, you can always tell operators from operands, since the
+operators cannot be the result of expansion.
+</p>
+</blockquote>
+
+<p>
+You can use the construct to check many different attributes of a file
+(whether it exists, what type of file it is, what its permissions
+and ownership are, etc.), compare two files to see which is newer,
+do comparisons and pattern matching on strings, and more.
+</p>
+
+<p>
+<tt class="literal">[[</tt> <em class="replaceable"><tt>condition</tt></em> <tt class="literal">]]</tt>
+is actually a statement just like any
+other, except that the only thing it does is return an exit status
+that tells whether <em class="emphasis">condition</em> is true. Thus it fits
+within the <tt class="literal">if</tt> construct's syntax of
+<tt class="literal">if</tt> <em class="emphasis">statements</em>.
+</p>
+
+<a name="korn2-CHP-5-SECT-1.4.1" /><div class="sect3">
+<h3 class="sect3">5.1.4.1. String comparisons</h3>
+
+<p>
+<a name="korn2-IDXTERM-1042" />
+<a name="IXT-5-287630" />
+
+The double square brackets (<tt class="literal">[[</tt>...<tt class="literal">]]</tt>) surround expressions
+that include various types of <em class="emphasis">operators</em>. We
+start with the string comparison operators, which are listed in
+<a href="ch05_01.htm#korn2-CHP-5-TABLE-1">Table 5-1</a>.  (Notice that there are no operators
+for "greater than or equal" or "less than or equal.")  In the table,
+<em class="emphasis">str</em> refers to an expression with a string value, and
+<em class="emphasis">pat</em> refers to a pattern that can contain wildcards
+(just like the patterns in the string-handling operators we saw in the
+last chapter).
+Note that these operators compare the lexicographic values of
+strings, so "10" &lt; "2".
+
+<a name="IXT-5-287631" />
+<a name="IXT-5-287632" />
+<a name="IXT-5-287633" />
+<a name="IXT-5-287634" />
+<a name="IXT-5-287635" />
+<a name="IXT-5-287636" />
+<a name="IXT-5-287637" />
+<a name="IXT-5-287638" />
+
+</p>
+
+<a name="korn2-CHP-5-TABLE-1" /><h4 class="objtitle">Table 5-1. String comparison operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Operator</th>
+<th>True if...</th>
+</tr>
+
+
+
+
+<tr>
+<td><em class="replaceable"><tt>str</tt></em></td>
+<td><em class="emphasis">str</em> is non-null.</td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>str</em> <tt class="literal">==</tt> <em class="replaceable">pat</tt></em></td>
+<td><em class="emphasis">str</em> matches <em class="emphasis">pat</em>.</td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>str</em> <tt class="literal">=</tt> <em class="replaceable">pat</tt></em></td>
+<td><em class="emphasis">str</em> matches <em class="emphasis">pat</em> (obsolete).</td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>str</em> <tt class="literal">!=</tt> <em class="replaceable">pat</tt></em></td>
+<td><em class="emphasis">str</em> does not match <em class="emphasis">pat</em>.</td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>str1</em> <tt class="literal">&lt;</tt> <em class="replaceable">str2</tt></em></td>
+<td><em class="emphasis">str1</em> is less than <em class="emphasis">str2</em>.</td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>str1</em> <tt class="literal">&gt;</tt> <em class="replaceable">str2</tt></em></td>
+<td><em class="emphasis">str1</em> is greater than <em class="emphasis">str2</em>.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-n</tt> <em class="replaceable"><tt>str</tt></em></td>
+<td><em class="emphasis">str</em> is not null (has length greater than 0).</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-z</tt> <em class="replaceable"><tt>str</tt></em></td>
+<td><em class="emphasis">str</em> is null (has length 0).</td>
+</tr>
+
+
+</table><p>
+
+<?troff .Nd 10?>
+
+<p>
+<a name="korn2-IDXTERM-1052" />
+
+We can use one of these operators to improve our <em class="emphasis">popd</em> function,
+which reacts badly if you try to pop and the
+stack is empty. Recall that the code for <em class="emphasis">popd</em> is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function popd {        # cd to top, pop it off stack
+    top=${DIRSTACK%% *}
+    DIRSTACK=${DIRSTACK#* }
+    cd $top
+    print "$PWD"
+}
+</pre></blockquote>
+</p>
+
+<p>
+If the stack is empty, <tt class="literal">$DIRSTACK</tt> is the null string,
+as is the expression <tt class="literal">${DIRSTACK%% *}</tt>. This means that you
+will change to your home directory; instead, we want <em class="emphasis">popd</em> to print
+an error message and do nothing.
+</p>
+
+<p>
+To accomplish this, we need to test for an empty stack, i.e., whether
+<tt class="literal">$DIRSTACK</tt> is null or not. Here is one way to do it:
+
+
+</p>
+
+
+
+<p>
+<blockquote><pre class="code">
+function popd {                 # pop directory off the stack, cd there
+    if [[ -n $DIRSTACK ]]; then
+        top=${DIRSTACK%% *}
+        DIRSTACK=${DIRSTACK#* }
+        cd $top
+        print "$PWD"
+    else
+        print "stack empty, still in $PWD."
+        return 1
+    fi
+}
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-5-287639" />
+<a name="IXT-5-287640" />
+Notice that instead of putting <tt class="literal">then</tt> on a separate line,
+we put it on the same line as the <tt class="literal">if</tt> after a semicolon,
+which is the shell's standard statement separator character.
+(There's a subtlety here.  The shell only recognizes keywords such as
+<tt class="literal">if</tt> and <tt class="literal">then</tt> when they are at the beginning of
+a statement. This is so you can type, for example, <tt class="literal">print if then else is neat</tt>
+without getting syntax errors.
+Newlines and semicolons separate statements.  Thus, the <tt class="literal">then</tt>
+on the same line as the <tt class="literal">if</tt> is
+correctly recognized after a semicolon, whereas without the
+semicolon, it would not be.)
+</p>
+
+<p>
+<a name="IXT-5-287641" />
+We could have used operators other than <em class="emphasis">-n</em>.
+For example,
+we could have used <em class="emphasis">-z</em> and switched the code in the <tt class="literal">then</tt>
+and <tt class="literal">else</tt> clauses. We also could have used:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ $DIRSTACK == "" ]]; then
+        ...
+</pre></blockquote>
+</p>
+
+<blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">[[...]] Versus the Test and [...] Commands</h4>
+
+<p>
+<a name="IXT-5-287642" />
+<a name="IXT-5-287643" />
+<a name="IXT-5-287644" />
+
+We wrote our test
+<tt class="literal">[[ $DIRSTACK == "" ]]</tt>.
+This is <em class="emphasis">not</em> the correct usage for the
+older <tt class="literal">[</tt>...<tt class="literal">]</tt> or <em class="emphasis">test</em> syntax.
+</p>
+
+<p>
+In this syntax, which the Korn shell still supports, and which is all you
+have in the Bourne shell, if <tt class="literal">$DIRSTACK</tt> evaluates to the
+null string,
+the shell
+will complain about a missing argument.
+This leads to the requirement of enclosing both strings in double
+quotes (<tt class="literal">[ "$DIRSTACK" = "" ]</tt>), which is the most readable
+way to do it, or to the common hack of adding an extra character in front
+of the strings, like so:
+<tt class="literal">[ x$DIRSTACK = x ]</tt>.
+The latter works, since if <tt class="literal">$DIRSTACK</tt> is null,
+the <tt class="literal">[</tt>...<tt class="literal">]</tt> command only
+sees the two <tt class="literal">x</tt> characters,
+but it's not very obvious what's going on, especially to the novice.
+</p>
+
+<p>
+Also note that the the Korn shell's preferred operator is <tt class="literal">==</tt>,
+while <em class="emphasis">test</em> requires a single <tt class="literal">=</tt> character.
+</p>
+</td></tr></table><p></blockquote>
+
+<a name="IXTR3-230" />
+<p>
+While we're cleaning up code we wrote in the last chapter,
+let's fix up the error handling in the <em class="emphasis">highest</em> script
+(<a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-1">Task 4-1</a>). The code for that script is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+filename=${1:?"filename missing."}
+howmany=${2:-10}
+sort -nr $filename | head -$howmany
+</pre></blockquote>
+</p>
+
+<p>
+Recall that if you omit the first argument (the filename),
+the shell prints the message <tt class="literal">highest: 1: filename missing</tt>.
+We can make this better by substituting a more standard "usage" message:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ -z $1 ]]; then
+    print 'usage: highest filename [N]'
+else
+    filename=$1
+    howmany=${2:-10}
+    sort -nr $filename | head -$howmany
+fi
+</pre></blockquote>
+</p>
+
+<p>
+It is considered better programming style to enclose all
+of the code in the <tt class="literal">if</tt>-<tt class="literal">then</tt>-<tt class="literal">else</tt>,
+but such code can
+get confusing if you are writing a long script in which you need
+to check for errors and bail out at several points along the way.
+Therefore, a more usual style for shell programming is this:
+<a name="IXT-5-287645" />
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ -z $1 ]]; then
+    print 'usage: highest filename [-N]'
+    exit 1
+fi
+filename=$1
+howmany=${2:-10}
+sort -nr $filename | head -$howmany
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-5-287646" />
+The <em class="emphasis">exit</em> statement informs any calling program
+that needs to know whether it ran successfully or not.
+(You can also use <em class="emphasis">return</em>, but we feel that
+<em class="emphasis">return</em> should be reserved for use in functions.)
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1062" />
+As an example of the <tt class="literal">==</tt> and <tt class="literal">!=</tt> operators,
+we can add to our solution for <a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-2">Task 4-2</a>,
+the shell script front-end to a C compiler.
+Recall that we are given a filename
+ending in <tt class="literal">.c</tt> (the source code file),
+and we need to construct a filename that is the
+same but ends in <tt class="literal">.o</tt> (the object code file).
+The modifications we will make have to do with other types of
+files that can be passed to a C compiler.
+</p>
+</div>
+
+
+<a name="korn2-CHP-5-SECT-1.4.2" /><div class="sect3">
+<h3 class="sect3">5.1.4.2. About C compilers</h3>
+
+<p>
+Before we get to the shell code, it is necessary to understand
+a few things about C compilers.
+We already know that they translate C source code into
+object code. Actually, they are part of <em class="emphasis">compilation systems</em>
+that also perform several other tasks. The term "compiler" is often
+used instead of "compilation system," so we'll use it in both senses.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1063" />
+
+
+We're interested here in two tasks that compilers perform other
+than compiling C code: they can translate
+<em class="emphasis">assembly language</em> code into object code, and they can
+<em class="emphasis">link</em> object code files together to form an
+<em class="emphasis">executable</em> program.
+</p>
+
+<p>
+<a name="IXT-5-287647" />
+
+<em class="emphasis">Assembly language</em> works at a level that is close to
+the bare computer; each assembly statement
+is directly translatable into a statement of object code -- as
+opposed to C or other higher-level languages, in which a single source
+statement could translate to dozens of object code instructions.
+Translating a file of assembly language code into object code
+is called, not surprisingly, <em class="emphasis">assembling</em> the code.
+</p>
+
+<p>
+Although many people consider assembly language to be quaintly
+old-fashioned -- like a typewriter in this age of
+WYSIWYG word processing and desktop publishing -- some
+programmers still need to use it when dealing with precise
+details of computer hardware. It's not uncommon for a program to
+consist of several files' worth of code in a higher-level language
+(such as C or C++) and a few low-level routines in assembly language.
+<a name="IXTR3-231" />
+</p>
+
+<p>
+<a name="IXT-5-287648" />
+<a name="korn2-IDXTERM-1067" />
+
+The other task we'll worry about is called <em class="emphasis">linking</em>. Most real-world programs,
+unlike those assigned for a first-year programming class, consist of
+several files of source code, possibly written by several different
+programmers.
+
+These files are compiled into object code; then the object
+code must be combined to form the final, runnable program, known as
+an <em class="emphasis">executable</em>. The task
+of combining is often called "linking": each object code component usually
+contains references to other components, and these references must
+be resolved or "linked" together.
+</p>
+
+
+<p>
+<a name="IXT-5-287649" />
+C compilation systems are capable of assembling files of assembly language
+into object code and linking object code files into executables. In
+particular, a compiler calls a separate <em class="emphasis">assembler</em>
+to deal with assembly code and a <em class="emphasis">linker</em> (also
+known as a "loader," "linking loader," or "link editor") to deal with
+object code files. These separate tools are known in the Unix world as
+<em class="emphasis">as</em> and <em class="emphasis">ld</em>, respectively. The
+C compiler itself is invoked with the command <em class="emphasis">cc</em>.
+</p>
+
+<p>
+We can express all of these steps in terms of the suffixes of files
+passed as arguments to the C compiler. Basically, the compiler does
+the following:
+</p>
+
+<ol>
+
+<li><p>
+If the argument ends in <tt class="literal">.c</tt> it's a C source file;
+compile into a <tt class="literal">.o</tt> object code file.
+</p></li>
+
+
+<li><p>
+If the argument ends in <tt class="literal">.s</tt>, it's assembly language;
+assemble into a <tt class="literal">.o</tt> file.
+</p></li>
+
+
+<li><p>
+If the argument ends in <tt class="literal">.o</tt>, do nothing; save for the linking step later.
+</p></li>
+
+
+<li><p>
+If the argument ends in some other suffix, print an error message and
+exit.<a href="#FOOTNOTE-70">[70]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-70" /><p> [70]
+For the purposes of this example. We know this isn't
+strictly true in real life.
+</p>
+</blockquote></li>
+
+
+<li><p>
+<a name="IXT-5-287650" />
+<a name="IXT-5-287651" />
+Link all <tt class="literal">.o</tt> object code files into an executable file called <em class="emphasis">a.out</em>.
+This file is usually renamed to something more descriptive.
+</p></li>
+</ol>
+
+<p>
+Step 3 allows object code files that have already been compiled
+(or assembled) to be reused to build other executables.
+For example, an object code file that implements an interface to
+a CD-ROM drive could be useful in any program that reads from CD-ROMs.
+</p>
+
+<p>
+<a href="ch05_01.htm#korn2-CHP-5-FIG-1">Figure 5-1</a> should make the compilation process clearer; it shows how the compiler processes
+the C source files <em class="emphasis">a.c</em> and <em class="emphasis">b.c</em>, the assembly language file
+<em class="emphasis">c.s</em>, and the already-compiled object code file <em class="emphasis">d.o</em>.
+In other words, it shows how the compiler handles the command
+<tt class="literal">cc a.c b.c c.s d.o</tt>.
+</p>
+
+<a name="korn2-CHP-5-FIG-1" /><div class="figure"><img src="figs/ksh2.0501.gif" alt="Figure 5-1" width="452" /></div><h4 class="objtitle">Figure 5-1. Files produced by a C compiler</h4><p>
+Here is how we would begin to implement this behavior in a shell script.
+Assume that the
+variable <tt class="literal">filename</tt> holds the argument in question, and that
+<em class="emphasis">ccom</em> is the name of the program that actually compiles a C source
+file into object code. Assume further that <em class="emphasis">ccom</em> and <em class="emphasis">as</em>
+(assembler) take arguments for the names of the source and object files:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ $filename == *.c ]]; then
+    objname=${filename%.c}.o
+    ccom "$filename" "$objname"
+elif [[ $filename == *.s ]]; then
+    objname=${filename%.s}.o
+    as "$filename" "$objname"
+elif [[ $filename != *.o ]]; then
+    print "error: $filename is not a source or object file."
+    exit 1
+fi
+<em class="replaceable"><tt>further processing ...</tt></em>
+</pre></blockquote>
+</p>
+
+<p>
+Recall from the previous chapter that the expression
+<tt class="literal">${filename%.c}.o</tt> deletes <tt class="literal">.c</tt> from <tt class="literal">filename</tt>
+and
+appends <tt class="literal">.o</tt>; <tt class="literal">${filename%.s}.o</tt> does the analogous
+thing for files ending in <tt class="literal">.s</tt>.
+</p>
+
+<p>
+The "further processing" is the link step, which we will see when
+we complete this example later in the chapter.
+<a name="IXTR3-232" />
+<a name="IXTR3-233" />
+<a name="IXTR3-234" />
+<a name="IXTR3-235" />
+
+</p>
+</div>
+
+
+<a name="korn2-CHP-5-SECT-1.4.3" /><div class="sect3">
+<h3 class="sect3">5.1.4.3. File attribute checking</h3>
+
+<p>
+<a name="korn2-IDXTERM-1075" />
+<a name="IXT-5-287652" />
+
+The other kind of operator that can be used in conditional
+expressions checks a file
+for certain properties. There are 24 such operators. We
+cover those of most general interest here; the rest refer
+to arcana like sticky bits, sockets, and file descriptors,
+and thus are of interest only to systems programmers. Refer to
+<a href="appb_01.htm">Appendix B</a> for the complete list.
+<a href="ch05_01.htm#korn2-CHP-5-TABLE-2">Table 5-2</a>
+lists those that interest us now.
+<a name="IXT-5-287653" />
+<a name="IXT-5-287654" />
+<a name="IXT-5-287655" />
+<a name="IXT-5-287656" />
+<a name="IXT-5-287657" />
+<a name="IXT-5-287658" />
+<a name="IXT-5-287659" />
+<a name="IXT-5-287660" />
+<a name="IXT-5-287661" />
+<a name="IXT-5-287662" />
+<a name="IXT-5-287663" />
+<a name="IXT-5-287664" />
+<a name="IXT-5-287665" />
+</p>
+
+<a name="korn2-CHP-5-TABLE-2" /><h4 class="objtitle">Table 5-2. File attribute operators</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Operator</th>
+<th>True if ...</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">-e</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><em class="emphasis">file</em> exists</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-d</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><em class="emphasis">file</em> is a directory</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-f</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><p>
+<em class="emphasis">file</em> is a regular file (i.e., not a directory or
+other special type of file)
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-L</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><p>
+<em class="emphasis">file</em> is a symbolic link
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-r</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td>You have read permission on <em class="emphasis">file</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-s</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><em class="emphasis">file</em> exists and is not empty</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-w</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td>You have write permission on <em class="emphasis">file</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-x</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><p>
+You have execute permission on <em class="emphasis">file</em>
+or directory search permission if it is a directory
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-O</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><p>
+You own <em class="emphasis">file</em> (the effective UID matches
+that of <em class="emphasis">file</em>)
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-G</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><p>
+Your effective group ID is the same as that of <em class="emphasis">file</em>
+</p></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>file1</em> <tt class="literal">-nt</tt> <em class="replaceable">file2</tt></em></td>
+<td><p>
+<em class="emphasis">file1</em> is newer than
+<em class="emphasis">file2</em><a href="#FOOTNOTE-71">[71]</a>
+</p></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>file1</em> <tt class="literal">-ot</tt> <em class="replaceable">file2</tt></em></td>
+<td><em class="emphasis">file1</em> is older than <em class="emphasis">file2</em></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>file1</em> <tt class="literal">-ef</tt> <em class="replaceable">file2</tt></em></td>
+<td><em class="emphasis">file1</em> and <em class="emphasis">file2</em> are the same file</td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-71" /><p> [71]
+Specifically, the <tt class="literal">-nt</tt> and
+<tt class="literal">-ot</tt> operators compare
+<em class="emphasis">modification times</em> of two files.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-5-287666" />
+<a name="IXT-5-287667" />
+<a name="IXT-5-287668" />
+<a name="IXT-5-287669" />
+<a name="IXT-5-287670" />
+<a name="IXT-5-287671" />
+
+Before we get to an example, you should know that conditional
+expressions inside <tt class="literal">[[</tt> and <tt class="literal">]]</tt> can also be combined using
+the logical operators <tt class="literal">&amp;&amp;</tt> and <tt class="literal">||</tt>, just as we saw
+with plain shell commands in <a href="ch05_01.htm#korn2-CHP-5-SECT-1.2">Section 5.1.2</a>, earlier in this chapter.
+It's also possible to
+combine shell commands with conditional expressions
+using logical operators, like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if <em class="replaceable"><tt>command</em> &amp;&amp; [[ <em class="replaceable">condition</tt></em> ]]; then
+    ...
+</pre></blockquote>
+</p>
+
+<p>
+<a href="ch07_01.htm">Chapter 7</a> contains an example of this combination.
+</p>
+
+<p>
+You can also negate the
+truth value of a conditional expression by preceding it with
+an exclamation point (<tt class="literal">!</tt>), so that <tt class="literal">!</tt> <em class="replaceable"><tt>expr</tt></em> evaluates to
+true only if <em class="emphasis">expr</em> is false.
+<a name="IXT-5-287672" />
+Furthermore, you can
+make complex logical expressions of conditional operators by
+grouping them with parentheses.
+<a name="IXT-5-287673" />
+(It turns out that this is true outside of the <tt class="literal">[[</tt>...<tt class="literal">]]</tt>
+construct as well. As we will see in <a href="ch08_01.htm">Chapter 8</a>,
+the construct <tt class="literal">(</tt><em class="replaceable"><tt>statement list</tt></em><tt class="literal">)</tt>
+runs the statement list
+in a subshell, whose exit status is that of the last statement in
+the list.)
+</p>
+
+<p>
+
+<a name="korn2-IDXTERM-1098" />
+
+Here is how we would use two of the file operators to embellish
+(yet again) our <em class="emphasis">pushd</em> function.
+Instead of having <em class="emphasis">cd</em>
+determine whether the argument given is a valid directory -- i.e.,
+by returning with a bad exit status if it's not -- we
+can do the checking ourselves. Here is the code:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function pushd {                # push current directory onto stack
+    dirname=$1
+    if [[ -d $dirname &amp;&amp; -x $dirname ]]; then
+        cd "$dirname"
+        DIRSTACK="$dirname DIRSTACK"
+        print "$DIRSTACK"
+    else
+        print "still in $PWD."
+        return 1
+    fi
+}
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+
+
+The conditional expression evaluates to true only if the argument
+<tt class="literal">$1</tt> is a directory (<em class="emphasis">-d</em>) <em class="emphasis">and</em>
+the user has permission
+to change to it (<em class="emphasis">-x</em>).<a href="#FOOTNOTE-72">[72]</a>
+Notice that this conditional also handles the case where the
+argument is missing: <tt class="literal">$dirname</tt> is null, and since the null
+string isn't a valid directory name, the conditional will fail.
+<a name="IXTR3-236" />
+
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-72" /><p> [72]
+Remember that
+the same permission flag that determines execute permission
+on a regular file determines search permission on a directory.
+This is why
+the <em class="emphasis">-x</em> operator checks both things depending on file type.
+</p>
+</blockquote>
+
+<p>
+<a href="ch05_01.htm#korn2-CHP-5-SIDEBAR-2">Task 5-1</a> presents
+a more comprehensive example of the use of file operators.
+</p>
+
+<a name="korn2-CHP-5-SIDEBAR-2" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 5-1</h4>
+
+<p>
+
+<a name="IXT-5-287674" />
+<a name="IXT-5-287675" />
+
+Write a script that prints essentially the same information
+as <tt class="literal">ls -l</tt> but in a more user-friendly way.
+</p>
+
+</td></tr></table><p></blockquote>
+<p>
+Although this task requires relatively long-winded code, it
+is a straightforward application of many of the file operators:
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ ! -e $1 ]]; then
+    print "file $1 does not exist."
+    return 1
+fi
+if [[ -d $1 ]]; then
+    print -n "$1 is a directory that you may "
+    if [[ ! -x $1 ]]; then
+        print -n "not "
+    fi
+    print "search."
+elif [[ -f $1 ]]; then
+    print "$1 is a regular file."
+else
+    print "$1 is a special type of file."
+fi
+if [[ -O $1 ]]; then
+    print 'you own the file.'
+else
+    print 'you do not own the file.'
+fi
+if [[ -r $1 ]]; then
+    print 'you have read permission on the file.'
+fi
+if [[ -w $1 ]]; then
+    print 'you have write permission on the file.'
+fi
+if [[ -x $1 &amp;&amp; ! -d $1 ]]; then
+    print 'you have execute permission on the file.'
+fi
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+We'll call this script <em class="emphasis">fileinfo</em>. Here's how it works:
+</p>
+
+<ul>
+
+<li><p>
+
+<a name="IXT-5-287676" />
+<a name="IXT-5-287677" />
+
+The first conditional tests if the file given as argument
+does <em class="emphasis">not</em> exist (the exclamation point is the "not" operator;
+the spaces around it are required). If the file does not exist, the script
+prints an error message and exits with error status.
+</p></li>
+
+
+<li><p>
+<a name="IXT-5-287678" />
+<a name="IXT-5-287679" />
+
+
+The second conditional tests if the file is a directory. If so, the first <em class="emphasis">print</em> prints part of a message;
+remember that the
+<em class="emphasis">-n</em> option tells <em class="emphasis">print</em> not to print a newline at the end.
+The inner conditional checks if you do <em class="emphasis">not</em> have search
+permission on the directory. If you don't have search permission, the word "not" is added to
+the partial message. Then, the message is completed with
+"search." and a newline.
+</p></li>
+
+
+<li><p>
+The <tt class="literal">elif</tt> clause checks if the file is a regular file;
+if so, it prints a message.
+</p></li>
+
+
+<li><p>
+The <tt class="literal">else</tt> clause accounts for the various special file types
+on recent Unix systems, such as sockets, devices, FIFO files, etc.
+We assume that the casual user isn't interested in their details.
+</p></li>
+
+
+<li><p>
+The next conditional tests to see if you own the file
+(i.e., if its owner ID is the same as your effective User ID). If so, it
+prints a message saying you own it. (Real and effective User and Group
+IDs are explained in <a href="ch10_01.htm">Chapter 10</a>.)
+</p></li>
+
+
+<li><p>
+The next two conditionals test for your read and write permission on
+the file.
+</p></li>
+
+
+<li><p>
+The last conditional checks if you can execute the file.
+It checks to see if you have execute permission and that
+the file is <em class="emphasis">not</em> a directory. (If the file were a directory,
+execute permission would really mean directory search permission.)
+</p></li>
+
+</ul>
+
+<p>
+<a name="IXTR3-237" />
+As an example of <em class="emphasis">fileinfo</em>'s output,
+assume that you do an <tt class="literal">ls -l</tt> of
+your current directory and it contains these lines:
+</p>
+
+<p>
+<blockquote><pre class="code">
+-rwxr-xr-x   1 billr    other        594 May 28 09:49 bob
+-rw-r-r-     1 billr    other      42715 Apr 21 23:39 custom.tbl
+drwxr-xr-x   2 billr    other         64 Jan 12 13:42 exp
+-r-r-r-      1 root     other        557 Mar 28 12:41 lpst
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">custom.tbl</em> and <em class="emphasis">lpst</em> are regular text files,
+<em class="emphasis">exp</em> is a directory,
+and <em class="emphasis">bob</em> is a shell script.
+Typing <tt class="literal">fileinfo bob</tt> produces this output:
+</p>
+
+<p>
+<blockquote><pre class="code">
+bob is a regular file.
+you own the file.
+you have read permission on the file.
+you have write permission on the file.
+you have execute permission on the file.
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+Typing <tt class="literal">fileinfo custom.tbl</tt> results in this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+custom.tbl is a regular file.
+you own the file.
+you have read permission on the file.
+you have write permission on the file.
+</pre></blockquote>
+</p>
+
+<p>
+Typing <tt class="literal">fileinfo exp</tt> results in this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+exp is a directory that you may search.
+you own the file.
+you have read permission on the file.
+you have write permission on the file.
+</pre></blockquote>
+</p>
+
+<p>
+Finally, typing <tt class="literal">fileinfo lpst</tt> produces this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+lpst is a regular file.
+you do not own the file.
+you have read permission on the file.
+</pre></blockquote>
+</p>
+</div>
+
+<a name="korn2-CHP-5-SECT-1.4.4" /><div class="sect3">
+<h3 class="sect3">5.1.4.4. Arithmetic conditionals</h3>
+
+<p>
+<a name="korn2-IDXTERM-1107" />
+<a name="IXT-5-287680" />
+
+The shell also provides a set of <em class="emphasis">arithmetic</em> tests.
+These are different from <em class="emphasis">character string</em> comparisons
+like <tt class="literal">&lt;</tt> and <tt class="literal">&gt;</tt>,
+which compare <em class="emphasis">lexicographic</em> values
+of strings, not numeric values. For example, "6" is greater than
+"57" lexicographically, just as "p" is greater than "ox,"
+but of course the opposite is true when they're compared
+as numbers.
+</p>
+
+<p>
+<a name="IXT-5-287681" />
+
+The arithmetic comparison operators
+are summarized in
+<a href="ch05_01.htm#korn2-CHP-5-TABLE-3">Table 5-3</a>.
+Fortran programmers will find
+their syntax slightly familiar.
+<a name="IXT-5-287682" />
+<a name="IXT-5-287683" />
+<a name="IXT-5-287684" />
+<a name="IXT-5-287685" />
+<a name="IXT-5-287686" />
+<a name="IXT-5-287687" />
+<a name="IXT-5-287688" />
+
+
+</p>
+
+<a name="korn2-CHP-5-TABLE-3" /><h4 class="objtitle">Table 5-3. Arithmetic test operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Test</th>
+<th>Comparison</th>
+<th>Test</th>
+<th>Comparison</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">-lt</tt></td>
+<td>Less than</td>
+<td><tt class="literal">-gt</tt></td>
+<td>Greater than</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-le</tt></td>
+<td>Less than or equal</td>
+<td><tt class="literal">-ge</tt></td>
+<td>Greater than or equal</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-eq</tt></td>
+<td>Equal</td>
+<td><tt class="literal">-ne</tt></td>
+<td>Not equal</td>
+</tr>
+
+
+</table><p>
+
+<p>
+You'll find these to be of the most use in the context of the
+numeric variables we'll see in the next chapter. They're
+necessary if you want to combine numeric tests with other types of
+tests within the same conditional expression.
+</p>
+
+<p>
+However, the shell has a separate syntax for conditional expressions
+that involve only numbers. (This syntax is covered in
+<a href="ch06_01.htm">Chapter 6</a>.) It's considerably more efficient, as well
+as more general, so you should
+use it in preference to the arithmetic test operators listed above.
+</p>
+
+<p>
+In fact, some of the <em class="emphasis">ksh93</em> documentation considers
+these numeric conditionals to be obsolete.  Therefore, if you need to combine
+<tt class="literal">[[</tt>...<tt class="literal">]]</tt> and numeric tests, do it using the shell's
+<tt class="literal">!</tt>, <tt class="literal">&amp;&amp;</tt>, and <tt class="literal">||</tt>
+operators outside the <tt class="literal">[[</tt>...<tt class="literal">]]</tt>, instead of inside them.
+Again, we'll cover the shell's numeric conditionals in the next chapter.
+<a name="IXTR3-238" />
+<a name="IXTR3-239" />
+<a name="IXTR3-240" />
+
+<a name="IXTR3-241" />
+<a name="IXTR3-242" />
+<a name="IXTR3-243" />
+
+</p>
+</div>
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.7. Advanced Examples: pushd and popd</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.2. for</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

@@ -1,0 +1,77 @@
+<html><head><title>Terminal Setup: Searching Terminal Table (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.15. Terminal Setup: Searching Terminal Table</h2>
+
+<p><a name="IXT-3-7154" /><a name="IXT-3-7155" /><a name="IXT-3-7156" /><a name="IXT-3-7157" /><a name="IXT-3-7158" />Your system may have an
+<em class="filename">/etc/ttytab</em> or <em class="filename">/etc/ttys</em>
+file that lists the type of each terminal port (<b class="emphasis-bold">tty</b> (<a href="ch24_06.htm#upt3-CHP-24-SECT-6">Section 24.6</a>)).<a href="#FOOTNOTE-9">[9]</a> Here are lines from <em class="emphasis">/etc/ttys</em> on a
+NetBSD system I use:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-9" /><p> [9]Then again, it may not. The RedHat Linux system I tested this
+on did not; the MacOS X 10.1.5 box I tested it on did.</p>
+</blockquote>
+
+<blockquote><pre class="code">console "/usr/libexec/getty std.9600"    vt100      on  local
+tty00   "/usr/libexec/getty std.9600"    dialup     off local
+tty01   "/usr/libexec/getty std.9600"    plugboard  off local
+   ...
+ttyp0   none                             network    off
+   ...</pre></blockquote>
+
+<p>For example, port <em class="emphasis">ttyp0</em> is
+<em class="emphasis">network</em>, the type used by <b class="emphasis-bold">xterm</b> (<a href="ch24_20.htm#upt3-CHP-24-SECT-20">Section 24.20</a>),
+<b class="emphasis-bold">telnet</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>), etc.
+</p>
+
+<p>To change your account configuration based on the tty port type,
+match the first column of that file to the output of the <b class="emphasis-bold">tty</b> (<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>) command,
+which shows your current tty pathname. The output of
+<i class="command">tty</i> starts with <em class="emphasis">/dev</em> or
+<em class="emphasis">/dev/pts</em>. So, to match your current tty to the
+file, you need to strip the name to its tail. For example, in
+<i class="command">bash</i><a name="IXT-3-7159" /> <a name="IXT-3-7160" /> and <i class="command">ksh</i>,
+these three lines would put the terminal port type
+(<tt class="literal">vt100</tt>, <tt class="literal">plugboard</tt>, etc.) into
+the <em class="emphasis">ttykind</em> shell variable:
+</p>
+
+<blockquote><pre class="code">tty=`tty`
+ttytail=${tty#/dev/}</pre></blockquote>
+
+<p><tt class="literal">awk</tt> <a href="ch20_10.htm#upt3-CHP-20-SECT-10">Section 20.10</a></p>
+
+<blockquote><pre class="code">ttykind=`awk '$1 == "'$ttytail'" {print $3}' /etc/ttys`</pre></blockquote>
+
+<p>Then you can test the value with <b class="emphasis-bold">case</b> (<a href="ch35_10.htm#upt3-CHP-35-SECT-10">Section 35.10</a>) or
+<b class="emphasis-bold">if</b> (<a href="ch35_13.htm#upt3-CHP-35-SECT-13">Section 35.13</a>).
+In C shells, you can set <em class="emphasis">ttytail</em> by using the
+<b class="emphasis-bold">:t string modifier</b> (<a href="ch28_05.htm#upt3-CHP-28-SECT-5">Section 28.5</a>) and test its value with
+<i class="command">switch</i> or <i class="command">if</i>.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.14. Terminal Setup: Testing Environment Variables</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.16. Terminal Setup: Testing Window Size</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

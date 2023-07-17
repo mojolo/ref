@@ -1,0 +1,105 @@
+<html><head><title>Multiline Delete (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.19. Multiline Delete</h2>
+
+<p>The <i class="command">sed</i><a name="IXT-34-791" /><a name="IXT-34-792" /> <a name="IXT-34-793" /> delete command,
+<em class="emphasis">d</em>, deletes the contents of the <b class="emphasis-bold">pattern space</b> (<a name="IXT-34-794" /><a href="ch34_14.htm#upt3-CHP-34-SECT-14">Section 34.14</a>) and
+causes a new line of input to be read, with editing resuming at the
+top of the script. The Delete command, <em class="emphasis">D</em>, works
+slightly differently: it deletes a portion of the
+<a name="IXT-34-795" />pattern space, up to the first
+embedded newline. It does not cause a new line of input to be read;
+instead, it returns to the top of the script, applying these
+instructions to what remains in the pattern space. We can see the
+difference by writing a script that looks for a series of blank lines
+and outputs a single blank line. The version below uses the delete
+command:
+</p>
+
+<blockquote><pre class="code"># reduce multiple blank lines to one; version using d command
+/^$/{
+   N
+   /^\n$/d
+}</pre></blockquote>
+
+<p>When a blank line is encountered, the next line is appended to the
+pattern space. Then we try to match the embedded newline. Note that
+the positional metacharacters, <tt class="literal">^</tt> and
+<tt class="literal">$</tt>, match the beginning and the end of the pattern
+space, respectively. Here's a test file:
+</p>
+
+<blockquote><pre class="code">This line is followed by 1 blank line.
+
+This line is followed by 2 blank lines.
+
+
+This line is followed by 3 blank lines.
+
+
+
+This line is followed by 4 blank lines.
+
+
+
+
+This is the end.</pre></blockquote>
+
+<p>Running the script on the test file produces the following result:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sed -f sed.blank test.blank</b></tt>
+This line is followed by 1 blank line.
+
+This line is followed by 2 blank lines.
+This line is followed by 3 blank lines.
+
+This line is followed by 4 blank lines.
+This is the end.</pre></blockquote>
+
+<p>Where there was an even number of blank lines, all the blank lines
+were removed. Only when there was an odd number of blank lines was a
+single blank line preserved. That is because the delete command
+clears the entire pattern space. Once the first blank line is
+encountered, the next line is read in, and both are deleted. If a
+third blank line is encountered, and the next line is not blank, the
+delete command is not applied, and thus a blank line is output. If we
+use the multiline Delete command, <tt class="literal">/^\n$/D</tt>, we get
+a different result, and the one that we wanted.
+</p>
+
+<p>The reason the multiline Delete command gets the job done is that
+when we encounter two blank lines, the Delete command removes only
+the first of the two. The next time through the script, the blank
+line will cause another line to be read into the pattern space. If
+that line is not blank, both lines are output, thus ensuring that a
+single blank line will be output. In other words, when there are two
+blank lines in the pattern space, only the first is deleted. When a
+blank line is followed by text, the pattern space is output normally.
+</p>
+
+<p> <em class="emphasis">-- DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.18. Searching for Patterns Split Across Lines</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.20. Making Edits Everywhere Except...</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

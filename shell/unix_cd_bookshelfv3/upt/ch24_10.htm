@@ -1,0 +1,247 @@
+<html><head><title>What Are Signals? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.10. What Are Signals?</h2>
+
+<p><a name="upt3-IDXTERM-3539" />
+<a name="upt3-IDXTERM-3540" />Signals are a simple but important means
+of interprocess communication. Interprocess communication sounds
+fancy, but it's really a simple concept:
+it's the means by which one program sends a message
+to another program. It's common to think of signals
+as special messages sent by the <b class="emphasis-bold">Unix
+kernel</b> (<a href="ch01_10.htm#upt3-CHP-1-SECT-10">Section 1.10</a>)
+<a name="IXT-24-5302" />but, in fact, any program can signal any
+other program.
+</p>
+
+<p>What kinds of messages can you send with a signal? Relatively few, in
+reality. Signals aren't
+"arbitrary" messages, like letters;
+they are a small group of pre-defined messages, each with its own
+special meaning. <a name="IXT-24-5303" />System V Unix
+supports 16 signals, each of which is assigned a number;
+<a name="IXT-24-5304" />BSD-derived
+Unix implementations and SVR4 have 32 signals. <a href="ch24_10.htm#upt3-CHP-24-TABLE-2">Table 24-2</a> lists some of the more commonly used signals.
+It also lists keyboard characters that send common signals on BSD
+systems (these can be changed; see <a href="ch05_08.htm#upt3-CHP-5-SECT-8">Section 5.8</a>). <a name="IXT-24-5305" /><a name="IXT-24-5306" /><a name="IXT-24-5307" /><a name="IXT-24-5308" /><a name="IXT-24-5309" /><a name="IXT-24-5310" /><a name="IXT-24-5311" /><a name="IXT-24-5312" /><a name="IXT-24-5313" /><a name="IXT-24-5314" /><a name="IXT-24-5315" /><a name="IXT-24-5316" /><a name="IXT-24-5317" /><a name="IXT-24-5318" />
+</p>
+
+<a name="upt3-CHP-24-TABLE-2" /><h4 class="objtitle">Table 24-2. Common signals </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Signal name</p>
+</th>
+<th>
+<p>Number</p>
+</th>
+<th>
+<p>Meaning and typical use</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>HUP</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>Hangup -- stop running. Sent when you log out or disconnect a
+modem.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>INT</p>
+</td>
+<td>
+<p>2</p>
+</td>
+<td>
+<p>Interrupt -- stop running. Sent when you type CTRL-c.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>QUIT</p>
+</td>
+<td>
+<p>3</p>
+</td>
+<td>
+<p>Quit -- stop running (and dump core). Sent when you type CTRL-\.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>KILL</p>
+</td>
+<td>
+<p>9</p>
+</td>
+<td>
+<p>Kill -- stop unconditionally and immediately; a good
+"emergency kill."
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>SEGV</p>
+</td>
+<td>
+<p>11</p>
+</td>
+<td>
+<p>Segmentation violation -- you have tried to access illegal memory.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>TERM</p>
+</td>
+<td>
+<p>15</p>
+</td>
+<td>
+<p>Terminate -- terminate gracefully, if possible.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>STOP</p>
+</td>
+<td>
+<p>17*</p>
+</td>
+<td>
+<p>Stop unconditionally and immediately; continue with CONT.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>TSTP</p>
+</td>
+<td>
+<p>18*</p>
+</td>
+<td>
+<p>Stop -- stop executing, ready to continue (in either background or
+foreground). Sent when you type CTRL-z. <b class="emphasis-bold">stty</b> (<a href="ch05_08.htm#upt3-CHP-5-SECT-8">Section 5.8</a>) calls this
+<em class="emphasis">susp</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CONT</p>
+</td>
+<td>
+<p>19*</p>
+</td>
+<td>
+<p>Continue -- continue executing after STOP or TSTP.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CHLD</p>
+</td>
+<td>
+<p>20*</p>
+</td>
+<td>
+<p>Child -- a child process's status has changed.</p>
+</td>
+</tr>
+
+</table><p>
+
+<p><a name="IXT-24-5320" />Note that signal
+numbers -- especially the ones above 15, marked with an asterisk
+in <a href="ch24_10.htm#upt3-CHP-24-TABLE-2">Table 24-2</a> -- vary system-to-system. Use the
+signal name wherever you can.
+</p>
+
+<p>While the list in <a href="ch24_10.htm#upt3-CHP-24-TABLE-2">Table 24-2</a> isn't
+definitive, it shows you the types of things signals can do. Many
+signals, like <em class="emphasis">SIGSEGV</em>, are
+<a name="IXT-24-5321" /><a name="IXT-24-5322" />warning or error messages.
+You've probably seen the frustrating
+"segmentation violation" message.
+That message came when the kernel detected something wrong and sent
+your program a <em class="emphasis">SIGSEGV</em> signal; in response, your
+program quit. Others signals, like <em class="emphasis">SIGTSTP</em>, are
+generated in response to special characters on the keyboard. And a
+lot of signals just say, "Your time is up,
+goodbye!"
+</p>
+
+<p><a name="IXT-24-5323" />When a process receives a signal, it
+can take a number of actions; for example:
+</p>
+
+<ul><li>
+<p>It can take whatever default action is specified for the signal. By
+default, some signals kill the process that receives them. For some
+signals, the default action is to stop running and dump core.
+(<em class="emphasis">SIGQUIT</em> is an example of this.) Other signals
+have no effect by default.
+</p>
+</li><li>
+<p><a name="IXT-24-5324" /><a name="IXT-24-5325" /><a name="IXT-24-5326" />It can <b class="emphasis-bold">trap</b> (<a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>) the signal
+and run a special "signal handling"
+function -- in which case, it can do whatever it wants. A signal
+handler often does whatever's necessary to shut the
+program down nicely: make sure that files are closed and left in a
+consistent state, and so on.
+</p>
+</li><li>
+<p>It can ignore the signal, in which case nothing happens.</p>
+</li></ul>
+<p>You've probably read that the command <em class="emphasis">kill
+-9</em><a name="IXT-24-5327" /><a name="IXT-24-5328" /> is guaranteed to kill a process. Why?
+Two special signals in <a href="ch24_10.htm#upt3-CHP-24-TABLE-2">Table 24-2</a>
+can't be caught or ignored: the
+<em class="emphasis">KILL</em> and <em class="emphasis">STOP</em> signals.
+</p>
+
+<p>The <b class="emphasis-bold">kill</b> (<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>) command doesn't
+kill -- it really does nothing more than send signals. As you now
+know, signals often bring death and destruction, but
+there's no necessary reason for them to do so.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.9. The /proc Filesystem</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.11. Killing Foreground Jobs</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

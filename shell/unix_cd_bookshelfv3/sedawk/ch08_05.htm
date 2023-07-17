@@ -1,0 +1,354 @@
+<html><head><title>An Acronym Processor (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.5. An Acronym Processor</h2>
+
+<p>
+<a name="ch08.acro1" />
+<a name="ch08.acro2" />
+Now let's look at a program that scans a file for acronyms.  Each
+acronym is replaced with a full text description, and the acronym in
+parentheses.  If a line refers to "BASIC," we'd like to replace it
+with the description "Beginner's All-Purpose Symbolic Instruction
+Code" and put the acronym in parentheses afterwards.  (This is probably not
+a useful program in and of itself, but the techniques used in the
+program are general and have many such uses.)</p>
+
+<p>We can design this program for use as a <em class="emphasis">filter</em>
+that prints all lines, regardless of whether a change has been made.
+We'll call it <b class="emphasis-bold">awkro</b>.</p>
+
+<blockquote><pre class="code">awk '# awkro - expand acronyms 
+# load acronyms file into array "acro"
+FILENAME == "acronyms" {
+	split($0, entry, "\t")
+	acro[entry[1]] = entry[2]
+	next
+} 
+
+# process any input line containing caps 
+/[A-Z][A-Z]+/ {
+
+	# see if any field is an acronym
+	for (i = 1; i &lt;= NF; i++)
+		if ( $i in acro ) {
+			# if it matches, add description 
+			$i = acro[$i] " (" $i ")"
+		}
+}
+
+{
+	# print all lines
+	print $0
+}' acronyms  $*</pre></blockquote>
+
+<p>Let's first see it in action.  Here's a sample input file.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat sample</b></tt>
+The USGCRP is a comprehensive 
+research effort that includes applied 
+as well as basic research.
+The NASA program Mission to Planet Earth 
+represents the principal space-based component
+of the USGCRP and includes new initiatives
+such as EOS and Earthprobes.</pre></blockquote>
+
+<p>And here is the file <em class="emphasis">acronyms</em>:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat acronyms</b></tt>
+USGCRP	U.S. Global Change Research Program
+NASA	National Aeronautic and Space Administration
+EOS	Earth Observing System</pre></blockquote>
+
+<p>Now we run the program on the sample file.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awkro sample</b></tt>
+The U.S. Global Change Research Program (USGCRP) is a comprehensive
+research effort that includes applied
+as well as basic research.
+The National Aeronautic and Space Administration (NASA) program
+Mission to Planet Earth
+represents the principal space-based component
+of the U.S. Global Change Research Program (USGCRP) and includes new
+initiatives
+such as Earth Observing System (EOS) and Earthprobes.</pre></blockquote>
+
+<p>We'll look at this program in two parts.  The first part reads records
+from the <em class="filename">acronyms</em> file.</p>
+
+<blockquote><pre class="code"># load acronyms file into array "acro"
+FILENAME == "acronyms" {
+	split($0, entry, "\t")
+	acro[entry[1]] = entry[2]
+	next
+}</pre></blockquote>
+
+<p>The two fields from these records are loaded into an array using the
+first field as the subscript and assigning the second field to an
+element of the array.  In other words, the acronym itself is the index
+to its description.</p>
+
+<p>Note that we did not change the field separator, but instead used the
+<b class="emphasis-bold">split()</b> function to create the array
+<b class="emphasis-bold">entry</b>.  This array is then used in creating an
+array named <b class="emphasis-bold">acro</b>.</p>
+
+<p>Here is the second half of the program:</p>
+
+<blockquote><pre class="code"># process any input line containing caps 
+/[A-Z][A-Z]+/ {
+	# see if any field is an acronym
+	for (i = 1; i &lt;= NF; i++)
+		if ( $i in acro ) {
+			acronym =$i 
+			# if it matches, add description 
+			$i = acro[$i] " (" $i ")"
+		}
+}
+
+{
+	# print all lines
+	print $0
+}</pre></blockquote>
+
+<p>Only lines that contain more than one consecutive capital letter are
+processed by the first of the two actions shown here.  This action
+loops through each field of the record.  At the heart of this section
+is the conditional statement that tests if the current field
+(<b class="emphasis-bold">$i</b>) is a subscript of the array
+(<b class="emphasis-bold">acro</b>).  If the field is a subscript, we replace
+the original value of the field with the array element and the
+original value in parentheses.  (Fields can be assigned new values,
+just like regular variables.)  Note that the insertion of the
+description of the acronym results in lines that may be too long.  See
+the next chapter for a discussion of the
+<b class="emphasis-bold">length()</b> function, which can be used to
+determine the length of a string so you can divide it up if it is too
+long.</p>
+
+<p>Now we're going to change the program so it makes a replacement only
+the first time an acronym appears.  After we've found it, we don't
+want to search for that acronym any more.  This is easy to do; we
+simply delete that acronym from the array.</p>
+
+<blockquote><pre class="code">if ( $i in acro ) {
+	# if it matches, add description 
+	$i = acro[$i] " (" $i ")"
+	# only expand the acronym once
+	delete acro[acronym]
+}</pre></blockquote>
+
+<p>There are other changes that would be good to make.  In running the
+<b class="emphasis-bold">awkro</b> program, we
+soon discovered that it failed to
+match the acronym if it was followed by a punctuation mark. Our
+initial solution was not to handle it in awk at all. Instead, we used
+two sed scripts, one before processing:</p>
+
+<blockquote><pre class="code">sed 's/\([^.,;:!][^.,;:!]*\)\([.,;:!]\)/\1 @@@\2/g'</pre></blockquote>
+
+<p>and one after:</p>
+
+<blockquote><pre class="code">sed 's/ @@@\([.,;:!]\)/\1/g'</pre></blockquote>
+
+<p>A sed script, run prior to invoking awk, could simply insert a
+space before any punctuation mark, causing it to be interpreted as a
+separate field.  A string of garbage characters
+(<b class="emphasis-bold">@@@</b>) was also added so we'd be able to easily
+identify and restore the punctuation mark.  (The complicated
+expression used in the first sed command makes sure that we catch the
+case of more than one punctuation mark on a line.)</p>
+
+<p>This kind of solution, using another tool in the UNIX toolbox,
+demonstrates that not everything needs to be done as an awk procedure.
+Awk is all the more valuable because it is situated in the UNIX
+environment.</p>
+
+<p>However, with POSIX awk, we can implement a different solution, one
+that uses a regular expression to match the acronym.  Such a solution
+can be implemented with the <b class="emphasis-bold">match()</b> and
+<b class="emphasis-bold">sub()</b> functions described in the next
+chapter.</p>
+
+<a name="sedawk-ch-8-sect-5.1" /><div class="sect2">
+<h3 class="sect2">8.5.1. Multidimensional Arrays</h3>
+
+<p>
+<a name="ch08.multi" />
+<a name="ch08.multi2" />
+Awk supports linear arrays in which the index to each element of the
+array is a single subscript.  If you imagine a linear array as a row
+of numbers, a two-dimensional array represents rows and columns of
+numbers.  You might refer to the element in the second column of the
+third row as "array[3, 2]."  Two- and three-dimensional
+arrays are examples of multidimensional arrays.  Awk does not support
+multidimensional arrays but instead offers a syntax for subscripts
+that simulate a reference to a multidimensional array.
+For instance, you could write the following expression:</p>
+
+<blockquote><pre class="code">file_array[NR, i] = $i</pre></blockquote>
+
+<p>where each field of an input record is indexed by its record number
+and field number.  Thus, the following reference:</p>
+
+<blockquote><pre class="code">file_array[2, 4]</pre></blockquote>
+
+<p>would produce the value of the fourth field of the second record.</p>
+
+<p>This syntax does not create a multidimensional array.  It is
+converted into a string that uniquely identifies the element in a
+linear array.  The components of a multidimensional subscript are
+interpreted as individual strings ("2" and "4," for instance) and
+concatenated together separated by the value of the system variable
+<a name="IXT-8-266055" />
+<a name="IXT-8-266056" />
+<b class="emphasis-bold">SUBSEP</b>.  The subscript-component separator is
+defined as
+<tt class="literal">"</tt><b class="emphasis-bold">\034</b><tt class="literal">"</tt>
+by default, 
+an unprintable character rarely
+found in ASCII text.  Thus, awk maintains a one-dimensional array and
+the subscript for our previous example would actually
+be <tt class="literal">"</tt>2\0344<tt class="literal">"</tt> (the
+concatenation of "<b class="emphasis-bold">2</b>," the value of
+<b class="emphasis-bold">SUBSEP</b>, and "<b class="emphasis-bold">4</b>").  The main
+consequence of this simulation of multidimensional arrays is that the
+larger the array, the slower it is to access individual elements.
+However, you should time this, using your own application, with
+different awk implementations (see <a href="ch11_01.htm">Chapter 11, "A Flock of awks"</a>).</p>
+
+<p>Here is a sample awk script named <b class="emphasis-bold">bitmap.awk</b> that
+shows how to load and output the elements of a multidimensional
+array.  This array represents a two-dimensional bitmap that is 12
+characters in width and height.</p>
+
+<blockquote><pre class="code">BEGIN { FS = ","   # comma-separated fields
+	# assign width and height of bitmap
+	WIDTH = 12
+	HEIGHT = 12
+	# loop to load entire array with "O"
+	for (i = 1; i &lt;= WIDTH; ++i)
+		for (j = 1; j &lt;= HEIGHT; ++j)
+			bitmap[i, j] = "O"
+}
+# read input of the form x,y. 
+{
+	# assign "X" to that element of array 
+	bitmap[$1, $2] = "X"
+}
+# at end output multidimensional array
+END {
+	for (i = 1; i &lt;= WIDTH; ++i){
+		for (j = 1; j &lt;= HEIGHT; ++j)
+			printf("%s", bitmap[i, j] )
+		# after each row, print newline
+		printf("\n")	
+	}
+}</pre></blockquote>
+
+<p>Before any input is read, the <b class="emphasis-bold">bitmap</b> array is
+loaded with O's.  This array has 144 elements.  The input to this
+program is a series of coordinates, one per line.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat bitmap.test</b></tt>
+1,1
+2,2
+3,3
+4,4
+5,5
+6,6
+7,7
+8,8
+9,9
+10,10
+11,11
+12,12
+1,12
+2,11
+3,10
+4,9
+5,8
+6,7
+7,6
+8,5
+9,4
+10,3
+11,2
+12,1</pre></blockquote>
+
+<p>For each coordinate, the program will put an "X" in place of an "O" as
+that element of the array. At the end of the script, the same kind of
+loop that loaded the array, now outputs it. The following example
+reads the input from the file <em class="filename">bitmap.test</em>.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f bitmap.awk bitmap.test</b></tt>
+XOOOOOOOOOOX
+OXOOOOOOOOXO
+OOXOOOOOOXOO
+OOOXOOOOXOOO
+OOOOXOOXOOOO
+OOOOOXXOOOOO
+OOOOOXXOOOOO
+OOOOXOOXOOOO
+OOOXOOOOXOOO
+OOXOOOOOOXOO
+OXOOOOOOOOXO
+XOOOOOOOOOOX</pre></blockquote>
+
+<p>The multidimensional array syntax is also supported in testing for
+array membership.  The subscripts must be placed inside parentheses.</p>
+
+<blockquote><pre class="code">if ((i, j) in array)</pre></blockquote>
+
+<p>This tests whether the subscript <b class="emphasis-bold">i,j</b> (actually,
+<b class="emphasis-bold">i SUBSEP j</b>) exists in the specified array.</p>
+
+<p>Looping over a multidimensional array is the same as with
+one-dimensional arrays.</p>
+
+<blockquote><pre class="code">for (item in array)</pre></blockquote>
+
+<p>You must use the <b class="emphasis-bold">split()</b> function to access
+individual subscript components.  Thus:</p>
+
+<blockquote><pre class="code">split(item, subscr, SUBSEP)</pre></blockquote>
+
+<p>creates the array <b class="emphasis-bold">subscr</b> from the subscript
+<b class="emphasis-bold">item</b>.</p>
+
+<p>Note that we needed to use the loop-within-a-loop to output the 
+two-dimensional bitmap array in the previous example because
+we needed to maintain rows and columns.</p>
+
+<a name="IXT-8-266057" />
+<a name="IXT-8-266058" />
+</div>
+
+
+
+
+<a name="IXT-8-266059" />
+<a name="IXT-8-266060" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.4. Arrays</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.6. System Variables That Are Arrays</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

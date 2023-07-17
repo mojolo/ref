@@ -1,0 +1,144 @@
+<html><head><title>Delving Through a Deep Directory Tree (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.2. Delving Through a Deep Directory Tree</h2>
+
+<p><a name="IXT-9-4" />The
+<a name="IXT-9-5" />first, most obvious, use of
+this utility is <em class="filename">find</em>'s ability
+to locate old, big, or unused files whose locations
+you've forgotten. In particular,
+<em class="filename">find</em>'s most fundamentally
+important characteristic is its ability to travel down
+subdirectories.
+</p>
+
+<p>Normally the <a name="IXT-9-6" />shell provides the
+argument list to a command. That is, Unix programs are frequently
+given filenames and not directory names. Only a few programs can be
+given a directory name and march down the directory searching for
+<a name="IXT-9-7" />subdirectories. The programs
+<em class="filename">find</em>, <b class="emphasis-bold">tar</b>
+(<a href="ch38_03.htm#upt3-CHP-38-SECT-3">Section 38.3</a>), <em class="filename">du</em>, and
+<em class="filename">diff</em> do this. Some versions of <b class="emphasis-bold">chmod</b> (<a href="ch50_05.htm#upt3-CHP-50-SECT-5">Section 50.5</a>),
+<em class="filename">chgrp</em>, <em class="filename">ls</em>,
+<em class="filename">rm</em>, and <em class="filename">cp</em> will, but only
+if a <em class="filename">-r</em> or <em class="filename">-R</em> option is
+specified.
+</p>
+
+<p>In general, most commands do not understand directory structures and
+rely on the shell to expand wildcards to directory names. That is, to
+delete all files whose names end with a <tt class="literal">.o</tt> in a
+group of directories, you could type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm *.o */*.o */*/*.o</b></tt></pre></blockquote>
+
+<p>Not only is this tedious to type, it may not find all of the files
+you are searching for. The shell has certain blind spots. It will not
+match files in directories whose names start with a dot. And, if any
+files match <tt class="literal">*/*/*/*.o</tt>, they would not be deleted.
+</p>
+
+<p>Another problem is typing the previous command and getting the error
+<a name="IXT-9-8" />"Arguments too
+long." This means the shell would expand too many
+arguments from the wildcards you typed.
+</p>
+
+<p><em class="filename">find</em> is the answer to these problems.</p>
+
+<p>A simple example of <em class="filename">find</em> is using it to print
+the names of all the files in the directory and all subdirectories.
+This is done with the simple command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -print</b></tt></pre></blockquote>
+
+<p>The first arguments to <em class="filename">find</em> are directory and
+file pathnames -- in the example, a dot (.) is one name for the
+current directory. The arguments after the pathnames always start
+with a minus sign (<tt class="literal">-</tt>) and tell
+<em class="filename">find</em> what to do once it finds a file; these are
+the search operators. In this case, the filename is printed.
+</p>
+
+<p>You can use the tilde (<tt class="literal">~</tt>), as well as particular
+paths. For example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find ~ ~barnett /usr/local -print</b></tt></pre></blockquote>
+
+<p>And if you have a very slow day, you can type:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find / -print</b></tt></pre></blockquote>
+
+<p>This command will list every file on the system. This is okay on
+single-user workstations with their own disks. However, it can tie up
+disks on multiuser systems enough to make users think of gruesome
+crimes! If you really need that list and your system has
+<a name="IXT-9-9" /> <a name="IXT-9-10" />fast <em class="filename">find</em>
+or<em class="filename"> locate</em>, try the command <tt class="literal">find
+'/*'</tt> or <tt class="literal">locate ' *'</tt> instead.
+</p>
+
+<p><em class="filename">find</em><a name="IXT-9-11" /> sends its output to standard output, so
+once you've
+"found" a list of filenames, you
+can pass them to other commands. One way to use this is with command
+substitution:<tt><b></b></tt><a name="IXT-9-12" /> <a name="IXT-9-13" />
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -l `find . -print</b></tt>`</pre></blockquote>
+
+<p>The <em class="filename">find</em> command is executed, and its output
+replaces the backquoted string. <em class="filename">ls</em> sees the
+output of <em class="filename">find</em> and doesn't even
+know <em class="filename">find</em> was used.
+</p>
+
+<p><a name="IXT-9-14" />An alternate method
+uses the <em class="filename">xargs</em><a name="IXT-9-15" /> <a name="IXT-9-16" /> command. <em class="filename">xargs</em> and
+<em class="filename">find</em> work together beautifully.
+<em class="filename">xargs</em> executes its arguments as commands and
+reads standard input to specify arguments to that command.
+<em class="filename">xargs</em> knows the maximum number of arguments each
+command line can handle and does not exceed that limit. While the
+command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -ld `find / -print`</b></tt></pre></blockquote>
+
+<p>might generate an error when the command line is too large, the
+equivalent command using <em class="filename">xargs</em> will never
+generate that error:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find / -print | xargs ls -ld</b></tt></pre></blockquote>
+
+<p><em class="emphasis">--BB and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9. Finding Files with find</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.3. Don't Forget -print</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

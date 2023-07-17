@@ -1,0 +1,109 @@
+<html><head><title>Directory Services (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 3. Directory Services</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch03_01.htm#sect1">Understanding Directory Services</a><br />
+<a href="ch03_02.htm">Programming with Directory Services</a><br />
+<a href="ch03_03.htm">Configuring Directory Services</a><br />
+<a href="ch03_04.htm">NetInfo</a><br />
+<a href="ch03_05.htm">NetInfo Utilities</a><br />
+<a href="ch03_06.htm">NetInfo Command Reference</a><br />
+<a href="ch03_07.htm">Managing Groups</a><br />
+<a href="ch03_08.htm">Managing Users and Passwords</a><br />
+<a href="ch03_09.htm">Managing Hostnames and IP Addresses</a><br />
+<a href="ch03_10.htm">Exporting Directories with NFS</a><br />
+<a href="ch03_11.htm">Flat Files and Their NetInfo Counterparts</a><br />
+<a href="ch03_12.htm">Restoring the NetInfo Database</a><br /></p></div><p><a name="mosxgeeks-IDXTERM-169" />A <em class="emphasis">directory service</em>
+manages information about users and resources, such as
+printers and servers. It can manage this information for anything
+from a single machine to an entire corporate network. The Directory
+Service architecture in Mac OS X is called Open Directory. Open
+Directory encompasses flat files (such as
+<em class="filename">/etc/hosts</em>), NetInfo (the legacy directory
+service brought over from earlier versions of Mac OS X and NeXTSTEP),
+LDAPv3, and other services through third-party plug-ins.
+</p><p>This chapter describes how to perform common configuration tasks,
+such as adding a user or host on Mac OS X with the default
+configuration. If your system administrator has configured your
+Macintosh to consult an external directory server, some of these
+instructions may not work. If that's the case, you
+should ask your system administrator to make these kinds of changes
+anyhow!
+</p><div class="sect1"><a name="mosxgeeks-CHP-3-SECT-1" />
+<h2 class="sect1"><a name="sect1" />3.1. Understanding Directory Services</h2>
+
+<p>In Mac OS X 10.1.<em class="emphasis">x</em> and earlier, the system was
+configured to consult the
+<a name="IXT-3-359" />NetInfo database for
+all directory information. If you needed to do something simple, such
+as adding a host, you couldn't just add it to
+<em class="filename">/etc/hosts</em> and be done with it. Instead, you had
+to use the <a name="IXT-3-360" />NetInfo Manager (or
+NetInfo's command-line utilities) to add the host.
+</p>
+
+<p>However, in Mac OS X 10.2 (Jaguar), NetInfo functions more as a
+legacy protocol. Instead of being a major player in the directory
+services world, NetInfo's role has been reduced to
+that of the local directory database for machines that are not
+participating in a network-wide directory, such as Active Directory
+or OpenLDAP. NetInfo is still present on Mac OS X systems, but you
+can perform most configuration tasks by editing the standard Unix
+flat files. By default, Mac OS X 10.2 is configured to consult the
+local directory (also known as the NetInfo database) for
+authentication, which corresponds to <em class="filename">/etc/passwd</em>
+<a href="#FOOTNOTE-6">[6]</a> and <em class="filename">/etc/group</em> on
+other Unix systems. You can override this setting with the Directory
+Access application. For more information, see <a href="ch03_03.htm#mosxgeeks-CHP-3-SECT-3">Section 3.3</a>,
+later in this chapter.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-6" /><p> [6]<em class="filename">/etc/master.passwd</em> is the
+shadow password file that actually contains the encrypted
+passwords.</p> </blockquote>
+
+<p>For users whose network configuration consists of an IP address, a
+default gateway, and some DNS addresses, this default configuration
+should be fine. You'll need to tap into Open
+Directory's features for more advanced
+configurations, such as determining how a user can log into a
+workstation and find their home directory, even when that directory
+is hosted on a shared server.
+</p>
+
+<p>In order to work with Mac OS X's Directory Services,
+you must first understand the overall architecture, which is known as
+Open Directory. Directory Services is the part of Mac OS X (and the
+open source Darwin operating system) that implements this
+architecture. <a href="ch03_01.htm#mosxgeeks-CHP-3-FIG-1">Figure 3-1</a> shows the relationship of
+<a name="IXT-3-361" />Directory Services to the
+rest of the operating system. On the top, server processes, as well
+as the user's desktop and applications, act as
+clients to Directory Services, which delegates requests to a
+directory service plug-in (see <a href="ch03_03.htm#mosxgeeks-CHP-3-SECT-3">Section 3.3</a>, later in this chapter,
+for a description of each plug-in).
+</p>
+
+<a name="mosxgeeks-CHP-3-FIG-1" /><div class="figure"><img src="figs/mud_0301.gif" alt="Figure 3-1" width="195" /></div><h4 class="objtitle">Figure 3-1. The Directory Services architecture</h4>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2.3. Scheduling Tasks</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.2. Programming with Directory Services</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

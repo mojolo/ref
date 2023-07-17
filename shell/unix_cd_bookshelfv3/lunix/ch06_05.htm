@@ -1,0 +1,784 @@
+<html><head><title>Electronic Mail (Learning the Unix Operating System, 5th Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Jerry Peek, John Strang and Grace Todino-Gonguet" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00261-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Unix Operating System, 5th Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning Unix" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.5. Electronic Mail</h2>
+
+<p>
+<a name="lunix5-IDXTERM-730" />
+<a name="lunix5-IDXTERM-731" />
+You may see a notice that says "You have mail"
+when you first log in to your system, or later, before a shell prompt.
+Someone has sent you a message or document
+by <em class="emphasis">electronic mail</em> (email).
+With email, you can compose a message at your terminal and send it to
+another user or list of users.
+You also can read any messages that others may have sent to you.
+</p>
+
+<p>
+There are a lot of email programs for Unix.
+If you'll use email often, we recommend that you start with whatever
+program other people in your group use.
+</p>
+
+<p>
+We start with a brief section on addressing email.
+Next, you'll see how to send mail from a shell prompt
+with Berkeley <b class="emphasis-bold">mail</b>.
+Then we introduce sending and reading mail with Pine,
+a popular menu-driven program that works without a window system.
+If you'd like to try a graphical program (which we won't discuss here),
+many web browsers have an email window. All programs' basic principles are the same though, and they all can
+send and receive messages from each other.<a href="#FOOTNOTE-19">[19]</a>
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-19" /><p> [19]
+Microsoft Windows users have an unfortunate habit of sending email
+"attachments" made with a Windows-specific program like Microsoft Word.
+On Unix systems, you can read these messages using popular word
+processing programs such as StarOffice, but it can be a pain.
+You might ask Windows users to send plain text
+messages, which everyone can read without special software.
+</p>
+</blockquote>
+
+<a name="lunix5-CHP-6-SECT-5.1" /><div class="sect2">
+<h3 class="sect2">6.5.1. Addressing an Email Message</h3>
+
+<p>
+Most addresses have this syntax:
+</p>
+
+
+<p><em class="emphasis">username@hostname</em></p>
+
+
+<p>
+<a name="IXT-6-279987" />
+<a name="IXT-6-279988" />
+<em class="emphasis">username</em> is the person's username, like
+<em class="emphasis">jerry</em>, and
+<em class="emphasis">hostname</em> is either the name of his computer or a
+central domain name for his entire organization,
+like <em class="emphasis">oreilly.com</em>.
+On many Unix systems, if the recipient reads email on the same computer
+you do, you may omit the <em class="emphasis">@hostname</em>.
+(An easy way to get a copy of a message you send is to add your username
+to the list of addressees.)
+</p>
+
+</div>
+
+<a name="lunix5-CHP-6-SECT-5.2" /><div class="sect2">
+<h3 class="sect2">6.5.2. Sending Mail from a Shell Prompt</h3>
+
+<p>
+<a name="lunix5-IDXTERM-734" />
+<a name="IXT-6-279989" />
+Most Unix systems have a fairly simple program from Berkeley Unix called
+<b class="emphasis-bold">Mail</b> (with an uppercase "M"),
+<b class="emphasis-bold">mailx</b>, or just
+<b class="emphasis-bold">mail</b>.
+If you enter just the program name at a shell prompt, you can read
+your email, but its terse interface isn't very friendly.
+If you enter the program name, followed by addresses as arguments,
+you can send an email message.
+This is handy for sending a quick message from your keyboard.
+But it's best used with redirection (explained in <a href="ch05_01.htm">Chapter 5</a>)
+to email the output of a
+program or the contents of a file.
+</p>
+
+
+<p>
+To send mail, give the address of each person you want to send a
+message to, such as one of the following:
+</p>
+
+
+<p>
+<b class="emphasis-bold">Mail</b> <em class="emphasis">address1 address2</em> ...
+</p>
+<p>
+<b class="emphasis-bold">mailx</b> <em class="emphasis">address1 address2</em> ...
+</p>
+<p>
+<b class="emphasis-bold">mail</b> <em class="emphasis">address1 address2</em> ...
+</p>
+
+
+<blockquote><b>WARNING:</b> 
+
+It's best to use simple addresses such as
+<em class="emphasis">username@hostname</em> on the command line.
+More complex addresses--with peoples' names or special characters
+such as <tt class="literal">&lt;</tt> and <tt class="literal">&gt;</tt>--can cause
+trouble unless you know how to deal with them.
+</p>
+</blockquote>
+
+<p>
+After you enter <b class="emphasis-bold">mail</b> and the
+addresses, if you're sending a message from the keyboard,
+in most cases the program (depending on how it's set up)
+prompts you for the subject of the message.
+Many versions of the program also accept a subject as a
+command-line argument after the <b class="emphasis-bold">-s</b>
+option; be sure to put quote marks around the subject!
+Here are two examples of redirection:
+first sending the restaurant list you made in an earlier example,
+then sorting the list before you send it:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>mail -s "My favorite restaurants" jerry@oreilly.com &lt; food</b></tt>
+$ <tt class="userinput"><b>sort food | mail -s "My favorite restaurants" jerry@oreilly.com</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+If you've redirected the standard input from a pipe or file, as in these
+two examples, your message will be delivered.
+Otherwise, <em class="emphasis">mail</em> will wait for you to enter the
+message body.
+Type in your message, line by line, pressing <span class="keycap">RETURN</span>
+after every line.
+When you've finished entering text, type <span class="keycap">CTRL-D</span>
+(just once!) at the start of a new line.
+You should get the shell prompt at this point, though it
+might take a few seconds.</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>mail alicja@moxco.chi.il.us</b></tt>
+Subject: <tt class="userinput"><b>My Chicago trip
+Alicja, I will be able to attend your meeting.
+Please send me the agenda.  Thanks.
+
+Jerry
+^D</b></tt>
+$
+</pre></blockquote>
+</p>
+
+<p>If you change your mind before you type <span class="keycap">CTRL-D</span>,
+you can cancel a message (while you're still entering text) with
+your interrupt character (see
+<a href="ch01_01.htm#lunix5-CHP-1-SECT-1.8">Section 1.1.8</a> in <a href="ch01_01.htm">Chapter 1</a>).
+The cancelled message may be placed in a file called
+<em class="emphasis">dead.letter</em> in your home directory.
+To see other commands you can use while sending mail, enter
+<b class="emphasis-bold">~?</b> (tilde question mark) at the start
+of a line of your message, then press <span class="keycap">RETURN</span>.
+To redisplay your message after using <b class="emphasis-bold">~?</b>,
+enter <b class="emphasis-bold">~p</b> at the start of a line.
+</p>
+
+<p>
+You can't cancel a message after you type
+<span class="keycap">CTRL-D</span>
+(unless you're a system administrator and you're lucky to catch the
+message in time).
+So, if you change your mind about Alicja's meeting, you'll need to send
+her another message.
+</p>
+
+<p>
+Please try the previous examples, substituting your address for the
+sample addresses shown.
+Once you've found the correct program name and the email address you
+can use to send a message to yourself, write them down.
+You'll probably find this is a very useful way to send yourself little
+reminder messages, the contents of files, and the outputs of programs:
+</p>
+
+
+<p>___________   Name of email program that sends from a shell prompt</p>
+
+<p>_________________________   My email address</p>
+
+</div>
+
+
+
+
+<a name="lunix5-CHP-6-SECT-5.3" /><div class="sect2">
+<h3 class="sect2">6.5.3. Reading Email with Pine</h3>
+
+<p>
+
+<a name="lunix5-IDXTERM-736" />
+<a name="lunix5-IDXTERM-737" />
+
+Pine, from the University of Washington, is a popular program for
+reading and sending email from a terminal.
+It works completely from your keyboard; you don't need a mouse.
+Pine isn't a standard part of all Unix systems; if you don't have it,
+you can use other email programs.
+If you read this introduction but don't have Pine, ask your system
+staff to download and install it.
+Like most Unix software, Pine is free.
+</p>
+
+<p>
+Start Pine by entering its name at a
+shell prompt.
+It also accepts options and arguments on its command line;
+to find out more, enter <b class="emphasis-bold">pine -h</b>
+("help").
+If new email is waiting for you, but you want to experiment with Pine
+without taking chances, the <b class="emphasis-bold">-o</b>
+(lowercase letter "O") option makes your inbox folder read-only;
+you won't be able to change the messages in it until you quit Pine
+and restart without the <b class="emphasis-bold">-o</b>.
+<a href="ch06_05.htm#lunix5-CHP-6-FIG-5">Figure 6-5</a> shows the starting display,
+the <em class="emphasis">main menu</em>.
+</p>
+
+
+<p>
+The highlighted line, which is the default command,
+gives a list of your email folders.<a href="#FOOTNOTE-20">[20]</a>
+You can choose the highlighted command by pressing
+<span class="keycap">RETURN</span>, pressing the greater-than sign
+<span class="keycap">&gt;</span>, or typing the letter
+next to it (here, <b class="emphasis-bold">l</b>, a lowercase
+<span class="keycap">L</span>; you don't need to type the commands in uppercase).
+But since you probably haven't used Pine before, the only interesting
+folder is the inbox, which is the folder where your new messages wait
+for you to read them.
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-20" /><p> [20]
+Recent versions of Pine also let you read Usenet newsgroups.
+The <b class="emphasis-bold">L</b> command takes you to another display where you choose the source
+of the folders, <em class="emphasis">then</em> you see the list of folders
+from that source.
+See <a href="ch06_06.htm#lunix5-CHP-6-SECT-6">Section 6.6</a>, later in this chapter.
+</p>
+</blockquote>
+
+<a name="lunix5-CHP-6-FIG-5" /><div class="figure"><img src="figs/lu5.0605.gif" alt="Figure 6-5" /></div><h4 class="objtitle">Figure 6-5. Pine main menu</h4>
+
+<p>
+The bottom of the display in <a href="ch06_05.htm#lunix5-CHP-6-FIG-5">Figure 6-5</a>
+shows that there are two messages waiting.
+Let's go directly to the inbox by pressing <span class="keycap">I</span>
+(or by highlighting that line in the menu and pressing <span class="keycap">RETURN</span>)
+to read the new mail.
+<a href="ch06_05.htm#lunix5-CHP-6-FIG-6">Figure 6-6</a> has the <em class="emphasis">message index</em>
+for Alicja's inbox.
+</p>
+
+<a name="lunix5-CHP-6-FIG-6" /><div class="figure"><img src="figs/lu5.0606.gif" alt="Figure 6-6" /></div><h4 class="objtitle">Figure 6-6. Pine message index</h4>
+
+<p>
+The main part of the window is a list of the messages in the
+folder, one message per line.
+If a line starts with N, like the second message does, it's a new message
+that hasn't been read before.
+(The first message has been sitting in the inbox for some time now...)
+Next on each line is the <em class="emphasis">message number</em>; messages
+in a folder are numbered 1, 2, and so on.
+That's followed by the date the message was sent, who sent it,
+the number of characters in the message (size), and finally the
+message subject.
+</p>
+
+<p>
+At the bottom of the display is Pine's reminder list of commands.
+When you aren't sure what to do, this is a good place to look.
+If you don't see what you want here, pressing <span class="keycap">O</span> 
+(the letter "o"; lowercase is fine) shows you more choices.
+For more information, <span class="keycap">?</span> gives detailed help.
+</p>
+
+<p>
+Let's skip this first message and read the next one, number 2.
+The down-arrow key or the <span class="keycap">N</span> key moves the highlight
+bar over that message.
+As usual, you can get the default action--the one shown in brackets
+at the bottom of the display
+(here, <tt class="literal">[ViewMsg]</tt>)--by pressing
+<span class="keycap">RETURN</span> or <span class="keycap">&gt;</span>.
+The message from Jerry will appear.
+</p>
+
+
+<p>
+Just as <span class="keycap">&gt;</span> took us forward in Pine, the
+<span class="keycap">&lt;</span> key
+generally takes you back to where you came
+from--in this case, the message index.
+You can type <span class="keycap">R</span> to reply to this message,
+<span class="keycap">F</span> to forward it (send it on to someone else),
+<span class="keycap">D</span> to mark it for deletion,
+and <span class="keycap">TAB</span> to go to the next message without deleting this one.
+</p>
+
+<p>
+When you mark a message for deletion, it stays in the folder message index,
+marked with a <tt class="literal">D</tt> at the left side of its line,
+until you quit Pine.
+Type <span class="keycap">Q</span> to quit.
+First Pine asks if you really want to quit.
+If you've marked messages for deletion, Pine asks if you want to
+<em class="emphasis">expunge</em> ("really delete") them.
+Answering <span class="keycap">Y</span> here actually deletes the message.
+</p>
+
+<p>
+There's much more to Pine than we can cover here.
+For instance, it lets you organize mail in multiple folders, print,
+pipe (output) messages to Unix programs, search for messages, and more.
+Recent versions of Pine can access mail folders on other computers using
+IMAP; this lets you use Pine (and other email programs) on many
+computers, but keep one main set of mail folders on a central computer.
+</p>
+</div>
+
+<a name="lunix5-CHP-6-SECT-5.4" /><div class="sect2">
+<h3 class="sect2">6.5.4. Sending Email with Pine</h3>
+
+<p>
+
+<a name="lunix5-IDXTERM-738" />
+
+If you're sending a quick message from a shell prompt, you may want to
+use the method shown in <a href="ch06_05.htm#lunix5-CHP-6-SECT-5.2">Section 6.5.2</a> earlier in this chapter.
+For a more interactive way to send email, try Pine.
+We'll take a quick tour.
+</p>
+
+<p>
+If you've already started Pine, you can compose a message from many
+of its displays by typing
+<span class="keycap">C</span>.
+(Though, as always, not every Pine command is available at every display.)
+You can also start from the main menu.
+Or, at a shell prompt, you can go straight into message composition by
+typing "<b class="emphasis-bold">pine</b>
+<em class="emphasis">addr1 addr2</em>", where each
+<em class="emphasis">addr</em> is an email address like
+<em class="emphasis">jerry@oreilly.com</em>.
+In that case, after you've sent the mail message, Pine quits and leaves you at another shell prompt.
+</p>
+
+<p>
+When you compose a message, Pine puts you in a window called the
+<em class="emphasis">composer</em>.
+(You'll also go into the composer if you use the Reply or Forward commands
+while you're reading another mail message.)
+The composer is a lot like the Pico editor, but the first few lines are
+special because they're the message <em class="emphasis">header</em>--the "To:",
+"Cc:" (courtesy copy), "Attchmnt:" (attached file), and "Subject:" lines.
+<a href="ch06_05.htm#lunix5-CHP-6-FIG-7">Figure 6-7</a> shows an example, already filled in.
+</p>
+
+
+<a name="lunix5-CHP-6-FIG-7" /><div class="figure"><img src="figs/lu5.0607.gif" alt="Figure 6-7" /></div><h4 class="objtitle">Figure 6-7. Pine composer</h4>
+
+<p>
+As you fill in the header, the composer works differently than when
+you're in the message text (body of the message).
+The list of commands at the bottom of the window is a bit different
+in those cases, too.
+For instance, while you edit the header, you can attach a file to
+the end of the message with the "Attach" command, which is
+<span class="keycap">CTRL-J</span>. However, when you edit the body, you can
+read a file into the place you're currently editing (as opposed to attaching
+it) with the <span class="keycap">CTRL-R</span> "Read File" command.
+But the main difference between editing the body and the header is
+the way you enter addresses.
+</p>
+
+<p>
+If you have more than one address on the same line, separate them with commas
+(<tt class="literal">,</tt>).
+Pine will rearrange the addresses so there's just one on each line, as
+shown in <a href="ch06_05.htm#lunix5-CHP-6-FIG-7">Figure 6-7</a>.
+</p>
+
+<p>
+There are several ways to give the composer the addresses where the message
+should be sent:
+</p>
+
+<ul>
+
+<li>
+<p>
+Type the full email address, like <em class="emphasis">jpeek@jpeek.com</em>.
+</p></li>
+
+<li>
+<p>
+If you're sending email to someone who uses the same computer you do,
+type their username.
+Pine will fill in <tt class="literal">@</tt><em class="replaceable"><tt>hostname</tt></em>
+as soon as you move the cursor to the next line.
+</p></li>
+
+<li>
+<p>
+Type a nickname from the address book.
+(See <a href="ch06_05.htm#lunix5-CHP-6-SECT-5.4.1">Section 6.5.4.1</a>, later in this chapter.)
+</p></li>
+
+</ul>
+
+<p>Move up and down between the header lines with
+<span class="keycap">CTRL-N</span> and <span class="keycap">CTRL-P</span>,
+or with the up-arrow and down-arrow keys, just as you would in Pico.
+When you move into the message body (under the "Message Text" line),
+type any text you want.
+Paragraphs are usually separated with single blank lines.
+</p>
+
+<blockquote><b>NOTE:</b> 
+
+If you put a file in your home directory
+named <em class="emphasis">.signature</em>
+(the name starts with a dot, "<tt class="literal">.</tt>"),
+the composer automatically adds its contents to the end
+of every message you compose.
+(Some other Unix email programs work the same way.)
+You can make this file with a text editor like Pico, or from
+the Pine setup menu (see <a href="ch06_05.htm#lunix5-CHP-6-SECT-5.5">Section 6.5.5</a>, later in this chapter).
+It's good Internet etiquette to keep this file short--no more than four or five lines, if possible.
+</p>
+</blockquote>
+
+<p>
+You can use familiar Pico commands such as
+<span class="keycap">CTRL-J</span> to justify a paragraph and
+<span class="keycap">CTRL-T</span> to check your spelling.
+When you're done, <span class="keycap">CTRL-X</span> ("exit") leaves the composer,
+asking first if you want to send the message you just wrote.
+Or <span class="keycap">CTRL-C</span> cancels the message, though you'll be
+asked if you're sure.
+If you need to quit, but don't want to send or cancel, the
+<span class="keycap">CTRL-O</span> command postpones your message;
+then, the next time you try to start the composer, Pine asks whether you want to continue the postponed composition.
+</p>
+
+<a name="lunix5-CHP-6-SECT-5.4.1" /><div class="sect3">
+<h3 class="sect3">6.5.4.1. Pine address book</h3>
+
+<p>
+<a name="IXT-6-279990" />
+<a name="IXT-6-279991" />
+
+The Pine <em class="emphasis">address book</em> can hold peoples' names and
+addresses, as well as a <em class="emphasis">nickname</em> for each person.
+When you compose a message, enter peoples' nicknames in the message header;
+Pine replaces that with the full name and address.<a href="#FOOTNOTE-21">[21]</a>
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-21" /><p> [21]
+Recent versions of Pine also let you store your address book on
+a central server, in order for you to access it, from whatever other
+computer you're using at the moment, via IMAP.
+</p>
+</blockquote>
+
+<p>
+You can enter information by hand from the main menu by choosing
+<span class="keycap">A</span> ("address book"), then adding
+new entries and editing old ones.
+Also, as you read email messages that you've received, the
+<span class="keycap">T</span> ("take address") command makes new
+address book entries for that message's addressees.
+</p>
+
+<p>
+<a href="ch06_05.htm#lunix5-CHP-6-FIG-8">Figure 6-8</a> shows the address book entry form.
+Edit each line as you would in the composer, then use
+<span class="keycap">CTRL-X</span> to save the entry.
+The "Fcc" line gives the name of an optional Pine folder;
+when you send a message to this address book entry,
+Pine puts a copy in this folder.
+(If you leave "Fcc" blank, Pine uses the
+<em class="emphasis">sent-mail</em> folder.)
+All lines except nickname and address are optional.
+</p>
+
+<a name="lunix5-CHP-6-FIG-8" /><div class="figure"><img src="figs/lu5.0608.gif" alt="Figure 6-8" /></div><h4 class="objtitle">Figure 6-8. Pine address book entry</h4>
+
+<p>
+Once you've saved that address book entry, if you go into the composer
+and type the nickname <em class="emphasis">Jerry</em>, here's the header you
+get automatically:
+</p>
+
+<p>
+<blockquote><pre class="code">
+To      : Jerry Peek &lt;jpeek@jpeek.com&gt;
+Cc      : 
+Fcc     : authors
+Attchmnt: 
+Subject : 
+</pre></blockquote>
+
+<a name="IXTR3-118" />
+
+
+</p>
+</div>
+</div>
+
+
+
+<a name="lunix5-CHP-6-SECT-5.5" /><div class="sect2">
+<h3 class="sect2">6.5.5. Configuring Pine</h3>
+<p>
+<a name="IXT-6-279992" />
+
+The Pine main menu (shown in <a href="ch06_05.htm#lunix5-CHP-6-FIG-5">Figure 6-5</a>) has a
+Setup entry for configuring Pine.
+We assume that your system staff has configured important options,
+like your printer command, and we look at a few other settings you might
+want to change.
+</p>
+
+
+<p>
+<a name="IXT-6-279993" />
+<a name="IXT-6-279994" />
+
+After you enter 
+<span class="keycap">S</span> (the "Setup" command), you can choose what kind
+of setup you want to do.
+From the setup screen, you can get to the option configuration area with
+<span class="keycap">C</span> (the "Config" command).
+
+</p>
+
+<p>
+<a name="IXT-6-279995" />
+
+The configuration screen has page after page of options.
+You can page through them with the space bar (to move
+forward one page), the <span class="keycap">-</span> key (back one page),
+the <span class="keycap">N</span> key (to move forward to the next entry), and
+the <span class="keycap">P</span> key (back to the previous entry).
+If you know the name of an option you want to change, you can search
+for it with <span class="keycap">W</span> (the "Whereis" command).
+</p>
+
+<p>
+When you highlight an option, the menu of commands at the bottom of
+the screen will show you what can do with that particular option.
+A good choice, while you're exploring, is the
+<span class="keycap">?</span> ("Help") command,
+to find out about the option you've highlighted.
+There are several kinds of options:
+</p>
+
+<ul>
+<li><p>
+Options with variable values:
+names of files, hostnames of computers, and so on.
+For example, the <em class="emphasis">personal-name</em> option sets the
+name used in the "From:" header field of mail messages you send.
+The setup entry looks like this:
+</p>
+
+<p><blockquote><pre class="code">
+personal-name        = &lt;No Value Set: using "Robert L. Stevenson"&gt;
+</pre></blockquote></p>
+
+<p>"No Value Set" can mean that Pine is using the default from the
+system-wide settings, as it is here.
+If this user wants his email to come from "Bob Stevenson," he could
+use the <span class="keycap">C</span> ("Change Val") command to set that name.
+</p>
+</li>
+
+<li><p>
+Options that set preferences for various parts of Pine.
+For instance, the <em class="emphasis">enable-sigdashes</em> option in the "Composer Preferences" section puts two dashes
+and a space on the line before your default signature.
+The option line looks like this:
+</p>
+
+<p><blockquote><pre class="code">
+[X]  enable-sigdashes
+</pre></blockquote></p>
+
+<p>
+The "X" means that this preference is set, or "on."
+If you want to turn this option off, use the <span class="keycap">X</span> ("Set/Unset") command to toggle the setting.
+</p>
+</li>
+
+<li><p>
+For a few options, you can choose one of many possible settings.
+The option appears as a series of lines.
+For instance, the first few lines of the
+<em class="emphasis">saved-msg-name-rule</em> option look like this:
+</p>
+
+<p><blockquote><pre class="code">
+saved-msg-name-rule      =
+            Set    Rule Values
+            ---  ----------------------
+            (*)  by-from                      
+            ( )  by-nick-of-from              
+            ( )  by-nick-of-from-then-from    
+            ( )  by-fcc-of-from               
+            ( )  by-fcc-of-from-then-from     
+</pre></blockquote></p>
+
+<p>
+The "*" means that the <em class="emphasis">saved-msg-name-rule</em> option
+is currently set to <em class="emphasis">by-from</em>.
+(Messages will be saved to a folder named for the person who
+sent the message.)
+If you wanted to choose a different setting--for instance,
+<em class="emphasis">by-fcc-of-from</em>--you'd move the highlight to that
+line and use the <span class="keycap">*</span> ("Select") command to choose that
+setting.
+</p>
+
+<p>
+These settings are trickier than the others, but the built-in help command
+<span class="keycap">?</span> explains each choice in detail.
+Start by highlighting the option name (here,
+<em class="emphasis">saved-msg-name-rule</em>) and reading its help file.
+Then look through the settings' names, highlight one you might want,
+ and read its help file to see if it's right for you.
+</p>
+</li>
+</ul>
+
+<p>
+When you exit the setup screen with the
+<span class="keycap">E</span> command, Pine asks you to confirm whether you
+want to save any option changes you made.
+Answer <span class="keycap">N</span> if you were just experimenting or aren't sure.
+</p>
+
+
+<a name="lunix5-CHP-6-SECT-5.5.1" /><div class="sect3">
+<h3 class="sect3">6.5.5.1. Exercise: sending and reading mail</h3>
+
+<p>
+You can practice sending and reading mail in this exercise:
+</p>
+
+<table border="1" cellpadding="3">
+
+
+
+<tr>
+<td><p>List logged-in users.</p></td>
+<td><p>Enter <tt class="userinput"><b>who</b></tt></p></td>
+</tr>
+
+
+<tr>
+<td>
+<p>
+Choose a user you know, else choose yourself; send a short message
+to that person using <b class="emphasis-bold">mail</b> or your
+favorite email program.
+</p>
+</td>
+<td>
+<p>
+Enter <tt class="userinput"><b>mail</b></tt> <em class="replaceable"><tt>username</tt></em>
+or <tt class="userinput"><b>pine</b></tt> <em class="replaceable"><tt>username</tt></em>
+or ...
+</p>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<p>
+Read the message or messages you got.
+</p>
+</td>
+<td>
+<p>
+Enter <tt class="userinput"><b>pine</b></tt>
+or start your favorite email program;
+use its "read message" commands.
+</p>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<p>
+Reply to one of the messages.
+(It's okay to reply to a message from yourself.)
+</p>
+</td>
+<td>
+<p>
+Press <tt class="userinput"><b>R</b></tt> in <b class="emphasis-bold">pine</b>
+or use your email program's
+"reply" command.
+Send the completed reply.
+</p>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<p>
+Forward one of the messages.
+(It's okay to forward a message to yourself.)
+</p>
+</td>
+<td>
+<p>
+Press <tt class="userinput"><b>F</b></tt> in <b class="emphasis-bold">pine</b>
+or use your email program's
+"forward" command.
+Add a sentence or two of explanation above the forwarded message.
+Send the completed message.
+
+<a name="IXTR3-119" />
+<a name="IXTR3-120" />
+<a name="IXTR3-121" />
+<a name="IXTR3-122" />
+<a name="IXTR3-123" />
+
+</p>
+</td>
+</tr>
+
+
+</table><p>
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.4. Transferring Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.6. Usenet News</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,453 @@
+<html><head><title>Using ex Scripts  (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.4. Using ex Scripts </h2>
+
+<p>
+<a name="ch07.script1" />
+<a name="ch07.script2" />
+<a name="ch07.script3" />
+Certain <em class="emphasis">ex</em> commands you use only within <em class="emphasis">vi</em>, such as
+maps, abbreviations, and so on.
+If you store these commands in your <em class="filename">.exrc</em> file,
+the commands will automatically be executed when you invoke <em class="emphasis">vi</em>.
+Any file that contains commands to execute is called a <em class="emphasis">script</em>.</p>
+
+<p>The commands in a typical <em class="filename">.exrc</em>
+script are of no use outside <em class="emphasis">vi</em>.
+However, you can save other <em class="emphasis">ex</em> commands in a script,
+and then execute the script on a file or on multiple files.
+Mostly you'll use substitute commands in these external scripts.</p>
+
+<p>For a writer, a useful application of <em class="emphasis">ex</em> scripts is to ensure
+consistency of terminology&#8212;or even of spelling&#x2014;across a
+document set.
+For example, let's assume that you've run the UNIX
+<tt class="literal">spell</tt> command on two files
+and that the command has printed out the following list of
+misspellings:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>spell sect1 sect2</b></tt>
+chmod
+ditroff
+myfile
+thier
+writeable</pre></blockquote>
+
+<p>As is often the case, <tt class="literal">spell</tt> has flagged a few technical terms
+and special cases it doesn't recognize, but it has also identified two
+genuine spelling errors.</p>
+
+<p>Because we checked two files at once, we don't know which files the
+errors occurred in or where they are in the files.
+Although there are ways to find this out, and the job wouldn't be too
+hard for only two errors in two files, you can easily imagine how
+time-consuming the job could grow to be for a poor speller or for a
+typist proofing many files at once.</p>
+
+<p>To make the job easier, you could write an <em class="emphasis">ex</em> script containing
+the following commands:</p>
+
+<blockquote><pre class="code">%s/thier/their/g
+%s/writeable/writable/g
+wq</pre></blockquote>
+
+
+<?troff .Nd 10?><p>Assume you've saved these lines in a file named <em class="filename">exscript</em>.
+The script could be executed from within <em class="emphasis">vi</em> with the command:</p>
+
+<blockquote><pre class="code">:so exscript</pre></blockquote>
+
+<p>or the script can be applied to a file right from the command line.
+Then you could edit the files <em class="filename">sect1</em> and <em class="filename">sect2</em> as follows:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ex - sect1 &lt; exscript</b></tt>
+$ <tt class="userinput"><b>ex - sect2 &lt; exscript</b></tt></pre></blockquote>
+
+<p>The minus sign following the invocation of <em class="emphasis">ex</em> tells it to
+suppress the normal terminal messages.<a href="#FOOTNOTE-33">[33]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-33" /><p> [33]According to the POSIX standard, <em class="emphasis">ex</em> should
+use <tt class="literal">-s</tt>
+instead of <tt class="literal">-</tt>
+as shown here.
+Typically, for backwards compatibility, both versions are accepted.</p>
+
+</blockquote>
+
+<p>If the script were longer than the one in our simple example, we would
+already have saved a fair amount of time.
+However, you might wonder if there isn't some way to avoid repeating
+the process for each file to be edited.
+Sure enough, we can write a shell script
+that includes, but generalizes, the invocation
+of <em class="emphasis">ex</em>, so that it can be used on any number of files.</p>
+
+<a name="vi6-ch-7-sect-4.1" /><div class="sect2">
+<h3 class="sect2">7.4.1. Looping in a Shell Script </h3>
+
+<p>
+<a name="IXT-7-281082" />
+<a name="IXT-7-281083" />
+<a name="IXT-7-281084" />
+You may know that the shell
+is a programming language as well as a command-line interpreter.
+To invoke <em class="emphasis">ex</em> on a number of files, we use a simple type of shell script
+command called the <tt class="literal">for</tt> loop.
+A <tt class="literal">for</tt> loop allows you to apply
+a sequence of commands for each argument given to the script.
+(The <tt class="literal">for</tt> loop is probably the single most useful piece of
+shell programming for beginners.
+You'll want to remember it even if you don't write any other shell
+programs.)</p>
+
+<p>Here's the syntax of a <tt class="literal">for</tt> loop:</p>
+
+<blockquote><pre class="code">for <em class="replaceable"><tt>variable</em> in <em class="replaceable">list</tt></em>
+  do
+  	  <em class="replaceable"><tt>command(s)</tt></em>
+  done</pre></blockquote>
+
+<p>For example:</p>
+
+<blockquote><pre class="code">for file in $*
+  do
+	  ex - $file &lt; exscript
+  done</pre></blockquote>
+
+<p>(The command doesn't need to be indented;  we indented it for
+clarity.)
+After we create this shell script, we save it in a file called
+<em class="filename">correct</em>  and make it executable with the <em class="emphasis">chmod</em>
+command.
+(If you aren't familiar with the <em class="emphasis">chmod</em> command and the
+procedures for adding a command to your UNIX search path, see
+<em class="citetitle">Learning the UNIX Operating System</em>, published
+by O'Reilly &amp; Associates.) Now type:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>correct sect1 sect2</b></tt></pre></blockquote>
+
+<p>The <tt class="literal">for</tt> loop in <em class="filename">correct</em> will assign each argument
+(each file in the list specified by <tt class="literal">$*</tt>, which stands
+for <em class="emphasis">all arguments</em>) to the variable <em class="emphasis">file</em> and
+execute the <em class="emphasis">ex</em> script on the contents of that variable.</p>
+
+<p>It may be easier to grasp how the <tt class="literal">for</tt> loop works with an
+example whose output is more visible.
+Let's look at a script to rename files:</p>
+
+<blockquote><pre class="code">for file in $*
+do
+	  mv $file $file.x
+done</pre></blockquote>
+
+<p>Assuming this script is in an executable file called <em class="filename">move</em>,
+here's what we can do:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls</b></tt>
+ch01 ch02 ch03 move
+$ <tt class="userinput"><b>move ch??</b></tt>
+$ <tt class="userinput"><b>ls</b></tt>
+ch01.x ch02.x ch03.x move</pre></blockquote>
+
+<p>With creativity, you could rewrite the script to rename the
+files more specifically:</p>
+
+<blockquote><pre class="code">for nn in $*
+do
+  	  mv ch$nn sect$nn
+done</pre></blockquote>
+
+<p>With the script written this way, you'd specify numbers instead of
+filenames on the command line:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls</b></tt>
+ch01 ch02 ch03 move
+$ <tt class="userinput"><b>move 01 02 03</b></tt>
+$ <tt class="userinput"><b>ls</b></tt>
+sect01 sect02 sect03 move</pre></blockquote>
+
+
+<?troff .wcon_off?><p>The <tt class="literal">for</tt> loop need not take <tt class="literal">$*</tt> (all arguments) as the
+list of values to be substituted.
+You can specify an explicit list as well. For example:</p>
+
+<blockquote><pre class="code">for <em class="replaceable"><tt>variable</em> in <em class="emphasis">a b c d</tt></em></pre></blockquote>
+
+<p>will assign <em class="emphasis">variable</em> to <em class="emphasis">a</em>, <em class="emphasis">b</em>, <em class="emphasis">c</em>, and
+<em class="emphasis">d</em> in turn.
+Or you can substitute the output of a command. For example:</p>
+
+<blockquote><pre class="code">for <em class="replaceable"><tt>variable</tt></em> in `grep -l "Alcuin" *`</pre></blockquote>
+
+<p>will assign <em class="emphasis">variable</em> in turn to the name of each file in which
+<em class="emphasis">grep</em> finds the string <em class="emphasis">Alcuin</em>.</p>
+
+<p>If no list is specified:</p>
+
+<blockquote><pre class="code">for <em class="replaceable"><tt>variable</tt></em></pre></blockquote>
+
+<p>the variable will be assigned to each command-line argument in turn,
+much as it was in our initial example.
+This is actually not equivalent to:</p>
+
+<blockquote><pre class="code">for <em class="replaceable"><tt>variable</tt></em> in $*</pre></blockquote>
+
+<p>but to:</p>
+
+<blockquote><pre class="code">for <em class="replaceable"><tt>variable</tt></em> in "$@"</pre></blockquote>
+
+<p>which has a slightly different meaning.
+The symbol <tt class="literal">$*</tt> expands to <tt class="literal">$1</tt>, <tt class="literal">$2</tt>, <tt class="literal">$3</tt>,
+etc., but the four-character sequence <tt class="literal">"$@"</tt> expands to
+<tt class="literal">"$1"</tt>, <tt class="literal">"$2"</tt>,
+<tt class="literal">"$3"</tt>, etc.
+Quotation marks prevent further interpretation of special characters.</p>
+
+<p>Let's return to our main point and our original script:</p>
+
+<blockquote><pre class="code">for file in $*
+do
+	  ex - $file &lt; exscript
+done</pre></blockquote>
+
+<p>It may seem a little inelegant to have to use two scripts&#8212;the shell
+script and the <em class="emphasis">ex</em> script.
+And in fact, the shell does provide a way to include an editing script
+inside a shell script.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-4.2" /><div class="sect2">
+<h3 class="sect2">7.4.2. Here Documents </h3>
+
+<p>
+<a name="IXT-7-281085" />
+<a name="IXT-7-281086" />
+<a name="IXT-7-281087" />
+In a shell script, the operator <tt class="literal">&lt;&lt;</tt> means to take the following lines, up to a specified
+string, as input to a command.
+(This is often called a <em class="emphasis">here document</em>.)
+Using this syntax, we could include our editing commands in
+<em class="filename">correct</em> like this:</p>
+
+<blockquote><pre class="code">for file in $*
+do
+ex - $file &lt;&lt; end-of-script
+g/thier/s//their/g
+g/writeable/s//writable/g
+wq
+end-of-script
+done</pre></blockquote>
+
+<p>The string <em class="emphasis">end-of-script</em> is entirely arbitrary&#8212;it just needs
+to be a string that won't otherwise appear in the input and can be
+used by the shell to recognize when the here document is finished.
+By convention, many users specify the end of a here document with the
+string <em class="emphasis">EOF</em>, or <em class="emphasis">E_O_F</em>, to indicate the end of the file.</p>
+
+<p>There are advantages and disadvantages to each approach shown.
+If you want to make a one-time series of edits and don't mind
+rewriting the script each time, the here document provides an
+effective way to do the job.</p>
+
+<p>However, it's more flexible to write
+the editing commands in a separate file from the
+shell script.
+For example, you could establish the convention that you will always
+put editing commands in a file called <em class="filename">exscript</em>.
+Then you only need to write the <em class="filename">correct</em> script once.
+You can store it away in your personal "tools" directory (which you've
+added to your search path) and use it whenever you like.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-4.3" /><div class="sect2">
+<h3 class="sect2">7.4.3. Sorting Text Blocks: A Sample ex Script </h3>
+
+<p>
+<a name="IXT-7-281088" />
+<a name="IXT-7-281089" />
+<a name="IXT-7-281090" />
+<a name="IXT-7-281091" />
+Suppose you want to alphabetize a file of <em class="emphasis">troff</em>-encoded glossary
+definitions.
+Each term begins with an .IP macro.
+In addition, each entry is surrounded by the .KS/.KE
+macro pair. (This ensures that the term and its definition will
+print as a block and will not be split across a new page.)
+The glossary file looks something like this:</p>
+
+<blockquote><pre class="code">.KS
+.IP "TTY_ARGV" 2n
+The command, specified as an argument vector,
+that the TTY subwindow executes.
+.KE
+.KS
+.IP "ICON_IMAGE" 2n
+Sets or gets the remote image for icon's image.
+.KE
+.KS
+.IP "XV_LABEL" 2n
+Specifies a frame's header or an icon's label.
+.KE
+.KS
+.IP "SERVER_SYNC" 2n
+Synchronizes with the server once.
+Does not set synchronous mode.
+.KE</pre></blockquote>
+
+<p>You can alphabetize a file by running the lines through the UNIX
+<tt class="literal">sort</tt> command, but you don't really want to sort every
+line.
+You want to sort only the glossary terms, moving each
+definition&#8212;untouched&#x2014;along with its corresponding term.
+As it turns out, you can
+treat each text block as a unit
+by joining the block into one line. Here's the first version
+of your <em class="emphasis">ex</em> script:</p>
+
+<blockquote><pre class="code">g/^\.KS/,/^\.KE/j
+%!sort</pre></blockquote>
+
+
+<?troff .Nd 10?><p>Each glossary entry is found between a  .KS and .KE macro.
+<tt class="literal">j</tt> is the <em class="emphasis">ex</em> command to join a line
+(the equivalent in <em class="emphasis">vi</em> is <tt class="literal">J</tt>).
+So, the first command joins every glossary entry into one "line."
+The second command then sorts the file, producing lines like this:</p>
+
+<blockquote><pre class="code">.KS .IP&#160;"ICON_IMAGE" 2n Sets or gets ... image.  &#xA0;.KE
+.KS .IP&#160;"SERVER_SYNC" 2n Synchronizes with ... mode.  &#xA0;.KE
+.KS .IP&#160;"TTY_ARGV" 2n The command, ... executes.  &#xA0;.KE
+.KS .IP&#160;"XV_LABEL" 2n Specifies a ... icon's label.  &#xA0;.KE</pre></blockquote>
+
+<p>The lines are now sorted by glossary entry; unfortunately,
+each line also has
+macros and text mixed in (we've used ellipses [...] to show
+omitted text).
+Somehow, you need to insert newlines to "un-join" the
+lines. You can do this by modifying your
+<em class="emphasis">ex</em> script: mark the joining points of the
+text blocks <em class="emphasis">before</em> you join them, and then replace the markers
+with newlines. Here's the expanded <em class="emphasis">ex</em> script:</p>
+
+<blockquote><pre class="code">g/^\.KS/,/^\.KE/-1s/$/@@/
+g/^\.KS/,/^\.KE/j
+%!sort
+%s/@@ /^M/g</pre></blockquote>
+
+<p>The first three commands produce lines like this:</p>
+
+
+<blockquote><pre class="code">.KS@@ .IP "ICON_IMAGE" 2nn@@ Sets or gets ... image. @@ .KE
+.KS@@ .IP "SERVER_SYNC" 2nn@@ Synchronizes with ... mode. @@ .KE
+.KS@@ .IP "TTY_ARGV" 2nn@@ The ... vector, @@ that ... .@@ .KE
+.KS@@ .IP "XV_LABEL" 2nn@@ Specifies a ... icon's label. @@ .KE</pre></blockquote>
+
+<p>Note the extra space following the <tt class="literal">@@</tt>.  The spaces result from
+the <tt class="literal">j</tt> command, because it converts each newline into
+a space.</p>
+
+<p>The first command marks the original line breaks with <tt class="literal">@@</tt>.
+You don't need to mark the end of the block
+(after the .KE), so the first command uses a <tt class="literal">-1</tt> to
+move back up one line at the end of each block.
+The fourth command restores the line breaks by replacing the markers
+(plus the extra space)
+with newlines.
+Now your file is sorted by blocks.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-4.4" /><div class="sect2">
+<h3 class="sect2">7.4.4. Comments in ex Scripts </h3>
+
+<p>
+<a name="IXT-7-281092" />
+You may want to reuse such a script, adapting it to
+a new situation.
+With a complex script like this, it is wise to add comments so that it's
+easier for someone else (or even yourself!) to reconstruct how it works.
+In <em class="emphasis">ex</em> scripts, anything following a double quote
+is ignored during execution, so a double quote can mark the
+beginning of a comment. Comments can go on their own line.
+They can also go at the end of any command that doesn't
+interpret a quote as part of the command. (For example, a quote
+has meaning to map commands and shell escapes, so you can't end
+such lines with a comment.)</p>
+
+<p>Besides using comments, you can specify a command by
+its full name, something that would ordinarily be too
+time consuming from within <em class="emphasis">vi</em>.
+Finally, if you add spaces, the <em class="emphasis">ex</em>
+script above becomes this more readable one:</p>
+
+<blockquote><pre class="code">" Mark lines between each KS/KE block
+global /^\.KS/,/^\.KE/-1 s /$/@@/
+" Now join the blocks into one line
+global /^\.KS/,/^\.KE/ join
+" Sort each block--now really one line each
+%!sort
+" Restore the joined lines to original blocks
+% s /@@ /^M/g</pre></blockquote>
+
+<p>Surprisingly, the <tt class="literal">substitute</tt> command does
+not work in <em class="emphasis">ex</em>, even though the full names
+for the other commands do.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-4.5" /><div class="sect2">
+<h3 class="sect2">7.4.5. Beyond ex</h3>
+
+<p>
+<a name="IXT-7-281093" />
+<a name="IXT-7-281094" />
+If this discussion has whetted your appetite for even more
+editing power, you should be aware that UNIX provides editors even more
+powerful than <em class="emphasis">ex</em>: the <em class="emphasis">sed</em>
+stream editor and the <em class="emphasis">awk</em> data manipulation language.
+There is also the extremely popular Perl programming language.
+For information on these programs, see the O'Reilly books
+<em class="citetitle">sed &amp; awk</em>, <em class="citetitle">Learning Perl</em>, 
+and <em class="citetitle">Programming Perl</em>.</p>
+</div>
+
+
+
+
+<a name="IXT-7-281095" />
+<a name="IXT-7-281096" />
+<a name="IXT-7-281097" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.3. Saving Commands </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.5. Editing Program Source Code </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

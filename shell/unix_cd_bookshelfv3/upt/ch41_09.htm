@@ -1,0 +1,145 @@
+<html><head><title>Perl Boot Camp, Part 6: Modules (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch41_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">41.9. Perl Boot Camp, Part 6: Modules</h2>
+
+<p>Modules are Perl's way of extending functionality,
+in the same way C has library files. Modules can be used to
+encapsulate a set of related function calls (the way Data::Dumper
+does), implement pragmas (like <tt class="literal">use strict</tt>), or
+create object classes (like HTML::TokeParser). Whatever a module
+does, it must first be <b class="emphasis-bold"> installed on your
+system</b> (<a href="ch41_11.htm#upt3-CHP-41-SECT-11">Section 41.11</a>) before you can use
+it.
+</p>
+
+<p>Using a module in Perl is often straightforward. For example, the
+Data::Dumper module has a function called <tt class="literal">Dumper</tt>
+that takes a reference to a variable and deconstructs the entire
+structure into a printable string. This is an invaluable debugging
+tool. The following code shows Data::Dumper in action:
+</p>
+
+<blockquote><pre class="code">use Data::Dumper;
+print "The current environment is: ", Dumper(\%ENV), "\n";</pre></blockquote>
+
+<p>An abbreviated version of the output from this code is this:</p>
+
+<blockquote><pre class="code">The current enviroment is: $VAR1 = {
+          'DISPLAY' =&gt; ':0',
+          'COLORTERM' =&gt; 'gnome-terminal',
+          'QTDIR' =&gt; '/usr/lib/qt-2.3.0',
+          'PVM_RSH' =&gt; '/usr/bin/rsh',
+          'OSTYPE' =&gt; 'linux-gnu',
+          'PWD' =&gt; '/home/jjohn/docs/unix_powertools/upt',
+          'EDITOR' =&gt; 'emacs -nw',
+          'LOGNAME' =&gt; 'jjohn',
+          'MACHTYPE' =&gt; 'i386-redhat-linux-gnu',
+          'SHELL' =&gt; '/bin/bash',
+          'MAIL' =&gt; '/var/spool/mail/jjohn',
+          '_' =&gt; '/usr/local/bin/perl',
+          'HISTSIZE' =&gt; '1000',
+          'CVS_RSH' =&gt; 'ssh1',
+          'HOSTNAME' =&gt; 'marian',
+          'TERM' =&gt; 'xterm',
+          ...
+        };</pre></blockquote>
+
+<p>In this code, the Data::Dumper is made available to your script with
+the <em class="emphasis">use</em> statement. You should be aware that
+<em class="emphasis">use</em> happens at the script's
+compile time, meaning that you can't use this
+statement to dynamically load modules at runtime (but this is
+possible; see <em class="emphasis">Programming Perl</em> for details).
+Data::Dumper automatically makes the function
+<tt class="literal">Dumper</tt> available to your script. Here the global
+hash <tt class="literal">%ENV</tt>, which contains all your
+shell's environment variables, is deconstructed.
+<tt class="literal">Dumper</tt> can take multiple variables, so when
+looking at a hash or array, be sure to prefix the variable with the
+<b class="emphasis-bold">reference operator</b> (<a href="ch41_05.htm#upt3-CHP-41-SECT-5.4">Section 41.5.4</a>) <tt class="literal">\</tt>. Without a passed
+reference, the output of <tt class="literal">Dumper</tt>
+won't exactly what you expect.
+</p>
+
+<p>Many Perl modules are object oriented. Although writing object
+classes may not be trivial, using them is. Here, the CGI module is
+used to create a very simple HTML page.
+</p>
+
+<blockquote><pre class="code">use CGI;
+$q = CGI-&gt;new;
+print
+    $q-&gt;header,
+    $q-&gt;start_html,
+    $q-&gt;h1("hello, world!"),
+    $q-&gt;end_html;</pre></blockquote>
+
+<p>There's no difference in how object classes are
+brought into your script with <em class="emphasis">use</em>. New objects
+are created through a method traditionally called
+<tt class="literal">new</tt> (<em class="emphasis">new</em> is not an operator,
+as it is in other languages). Sometimes, <tt class="literal">new</tt> will
+require arguments. Once the object (<tt class="literal">$q</tt>) is
+created, all method access must be made through it, using the
+<tt class="literal">-&gt;</tt> operator. That's all there
+is too it. Of course every module is different, so you will need to
+use <b class="emphasis-bold"> perldoc modulename</b> (<a href="ch41_10.htm#upt3-CHP-41-SECT-10">Section 41.10</a>) to the module's
+documentation.
+</p>
+
+<p>Infrequently, you may need to find the module files on your system.
+Modules are usually files that have the extension
+<em class="filename">.pm</em> and are found in one of the directories
+listed in the <tt class="literal">@INC</tt> array. Every module should
+declare its own namespace, so that its variables and functions
+don't overwrite the ones you define in the scripts
+that use the modules. These namespaces are hierarchical, so so that
+the module Data::Dumper belongs to the Data module group.<a href="#FOOTNOTE-125">[125]</a> When the Data::Dumper module is installed on your system,
+it is placed somewhere with the rest of your Perl modules in a
+directory called <em class="filename">Data</em>, in which a file called
+<em class="filename">Dumper.pm</em> will be copied. Generally,
+<tt class="literal">:</tt>: in a module name translates to a
+<tt class="literal">/</tt> on the filesystem. You can also use
+<tt class="literal">perldoc -l</tt> <em class="replaceable"><tt>modulename</tt></em>
+to list the module's filesystem path.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-125" /><p> [125]Well, that's the theory anyway. In practice,
+modules that aren't written by the same group of
+people often have somewhat arbitrary top-level namespaces.</p>
+</blockquote>
+
+<p>There are many good reasons to learn Perl, but the ace up a Perl
+programmer's sleeve is the <b class="emphasis-bold">Comprehensive Perl Archive Network</b> (<a href="ch41_11.htm#upt3-CHP-41-SECT-11">Section 41.11</a>) (CPAN), which is the central repository for
+Perl modules. There are hundreds of modules on CPAN, ranging from the
+essential (IO::Socket) to the useful (LWP, DBI, mod_perl), to the
+frivolous (Acme::Buffy). The main CPAN server is accessible on the
+web at <a href="http://www.cpan.org">http://www.cpan.org</a>. CPAN
+is mirrored all over the world, so look for a mirror near you.
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch41_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">41.8. Perl Boot Camp, Part 5: Perl Knows Unix</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">41.10. Perl Boot Camp, Part 7: perldoc</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

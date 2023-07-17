@@ -1,0 +1,81 @@
+<html><head><title>oldlinks: Find Unconnected Symbolic Links (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.16. oldlinks: Find Unconnected Symbolic Links</h2>
+
+<p><a name="IXT-8-6684" /><a name="IXT-8-6685" />One <a name="IXT-8-6686" />problem with symbolic links is
+that they're relatively <b class="emphasis-bold">"fragile"</b>
+(<a href="ch10_06.htm#upt3-CHP-10-SECT-6">Section 10.6</a>). The link and the file itself are
+different kinds of entities; the link only stores the name of the
+"real" file. Therefore, if you
+delete or rename the real file, you can be left with a
+"dead" or
+"old" link: a link that points to a
+file that doesn't exist.
+</p>
+
+<p>This causes no end of confusion, particularly for new users. For
+example, you'll see things like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -l nolink</b></tt>
+lrwxrwxrwx   1 mikel     users    12 Nov  2 13:57 nolink -&gt; /u/joe/afile
+% <tt class="userinput"><b>cat nolink</b></tt>
+cat: nolink: No such file or directory</pre></blockquote>
+
+<p>The file's obviously there, but
+<i class="command">cat</i> tells you that it doesn't
+exist.
+</p>
+
+<p><a name="IXT-8-6687" />There's no
+real solution to this problem, except to be careful. Try writing a
+script that checks links to see whether they exist.
+Here's one such script from Tom Christiansen; it
+uses <i class="command">find</i><a name="IXT-8-6688" /> to track down all links and then uses
+<i class="command">perl</i> to print the names of links that point to
+nonexistent files. (If you're a Perl hacker and
+you'll be using this script often, you could replace
+the Unix <i class="command">find</i> utility with the
+<a name="IXT-8-6689" /> <a name="IXT-8-6690" /> <a name="IXT-8-6691" />Perl <tt class="literal">File::Find</tt>
+module.)
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+find . -type l -print | perl -nle '-e || print'</pre></blockquote>
+
+<p>The script only lists "dead" links;
+it doesn't try to
+<a name="IXT-8-6692" />delete them or do anything drastic. If
+you want to take some other action (such as deleting these links
+automatically), you can use the output of the script in <b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>). For
+example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm `oldlinks`</b></tt></pre></blockquote>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.15. newer: Print the Name of the Newest File</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.17. Picking a Unique Filename Automatically</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

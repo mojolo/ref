@@ -1,0 +1,115 @@
+<html><head><title>Showing Nonprintable Characters in Filenames (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.12. Showing Nonprintable Characters in Filenames</h2>
+
+<p><a name="IXT-8-6649" /><a name="IXT-8-6650" /><a name="IXT-8-6651" /><a name="IXT-8-6652" /><a name="IXT-8-6653" /><a name="IXT-8-6654" />From
+time to time, you may get filenames with nonprinting characters,
+spaces, and other garbage in them. This is usually the result of some
+mistake -- but it's a pain nevertheless.
+</p>
+
+<p>If you're using a version of
+<i class="command">ls</i><a name="IXT-8-6655" /><a name="IXT-8-6656" /> that
+uses <span class="option">-q</span> by default (and most do these days), the
+<i class="command">ls</i> command gives you some help; it converts all
+nonprinting characters to a question mark (<tt class="literal">?</tt>),
+giving you some idea that something funny is there.<a href="#FOOTNOTE-36">[36]</a> For example:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-36" /><p> [36]Even in <i class="command">ls</i>es that use it, the
+<span class="option">-q</span> option is the default only when
+<i class="command">ls</i>'s standard output is a
+terminal. If you pipe the output or redirect it to a file, remember
+to add <span class="option">-q</span>.</p> </blockquote>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls</b></tt>
+ab??cd</pre></blockquote>
+
+<p>This shows that there are two nonprinting characters between
+<tt class="literal">ab</tt> and <tt class="literal">cd</tt>. To
+<a name="IXT-8-6657" /><a name="IXT-8-6658" />delete (or rename) this file, you can
+use a wildcard pattern like <em class="emphasis">ab??cd</em>.
+</p>
+<a name="ch08-2-fm2xml" /><blockquote><b>WARNING:</b> 
+Be careful: when I was new to Unix, I once accidentally generated a
+lot of weird filenames. <i class="command">ls</i> told me that they all
+began with <em class="emphasis">????</em>, so I naively typed <tt class="literal">rm
+????*</tt>. That's when my troubles began. See
+<a href="ch14_03.htm#upt3-CHP-14-SECT-3">Section 14.3</a> for the rest of the gruesome
+story. (I spent the next day and night trying to undo the damage.)
+The moral is: it's always a good idea to use
+<i class="command">echo</i><a name="IXT-8-6659" /> to test filenames with wildcards in
+them.
+</p>
+</blockquote>
+
+<p>If you're using an <i class="command">ls</i> that came
+from <a name="IXT-8-6660" /><a name="IXT-8-6661" />System V Unix, you
+have a different set of problems. System V's
+<i class="command">ls</i> doesn't convert the
+nonprinting characters to question marks. In fact, it
+doesn't do anything at all -- it just spits these
+weird characters at your terminal, which can respond in any number of
+strange and hostile ways. Most of the <a name="IXT-8-6662" />nonprinting characters have special
+meanings -- ranging from "don't
+take any more input" to "clear the
+screen." [If you don't have a
+System V <i class="command">ls</i>, but you want this behavior for some
+reason, try GNU <i class="command">ls</i> with its <span class="option">-N</span>
+option.  -- <em class="emphasis">JP</em>]
+</p>
+
+<p><a name="IXT-8-6663" />To prevent
+this, or to see what's actually there instead of
+just the question marks, use the
+<span class="option">-b</span><a name="IXT-8-6664" /><a name="IXT-8-6665" /> option.<a href="#FOOTNOTE-37">[37]</a> This
+tells <i class="command">ls</i> to print the octal value of any
+nonprinting characters, preceeded by a backslash. For example:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-37" /><p> [37]On systems that don't support <i class="command">ls
+-b</i>, pipe the <i class="command">ls -q</i> output through
+<i class="command">cat -v</i> or <b class="emphasis-bold">od -c</b>
+<b class="emphasis-bold">(</b> (<a href="ch12_04.htm#upt3-CHP-12-SECT-4">Section 12.4</a>) to
+see what the nonprinting characters are.</p> </blockquote>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -b</b></tt>
+ab\013\014cd</pre></blockquote>
+
+<p>This shows that the nonprinting characters have octal values 13 and
+14, respectively. If you look up these values in an ASCII table, you
+will see that they correspond to CTRL-k and CTRL-l. If you think
+about what's happening -- you'll
+realize that CTRL-l is a formfeed character, which tells many
+terminals to clear the screen. That's why the
+regular <i class="command">ls</i> command behaved so strangely.
+</p>
+
+<p>Once you know what you're dealing with, you can use
+a wildcard pattern to delete or rename the file.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.11. Can't Access a File? Look for Spaces in the Name</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.13. Counting Files by Types</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

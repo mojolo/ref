@@ -1,0 +1,114 @@
+<html><head><title>Which Version Am I Using? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">2.6. Which Version Am I Using?</h2>
+
+<p><a name="IXT-2-7251" /><a name="IXT-2-7252" />Your
+<a name="IXT-2-7253" />system may have several versions of a
+particular command -- for instance, a BSD-compatible version in
+one directory and a System V-compatible version somewhere else (and
+you might have added a private version in <b class="emphasis-bold">your
+own</b> <b class="emphasis-bold">bin</b> <b class="emphasis-bold">directory</b> (<a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a>)).
+Which command you'll get depends on your <b class="emphasis-bold">PATH</b><a name="IXT-2-7254" /> (<a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a>)
+environment variable. It's often essential to know
+which version you're using. For example:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>type sort</b></tt>
+sort is /bin/sort</pre></blockquote>
+
+<p>tells me exactly which version of the <i class="command">sort</i> program
+I'm using. (On one system I've
+used, there were two <i class="command">sort</i>s; I had also defined an
+alias for <i class="command">sort</i>.) If I want to see all versions,
+<i class="command">bash</i> supports a <span class="option">-all</span> option:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>type -all sort</b></tt>
+sort is aliased to `TMPDIR=/var/tmp /bin/sort'
+sort is /bin/sort
+sort is /usr/5bin/sort</pre></blockquote>
+
+<p>A similar command is
+<i class="command">whence</i><a name="IXT-2-7255" />.
+</p>
+
+<p><a name="IXT-2-7256" />But
+<i class="command">type</i><a name="IXT-2-7257" /> and <i class="command">whence</i> are built
+into shells and are also Unix-version dependent (not all Unix systems
+have them), so they won't work everywhere. The
+<i class="command">which</i> command is usually <b class="emphasis-bold">external</b> (<a href="ch01_09.htm#upt3-CHP-1-SECT-9">Section 1.9</a>), so it
+works everywhere -- although, because it isn't
+built into the shells, it can't always find out
+about aliases defined in your current shell. For example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>which sort</b></tt>
+/usr/bin/sort</pre></blockquote>
+
+<p>You'll find that <i class="command">which</i> comes in
+handy in lots of other situations. I find that I'm
+always using <i class="command">which</i> inside of backquotes to get a
+precise path. (<i class="command">whence</i> and <i class="command">type</i>
+may print extra text.) For example, when I was writing these
+articles, I started wondering whether or not <i class="command">man</i>,
+<i class="command">apropos</i>, and <i class="command">whatis</i> were really
+the same executable. It's a simple question, but one
+I had never bothered to think about. There's one
+good way to find out:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -li `which man` `which apropos` `which whatis`</b></tt>
+102352 -rwxr-xr-x  3 root        24576 Feb  8  2001 /usr/ucb/apropos
+102352 -rwxr-xr-x  3 root        24576 Feb  8  2001 /usr/ucb/man
+102352 -rwxr-xr-x  3 root        24576 Feb  8  2001 /usr/ucb/whatis</pre></blockquote>
+
+<p>What does this tell us? Well, within this system the three commands
+have the same file size, which means that they're
+likely to be identical; furthermore, each file has three links,
+meaning that each file has three names. The <span class="option">-i</span>
+option confirms it; all three files have the same i-number. So,
+<i class="command">apropos</i>, <i class="command">man</i>, and
+<i class="command">whatis</i> are just one executable file that has three
+hard links.
+</p>
+
+<p>However, running the same command in another environment, such as in
+Darwin, results in a different output:
+</p>
+
+<blockquote><pre class="code">117804 -r-xr-xr-x  1  root    wheel    14332  sep  2  2001   /usr/bin/apropos
+117807 -r-xr-xr-x  1  root    wheel    19020  sep  2  2001   /usr/bin/man
+117808 -r-xr-xr-x  1  root    wheel    14336  sep  2  2001   /usr/bin/whatis</pre></blockquote>
+
+<p>In Darwin, the commands are separate entities.</p>
+
+<p>A few System V implementations don't have a
+<i class="command">which</i> command.
+</p>
+
+<p><em class="emphasis">--ML, JP, MAL, and SP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2.5. How Unix Systems Remember Their Names</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.7. What tty Am I On?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

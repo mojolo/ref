@@ -1,0 +1,218 @@
+<html><head><title>Perl Boot Camp, Part 1: Typical Script Anatomy (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch41_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">41.4. Perl Boot Camp, Part 1: Typical Script Anatomy</h2>
+
+<p><a name="IXT-41-2470" />It is impossible to present a
+complete guide to programming Perl in this one small section, but you
+can glean enough information here to be able to modify existing Perl
+scripts and evaluate whether you'd like to learn
+more about this incredibly handy language.
+</p>
+
+<p>Perl scripts bare a passing resemblence to Bourne shell scripts.
+<a href="ch41_04.htm#upt3-CHP-41-EX-1">Example 41-1</a> a script called
+<em class="emphasis">writewav.pl</em><a name="IXT-41-2471" /><a name="IXT-41-2472" />
+that comes with the Perl
+<a name="IXT-41-2473" /><a name="IXT-41-2474" />module Audio::SoundFile. It converts a
+given sound file into WAV format. The details of what
+it's doing aren't important, but it
+does demonstrate some common Perl structures that you should
+understand at a high level.
+</p>
+
+<a name="upt3-CHP-41-EX-1" /><div class="example">
+<h4 class="objtitle">Example 41-1. A sample Perl script </h4>
+<blockquote><pre class="code">#!/usr/bin/perl -w
+
+=head1 NAME
+
+ writewav - Converts any sound file into .wav format
+
+=cut
+
+use Audio::SoundFile;
+use Audio::SoundFile::Header;
+
+my ($buffer, $length, $header, $reader, $writer);
+my $BUFFSIZE = 16384;
+my $ifile = shift @ARGV || usage( );
+my $ofile = shift @ARGV || usage( );
+
+$reader = Audio::SoundFile::Reader-&gt;new($ifile, \$header);
+$header-&gt;{format} = SF_FORMAT_WAV | SF_FORMAT_PCM;
+$writer = Audio::SoundFile::Writer-&gt;new($ofile,  $header);
+
+while ($length = $reader-&gt;bread_pdl(\$buffer, $BUFFSIZE)) {
+    $writer-&gt;bwrite_pdl($buffer);
+}
+
+$reader-&gt;close;
+$writer-&gt;close;
+
+sub usage {
+  print "usage: $0 &lt;infile&gt; &lt;outfile&gt;\n";
+  exit(1);
+}</pre></blockquote>
+</div>
+
+<p>The first line of <a href="ch41_04.htm#upt3-CHP-41-EX-1">Example 41-1</a> should be familiar to
+shell hackers; it's the <a name="IXT-41-2475" /><a name="IXT-41-2476" />shebang line. When the first two bytes
+of a file are the characters <tt class="literal">#!</tt>, the shell uses
+the rest of that file's first line to determine
+which program should be used to interpret the rest of the file. In
+this case, the path to the Perl interpreter is given. Command line
+arguments can be given to the interpreter. Here
+<tt class="literal">-w</tt><a name="IXT-41-2477" />
+instructs Perl to print warning messages when it finds code that is
+likely to be incorrect. This includes such common gaffes as trying to
+write to a read-only file handle, subroutines that recurse more than
+100 times, and attempts to get the value of a scalar variable that
+hasn't been assigned a value yet. This flag is a new
+Perl programmer's best friend and should be used in
+all programs.
+</p>
+
+<p>All lines that start with <tt class="literal">=</tt> in the left margin are
+part of
+<a name="IXT-41-2478" /><a name="IXT-41-2479" /><a name="IXT-41-2480" />Perl's Plain Old
+Documentation (POD) system. Everything between the directives
+<tt class="literal">=head1</tt> and <tt class="literal">=cut</tt> are
+documentation and do not affect how the script runs. There are Perl
+tools like <i class="command">pod2text</i> and <i class="command">pod2man</i>
+that will format the POD found in a script into the particular output
+format given in the command's name.
+There's even a <i class="command">pod2man</i> program
+used during the Perl installation procedure that creates all the Perl
+manpages on the target system.<a name="IXT-41-2481" />
+</p>
+
+<p>The next two lines begin with actual Perl code. To use Perl library
+files called <b class="emphasis-bold">modules</b>
+(<a name="IXT-41-2482" /><a name="IXT-41-2483" /><a name="IXT-41-2484" /><a href="ch41_10.htm#upt3-CHP-41-SECT-10">Section 41.10</a>), scripts
+invoke the <em class="emphasis">use module</em> statement. Perl searches
+the paths listed in the global variable
+<a name="IXT-41-2485" /> <a name="IXT-41-2486" /><b class="emphasis-bold">@INC</b> (<a href="ch41_02.htm#upt3-CHP-41-SECT-2">Section 41.2</a>) for these
+modules, which typically have the extension <em class="emphasis">.pm</em>.
+</p>
+
+<p>In Perl,
+<a name="IXT-41-2487" /><a name="IXT-41-2488" /><a name="IXT-41-2489" />variables
+don't need to be declared before being used.
+Although this behavior is convenient for small scripts, larger
+scripts can benefit from the disciplined approach of declaring
+variables. Perl 5  --  that is, Perl revision 5  --  introduced
+the <tt class="literal">my</tt><a name="IXT-41-2490" /> operator as a way of
+declaring a variable. Declaring variables allows the
+<tt class="literal">-w</tt> flag to help catch misspelled variable names,
+which are a common source of bugs in Perl scripts.
+</p>
+
+<p>A variable that holds a single value is called a
+<em class="emphasis">scalar</em><a name="IXT-41-2491" /> <a name="IXT-41-2492" /> and is always prefixed with a
+<tt class="literal">$</tt> (even in assignments), unlike variables in the
+Bourne shell. <a name="IXT-41-2493" /><a name="IXT-41-2494" /><a name="IXT-41-2495" />The <tt class="literal">=</tt> is the
+assignment operator (when it's not appearing as a
+POD directive). Another kind of
+<a name="IXT-41-2496" />variable,
+called an <em class="emphasis">array</em>, can be used to hold many scalar
+values. Array variables begin with
+<tt class="literal">@</tt><a name="IXT-41-2497" />. One example of a global array
+variable is <tt class="literal">@ARGV</tt><a name="IXT-41-2498" /><a name="IXT-41-2499" /><a name="IXT-41-2500" />, which holds the list of command-line
+arguments passed into the Perl script.
+</p>
+
+<p>Continuing with <a href="ch41_04.htm#upt3-CHP-41-EX-1">Example 41-1</a>, the two variables
+<tt class="literal">$ifile</tt> and <tt class="literal">$ofile</tt> get values
+from the command line. The
+<tt class="literal">shift</tt><a name="IXT-41-2501" /><a name="IXT-41-2502" /> operator removes values from the
+beginning of the <tt class="literal">@ARGV</tt> array. If there
+aren't enough values on the command line, the user
+defined <a name="IXT-41-2503" />subroutine <tt class="literal">usage( )</tt> is
+called.
+</p>
+
+<p>Perl supports <a name="IXT-41-2504" />object oriented programming (OOP). The
+hallmark of OOP is that both the data and the subroutines (called
+<em class="emphasis">methods</em><a name="IXT-41-2505" />
+in OOP jargon) for processing that data are accessed through an
+<a name="IXT-41-2506" />object. In
+traditional procedural programming, data structures are stored
+separately from functions that manipulate them. Fortunately, using
+object oriented Perl modules is often straightforward. In <a href="ch41_04.htm#upt3-CHP-41-EX-1">Example 41-1</a>, the scalar <tt class="literal">$reader</tt> is a
+new Audio::SoundFile::Reader object. Unlike other OOP languages,
+Perl's objects are not opaque: the user can set or
+get values internal to the object. This is what is happening on the
+next line. The <tt class="literal">-&gt;</tt><a name="IXT-41-2507" /> <a name="IXT-41-2508" /> dereferencing operator is used
+both to get at values that are pointed to by <b class="emphasis-bold">references</b> (<a name="IXT-41-2509" /><a href="ch41_05.htm#upt3-CHP-41-SECT-5.4">Section 41.5.4</a>) and to make
+method calls. Here, the key <tt class="literal">format</tt> is set to a
+value that is created by the <a name="IXT-41-2510" /> <a name="IXT-41-2511" />bitwise <tt class="literal">or</tt> of the
+values returned by the subroutines <tt class="literal">SF_FORMAT_WAV</tt>
+and <tt class="literal">SF_FORMAT_PCM</tt>. Another object,
+<tt class="literal">$writer</tt>, is created on the following line.
+</p>
+
+<p>The heart of the program is the
+<tt class="literal">while</tt><a name="IXT-41-2512" /> loop which, in English, reads,
+"While reading more chunks of the source file,
+translate that chunk into WAV data and write it to the
+outfile." When the loop finishes, those objects are
+no longer needed, so the <tt class="literal">close(
+)</tt><a name="IXT-41-2513" /> <a name="IXT-41-2514" /> method is called on each of them to release
+any resources used by those objects. This is the end of the
+program's execution, but there's a
+bit more to this script.
+</p>
+
+<p>Perl allows for <a name="IXT-41-2515" /><a name="IXT-41-2516" />user
+defined subroutines. Although they can be anywhere in the file,
+subroutine definitions typically come after the main block of code.
+Here, a subroutine called <tt class="literal">usage( )</tt> is defined that
+simply prints some help to the user and quits. Inside of
+<a name="IXT-41-2517" /><a name="IXT-41-2518" />double quoted strings, Perl
+interpolates scalar and array values. This is a fancy way of saying
+that Perl replaces variables with their values. Because Perl tries to
+do the right thing with interpolation, there may be occasions when
+Perl's rules surprise you. Take a look at the
+<em class="filename">perldata</em><a name="IXT-41-2519" /> manpage for the
+definitive rules governing variable interpolation and a peek at the
+<em class="filename">perltrap</em> manpage for common interpolation
+mistakes. You can prevent interpolation by putting a
+<a name="IXT-41-2520" />backslash in front of the variable name
+(e.g. <tt class="literal">\$foo is $foo</tt>) or use single quotes, which
+never interpolate variables. Finally, the
+<tt class="literal">exit(1)</tt><a name="IXT-41-2521" /><a name="IXT-41-2522" /> function halts the script before the
+subroutine can return to the caller and returns the value 1 to the
+operating system.
+</p>
+
+<p>That's the 50,000-foot view of a Perl script. To
+confidently modify existing Perl scripts, it is necessary to
+understand some of the basic components of Perl better.
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch41_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">41.3. Compiling Perl from Scratch</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">41.5. Perl Boot Camp, Part 2: Variables and Data Types</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

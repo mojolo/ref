@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> <html xmlns=http://www.w3.org/1999/xhtml><!--
+ Page saved with SingleFile 
+ url: https://www.washington.edu/computing/unix/permissions.html 
+ saved date: Fri Dec 18 2020 10:04:35 GMT-0800 (Pacific Standard Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>:root{--darkreader-neutral-background: #131516;--darkreader-neutral-text: #d8d4cf;--darkreader-selection-background: #004daa;--darkreader-selection-text: #e8e6e3}html{background-color:#181a1b!important}html,body{background-color:#181a1b}html,body{border-color:#736b5e;color:#e8e6e3}a{color:#3391ff}::placeholder{color:#b2aba1}::-webkit-scrollbar{background-color:#202324;color:#aba499}::-webkit-scrollbar-thumb{background-color:#454a4d}::-webkit-scrollbar-corner{background-color:#181a1b}*{scrollbar-color:#202324 #454a4d}::selection{background-color:#004daa!important;color:#e8e6e3!important}::-moz-selection{background-color:#004daa!important;color:#e8e6e3!important}</style>
+<title>How to Set File Permissions Using `chmod'</title>
+<style>body{color:black;background:#ffffff}h1{font-family:Arial,Helvetica,sans-serif}h2{font-family:Arial,Helvetica,sans-serif}a:link{color:#333399;background:transparent}a:visited{color:#336666;background:transparent}</style><style class="darkreader darkreader--sync" media=screen>body{color:rgb(232,230,227);background-color:rgb(24,26,27);background-image:none}a:link{color:rgb(125,157,212);background-color:transparent;background-image:none}a:visited{color:rgb(150,202,202);background-color:transparent;background-image:none}</style>
+<style>div#cac_wrap{margin:0 .7em}div#cac_wrap a:link{color:#202080;text-decoration:none;border-bottom:1px solid #bbb}div#cac_wrap a:link:hover{color:#2020aa;text-decoration:none;border-bottom:1px solid #000}div#cac_wrap a:visited{color:#202080;text-decoration:none;border-bottom:1px solid #bbb}div#cac_wrap a:visited:hover{color:#202080;text-decoration:none;border-bottom:1px solid #000}div#main{padding:0 .7em 1em .7em;font-family:Arial,Helvetica,sans-serif}div#main h1{font-size:xx-large;padding:.5em 0;margin:0}div#main h2{font-size:large;padding:.3em 0 .1em 0;margin:0}div#main p{margin:0 0 .8em 0}div#main pre{font-family:lucida console,monospace;font-size:small}</style><style class="darkreader darkreader--sync" media=screen>div#cac_wrap a:link{color:rgb(137,170,226);text-decoration-color:currentcolor;border-bottom-color:rgb(67,73,76)}div#cac_wrap a:link:hover{color:rgb(110,153,228);text-decoration-color:currentcolor;border-bottom-color:rgb(140,130,115)}div#cac_wrap a:visited{color:rgb(137,170,226);text-decoration-color:currentcolor;border-bottom-color:rgb(67,73,76)}div#cac_wrap a:visited:hover{color:rgb(137,170,226);text-decoration-color:currentcolor;border-bottom-color:rgb(140,130,115)}</style>
+<meta name=darkreader content=6e5a82bc2eda156f24e8205cf910f36f><style class="darkreader darkreader--override" media=screen>::placeholder{opacity:0.5!important}</style><link type=image/x-icon rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAABbJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/ckVV/4FZZ/99VGL/Wyg6/1wpO/9/V2X/gVln/25BUP9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/9fKzv///////Pv7/2s8TP90SFj////////////LusD/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/18tPv/59/j///////////+Sb3v/nH2I////////////8/Dx/10pO/9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf+DW2n///////79/f/w6+3/vaiv/8Oxt///////8Ovt//39/f97UWD/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/q5Ga///////t6Or/s5yk/+fg4v/s5uj//////7Obo//t6Or/poqU/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/9XHzP//////yLe9/4Ncaf/+/v7///////////+HYW7/xLG4/9HCx/9bJzn/Wyc5/1snOf9bJzn/Wyc5/2IxQv/28/T//////6GEjv9hMEH/9PHy///////39PX/ZjZH/5l5hP/08fL/YTBB/1snOf9bJzn/Wyc5/2Y2R/+jh5H//v7+//7+/v+mipP/ZjZH/8/Bxv//////29DU/2EvQf+dfoj//v7+/6OHkf9mNkf/Wyc5/1snOf+CW2n//////////////////////4Jbaf+liJL//////7Obo/9wQlL//Pv7////////////gltp/1snOf9bJzn/ZDNE/4FZZ/+BWWf/gVln/4FZZ/9kM0T/ZTVG/4FZZ/9pOkr/Xy0//4BZZv+BWWf/gVln/2QzRP9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/Wyc5/1snOf9bJzn/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="><link rel=canonical href=https://www.washington.edu/computing/unix/permissions.html></head>
+<body>
+ <div id=skipnav style=display:none!important>
+ 
+</div>
+ 
+ 
+ 
+<div style=display:none!important></div>
+<div id=toolbar style=display:none!important>
+ &nbsp;</div>
+ 
+ 
+ 
+ 
+ 
+<div class=bannerwrapper style=display:none!important>
+ 
+</div>
+<div id=crumbs style=display:none!important>&nbsp;</div><div class=forceclear style=display:none!important></div>
+ <div id=cac_wrap>
+ <div id=main>
+ <h1>How to Set File Permissions Using `chmod'</h1>
+ <p>Files and directories in Unix may have three types of
+ permissions: read (`r'), write (`w'), and execute (`x').
+ Each permission may be `on' or `off' for each of three
+ categories of users: the file or directory owner; other
+ people in the same group as the owner; and all others.</p>
+ <h2><a name=one>Files</a></h2>
+ <p>To determine the mode (or permission settings) of a
+ particular file, use the command `ls -lg filename'. This
+ command will produce a message similar to the
+ following:</p>
+ <p>-rwxr-x--x 1 owner group 2300 Jul 14 14:38 filename</p>
+ <p>The string of 10 characters on the left shows the mode.
+ The initial character ('-' in this case) indicates what
+ type of file it is. A '-' indicates that the file is a
+ plain file. The character 'd' means it is a directory.
+ Characters 2-4 are, respectively, `r', `w', or `x' if the
+ corresponding permission is turned on for the owner or `-'
+ if the permission is turned off. Characters 5-7 similarly
+ show the permissions for the group; characters 8-10 for all
+ others. The second string shows the number of links that
+ exist to the file. The third string identifies the owner of
+ the file and the fourth string tells what group the owner
+ of the file is in.</p>
+ <p>To change the mode of a file, use the chmod command. The
+ general form is</p>
+ <pre>      chmod X@Y file1 file2 ...
+</pre>
+ <p>where: X is any combination of the letters `u' (for
+ owner), `g' (for group), `o' (for others), `a' (for all;
+ that is, for `ugo'); @ is either `+' to add permissions,
+ `-' to remove permissions, or `=' to assign permissions
+ absolutely; and Y is any combination of `r', `w', `x'.
+ Following are some examples:</p>
+ <pre>     chmod u=rx file        (Give the owner rx permissions, not w)
+     chmod go-rwx file      (Deny rwx permission for group, others)
+     chmod g+w file         (Give write permission to the group)
+     chmod a+x file1 file2  (Give execute permission to everybody)
+     chmod g+rx,o+x file    (OK to combine like this with a comma)
+</pre>
+ <h2><a name=two>Directories</a></h2>
+ <p>The permission scheme described above also applies to
+ directories. For a directory, whoever has `read' permission
+ can list files using the ls command (and thus discover what
+ files are there); whoever has `write' permission can create
+ and delete files in that directory; whoever has execute
+ permission can access a file or subdirectory of known name.
+ To find out the mode of a directory:</p>
+ <pre>      ls -dl dir ...  Show permissions for
+                      the named directory(ies)
+</pre>
+ <pre>      ls -al dir ...  Long list of all files
+                      in named directory(ies)
+                      (including those with names
+                      starting in `.')
+</pre>
+ <p>If no directories are specified, the listing is for all
+ files in the current directory. The output will look
+ something like:</p>
+ <pre>      drwx------12 fred        592 Jul 11 13:46 .
+      drwxr-xr-x24 root       1424 Jul 10 13:07 ..
+</pre>
+ <p>The initial `d' in the 10-character mode string
+ indicates that the file is a directory. The file name `.'
+ always refers to the current directory; the file name `..'
+ always refers to the parent of the current directory. Thus,
+ this output shows the permissions for the current directory
+ and its parent.</p>
+ <h2><a name=three>More Information</a></h2>
+ <p>For more information, including octal specification of
+ permissions, refer to the Unix User's Manual pages for
+ chmod(1) and ls(1). To view these online, enter</p>
+ <pre>         man chmod
+</pre>
+ <pre>         man ls
+</pre>
+ <p>A variable called `umask' is used as a permission mask
+ for all newly created files and directories. Umask is a 3
+ digit octal number. The default umask is 022 = 000 010 010
+ binary. The two one bits prevent "group" and "other" write
+ permission. So, a newly created file will have rwx
+ permission for the owner, and rx permission for group and
+ others. A umask of 077 = 000 111 111 would cause new files
+ to have no permissions set for group and others. In order
+ to use a umask other than the default, you should include
+ the line `umask num' (where num is an octal number) in your
+ .cshrc file. For more about umask, enter</p>
+ <pre>       man umask
+</pre>
+ <h2><a name=four>An Example - Fred and Joe Want to Share
+ Files</a></h2>
+ <p>There may be times that you want to copy a file from
+ someone else's directory. How can you access that directory
+ and copy the file? The following scenario describes the
+ process.</p>
+ <p>Suppose that user `joe' wants to copy the file `prog.f'
+ from user `fred.' At the Unix prompt, Fred should type</p>
+ <pre>        chmod go+x ~
+</pre>
+ <p>This command changes the mode of Fred's home directory
+ (represented by the ~), giving permission to all users to
+ get to files in that directory. Therefore, Joe can access
+ any file, of which he knows the name, in Fred's home
+ directory. Fred has told Joe that the file he wants is
+ called `prog.f,' so now Joe types</p>
+ <pre>       cp ~fred/prog.f prog.f
+</pre>
+ <p>If Joe had an existing file with the name `prog.f,'
+ which he did not want overwritten by Fred's file, he could
+ instead type</p>
+ <pre>       cp ~fred/prog.f prog2.f
+</pre>
+ <p>If Joe receives a message from the system saying that he
+ is denied permission to copy the file, Fred should make the
+ file readable by others, changing its mode by entering</p>
+ <pre>       chmod go+r prog.f
+</pre>
+ <p>If Joe wanted to copy several files from Fred's home
+ directory, for example `prog.a,' `prog.b,' `prog.c,' and to
+ give these files the same names in his own home directory,
+ he would type</p>
+ <pre>       cp ~fred/prog.a ~fred/prog.b ~fred/prog.c .
+</pre>
+ <p>The period (.) at the end of the command line specifies
+ that the files are to be copied into Joe's current
+ directory (which in this case is his home directory).</p>
+ <p>Once Joe has copied the files, Fred will probably want
+ to change the mode of his home directory so that it is no
+ longer accessible to the world at large. To do this, Fred
+ should type</p>
+ <pre>       chmod go-rx ~
+</pre>
+ <p>As you can see, a + sign used with `chmod' adds
+ accessibility and a - sign takes it away. It is possible to
+ use these features on directories of all levels and all
+ files within those directories, individually or as a group.
+ For detailed online information about the `chmod' command,
+ enter</p>
+ <pre>        man chmod
+</pre>
+ </div>
+ </div>

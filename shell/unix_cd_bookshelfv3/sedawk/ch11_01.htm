@@ -1,0 +1,432 @@
+<html><head><title>A Flock of awks (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 11. A Flock of awks</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch11_01.htm#sect1">Original awk</a><br />
+<a href="ch11_02.htm">Freely Available awks</a><br />
+<a href="ch11_03.htm">Commercial awks</a><br />
+<a href="ch11_04.htm">Epilogue</a><br /></p></div><p>In the previous four chapters, we have looked at POSIX awk, with only
+occasional reference to actual awk implementations that you would run.
+In this chapter, we
+focus on the different versions of awk that are available,
+what features they do or do not have, and how you can get them.</p><p>First, we'll look at the original V7 version of awk.
+The original awk lacks many of the features we've described, so this
+section mostly describes what's not there.
+Next, we'll look at the three versions whose source code is freely
+available.
+All of them have extensions to the POSIX standard.
+Those that are common to all three versions are discussed
+first.
+Finally, we look at three commercial versions of awk.</p><div class="sect1"><a name="sedawk-ch-11-sect-1" />
+<h2 class="sect1"><a name="sect1" />11.1. Original awk</h2>
+
+<p>
+<a name="IXT-11-266210" />
+<a name="ch11.awk1" />
+<a name="ch11.awk2" />
+In each of the sections that follow, we'll take a brief look at how
+the original awk differs from POSIX awk.
+Over the years, UNIX vendors have enhanced their versions of original
+awk; you may need to write small test programs to see exactly what
+features your old awk has or doesn't have.</p>
+
+<a name="sedawk-ch-11-sect-1.1" /><div class="sect2">
+<h3 class="sect2">11.1.1. Escape Sequences</h3>
+
+<p>
+<a name="IXT-11-266211" />
+The original V7 awk only had "\t", "\n", "\"", and, of course, "\\".
+Most UNIX vendors have added some or all of "\b" and "\r" and "\f".</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.2" /><div class="sect2">
+<h3 class="sect2">11.1.2. Exponentiation</h3>
+
+<p>
+<a name="IXT-11-266212" />
+Exponentiation (using the <b class="emphasis-bold">^</b>, 
+<b class="emphasis-bold">^=</b>, <b class="emphasis-bold">**</b>, 
+and *<b class="emphasis-bold">*=</b> operators)
+is not in old awk.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.3" /><div class="sect2">
+<h3 class="sect2">11.1.3. The C Conditional Expression</h3>
+
+<p>
+<a name="IXT-11-266213" />
+<a name="IXT-11-266214" />
+<a name="IXT-11-266215" />
+The three-argument conditional expression found in C, "<em class="emphasis">expr1</em>
+<b class="emphasis-bold">?</b>
+<em class="emphasis">expr2</em> <b class="emphasis-bold">:</b> <em class="emphasis">expr3</em>" is not in old awk.
+You must resort to a plain old <b class="emphasis-bold">if</b>-<b class="emphasis-bold">else</b> statement.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.4" /><div class="sect2">
+<h3 class="sect2">11.1.4. Variables as Boolean Patterns</h3>
+
+<p>
+<a name="IXT-11-266216" />
+<a name="IXT-11-266217" />
+You cannot use the value of a variable as a Boolean pattern.</p>
+
+<blockquote><pre class="code">flag { print "..." }</pre></blockquote>
+
+<p>You must instead use a comparison expression.</p>
+
+<blockquote><pre class="code">flag != 0 { print "..." }</pre></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.5" /><div class="sect2">
+<h3 class="sect2">11.1.5. Faking Dynamic Regular Expressions</h3>
+
+<p>
+<a name="IXT-11-266218" />
+<a name="IXT-11-266219" />
+<a name="IXT-11-266220" />
+The original awk made it difficult to
+use patterns dynamically because they had to be fixed when
+the script was interpreted.
+You can get around the problem of not being able to
+use a variable as a regular expression by 
+importing a shell variable inside an awk program.  The value
+of the shell variable will be interpreted by awk as a constant.
+Here's an example:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat awkro2</b></tt>
+#!/bin/sh
+# assign shell's $1 to awk search variable
+search=$1
+awk '$1 ~ /'"$search"'/' acronyms</pre></blockquote>
+
+<p>The first line of the script makes the
+variable assignment before awk is invoked. 
+To get the shell to expand the variable inside the awk procedure, 
+we enclose it within single, then double, quotation
+marks.<a href="#FOOTNOTE-72">[72]</a>
+Thus, awk never sees the shell variable and evaluates
+it as a constant string.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-72" /><p> [72]Actually, this is the concatenation of single-quoted text with
+double-quoted text with more single-quoted text to produce one
+large quoted string.
+This trick was used ealier, in <a href="ch06_01.htm">Chapter 6</a>.</p>
+
+</blockquote>
+
+<p>Here's another version that makes use of the Bourne shell variable
+substitution feature.
+Using this feature gives us an easy way to specify a default value for the
+variable if, for instance, the user does not supply a command-line
+argument.</p>
+
+<blockquote><pre class="code">search=$1
+awk '$1 ~ /'"${search:-.*}"'/' acronyms</pre></blockquote>
+
+<p>The expression "${search:-.*}" tells the shell to use the value
+of <b class="emphasis-bold">search</b> if it is defined; if not, use ".*" as the value.
+Here, ".*" is regular-expression syntax specifying any string of
+characters; therefore, all entries are printed if no entry
+is supplied on the command line.
+Because the whole thing is inside double quotes, the shell does not
+perform a wildcard expansion on ".*".</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.6" /><div class="sect2">
+<h3 class="sect2">11.1.6. Control Flow</h3>
+
+<p>
+<a name="IXT-11-266221" />
+<a name="IXT-11-266222" />
+In POSIX awk, if a program has just a <b class="emphasis-bold">BEGIN</b> procedure, and
+nothing else, awk will exit after executing that procedure.
+The original awk is different; it will execute the <b class="emphasis-bold">BEGIN</b> procedure
+and then go on to process input, even if there are no pattern-action
+statements.
+You can force awk to exit by supplying <em class="filename">/dev/null</em> on the command
+line as a data file argument, or by using <b class="emphasis-bold">exit</b>.</p>
+
+<p>
+<a name="IXT-11-266223" />
+In addition, the <b class="emphasis-bold">BEGIN</b> and <b class="emphasis-bold">END</b> procedures, if present, have
+to be at the beginning and end of program, respectively.
+Furthermore, you can only have one of each.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.7" /><div class="sect2">
+<h3 class="sect2">11.1.7. Field Separating</h3>
+
+<p>
+<a name="IXT-11-266224" />
+Field separating works the same in old awk as it does in modern awk,
+except that you can't use regular expressions.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.8" /><div class="sect2">
+<h3 class="sect2">11.1.8. Arrays</h3>
+
+<p>
+<a name="IXT-11-266225" />
+<a name="IXT-11-266226" />
+<a name="IXT-11-266227" />
+There is no way in the original awk to delete an element from an array.
+The best thing you can do is assign the empty string to the unwanted
+array element, and then code your program to ignore array elements whose
+values are empty.</p>
+
+<p>
+<a name="IXT-11-266228" />
+Along the same lines, <b class="emphasis-bold">in</b> is not an operator in original awk; you
+cannot use <b class="emphasis-bold">if (item in array)</b> to see if an item is present.
+Unfortunately, this forces you to loop through every item in an array
+to see if the index you want is present.</p>
+
+<blockquote><pre class="code">for (item in array) {
+	if (item == searchkey) {
+		<em class="emphasis">process array[item]</em>
+		break
+	}
+}</pre></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.9" /><div class="sect2">
+<h3 class="sect2">11.1.9. The getline Function</h3>
+
+<p>
+<a name="IXT-11-266229" />
+The original V7 awk did not have <b class="emphasis-bold">getline</b>.
+If your awk is really ancient, then <b class="emphasis-bold">getline</b> may not
+work for you.
+Some vendors have
+the simplest form of <b class="emphasis-bold">getline</b>,
+which reads the next record from the regular input stream,
+and sets $0, <b class="emphasis-bold">NF</b> and <b class="emphasis-bold">NR</b> 
+(there is no <b class="emphasis-bold">FNR</b>, see below).
+All of the other forms of <b class="emphasis-bold">getline</b> are not available.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.10" /><div class="sect2">
+<h3 class="sect2">11.1.10. Functions</h3>
+
+<p>
+<a name="IXT-11-266230" />
+<a name="IXT-11-266231" />
+<a name="IXT-11-266232" />
+The original awk had only a limited number of built-in string functions.
+(See <a href="ch11_01.htm#sedawk-ch-11-tab-1">Table 11.1</a> and
+<a href="ch11_01.htm#sedawk-ch-11-tab-2">Table 11.3</a>.)</p>
+
+<a name="sedawk-ch-11-tab-1" /><h4 class="objtitle">Table 11.1. Original awk's Built-In String Functions</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Awk Function</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><b class="emphasis-bold">index</b>(<em class="emphasis">s</em>,<em class="emphasis">t</em>)</td>
+<td>Returns position of substring <em class="emphasis">t</em> in string <em class="emphasis">s</em> or zero if not present.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">length</b>(<em class="emphasis">s</em>)</td>
+<td><p>Returns length of string <em class="emphasis">s</em> or length of <b class="emphasis-bold">$0</b> if no string is supplied.</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">split</b>(<em class="emphasis">s</em>,<em class="emphasis">a</em>,<em class="emphasis">sep</em>)</td>
+<td><p>Parses string <em class="emphasis">s</em> into elements of array <em class="emphasis">a</em> using field separator <em class="emphasis">sep</em>; returns number of elements.  If <em class="emphasis">sep</em> is not supplied, <b class="emphasis-bold">FS</b> is used. Array splitting works the same way as field splitting.</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">sprintf</b>("<em class="emphasis">fmt</em>",<em class="emphasis">expr</em>)</td>
+<td>Uses <b class="emphasis-bold">printf</b> format specification for <em class="emphasis">expr</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">substr</b>(<em class="emphasis">s</em>,<em class="emphasis">p</em>,<em class="emphasis">n</em>)</td>
+<td><p>Returns substring of string <em class="emphasis">s</em> at beginning position 
+<em class="emphasis">p</em> up to maximum length of <em class="emphasis">n</em>.  If <em class="emphasis">n</em> isn't supplied, the rest of the string from <em class="emphasis">p</em> is used.</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXT-11-266233" />
+<a name="IXT-11-266234" />
+<a name="IXT-11-266235" />
+<a name="IXT-11-266236" />
+<a name="IXT-11-266237" />
+Some built-in functions
+can be classified as arithmetic functions.
+Most of them take a numeric argument and return
+a numeric value.  <a href="ch11_01.htm#sedawk-ch-11-tab-1.5">Table 11.2</a> summarizes
+these arithmetic functions.</p>
+
+<a name="sedawk-ch-11-tab-1.5" /><h4 class="objtitle">Table 11.2. Original awk's Built-In Arithmetic Functions</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Awk Function</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><b class="emphasis-bold">exp</b>(<em class="emphasis">x</em>)</td>
+<td>Returns <em class="emphasis">e</em> to the power <em class="emphasis">x</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">int</b>(<em class="emphasis">x</em>)</td>
+<td>Returns truncated value of <em class="emphasis">x</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">log</b>(<em class="emphasis">x</em>)</td>
+<td>Returns natural logarithm (base-<em class="emphasis">e</em>) of <em class="emphasis">x</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">sqrt</b>(<em class="emphasis">x</em>)</td>
+<td>Returns square root of <em class="emphasis">x</em>.</td>
+</tr>
+
+
+</table><p>
+
+<p>One of the nicest facilities in awk, the ability to define your own
+functions, is also not available in original awk.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-1.11" /><div class="sect2">
+<h3 class="sect2">11.1.11. Built-In Variables</h3>
+
+<p>
+<a name="IXT-11-266238" />
+<a name="IXT-11-266239" />
+<a name="IXT-11-266240" />
+In original awk only the variables shown in
+<a href="ch11_01.htm#sedawk-ch-11-tab-2">Table 11.3</a> are built in.</p>
+
+<a name="sedawk-ch-11-tab-2" /><h4 class="objtitle">Table 11.3. Original awk System Variables</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><b class="emphasis-bold">FILENAME</b></td>
+<td>Current filename</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">FS</b></td>
+<td>Field separator (a blank)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">NF</b></td>
+<td>Number of fields in current record</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">NR</b></td>
+<td>Number of the current record</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">OFMT</b></td>
+<td>Output format for numbers (%.6g)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">OFS</b></td>
+<td>Output field separator (a blank)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">ORS</b></td>
+<td>Output record separator (a newline)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">RS</b></td>
+<td>Record separator (a newline)</td>
+</tr>
+
+
+</table><p>
+
+<p><b class="emphasis-bold">OFMT</b> does double duty, serving as the conversion format for the
+<b class="emphasis-bold">print</b> statement, as well as for converting numbers to strings.</p>
+</div>
+
+
+
+
+<a name="IXT-11-266241" />
+<a name="IXT-11-266242" />
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.9. Invoking awk Using the #! Syntax</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11.2. Freely Available awks</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

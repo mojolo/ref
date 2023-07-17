@@ -1,0 +1,237 @@
+<html><head><title>More About Links (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.4. More About Links</h2>
+
+<p><a name="IXT-10-6341" /> <a name="IXT-10-6342" /><a name="IXT-10-6343" />Unix provides two different kinds of
+links:
+</p>
+
+<dl>
+<dt><i><em class="filename">Hard links</em></tt></i></dt>
+<dd>
+With a <a name="IXT-10-6344" />hard link,
+two filenames (i.e., two directory entries) point to the same inode
+and the same set of data blocks. All Unix versions support hard
+links. They have two important limitations: a hard link
+can't cross a filesystem (i.e., both filenames must
+be in the same filesystem), and you can't create a
+hard link to a directory (i.e., a directory can only have one
+name).<a href="#FOOTNOTE-41">[41]</a> They
+have two important advantages: the link and the original file are
+absolutely and always identical, and the extra link takes no disk
+space (except an occasional extra disk block in the directory file).
+</p><blockquote class="footnote"> <a name="FOOTNOTE-41" /><p> [41]Actually, every directory has at least two
+names. See the last section of this article.</p> </blockquote>
+</dd>
+
+
+<a name="IXT-10-6345" /><a name="IXT-10-6346" /><a name="IXT-10-6347" /><dt><i><em class="filename">Symbolic links</em></tt> (also called <em class="emphasis">soft links</em></tt> or <em class="emphasis">symlinks</em></tt>)</i></dt>
+<dd>
+With a symbolic link, there really are two different files. One file
+contains the actual data; the other file just contains the name of
+the first file and serves as a
+"pointer." We call the pointer the
+<em class="filename">link</em>. The system knows that whenever it opens a
+symlink, it should read the contents of the link and then access the
+file that really holds the data you want. Nearly all Unix systems
+support symbolic links these days. Symbolic links are infinitely more
+flexible than hard links. They can cross filesystems or even computer
+systems (if you are using <b class="emphasis-bold">NFS or RFS</b>
+(<a href="ch44_09.htm#upt3-CHP-44-SECT-9">Section 44.9</a>)). You can make a symbolic link to a
+directory. A symbolic link has its own inode and takes a small amount
+of disk space to store.
+</p>
+</dd>
+
+</dl>
+
+<p>You obviously can't do without copies of files:
+copies are important whenever users need their own
+"private version" of some master
+file. However, links are equally useful. With links,
+there's only one set of data and many different
+names that can access it. <a href="ch10_05.htm#upt3-CHP-10-SECT-5">Section 10.5</a> shows
+how to make links.
+</p>
+
+<a name="upt3-CHP-10-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">10.4.1. Differences Between Hard and Symbolic Links</h3>
+
+<p><a name="IXT-10-6348" /> <a name="IXT-10-6349" />With
+a <a name="IXT-10-6350" />hard link,
+<a name="IXT-10-6351" /><a name="IXT-10-6352" />the two filenames are identical in every
+way. You can delete one without harming the other. The system deletes
+the directory entry for one filename and leaves the data blocks
+(which are shared) untouched. The only thing <em class="filename">rm</em>
+does to the inode is decrement its
+"<a name="IXT-10-6353" />link count," which (as
+the name implies) counts the number of hard links to the file. The
+data blocks are only deleted when the link count goes to
+zero -- meaning that there are no more directory entries that
+point to this inode. <a href="ch09_24.htm#upt3-CHP-9-SECT-24">Section 9.24</a> shows how
+to find the hard links to a file.
+</p>
+
+<p>With a symbolic link, the two filenames are really not the same.
+Deleting the link with <em class="filename">rm</em> leaves the original
+file untouched, which is what you'd expect. But
+deleting or renaming the original file removes both the filename and
+the data. You are left with a link that doesn't
+point anywhere. Remember that the link itself
+doesn't have any data associated with it. Despite
+this disadvantage, you rarely see hard links on Unix versions that
+support symbolic links. Symbolic links are so much more versatile
+that they have become omnipresent.
+</p>
+
+<p><a name="IXT-10-6354" /> <a name="IXT-10-6355" /><a name="IXT-10-6356" />Let's
+finish by taking a look at the <em class="filename">ls</em> listing for a
+directory. This directory has a file named <em class="filename">file</em>
+with another hard link to it named <em class="filename">hardlink</em>.
+There's also a symlink to <em class="filename">file</em>
+named (are you ready?) <em class="filename">symlink</em>:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls -lai</b></tt>
+total 8
+ 140330 drwxr-xr-x   2 jerry    ora    1024 Aug 18 10:11 .
+  85523 drwxr-xr-x   4 jerry    ora    1024 Aug 18 10:47 ..
+ 140331 -rw-r--r--   2 jerry    ora    2764 Aug 18 10:11 file
+ 140331 -rw-r--r--   2 jerry    ora    2764 Aug 18 10:11 hardlink
+ 140332 lrwxrwxrwx   1 jerry    ora       4 Aug 18 10:12 symlink -&gt; file</pre></blockquote>
+
+<p>You've seen
+<em class="filename">ls</em>'s <b class="emphasis-bold">-l
+option</b>(<a href="ch50_02.htm#upt3-CHP-50-SECT-2">Section 50.2</a>) and, probably, the
+<b class="emphasis-bold">-a option</b> (<a href="ch08_09.htm#upt3-CHP-8-SECT-9">Section 8.9</a>) for listing "dot
+files." The <em class="filename">-i</em> option lists the
+<b class="emphasis-bold">i-number</b> (<a href="ch14_02.htm#upt3-CHP-14-SECT-2">Section 14.2</a>)<a name="IXT-10-6357" /> for each entry in the directory; see
+the first column. The third column has the <em class="filename">link
+count</em>: this is the number of hard links to the file.
+</p>
+
+<p>When you compare the entries for <em class="filename">file</em> and
+<em class="filename">hardlink</em>, you'll see that they
+have a link count of 2. In this case, both links are in the same
+directory. Every other entry (i-number, size, owner, etc.) for
+<em class="filename">file</em> and <em class="filename">hardlink</em> is the
+same; that's because they both refer to exactly the
+same file, with two links (names).
+</p>
+
+<p>A <a name="IXT-10-6358" />symbolic link has an <tt class="literal">l</tt>
+at the start of the permissions field. Its i-number
+isn't the same as the file to which it points
+because a symbolic link takes a separate inode; so, it also takes
+disk space (which an extra hard link doesn't). The
+name has two parts: the name of the link (here,
+<em class="filename">symlink</em>) followed by an arrow and the name to
+which the link points (in this case, <em class="filename">file</em>). The
+symlink takes just four characters, which is exactly enough to store
+the pathname (<em class="filename">file</em>) to which the link points.
+</p>
+
+</div>
+<a name="upt3-CHP-10-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">10.4.2. Links to a Directory</h3>
+
+<p><a name="IXT-10-6359" /><a name="IXT-10-6360" /><a name="IXT-10-6361" />While we're at it,
+here's a section that isn't about
+linking to files or making symbolic links. Let's
+look at the first two entries in the previous sample directory in
+terms of links and link counts. This should help to tie the
+filesystem together (both literally and in your mind!).
+</p>
+
+<p><a name="IXT-10-6362" /> <a name="IXT-10-6363" /><a name="IXT-10-6364" />You've seen
+<tt class="literal">.</tt> and <tt class="literal">..</tt> in <b class="emphasis-bold">pathnames</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>);
+you might also have read <b class="emphasis-bold">an explanation of
+what's in a directory</b> (<a href="ch10_02.htm#upt3-CHP-10-SECT-2">Section 10.2</a>). The <tt class="literal">.</tt> entry is a link
+to the current directory; notice that its link count is 2.
+Where's the other link? It's in the
+parent directory:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls -li ..</b></tt>
+total 2
+ 140330 drwxr-xr-x   2 jerry    ora      1024 Aug 18 10:11 sub
+  85524 drwxr-xr-x   2 jerry    ora      1024 Aug 18 10:47 sub2</pre></blockquote>
+
+<p><a name="IXT-10-6365" />Look at the i-numbers for
+the entries in the parent directory. Which entry is for our current
+directory? The entry for <em class="filename">sub</em> has the i-number
+140330, and so does the <tt class="literal">.</tt> listing in the current
+directory. So the current directory is named
+<em class="filename">sub</em>. Now you should be able see why every
+directory has at least two links. One link, named
+<tt class="literal">.</tt>, is to the directory itself. The other link, in
+its parent, gives the directory its name.
+</p>
+
+<p>Every directory has a <tt class="literal">..</tt> entry, which is a link to
+its parent directory. If you look back at the listing of our current
+directory, you can see that the parent directory has four links.
+Where are they?
+</p>
+
+<p>When a directory has subdirectories, it will also have a hard link
+named <tt class="literal">..</tt> in each subdirectory. You can see
+earlier, in the output from <em class="filename">ls -li ..</em>, that the
+parent directory has two subdirectories: <em class="filename">sub</em> and
+<em class="filename">sub2</em>. That's two of the four
+links. The other two links are the <tt class="literal">.</tt> entry in the
+parent directory and the entry for the parent directory (which is
+named <em class="filename">test</em> in <em class="emphasis">its</em> parent
+directory):
+</p>
+
+<p><tt class="literal">-d</tt> <a href="ch08_05.htm#upt3-CHP-8-SECT-5">Section 8.5</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -dli ../. ../../test</b></tt>
+  85523 drwxr-xr-x   4 jerry    ora      1024 Aug 18 10:47 ../.
+  85523 drwxr-xr-x   4 jerry    ora      1024 Aug 18 10:47 ../../test</pre></blockquote>
+
+<p>As they should, all the links have the same i-number: 85523. Make
+sense? This concept can be a little abstract and hard to follow at
+first. Understanding it will help you, though -- especially if
+you're a system administrator who has to understand
+<em class="filename">fsck</em>'s output because it
+can't fix something automatically or use strong
+medicine like <em class="filename">clri</em>. For more practice, make a
+subdirectory and experiment in it the way shown in this article.
+</p>
+
+<p>By the way, directories and their hard links <tt class="literal">.</tt> and
+<tt class="literal">..</tt> are added by the
+<em class="filename">mkdir</em><a name="IXT-10-6366" /> (2)
+system call. That's the only way that normal users
+can create a directory (and the links to it).
+</p>
+
+<p><em class="emphasis">--JP and ML</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.3. Files with Two or More Names</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.5. Creating and Removing Links</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

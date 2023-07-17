@@ -1,0 +1,129 @@
+<html><head><title>How to Look at Files as They Grow (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.10. How to Look at Files as They Grow</h2>
+
+<p><a name="IXT-12-6491" />One of the
+<a name="IXT-12-6492" />best
+things that you can do with <i class="command">tail</i> is to look at a
+file as it is growing. For example, I once was debugging a program
+named <i class="command">totroff</i> that converted a manual from a plain
+text format to <i class="command">troff</i>. It was rather slow, so that
+you didn't want to wait until the program finished
+before looking at the output. But you didn't want to
+be typing <tt class="literal">more</tt> every 20 seconds either, to find
+out whether the part of the file that you were debugging had made it
+through yet. (<i class="command">more</i> quits when you
+"run out" of file, so it
+can't really help you look for a part of a file that
+hasn't been written yet.) The <em class="emphasis">tail
+-f</em> command solves this problem. For example:
+</p>
+
+<p><tt class="literal">&amp;</tt> <a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>totroff &lt; file.txt &gt; file.ms &amp;</b></tt>
+[1] 12345
+% <tt class="userinput"><b>tail -f file.ms</b></tt>
+.LP
+Tail produces output as
+the file grows.
+   ...
+<b>CTRL-c</b></pre></blockquote>
+
+<p>Now suppose you want to monitor several files at once.
+Administrators, for example, might want to keep track of several log
+files, such as <em class="emphasis">/usr/adm/messages</em>,
+<em class="emphasis">/usr/adm/lpd-errs</em>, UUCP error files, etc. The
+<a name="IXT-12-6493" />GNU <i class="command">tail</i> program
+comes in useful for keeping an eye on several administrative log
+files at once. But it also comes in useful for nonadministrators.
+</p>
+
+<p>For example, suppose you want to perform several
+<i class="command">grep</i>s through many files, saving the output in
+different files. You can then monitor the files using
+<i class="command">tail</i> -<span class="option">f</span>. For example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>grep Berkeley ch?? &gt; Berkeley.grep &amp;</b></tt>
+% <tt class="userinput"><b>grep BSD ch?? &gt; BSD.grep &amp;</b></tt>
+% <tt class="userinput"><b>grep "System V" ch?? &gt; SystemV.grep &amp;</b></tt>
+% <tt class="userinput"><b>grep SysV ch?? &gt; SysV.grep &amp;</b></tt>
+% <tt class="userinput"><b>tail -f Berkeley.grep BSD.grep SystemV.grep SysV.grep</b></tt></pre></blockquote>
+
+<p>When new text appears in the files called with
+<i class="command">tail</i> -<span class="option">f</span>, it also appears on the
+screen:
+</p>
+
+<blockquote><pre class="code">==&gt; SysV.grep &lt;==
+ch01:using a SysV-based UNIX system, you must
+
+==&gt; Berkeley.grep &lt;==
+ch01:at the University of California at Berkeley, where
+
+==&gt; BSD.grep &lt;==
+ch03:prefer BSD UNIX systems because they are less likely to
+ch04:who use a BSD-based UNIX systems must run the
+
+==&gt; SysV.grep &lt;==
+ch04:is a SysV derivative sold by Acme Products Inc.</pre></blockquote>
+
+<p>(When text is written to a new file, the filename is printed
+surrounded by <tt class="literal">==&gt;</tt> and
+<tt class="literal">&lt;==</tt>.)
+</p>
+
+<p>What's actually happening here?</p>
+
+<p>When you invoke <em class="emphasis">tail -f</em>, <i class="command">tail</i>
+behaves just like it normally does: it reads the file and dumps the
+last ten (or however many) lines to the screen. But, unlike most
+applications, <i class="command">tail</i> doesn't quit
+at this point. Instead, <i class="command">tail</i> goes into an
+<a name="IXT-12-6494" />infinite loop. It
+sleeps for a second, then wakes up and looks to see if the file is
+any longer, then sleeps again, and so on. Because this is an infinite
+loop, you have to enter CTRL-c (or whatever your <b class="emphasis-bold">interrupt key</b> (<a href="ch24_11.htm#upt3-CHP-24-SECT-11">Section 24.11</a>)
+is) when you've seen the data
+you're interested in, or when the file
+you're watching has been completed.
+<i class="command">tail</i> has no way of knowing when the file has
+stopped growing.
+</p>
+
+<p><i class="command">tail</i> ignores the <span class="option">-f</span> option when
+it is reading from a pipe. For example, <em class="emphasis">totroff &lt;
+file.txt | tail -f</em> wouldn't work.
+</p>
+
+<p><a href="ch12_11.htm#upt3-CHP-12-SECT-11">Section 12.11</a> shows a useful feature of GNU
+<i class="command">tail</i>: following files by name or file descriptor.
+</p>
+
+<p><em class="emphasis">--ML and LM</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.9. Finer Control on tail</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12.11. GNU tail File Following</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

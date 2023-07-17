@@ -1,0 +1,275 @@
+<html><head><title>Splitting Files at Fixed Points: split (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.9. Splitting Files at Fixed Points: split</h2>
+
+<p>Most versions of Unix come with a program called
+<i class="command">split</i> whose purpose is to split large files into
+smaller files for tasks such as editing them in an editor that cannot
+handle large files, or mailing them if they are so big that some
+mailers will refuse to deal with them. For example,
+let's say you have a really big text file that you
+want to mail to someone:</p>
+
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -l bigfile</b></tt>
+-r--r--r--  1 jik        139070 Oct 15 21:02 bigfile</pre></blockquote>
+
+<p>Running <i class="command">split</i> on that file will (by default, with
+most versions of <i class="command">split</i>) break it up into pieces
+that are each no more than 1000 lines long:
+</p>
+
+<p><tt class="literal">wc</tt> <a href="ch16_06.htm#upt3-CHP-16-SECT-6">Section
+16.6</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>split bigfile</b></tt>
+% <tt class="userinput"><b>ls -l</b></tt>
+total 283
+-r--r--r--  1 jik        139070 Oct 15 21:02 bigfile
+-rw-rw-r--  1 jik         46444 Oct 15 21:04 xaa
+-rw-rw-r--  1 jik         51619 Oct 15 21:04 xab
+-rw-rw-r--  1 jik         41007 Oct 15 21:04 xac
+% <tt class="userinput"><b>wc -l x*</b></tt>
+    1000 xaa
+    1000 xab
+     932 xac
+    2932 total</pre></blockquote>
+
+<p>Note the default naming scheme, which is to append
+"aa",
+"ab",
+"ac", etc., to the letter
+"x" for each subsequent filename.
+It is possible to modify the default behavior. For example, you can
+make <i class="command">split</i> create files that are 1500 lines long
+instead of 1000:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm x??</b></tt>
+% <tt class="userinput"><b>split -1500 bigfile</b></tt>
+% <tt class="userinput"><b>ls -l</b></tt>
+total 288
+-r--r--r--  1 jik        139070 Oct 15 21:02 bigfile
+-rw-rw-r--  1 jik         74016 Oct 15 21:06 xaa
+-rw-rw-r--  1 jik         65054 Oct 15 21:06 xab</pre></blockquote>
+
+<p>You can also get it to use a name prefix other than
+"x":
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm x??</b></tt>
+% <tt class="userinput"><b>split -1500 bigfile bigfile.split.</b></tt>
+% <tt class="userinput"><b>ls -l</b></tt>
+total 288
+-r--r--r--  1 jik        139070 Oct 15 21:02 bigfile
+-rw-rw-r--  1 jik         74016 Oct 15 21:07 bigfile.split.aa
+-rw-rw-r--  1 jik         65054 Oct 15 21:07 bigfile.split.ab</pre></blockquote>
+
+<p>Although the simple behavior described above tends to be relatively
+universal, there are differences in the functionality of
+<i class="command">split</i> on different Unix systems. There are four
+basic variants of <i class="command">split</i> as shipped with various
+implementations of Unix:<a name="IXT-21-5693" />
+</p>
+
+<ol><li>
+<p>A <i class="command">split</i> that understands only how to deal with
+splitting text files into chunks of <em class="emphasis">n</em> lines or
+less each.
+</p>
+</li><li>
+<p><a name="IXT-21-5694" />A
+<i class="command">split</i>, usually called <i class="command">bsplit</i>,
+that understands only how to deal with splitting nontext files into
+<em class="emphasis">n</em>-character chunks.
+</p>
+</li><li>
+<p>A <i class="command">split</i> that splits text files into
+<em class="emphasis">n</em>-line chunks, or nontext files into
+<em class="emphasis">n</em>-character chunks, and tries to figure out
+automatically whether it's working on a text file or
+a nontext file.
+</p>
+</li><li>
+<p>A <i class="command">split</i> that does either text files or nontext
+files but needs to be told explicitly when it is working on a nontext
+file.
+</p>
+</li></ol>
+<p>The only way to tell which version you've got is to
+read the manual page for it on your system, which will also tell you
+the exact syntax for using it.
+</p>
+
+<p>The problem with the third variant is that although it tries to be
+smart and automatically do the right thing with both text and nontext
+files, it sometimes guesses wrong and splits a text file as a nontext
+file or vice versa, with completely unsatisfactory results.
+Therefore, if the variant on your system is (3), you probably want to
+get your hands on one of the many <i class="command">split</i> clones out
+there that is closer to one of the other variants (see below).
+</p>
+
+<p>Variants (1) and (2) listed above are OK as far as they go, but they
+aren't adequate if your environment provides only
+one of them rather than both. If you find yourself needing to split a
+nontext file when you have only a text <i class="command">split</i>, or
+needing to split a text file when you have only
+<i class="command">bsplit</i>, you need to get one of the clones that
+will perform the function you need.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: split</p>
+
+<p>Variant (4) is the most reliable and versatile of the four listed,
+and it is therefore what you should go with if you find it necessary
+to get a clone and install it on your system. There are several such
+clones in the various source archives, including the free BSD Unix
+version. <span class="acronym">GNU</span> <i class="command">split</i> is on the
+CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>]. Alternatively, if you have installed <b class="emphasis-bold">perl</b> (<a href="ch41_01.htm#upt3-CHP-41-SECT-1">Section 41.1</a>), it is
+quite easy to write a simple <i class="command">split</i> clone in
+<i class="command">perl</i>, and you don't have to worry
+about compiling a C program to do it; this is an especially
+significant advantage if you need to run your
+<i class="command">split</i> on multiple architectures that would need
+separate binaries. The Perl code for a binary split program follows:
+</p>
+
+<blockquote><pre class="code">#!/usr/bin/perl -w --
+# Split text or binary files; jjohn 2/2002
+use strict;
+use Getopt::Std;
+
+my %opts;
+getopts("?b:f:hp:ts:", \%opts);
+
+if( $opts{'?'} || $opts{'h'} || !-e $opts{'f'}){
+  print &lt;&lt;USAGE;
+$0 - split files in smaller ones
+
+USAGE:
+    $0 -b 1500 -f big_file -p part.
+
+OPTIONS:
+
+    -?       print this screen
+    -h       print this screen
+    -b &lt;INT&gt; split file into given byte size parts
+    -f &lt;TXT&gt; the file to be split
+    -p &lt;TXT&gt; each new file to begin with given text
+    -s &lt;INT&gt; split file into given number of parts
+USAGE
+   exit;
+}
+
+my $infile;
+open($infile, $opts{'f'}) or die "No file given to split\n";
+binmode($infile);
+my $infile_size = (stat $opts{'f'})[7];
+
+my $block_size = 1;
+if( $block_size = $opts{'b'} ){
+  # chunk file into blocks
+
+}elsif( my $total_parts = $opts{'s'} ){
+  # chunk file into N parts
+  $block_size = int ( $infile_size / $total_parts) + 1;
+
+}else{
+  die "Please indicate how to split file with -b or -s\n";
+}
+
+my $outfile_base = $opts{'p'} || 'part.';
+my $outfile_ext = "aa";
+
+my $offset = 0;
+while( $offset &lt; $infile_size ){
+  my $buf;
+  $offset += read $infile, $buf, $block_size;
+  write_file($outfile_base, $outfile_ext++, \$buf);
+}
+
+#--- subs ---#
+sub write_file {
+  my($fname, $ext, $buf) = @_;
+
+  my $outfile;
+  open($outfile, "&gt;$fname$ext") or die "can't open $fname$ext\n";
+  binmode($outfile);
+  my $wrote = syswrite $outfile, $$buf;
+  my $size  = length($$buf);
+  warn "WARN: wrote $wrote bytes instead of $size to $fname$ext\n"
+    unless $wrote == $size;
+}</pre></blockquote>
+
+<p>Although it may seem somewhat complex at first glance, this small
+Perl script is cross-platform and has its own small help screen to
+describe its options. Briefly, it can split files into N-sized blocks
+(given the <tt class="literal">-b</tt> option) or, with
+<tt class="literal">-s</tt>, create N new segments of the original file.
+For a better introduction to Perl, see <a href="ch42_01.htm">Chapter 42</a>.
+</p>
+
+<p><a name="IXT-21-5695" />If you need to split a nontext file and
+don't feel like going to all of the trouble of
+finding a <i class="command">split</i> clone to handle it, one standard
+Unix tool you can use to do the splitting is <b class="emphasis-bold">dd</b> (<a href="ch21_06.htm#upt3-CHP-21-SECT-6">Section 21.6</a>). For
+example, if <em class="emphasis">bigfile</em> above were a nontext file
+and you wanted to split it into 20,000-byte pieces, you could do
+something like this:
+</p>
+<p><tt class="literal">for</tt> <a href="ch35_21.htm#upt3-CHP-35-SECT-21">Section 35.21</a>, <tt class="literal">&gt;</tt> <a href="ch28_12.htm#upt3-CHP-28-SECT-12">Section 28.12</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls -l bigfile</b></tt>
+-r--r--r--  1 jik        139070 Oct 23 08:58 bigfile
+$ for<tt class="userinput"><b> i in 1 2 3 4 5 6 7</b></tt>   #<a href="#FOOTNOTE-60">[60]</a>
+&gt; <tt class="userinput"><b>do</b></tt>
+&gt;       <tt class="userinput"><b>dd of=x$i bs=20000 count=1 2&gt;/dev/null</b></tt>  #<a href="#FOOTNOTE-61">[61]</a>
+&gt; <tt class="userinput"><b>done &lt; bigfile</b></tt>
+$ <tt class="userinput"><b>ls -l</b></tt>
+total 279
+-r--r--r--  1 jik        139070 Oct 23 08:58 bigfile
+-rw-rw-r--  1 jik         20000 Oct 23 09:00 x1
+-rw-rw-r--  1 jik         20000 Oct 23 09:00 x2
+-rw-rw-r--  1 jik         20000 Oct 23 09:00 x3
+-rw-rw-r--  1 jik         20000 Oct 23 09:00 x4
+-rw-rw-r--  1 jik         20000 Oct 23 09:00 x5
+-rw-rw-r--  1 jik         20000 Oct 23 09:00 x6
+-rw-rw-r--  1 jik         19070 Oct 23 09:00 x7</pre></blockquote>
+<p>
+ <blockquote>
+<a name="FOOTNOTE-60">
+[60] To figure out how many numnbers to count up to, divide the total size of the file by the block size you want and add one of there's a remainder. The <em>jot</em> program can help here.
+</p>
+<p>
+
+<a name="FOOTNOTE-61">
+[61] The output file size I want is denoted by the <em>bs</em> or "block size" parameter to <em>dd</em>. The 2>/dev/null gets rid of <em>dd</em>'s diagnostic output, which isn't useful here and takes up space.
+</p>
+</blockquote>
+<p><em class="emphasis">--JIK and JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.8. Centering Lines in a File</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.10. Splitting Files by Context: csplit</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

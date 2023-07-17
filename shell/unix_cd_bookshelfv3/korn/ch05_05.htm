@@ -1,0 +1,412 @@
+<html><head><title>while and until (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.5. while and until</h2>
+
+<p>
+<a name="korn2-IDXTERM-1192" />
+<a name="korn2-IDXTERM-1193" />
+<a name="IXT-5-287736" />
+<a name="IXT-5-287737" />
+<a name="IXT-5-287738" />
+
+The remaining two flow control constructs the Korn shell provides
+are <tt class="literal">while</tt> and <tt class="literal">until</tt>.
+These are similar; both allow a section of code to be run
+repetitively while (or until) a certain condition holds true. They also resemble analogous
+constructs in Pascal (<tt class="literal">while</tt>/<tt class="literal">do</tt>
+and <tt class="literal">repeat</tt>/<tt class="literal">until</tt>)
+and C (<tt class="literal">while</tt> and
+<tt class="literal">do</tt>/<tt class="literal">while</tt>).
+</p>
+
+<p>
+<tt class="literal">while</tt> and <tt class="literal">until</tt> are actually most useful when combined
+with features we will see in the next chapter, such as
+arithmetic, input/output of variables, and command-line processing.
+Yet we can show a useful example even with the machinery we have
+covered so far.
+</p>
+
+<p>
+<a name="IXT-5-287739" />
+The syntax for <tt class="literal">while</tt> is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+while <em class="replaceable"><tt>condition</tt></em>
+do
+    <em class="replaceable"><tt>statements ...</tt></em>
+done
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-5-287740" />
+<a name="IXT-5-287741" />
+
+For <tt class="literal">until</tt>, just substitute <tt class="literal">until</tt> for <tt class="literal">while</tt> in the above example.
+
+As with <tt class="literal">if</tt>, the <em class="emphasis">condition</em> is really a list of
+<em class="emphasis">statements</em> that are run;
+the exit status of the last one is used as the value of
+the condition. You can use a conditional with <tt class="literal">[[</tt> and <tt class="literal">]]</tt>
+here, just as you can with <tt class="literal">if</tt>.
+</p>
+
+<blockquote><b>NOTE:</b> 
+
+<a name="IXT-5-287742" />
+<a name="IXT-5-287743" />
+The <em class="emphasis">only</em> difference between
+<tt class="literal">while</tt> and <tt class="literal">until</tt> is the way the condition is handled.
+In <tt class="literal">while</tt>, the loop executes as long as the condition is true;
+in <tt class="literal">until</tt>, it runs as long as the condition is false.
+So far, so familiar.
+
+However, the <tt class="literal">until</tt> condition is checked
+at the <em class="emphasis">top</em> of the loop, <em class="emphasis">not</em> at the bottom as it is
+in analogous constructs in C and Pascal.
+</p>
+</blockquote>
+
+<p>
+The result is that you can convert any <tt class="literal">until</tt> into a <tt class="literal">while</tt>
+simply by negating the condition. The only place where <tt class="literal">until</tt>
+might be better is something like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+until <em class="replaceable"><tt>command</tt></em>; do
+    <em class="replaceable"><tt>statements ...</tt></em>
+done
+</pre></blockquote>
+</p>
+
+<p>
+The meaning of this is essentially, "Do <em class="emphasis">statements</em> until
+<em class="emphasis">command</em> runs correctly."
+This is occasionally useful, such as when waiting for the occurrence of a particular event.
+<a name="IXTR3-257" />
+However, we use <tt class="literal">while</tt> throughout the rest of this book.
+</p>
+
+<p><a href="ch05_05.htm#korn2-CHP-5-SIDEBAR-6">Task 5-5</a> is a good candidate for <tt class="literal">while</tt>.
+</p>
+
+<a name="korn2-CHP-5-SIDEBAR-6" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 5-5</h4>
+
+<p>
+<a name="IXT-5-287744" />
+<a name="IXT-5-287745" />
+
+Implement a simplified version of the shell's built-in
+<em class="emphasis">whence</em> command.
+</p>
+
+</td></tr></table><p></blockquote>
+<p>
+By "simplified," we mean that we will implement only the part
+that checks all the directories in your <tt class="literal">PATH</tt> for the command
+you give as argument (we won't implement checking for aliases,
+built-in commands, etc.).
+</p>
+
+<p>
+We can do this by picking off the directories in <tt class="literal">PATH</tt> one by
+one, using one of the shell's pattern-matching operators, and
+seeing if there is a file with the given name in the directory that you have permission to execute. Here is the code:
+
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+path=$PATH:
+dir=${path%%:*}
+while [[ -n $path ]]; do
+    if [[ $dir == "" ]] ; then
+        dir="."
+    fi
+    if [[ -x $dir/$1 &amp;&amp; ! -d $dir/$1 ]]; then
+        print "$dir/$1"
+        exit 0
+    fi
+    path=${path#*:}
+    dir=${path%%:*}
+done
+exit 1
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-5-287746" />
+<a name="IXT-5-287747" />
+<a name="IXT-5-287748" />
+<a name="IXT-5-287749" />
+<a name="IXT-5-287750" />
+<a name="IXT-5-287751" />
+<a name="IXT-5-287752" />
+
+The first line of this code saves <tt class="literal">$PATH</tt> in
+<tt class="literal">path</tt>, our own temporary copy. We append a colon to the
+end so that every directory in <tt class="literal">$path</tt>
+ends in a colon (in <tt class="literal">$PATH</tt>, colons are
+used only <em class="emphasis">between</em> directories); subsequent code
+depends on this being the case.
+</p>
+
+<p>
+The next line picks the first directory off <tt class="literal">$path</tt>
+by using the operator that deletes the longest match of the pattern
+given. In this case, we delete the longest match of the pattern
+<tt class="literal">:*</tt>, i.e., a colon followed by anything. This gives us the first
+directory in <tt class="literal">$path</tt>, which we store in the variable <tt class="literal">dir</tt>.
+</p>
+
+<p>
+The condition in the <tt class="literal">while</tt> loop checks if
+<tt class="literal">$path</tt> is non-null.  If it is not null,
+it first checks that <tt class="literal">$dir</tt> is not null.
+This could happen for two adjacent colons, which represent the
+current directory.  In this case, <tt class="literal">dir</tt> is
+explicitly set to dot.
+Next, the script
+constructs
+the full pathname <tt class="literal">$dir/$1</tt> and sees
+if there is a file by that name for which you have execute permission
+(and that is not a directory).  If so, it prints the full pathname and
+exits the routine with a 0 ("OK") exit status.
+</p>
+
+<p>
+If a file is not found, this code is run:
+</p>
+
+<p>
+<blockquote><pre class="code">
+path=${path#*:}
+dir=${path%%:*}
+</pre></blockquote>
+</p>
+
+<p>
+The first of these uses another shell string operator: this one
+deletes the shortest match of the pattern given
+from the front of the string. By now, this type of operator should
+be familiar. This line deletes the front directory from <tt class="literal">$path</tt>
+and assigns the result back to <tt class="literal">path</tt>.
+The second line is the same as before the <tt class="literal">while</tt>: it finds
+the (new) front directory in <tt class="literal">$path</tt> and assigns it to <tt class="literal">dir</tt>.
+This sets up the loop for another iteration.
+</p>
+
+<p>
+<a name="IXT-5-287753" />
+
+Thus, the code loops through all of the directories in <tt class="literal">PATH</tt>.
+It exits when it finds a matching executable file or when it has
+"eaten up" the entire <tt class="literal">PATH</tt>.
+If no matching executable file is found, it prints nothing
+and exits with an error status.
+<a name="IXTR3-258" />
+<a name="IXTR3-259" />
+
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1215" />
+We can enhance this script a bit by taking advantage of the Unix
+utility <em class="emphasis">file</em>(1). <em class="emphasis">file</em>
+examines files given as arguments
+and determines what type they are, based on the file's
+<em class="emphasis">magic number</em> and various heuristics (educated guesses).
+A magic number
+is a field in the header of an executable file that the linker sets
+to identify what type of executable it is.
+</p>
+
+<p>
+
+If <em class="emphasis">filename</em> is an executable program (compiled from C or some other
+language), typing <tt class="literal">file</tt> <em class="replaceable"><tt>filename</tt></em>
+produces output similar to this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+<em class="replaceable"><tt>filename</tt></em>: ELF 32-bit LSB executable 80386 Version 1
+</pre></blockquote>
+</p>
+
+<p>
+However, if <em class="emphasis">filename</em> is not an executable program, it will examine
+the first few lines and try to guess what kind of information the
+file contains.
+
+If the file contains text (as opposed to binary data),
+<em class="emphasis">file</em> will look for indications that it is English, shell
+commands, C, Fortran, <em class="emphasis">troff</em>(1) input, and various other things.
+<em class="emphasis">file</em> is wrong sometimes, but it is usually correct.
+</p>
+
+<p>
+Assume that <em class="emphasis">fred</em> is an executable file in the directory
+<em class="emphasis">/usr/bin</em>, and that <em class="emphasis">bob</em> is a shell script
+in <em class="emphasis">/usr/local/bin</em>.
+Typing <tt class="literal">file /usr/bin/fred</tt> produces this output:
+</p>
+
+<p>
+<blockquote><pre class="code">
+/usr/bin/fred: ELF 32-bit LSB executable 80386 Version 1
+</pre></blockquote>
+</p>
+
+<p>
+Typing <tt class="literal">file /usr/local/bin/bob</tt> has this result:
+</p>
+
+<p>
+<blockquote><pre class="code">
+/usr/local/bin/bob: commands text
+</pre></blockquote>
+</p>
+
+<p>
+We can just substitute <em class="emphasis">file</em> for <em class="emphasis">print</em>
+to print a more informative message in our script:
+</p>
+
+<p>
+<blockquote><pre class="code">
+path=$PATH:
+while [[ -n $path ]]; do
+    dir=${path%%:*}
+    if [[ $dir == "" ]] ; then
+        dir="."
+    fi
+    if [[ -x $dir/$1 &amp;&amp; ! -d $dir/$1 ]]; then
+          file $dir/$1
+          exit 0
+    fi
+    path=${path#*:}
+done
+exit 1
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-260" />
+<a name="IXT-5-287754" />
+<a name="IXT-5-287755" />
+Notice that by moving the statement
+<tt class="literal">dir=${path%%:*}</tt>
+to the top of the loop body, it needs to be done only once.
+</p>
+
+<p>
+<a name="IXT-5-287756" />
+Finally, just to show how little difference there is between
+<tt class="literal">while</tt>, and <tt class="literal">until</tt>, we note that the line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+until [[ ! -n $path ]]; do
+</pre></blockquote>
+</p>
+
+<p>
+can be used in place of:
+</p>
+
+<p>
+<blockquote><pre class="code">
+while [[ -n $path ]]; do
+</pre></blockquote>
+</p>
+
+<p>
+with identical results.
+</p>
+
+<p>
+We'll see additional examples of <tt class="literal">while</tt> in the next chapter.
+<a name="IXTR3-261" />
+</p>
+
+<a name="korn2-CHP-5-SECT-5.1" /><div class="sect2">
+<h3 class="sect2">5.5.1. break and continue</h3>
+
+<p>
+<a name="IXT-5-287757" />
+
+Earlier in this chapter, we saw the <em class="emphasis">break</em> statement used
+with the <tt class="literal">select</tt> construct for breaking out of a loop.
+<em class="emphasis">break</em> can be used with any looping construct:
+<tt class="literal">for</tt>, <tt class="literal">select</tt>, <tt class="literal">while</tt>
+and <tt class="literal">until</tt>.
+</p>
+
+<p>
+The <em class="emphasis">continue</em> statement is related; its job is to
+skip any remaining statements in the body of the loop and start the
+next iteration.
+</p>
+
+<p>
+Both the <em class="emphasis">break</em> and <em class="emphasis">continue</em>
+statements take an optional numeric argument (which can be a numeric expression).
+This indicates how many enclosing loops should be broken out of or continued.
+For example:
+</p>
+
+<blockquote><pre class="code">
+while condition1; do             <i class="lineannotation">Outer loop</i>
+    ...
+    while condition2; do         <i class="lineannotation">Inner loop</i>
+        ...
+        break 2                  <i class="lineannotation">Breaks out of outer loop</i>
+    done
+done
+...                              <i class="lineannotation">Execution continues here after break</i>
+</pre></blockquote>
+
+<p>
+Programmers will note that
+the <em class="emphasis">break</em> and <em class="emphasis">continue</em> statements,
+particularly with the ability to break or continue multiple loop levels,
+compensate in a very clean fashion for the lack of a <tt class="literal">goto</tt> keyword
+in the shell language.
+<a name="IXTR3-262" />
+
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.4. select</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6. Command-Line Options and Typed Variables</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,180 @@
+<html><head><title>Standard Command-Line Parsing (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_23.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_25.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.24. Standard Command-Line Parsing</h2>
+
+<p><a name="upt3-IDXTERM-5680" /> <a name="upt3-IDXTERM-5681" />Most shell scripts need to handle
+command-line arguments -- options, filenames, and so on. <a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>, <a href="ch35_21.htm#upt3-CHP-35-SECT-21">Section 35.21</a>, and <a href="ch35_22.htm#upt3-CHP-35-SECT-22">Section 35.22</a> show how to parse command lines with any
+Bourne shell. Those methods have two problems. You
+can't combine arguments with a single dash, e.g.,
+<tt class="literal">-abc</tt> instead of <tt class="literal">-a -b -c</tt>. You
+also can't specify arguments to options without a
+space in between, e.g.,
+<tt class="literal">-b</tt><em class="replaceable"><tt>arg</tt></em> in addition to
+<tt class="literal">-b</tt> <em class="replaceable"><tt>arg</tt></em>.<a href="#FOOTNOTE-110">[110]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-110" /><p> [110]Although most Unix commands allow this, it is actually contrary
+to the Command Syntax Standard Rules in <em class="emphasis">intro</em> of
+the User's Manual. Check your
+shell's manual pages for whether it supports
+<i class="command">getopts</i>.</p> </blockquote>
+
+<p><a name="IXT-35-3744" />Your Bourne
+shell may have a built-in command named
+<i class="command">getopts</i>.<a href="#FOOTNOTE-111">[111]</a>
+<i class="command">getopts</i> lets you deal with multiple complex
+options without these constraints. To find out whether your shell has
+<i class="command">getopts</i>, see your online <em class="emphasis">sh</em>
+or <em class="emphasis">getopts</em>(1) manual page.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-111" /><p> [111]Both
+<i class="command">bash</i> and <i class="command">ksh</i> have it.
+<i class="command">getopts</i> replaces the old command
+<i class="command">getopt</i>; it is better integrated into the
+shell's syntax and runs more efficiently. C
+programmers will recognize <i class="command">getopts</i> as very similar
+to the standard library routine
+<em class="emphasis">getopt</em>(3).</p> </blockquote>
+
+<p><i class="command">getopt</i><a name="IXT-35-3745" /> takes two or more arguments.
+<a name="IXT-35-3746" />The first is a string that can contain
+letters and colons (:). Each letter names a valid option; if a letter
+is followed by a colon, the option requires an argument. The second
+and following arguments are the original command-line options;
+you'll usually give <b class="emphasis-bold">"$@"</b> (<a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>) to pass
+all the arguments to <i class="command">getopt</i>.
+</p>
+
+<p><a name="IXT-35-3747" /><i class="command">getopt</i> picks each
+option off the command line, checks to see if the option is valid,
+and writes the correct option to its standard output. If an option
+has an argument, <i class="command">getopt</i> writes the argument after
+its option. When <i class="command">getopt</i> finds the first nonoption
+argument (the first argument that doesn't start with
+a <tt class="literal">-</tt> character), it outputs two dashes
+(<tt class="literal">--</tt>) and the rest of the arguments. If
+<i class="command">getopt</i> finds an invalid option, or an option that
+should have an argument but doesn't, it prints an
+error message and returns a nonzero <b class="emphasis-bold">status</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>).
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: opttest</p>
+
+<p>Your script can use a loop to parse the <i class="command">getopt</i>
+output. Here's an example script named
+<i class="command">opttest</i><a name="IXT-35-3748" /><a name="IXT-35-3749" />
+that shows how <i class="command">getopt</i> works:
+</p>
+<p><tt class="literal">||</tt> <a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a>, <tt class="literal">:</tt> <a href="ch36_06.htm#upt3-CHP-36-SECT-6">Section 36.6</a></p>
+<a name="IXT-35-3750" /><a name="IXT-35-3751" />
+
+<blockquote><pre class="code">#!/bin/sh
+set -- `getopt "ab:" "$@"` || {
+    echo "Usage: `basename $0` [-a] [-b name] [files]" 1&gt;&amp;2
+    exit 1
+}
+echo "Before loop, command line has: $*"
+aflag=0  name=NONE
+while :
+do
+    case "$1" in
+    -a) aflag=1 ;;
+    -b) shift; name="$1" ;;
+    --) break ;;
+    esac
+    shift
+done
+shift    # REMOVE THE TRAILING --
+echo "aflag=$aflag / name=$name / Files are $*"</pre></blockquote>
+
+<p>The script has two legal options. The <span class="option">-a</span> option sets
+the variable named <em class="emphasis">aflag</em> to
+<tt class="literal">1</tt>. The <span class="option">-b</span> option takes a single
+argument; the argument is stored in the variable named
+<em class="emphasis">name</em>. Any other arguments are filenames.
+</p>
+
+<p><a name="IXT-35-3752" /><a name="IXT-35-3753" />The
+script starts by running <i class="command">getopt</i> inside <b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) and
+using the <i class="command">set</i> (<a href="ch35_25.htm#upt3-CHP-35-SECT-25">Section 35.25</a>)
+command to replace the command-line arguments with the
+<i class="command">getopt</i> output. The first argument to
+<i class="command">set</i>, <b class="emphasis-bold"> --  (two
+dashes)</b> (<a href="ch35_25.htm#upt3-CHP-35-SECT-25">Section 35.25</a>), is important: it
+makes sure that <i class="command">set</i> passes the
+script's options to <i class="command">getopt</i>
+instead of treating them as options to the shell itself. An
+<i class="command">echo</i> command shows the output of
+<i class="command">getopt</i>. Then the loop parses the
+<i class="command">getopt</i> output, setting shell variables as it goes.
+When the loop finds the <tt class="literal">--</tt> argument from
+<em class="emphasis">getopt</em>, it quits and leaves the remaining
+filenames (if any) in the command-line arguments. A second
+<i class="command">echo</i> shows what's in the shell
+variables and on the command line after the loop. Here are a few
+examples:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>opttest</b></tt>
+Before loop, command line has: --
+aflag=0 / name=NONE / Files are
+% <tt class="userinput"><b>opttest -b file1 -a file2 file3</b></tt>
+Before loop, command line has: -b file1 -a -- file2 file3
+aflag=1 / name=file1 / Files are file2 file3
+% <tt class="userinput"><b>opttest -q -b file1</b></tt>
+getopt: illegal option -- q
+Usage: opttest [-a] [-b name] [files]
+% <tt class="userinput"><b>opttest -bfile1</b></tt>
+Before loop, command line has: -b file1 --
+aflag=0 / name=file1 / Files are
+% <tt class="userinput"><b>opttest -ab</b></tt>
+getopt: option requires an argument -- b
+Usage: opttest [-a] [-b name] [files]</pre></blockquote>
+
+<p>Some old Bourne shells have <b class="emphasis-bold">problems with an
+empty "$@" parameter</b> (<a href="ch37_05.htm#upt3-CHP-37-SECT-5">Section 37.5</a>). If
+the <i class="command">opttest</i> script doesn't work
+with an empty command line, as in the first example above, you can
+change the <tt class="literal">"$@"</tt> in the script to
+<tt class="literal">${1+"$@"}</tt>. If you find you're
+still having some trouble running the script, particularly with
+<i class="command">bash</i>, try setting the
+<em class="emphasis">GETOPT_COMPATIBLE</em> environment variable, which
+sets GNU <i class="command">getopt</i> to emulate the older, less
+featureful version. Also be sure to read the GNU
+<em class="emphasis">getopt</em>(1) manual page, as it details the support
+for POSIX-style long options (which let you do things like pass
+<tt class="literal">--</tt><span class="option">longoptions</span> to programs such as
+GNU <i class="command">getopt</i>.)
+</p>
+
+<p>The advantages of <i class="command">getopt</i> are that it minimizes
+extra code necessary to process options and fully supports the
+standard Unix option syntax (as specified in
+<em class="emphasis">intro</em> <a name="IXTR3-3820" /> <a name="IXTR3-3821" />of the User's Manual).
+</p>
+
+<p><em class="emphasis">--JP and BR</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_23.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_25.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.23. Loop Control: break and continue</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.25. The Bourne Shell set Command</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,117 @@
+<html><head><title>Compiling Perl from Scratch (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch41_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">41.3. Compiling Perl from Scratch</h2>
+
+<p><a name="IXT-41-2460" />If
+you don't have Perl already or
+you'd like to install the latest version, you have a
+few options. The first is to get a precompiled version for your
+platform. This is an option of last resort, since you lose the
+opportunity to configure Perl for your system. Most Unix systems will
+compile the Perl source code cleanly.
+</p>
+
+<p>To compile Perl, you will need to fetch the latest Perl source for
+the <b class="emphasis-bold">Comprehensive Perl Archive
+Network</b><a name="IXT-41-2461" /><a name="IXT-41-2462" /> <b class="emphasis-bold">(CPAN)</b> (<a href="ch41_11.htm#upt3-CHP-41-SECT-11">Section 41.11</a>). You can
+find the gzipped tar archive of the source code at
+<a href="http://www.cpan.org/src/stable.tar.gz">http://www.cpan.org/src/stable.tar.gz</a>. The
+archive is several megabytes, so those on a slow modem link need to
+plan accordingly. Unpack the archive with the following command:
+</p>
+
+<blockquote><pre class="code">$ gzip -dc stable.tar.gz | tar xvf -</pre></blockquote>
+
+<p>You should now have a new subdirectory called
+<em class="emphasis">perl-X.Y.Z</em> (whatever the current version of Perl
+is). Change into this directory and you will be be ready to configure
+the build process for <i class="command">perl</i>.
+</p>
+
+<p>Like many Unix utilities, compiling Perl requires configuring a
+<a name="IXT-41-2463" />Makefile and then executing
+<i class="command">make</i><a name="IXT-41-2464" />. The
+<a name="IXT-41-2465" />Perl source comes with a robust
+<em class="emphasis">Configure</em> shell script that will prompt you to
+confirm information it finds about your system. Often, all the
+defaults are fine so you can tell the <em class="emphasis">Configure</em>
+not to prompt you for confirmation by passing the
+<tt class="literal">-de</tt> flag. If all goes well with the configuration
+stage, you'll want to start compiling the source
+with <i class="command">make</i>. These steps can be effectively combined
+into to following idiom:
+</p>
+
+<blockquote><pre class="code">$ ./Configure -de &amp;&amp; make test</pre></blockquote>
+
+<p><a name="IXT-41-2466" />Recall that the double
+ampersand is a kind of flow control operator in the shell that allows
+the <i class="command">make</i> to happen only if the
+<i class="command">Configure</i> succeeds. The Perl source comes with a
+test suite that attempts to verify that the build went according to
+plan. Since the test suite needs <i class="command">perl</i> to be built,
+this command is similiar to typing:
+</p>
+
+<blockquote><pre class="code">$ ./Configure -de &amp;&amp; make &amp;&amp; make test</pre></blockquote>
+
+<p>The configuration stage may report missing libraries (like those
+needed to make NDBM files or read shadowed password files).
+Generally, these messages are harmless. If an important dependency is
+missing, the <em class="filename">Configure</em> script will halt. You
+will need to read the error message to figure out
+what's missing from your system that Perl requires.
+Generally, Perl will configure and compile without much intervention
+from you.
+</p>
+
+<p><a name="IXT-41-2467" />If the
+<tt class="literal">make test</tt> command succeeds, you are ready to
+install your new Perl. Typically, installation requires
+administrative privileges since you'll be writing
+files in <em class="filename">/usr/local</em> (the default installation
+root). One way to do this is to use the <i class="command">su</i> command
+like this:
+</p>
+
+<blockquote><pre class="code">$ su -c 'make install'</pre></blockquote>
+
+<p>This will prompt you for root's password. During the
+installation process, you will be asked if you want Perl installed as
+<em class="filename">/usr/bin/perl</em>. On a system that
+didn't have Perl to begin with, you can safely
+answer yes to this question. On a system that already had Perl, you
+might wish to answer no here. The new Perl interpreter will still be
+installed in <em class="filename">/usr/local/bin/perl</em>. You should now
+have the latest
+<a name="IXT-41-2468" /><a name="IXT-41-2469" />version
+of Perl on your system. Use <em class="filename">/path/to/newly_installed/perl
+-v</em> to verify this.
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch41_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">41.2. Checking your Perl Installation</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">41.4. Perl Boot Camp, Part 1: Typical Script Anatomy</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

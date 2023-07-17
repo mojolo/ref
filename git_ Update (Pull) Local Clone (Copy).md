@@ -1,0 +1,1 @@
+To update the local copy in the future without repeating the whole process, run `git pull origin` within the local git directory clonehttps://launchpad.net/~dolphin-emu/+archive/ubuntu/ppa/+packages and proceed to the following steps.

@@ -1,0 +1,493 @@
+<html><head><title>Shell Command-Line Editing (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch30_15.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">30.14. Shell Command-Line Editing</h2>
+
+<p><a name="upt3-IDXTERM-4732" /> <a name="upt3-IDXTERM-4733" /> <a name="upt3-IDXTERM-4734" />
+<a name="upt3-IDXTERM-4735" /> <a name="upt3-IDXTERM-4736" />When Unix started, a lot of people
+used real teletypes -- with a roll or box of paper instead of a
+glass screen. So there was no way to recall and edit previous
+commands. (You could see them on the paper, of course, but to reuse
+them you had to retype them.) The C shell added <b class="emphasis-bold">history substitution operators</b> (<a href="ch30_02.htm#upt3-CHP-30-SECT-2">Section 30.2</a>) that were great on teletypes -- and are
+still surprisingly useful on "glass
+teletypes" these days. All shells except the oldest
+Bourne shells still have history substitution, although
+it's limited in the Korn shells.
+</p>
+
+<p>Modern shells also have interactive command-line editing.
+That's the ability to recall previous command lines
+and edit them using familiar <i class="command">vi</i> or
+<i class="command">emacs</i> commands. Arrow keys -- along with
+Backspace and DELETE keys -- generally work, too. So you
+don't need to know <i class="command">emacs</i> or
+<i class="command">vi</i> to edit command lines. But -- especially if
+you're comfortable with Emacs-style commands
+(meta-<em class="emphasis">this that</em>, control-<em class="emphasis">foo
+bar</em>) -- you'll find that most shells
+let you do much more than simply editing command lines. Shells can
+automatically correct spelling, <b class="emphasis-bold">complete
+partially-typed filenames</b> (<a href="ch28_06.htm#upt3-CHP-28-SECT-6">Section 28.6</a>),
+and much more.
+</p>
+
+<p>The basic idea of command-line editing is that the previous commands
+are treated like lines in a plain-text file, with the most recently
+typed commands at the "end" of the
+file. By using the editor's "up
+line" commands (like <em class="emphasis">k</em> in
+<i class="command">vi</i> or <tt class="literal">C-p</tt> in Emacs), you can
+bring copies of earlier commands under your cursor, where you can
+edit them or simply re-execute them without changes.
+(It's important to understand that
+you're not editing the original commands;
+you're editing <em class="emphasis">copies</em> of them.
+You can recall a previous command as many times as you want to; its
+original version won't be changed as you edit the
+copy.) When you've got a command you want to run,
+you simply press ENTER; your cursor doesn't have to
+be at the end of the line. You can use <a name="IXT-30-4292" />CTRL-c (<tt class="literal">C-c</tt> in Emacs
+jargon) to cancel a command without running it and get a clean shell
+prompt.
+</p>
+
+<p>It would be easy for us to fill a chapter with info on command-line
+editing. (In this book's fourth edition, maybe we
+should!) Because every shell has its own way to do this, though,
+we've decided to stick to the basics -- with a
+few of the bells and whistles tossed in as examples. To really dig
+into this, check your shell's manpage or its
+Nutshell Handbook.
+</p>
+
+<p>Another way to do history editing is with your own editor: use the
+<i class="command">fc</i> command.
+</p>
+
+<a name="upt3-CHP-30-SECT-14.1" /><div class="sect2">
+<h3 class="sect2">30.14.1. vi Editing Mode</h3>
+
+<p><a name="IXT-30-4293" /> <a name="IXT-30-4294" /> <a name="IXT-30-4295" /> <a name="IXT-30-4296" />All shells with command-line editing
+have support for basic <i class="command">vi</i> commands, but
+it's usually not complete and historically not well
+documented. For instance, I've used some shells
+where the . (dot) command wouldn't repeat the
+previous edit -- and other shells where it would -- but neither
+shell's manual page mentioned this useful fact.
+Macros are limited, and you don't define them with
+the usual <b class="emphasis-bold">map</b> (<a href="ch18_02.htm#upt3-CHP-18-SECT-2">Section 18.2</a>) command; instead, the
+shell's built-in key binding command controls which
+built-in shell editing function is executed when a key is pressed.
+(The Korn shell doesn't allow any special
+<i class="command">vi</i> bindings, though at least it has complete
+documentation.) Still, with all those caveats,
+you'll probably find that <i class="command">vi</i>
+editing is pretty comfortable if you already know
+<i class="command">vi</i>. (If you don't know
+<i class="command">vi</i>, though, I'd recommend Emacs
+editing. See the next section.)
+</p>
+
+<p>At a bare shell prompt, you're effectively in
+<i class="command">vi</i> text-input mode: the characters you type appear
+on the command line. If you want to edit, press ESC to go to command
+mode. Then you can use typical commands like <tt class="literal">dw</tt> to
+delete a word and <tt class="literal">ct</tt>. to change all characters to
+the next dot on the line. Commands like <i class="command">a</i>,
+<i class="command">i</i>, and <i class="command">c</i> take you to text-input
+mode. You can execute a command line from either command mode or
+text-input mode: just press ENTER anywhere on the line.
+</p>
+
+<p>One difference between the shell's
+<i class="command">vi</i> mode and real <i class="command">vi</i> is that the
+direction of searches is opposite. In real <i class="command">vi</i>, the
+motion command <i class="command">k</i> and the search command
+<i class="command">?</i> (question mark) both move to previous commands.
+In shells, <i class="command">k</i> still moves to a previous command,
+but <i class="command">/</i> (slash) searches for previous commands. By
+the way, after you specify a search with <tt class="literal">\</tt>, press
+ENTER to do the search. These differences from real
+<i class="command">vi</i> can be confusing at first, but with practice
+they soon become natural.
+</p>
+
+<p>To choose <i class="command">vi</i> mode, type <tt class="literal">set</tt>
+<tt class="literal">-o</tt> <tt class="literal">vi</tt> in Bourne-type shells and
+<tt class="literal">bindkey -v</tt> in <i class="command">tcsh</i>. In
+<i class="command">bash</i>, you may also use <i class="command">keymap
+</i><em class="emphasis">editor</em>, with <b class="emphasis-bold">a
+variety of different editor settings</b> (<a href="ch30_14.htm#upt3-CHP-30-SECT-14.5">Section 30.14.5</a>), to set up the editing mode. To make this the
+default, store the command in your shell's <b class="emphasis-bold">setup file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) (in
+<i class="command">bash</i>, you can also edit your Readline
+<em class="filename">inputrc</em> file). You can switch back and forth
+between the two modes as you work; this is useful because the Emacs
+mode lets you do things you can't do in
+<i class="command">vi</i>.
+</p>
+
+</div>
+<a name="upt3-CHP-30-SECT-14.2" /><div class="sect2">
+<h3 class="sect2">30.14.2. Emacs Editing Mode</h3>
+
+<p><a name="IXT-30-4297" /> <a name="IXT-30-4298" /> <a name="IXT-30-4299" /> <a name="IXT-30-4300" />If you know the <b class="emphasis-bold">Emacs</b> (<a href="ch19_01.htm#upt3-CHP-19-SECT-1">Section 19.1</a>) editor,
+you'll feel right at home in the shells. Although
+the support isn't complete -- for instance, you
+can't write eLisp code (and you
+can't run <b class="emphasis-bold">psychoanalyze-pinhead</b> (<a href="ch19_13.htm#upt3-CHP-19-SECT-13">Section 19.13</a>) <tt class="literal">:-)</tt>) -- the emacs-mode
+commands act like a natural extension to traditional, simple shell
+editing commands. So, even if you don't know
+<i class="command">emacs</i>, you'll probably be
+comfortable with emacs mode. Even many browsers nowadays use the
+traditional emacs mode commands for moving about in the Location
+field, so you may already know some of these even if
+you're not aware that you do.
+</p>
+
+<p>To move to the beginning of a line, use <tt class="literal">C-a</tt>
+(that's CTRL-a in Emacs-speak);
+<tt class="literal">C-e</tt> moves to the end of a line.
+<tt class="literal">C-f</tt> moves forward a character, and
+<tt class="literal">C-b</tt> moves backward one character (without
+deleting). <tt class="literal">C-n</tt> moves forward to the next command,
+and <tt class="literal">C-p</tt> moves backward to the previous line. Your
+keyboard's arrow keys probably also work. Your shell
+has at least one search command; try <tt class="literal">C-r</tt> to start
+a search and press ENTER to run the search.
+</p>
+
+<p>Your keyboard's usual delete key (Backspace or DEL)
+deletes one character backward, and <tt class="literal">C-d</tt> deletes
+one character forward. <tt class="literal">C-k</tt> deletes
+("kills") to the end of the line,
+and <tt class="literal">C-w</tt> deletes
+("wipes") backward to the start of
+the line.
+</p>
+
+<p>To choose emacs mode, type <tt class="literal">set -o emacs</tt> in
+Bourne-type shells and <tt class="literal">bindkey -e</tt> in
+<i class="command">tcsh</i>. In <i class="command">bash</i>, use one of the
+<i class="command">keymap </i>editor commands, such as <i class="command">keymap
+emacs</i>. To make this the default, store the command in your
+shell's <b class="emphasis-bold">setup file</b>
+(<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) (in <i class="command">bash</i>, you can
+also edit your Readline <em class="filename">inputrc</em> file). You can
+switch back and forth between emacs and vi modes as you work.
+</p>
+
+</div>
+<a name="upt3-CHP-30-SECT-14.3" /><div class="sect2">
+<h3 class="sect2">30.14.3. tcsh Editing</h3>
+
+<p><a name="upt3-IDXTERM-4746" />
+<a name="upt3-IDXTERM-4747" />
+<a name="upt3-IDXTERM-4748" /> <a name="upt3-IDXTERM-4749" />The
+<i class="command">bindkey</i><a name="upt3-IDXTERM-4750" />
+<a name="upt3-IDXTERM-4751" /> <a name="upt3-IDXTERM-4752" />
+command is used to bind keys to built-in editor functions. With no
+arguments, it gives a list of all key bindings, like this:
+</p>
+
+<blockquote><pre class="code">tcsh&gt; <tt class="userinput"><b>bindkey</b></tt>
+Standard key bindings
+"^@"           -&gt;  set-mark-command
+"^A"           -&gt;  beginning-of-line
+"^B"           -&gt;  backward-char
+        ...
+"&#161;"  to "<sup class="superscript">^</sup>y"    -&gt;  self-insert-command
+Alternative key bindings
+Multi-character bindings
+"^[[A"         -&gt; up-history
+"^[[B"         -&gt; down-history
+        ...
+"^X^D"         -&gt; list-choices-raw
+Arrow key bindings
+down           -&gt; down-history
+up             -&gt; up-history
+left           -&gt; backward-char
+right          -&gt; forward-char</pre></blockquote>
+
+<p>In this list, <tt class="literal">^</tt> (caret) starts control characters,
+so <tt class="literal">^A</tt> means CTRL-a. <tt class="literal">^[</tt> is an
+escape character (which is also generated when you press a function
+key, like F1 or up-arrow, on most keyboards). Thus,
+<tt class="literal">^[[A</tt> is the sequence <em class="emphasis">ESC left-bracket
+A</em> (which is also sent by the up-arrow key on VT100-type
+keyboards). The "alternative key
+bindings" are used in <i class="command">vi</i> command
+mode, which wasn't enabled in the example above,
+because I made it while using emacs bindings.
+</p>
+
+<p><a name="IXT-30-4301" />There's a list of some
+editor functions in the <i class="command">tcsh</i> manual page, but that
+list only includes "interesting"
+functions. To get a complete list, including
+"boring" functions like
+<i class="command">backward-char</i> (to move backward one character),
+type the command <i class="command">bindkey</i> -<span class="option">l</span>
+(lowercase letter L); that lists all the editor functions and
+describes each one briefly:
+</p>
+
+<blockquote><pre class="code">tcsh&gt; <tt class="userinput"><b>bindkey -l</b></tt>
+backward-char
+          Move back a character
+backward-delete-char
+          Delete the character behind cursor
+     ...</pre></blockquote>
+
+<p>You'll probably want to redirect the output of those
+<i class="command">bindkey</i> commands into a file -- or pipe it to a
+pager such as <b class="emphasis-bold">less</b> (<a href="ch12_03.htm#upt3-CHP-12-SECT-3">Section 12.3</a>) that lets you page through and do searches.
+(You could probably merge the output of <i class="command">bindkey</i>
+and <i class="command">bindkey -l</i> into one list with <b class="emphasis-bold">perl</b> (<a href="ch41_01.htm#upt3-CHP-41-SECT-1">Section 41.1</a>) or
+<b class="emphasis-bold">awk</b> (<a href="ch20_10.htm#upt3-CHP-20-SECT-10">Section 20.10</a>)
+and an associative array, but I haven't tried.)
+</p>
+
+<p><a name="IXT-30-4302" />To bind a key to an editor
+function, use <i class="command">bindkey</i> with two arguments: the key
+to bind and the function name. The key can be the literal key you
+want to type, but that can be messy when you're
+trying to put the definition in a shell setup file (which
+traditionally doesn't have nonprintable characters
+in it) or when you're trying to bind an arrow key or
+some other key. So you can represent a control character with two
+characters: a literal caret (<tt class="literal">^</tt>) followed by the
+letter -- for example, <tt class="literal">^A</tt>. You can use standard
+backslash escape sequences, such as <tt class="literal">\t</tt> for a TAB
+character, but remember to <b class="emphasis-bold">quote</b>
+(<a href="ch27_13.htm#upt3-CHP-27-SECT-13">Section 27.13</a>) special characters. And the special
+option <span class="option">-k</span> lets you name an arrow key: for instance,
+<tt class="literal">bindkey -k left</tt><a name="IXT-30-4303" /> for the
+left arrow.
+</p>
+
+<p>Here's an example of one of my favorite
+<i class="command">tcsh</i> editor functions:
+<i class="command">magic-space</i><a name="IXT-30-4304" />. By default, it
+isn't bound to a key, but it's
+meant to be bound to the space key. The function expands any
+<b class="emphasis-bold">history substitutions</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>) in the command line, then lets you continue
+editing. In this example, I start by executing an
+<i class="command">ls</i> command. Then I bind the space key. After that,
+I start a new command line. I type <tt class="literal">find</tt> and a
+space, but nothing happens yet because there are no history
+references. Then I type <tt class="literal">!ls:$</tt>, which is the
+history substitution for the last argument of the previous
+<i class="command">ls</i> command; when I press the space key, that
+argument is expanded to <em class="emphasis">/usr/local/bin</em>, and I
+can type the rest of the command line:
+</p>
+
+<blockquote><pre class="code">tcsh&gt; <tt class="userinput"><b>ls /usr/local/bin</b></tt>
+acroread               netscape  rsh-add      ssh
+ex                     nex       rsh-agent    ssh-add
+lcdctl                 nsgmls    rsh-askpass  ssh-add1
+    ...
+tcsh&gt; <tt class="userinput"><b>bindkey " " magic-space</b></tt>
+tcsh&gt; <tt class="userinput"><b>find !ls:$</b></tt> SPACE
+tcsh&gt; find /usr/local/bin <tt class="userinput"><b>-perm </b></tt> ...</pre></blockquote>
+
+<p>You also can bind a key to a Unix command by
+using<a name="IXT-30-4305" /> <i class="command">bindkey</i> with its
+<span class="option">-c</span> option.
+<a name="IXT-30-4306" />This is different from simply executing a
+command at a shell prompt. When a Unix command is bound to a key, the
+shell will run that command without disturbing the command line
+you're editing! When the bound command finishes
+running, the command line you were editing is redisplayed as it was.
+For example, the binding below makes <tt class="literal">CTRL-x l</tt> run
+the command <tt class="literal">ls -lt | less</tt>:
+</p>
+
+<blockquote><pre class="code">bindkey -c ^Xl 'ls -lt | less'</pre></blockquote>
+
+<p>There's much, much more. The
+<i class="command">tcsh</i>(1) manpage is too brief to teach this well
+(for me, at least). I recommend the O'Reilly book
+<em class="citetitle">Using csh &amp; tcsh</em>; it
+doesn't cover all of the newest
+<i class="command">tcsh</i>, but it does a complete job on the
+<a name="IXTR3-4341" /> <a name="IXTR3-4342" /> <a name="IXTR3-4343" />command-line editor.<a name="IXTR3-4344" /> <a name="IXTR3-4345" /> <a name="IXTR3-4346" /> <a name="IXTR3-4347" />
+</p>
+
+</div>
+<a name="upt3-CHP-30-SECT-14.4" /><div class="sect2">
+<h3 class="sect2">30.14.4. ksh Editing</h3>
+
+<p><a name="IXT-30-4307" /> <a name="IXT-30-4308" /> <a name="IXT-30-4309" /> <a name="IXT-30-4310" />This section covers the
+<a name="IXT-30-4311" />public domain Korn shell,
+<i class="command">pdksh</i>. The original Korn shell is similar.
+</p>
+
+<p>The <i class="command">bind</i><a name="IXT-30-4312" /> <a name="IXT-30-4313" /><a name="IXT-30-4314" /> command binds keys
+to built-in Emacs editor functions. (You can't
+re-bind in <i class="command">vi</i> mode.) With no arguments, it gives a
+list of all key bindings, like this:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>bind</b></tt>
+^A = beginning-of-line
+^B = backward-char
+   ...
+^[b = backward-word
+^[c = capitalize-word
+   ...
+^XC = forward-char
+^XD = backward-char</pre></blockquote>
+
+<p>In that list, <tt class="literal">^</tt> (caret) starts control characters,
+so <tt class="literal">^A</tt> means CTRL-a. And <tt class="literal">^[</tt> is
+an escape character (which is also generated when you press a
+function key, like F1 or up-arrow, on most keyboards) -- so
+<tt class="literal">^[b</tt> is the sequence <em class="emphasis">ESC b</em>.
+</p>
+
+<p>There's a complete list of editor functions in the
+<i class="command">ksh</i> manual page. You can also get a list from the
+command <i class="command">bind</i><a name="IXT-30-4315" />
+-<span class="option">l</span> (lowercase letter L):
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>bind -l</b></tt>
+abort
+beginning-of-history
+complete-command
+     ...</pre></blockquote>
+
+<p>To bind a key to an editor function, use <i class="command">bind</i> with
+the string to bind, an equal sign (<tt class="literal">=</tt>), then the
+binding. The key can be the literal key you want to type, but that
+can be messy when you're trying to put the
+definition in a shell setup file (which traditionally
+doesn't have nonprintable characters in it) or when
+you're trying to bind an arrow key or some other
+key. So you can represent a control character with two characters: a
+literal caret (<tt class="literal">^</tt>) followed by the letter -- for
+example, <tt class="literal">^A</tt>. The other special prefix supported is
+the two-character sequence <tt class="literal">^[</tt> (caret
+left-square-bracket), which stands for the ESC or Meta key. And
+remember to <b class="emphasis-bold">quote</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) any special characters. So, if you want to
+make CTRL-r be the traditional Unix <b class="emphasis-bold">rprnt</b> (<a href="ch28_02.htm#upt3-CHP-28-SECT-2">Section 28.2</a>) operation
+(to reprint the command line), and make META-r search the history
+(which is bound to CTRL-r by default in <i class="command">pdksh</i>),
+you could use these two bindings:
+</p>
+
+<blockquote><pre class="code">bind '^R'=redraw
+bind '^[r'=search-history</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-30-SECT-14.5" /><div class="sect2">
+<h3 class="sect2">30.14.5. bash Editing</h3>
+
+<p><a name="IXT-30-4316" /><a name="IXT-30-4317" /><a name="IXT-30-4318" /><a name="IXT-30-4319" />The most permanent place to customize
+<i class="command">bash</i> editing is in the
+<a name="IXT-30-4320" /> <a name="IXT-30-4321" />Readline <em class="filename">inputrc</em> file.
+But you also can add temporary bindings from the command line with
+the <i class="command">bind</i> command. These bindings work only in the
+current shell, until the shell exits. The <i class="command">bind</i>
+syntax is the same as the <em class="filename">inputrc</em> file, but you
+have to put <b class="emphasis-bold">quotes</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) around the whole binding -- so watch out
+for quoting conflicts. For example, to make CTRL-o output a <b class="emphasis-bold">redirection</b> (<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>)
+command and pathname:
+</p>
+
+<blockquote><pre class="code">bash$ <tt class="userinput"><b>bind 'Control-o: "&gt;&gt; /usr/local/project/log"'</b></tt></pre></blockquote>
+
+<p>To get a list of all key bindings, use <i class="command">bind</i>
+-<span class="option">P</span> in Version 2 or <i class="command">bind</i>
+-<span class="option">v</span> in original <i class="command">bash</i>. In the next
+example, for instance, you can see that CTRL-m (the ENTER key) and
+CTRL-j (the LINEFEED key) both accept the command line. Quite a few
+characters (CTRL-a, CTRL-b, etc.) simply insert themselves into the
+command line when you type them. If you need a literal control
+character, you may be able to type CTRL-v and then the character.
+</p>
+
+<p><tt class="literal">less</tt> <a href="ch12_03.htm#upt3-CHP-12-SECT-3">Section 12.3</a></p>
+
+<blockquote><pre class="code">bash$ <tt class="userinput"><b>bind -P | less</b></tt>
+abort is not bound to any keys
+accept-line can be found on "\C-j", "\C-m".
+   ...
+backward-delete-char can be found on "\C-h", "\C-?".
+   ...
+self-insert can be found on "\C-a", "\C-b", "\C-c", "\C-e", "\C-f", ...</pre></blockquote>
+
+<p>There are two <i class="command">bind</i> options good for use with
+<em class="filename">inputrc</em> type files. To write all the current key
+bindings out to a file named <em class="filename">inputrc.new</em>, type
+<tt class="literal">bind -p &gt; inputrc.new</tt> in
+<i class="command">bash2</i>; use the <span class="option">-d</span> option in
+original <i class="command">bash</i>. (You can overwrite your default
+<em class="filename">.inputrc</em> file this way, too, if you want.) To
+read an <em class="filename">inputrc</em> file into the current shell (if
+you've just edited it, for instance), use
+<i class="command">bind</i> -<span class="option">f</span> and give the filename as
+an argument.
+</p>
+
+<p>Finally, the <i class="command">bind</i> option <span class="option">-m</span>
+<em class="emphasis">keymap</em> chooses the keymap that subsequent
+bindings apply to. The keymap names that <i class="command">bash2</i>
+understands are <em class="emphasis">emacs</em>,
+<em class="emphasis">emacs-standard</em>, <em class="emphasis">emacs-meta</em>,
+<em class="emphasis">emacs-ctlx</em>, <em class="emphasis">vi</em>,
+<em class="emphasis">vi-move</em>, <em class="emphasis">vi-command</em>, and
+<em class="emphasis">vi-insert</em>. (<em class="emphasis">vi</em> is the same
+as <em class="emphasis">vi-command,</em> and <em class="emphasis">emacs</em> is
+the same as <em class="emphasis">emacs-standard</em>.)
+</p>
+
+</div>
+<a name="upt3-CHP-30-SECT-14.6" /><div class="sect2">
+<h3 class="sect2">30.14.6. zsh Editing</h3>
+
+<p><a name="IXT-30-4322" /><a name="IXT-30-4323" /><a name="IXT-30-4324" /><a name="IXT-30-4325" /><i class="command">zsh</i>, as you migh
+expect by now, has a wide variety of command-line editing
+capabilities, many similar to or the same as those found in
+<i class="command">ksh,</i> <i class="command">tcsh</i>, or
+<i class="command">bash</i>. Emacs mode is the default, but vi mode may
+also be chosen, and all of the
+<a name="IXT-30-4326" />key commands found in either mode may
+be bound to any character you like using the
+<i class="command">bindkey</i><a name="IXT-30-4327" />
+-<span class="option">v</span> command. See the <em class="emphasis">zshzle</em>
+manual page for a long list of these commands and their default
+<a name="IXTR3-4348" />
+<a name="IXTR3-4349" />
+<a name="IXTR3-4350" />
+<a name="IXTR3-4351" />
+<a name="IXTR3-4352" />bindings. 
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch30_15.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">30.13. Pass History to Another Shell</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">30.15. Changing History Characters with histchars</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

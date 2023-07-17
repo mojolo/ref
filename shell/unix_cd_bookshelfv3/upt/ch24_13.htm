@@ -1,0 +1,156 @@
+<html><head><title>Printer Queue Watcher: A Restartable Daemon Shell Script (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.13. Printer Queue Watcher: A Restartable Daemon Shell Script</h2>
+
+<p><a name="upt3-IDXTERM-3604" /> <a name="upt3-IDXTERM-3605" />
+<a name="upt3-IDXTERM-3606" />[This article may not appear to have a
+lot to do with the subject of this chapter, but it illustrates the
+other side of signal handling -- what a program or shell script
+can do when it receives a signal. Jerry's script
+uses the <b class="emphasis-bold">trap</b>
+(<a name="IXT-24-5363" /><a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>) command to catch several different signals
+and act differently depending on whether the signal is a
+"hangup"
+(<em class="filename">HUP</em><a name="IXT-24-5364" /> <a name="IXT-24-5365" />, or signal 1) or a
+<em class="filename">TERM</em> (signal 15).  -- TOR]
+</p>
+
+<p><a name="IXT-24-5366" />Unix systems run
+"daemon" programs such as
+<i class="command">cron</i>(8) and <i class="command">syslogd</i>(8) that
+wait in the background, looking for work to do. Many daemons read
+<a name="IXT-24-5367" />configuration files when they
+start up. System administrators sometimes change the configuration
+files and want the daemon to reread the file. One way to do that is
+by terminating and restarting the program -- but
+that's ugly and also means the daemon
+won't be running for a few seconds until
+it's restarted. So many daemons are designed to
+reread their configuration files and/or restart themselves when they
+get a signal (usually the HUP signal, signal 1). System
+administrators do this by getting the daemon's
+process ID number and sending the signal with the
+<i class="command">kill</i> command. Because the daemon
+"catches" the signal, the daemon
+isn't actually killed.
+</p>
+
+<p><a name="IXT-24-5368" /><a name="IXT-24-5369" /> <a name="IXT-24-5370" />You can run
+a shell script as a daemon by putting it in the background.<a href="#FOOTNOTE-73">[73]</a> Here's a simple example, a shell script
+named <i class="command">watchq</i>. It reads a file full of printer
+queue names and stores it in a shell variable. Every 30 seconds, it
+runs <b class="emphasis-bold">lpq</b> (<a name="IXT-24-5371" /><a href="ch45_02.htm#upt3-CHP-45-SECT-2">Section 45.2</a>) on all
+printer queues listed. If any queues have an error, the script echoes
+a message and the output of <i class="command">lpq</i> to a particular
+user with the <b class="emphasis-bold">write</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) command. (You could change it to write to the
+system's <i class="command">syslog</i> by calling
+<i class="command">logger</i>(1) instead of <i class="command">write</i>. Or
+use <b class="emphasis-bold">xmessage</b> (<a href="ch36_26.htm#upt3-CHP-36-SECT-26">Section 36.26</a>) to pop a notice window onto
+someone's X Window System console. Etc., etc.)
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-73" /><p> [73]It's usually also a good idea to be sure that
+<b class="emphasis-bold">the input and outputs are redirected</b>
+(<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>, <a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a>) away
+from the terminal, maybe to the system console instead. On systems
+and shells that kill background jobs when you log out, use <b class="emphasis-bold">nohup</b> (<a href="ch23_10.htm#upt3-CHP-23-SECT-10">Section 23.10</a>).</p>
+</blockquote>
+
+<p>The script uses numbers (0, 1, 15) instead of signal names
+(<em class="emphasis">EXIT</em>, <em class="emphasis">HUP</em>,
+<em class="emphasis">TERM</em>). This is for portability to older Unix
+shells that don't understand names in
+<i class="command">trap</i> commands. But if you write a script like this
+on a newer system, use signal names if you can.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: watchq</p>
+<p><tt class="literal">/dev/null</tt> <a href="ch43_12.htm#upt3-CHP-43-SECT-12">Section 43.12</a></p>
+<blockquote><pre class="code">#! /bin/sh
+# watchq - "daemon" script that watches printer queue(s) for errors
+temp=/tmp/WATCHQ$$             # Holds output of lpq
+watch=/usr/local/lib/watchqs   # Queue names to watch
+writeto=lisa                   # User who gets notices about printer
+queues="`cat $watch`"          # Put list of queue names in $queues
+trap 'queues="`cat $watch`"' 1 # Reset $queues if we get a SIGHUP
+trap 'rm -f $temp; exit' 0 15  # Clean up temp file when killed
+
+# Loop forever (until someone kills script):
+while :
+do
+    for queue in $queues
+    do
+        lpq -P$queue &gt;$temp
+        if egrep '(out of paper|error|warning)' $temp &gt;/dev/null
+        then echo "PRINTER QUEUE $queue:" | cat - $temp | write $writeto
+        fi
+    done
+    sleep 30
+done</pre></blockquote>
+
+<p>Now let's run the script. After the script has run
+for a while, the printer named <em class="emphasis">office</em> goes down.
+I edit the <em class="emphasis">watchqs</em> file and remove that printer
+so the poor user <em class="emphasis">lisa</em> won't
+keep getting complaints about it. Then I send a signal to have the
+file reread:
+</p>
+<p><tt class="literal">kill</tt> <a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo office main lobby &gt; /usr/local/lib/watchqs</b></tt>
+% <tt class="userinput"><b>watchq &amp;</b></tt>
+[1] 4363
+   ...
+% <tt class="userinput"><b>echo main lobby &gt; /usr/local/lib/watchqs</b></tt>
+%<tt class="userinput"><b> kill -HUP 4363</b></tt>
+   ...
+% <tt class="userinput"><b>kill 4363</b></tt>
+[1]    Exit -48             watchq</pre></blockquote>
+
+<p>In real life, the <i class="command">watchq</i> script might be started
+from a system file like <em class="emphasis">/etc/rc.local</em> when the
+system reboots. Lisa would probably edit the
+<em class="emphasis">watchqs</em> file herself. The username
+that's notified by <i class="command">write</i> might
+also be resettable with a <em class="emphasis">kill -HUP</em> (or
+<em class="emphasis">kill -1</em>).
+</p>
+
+<p>This isn't foolproof, and you can run into subtle
+problems. For instance, the
+<i class="command">write</i><a name="IXT-24-5372" /> <a name="IXT-24-5373" /> command may not work on some
+Unixes if it's running from a daemon without a
+<b class="emphasis-bold">controlling tty</b> (<a href="ch24_06.htm#upt3-CHP-24-SECT-6">Section 24.6</a>). Also, the error messages that <b class="emphasis-bold">egrep</b> (<a href="ch13_04.htm#upt3-CHP-13-SECT-4">Section 13.4</a>) searches
+for may not catch all problems, and they are system-dependent. If you
+use <i class="command">xmessage</i>, a user who's away
+from his workstation could come back to tens or hundreds of windows;
+you might want to make the script pause until the user acknowledges a
+window. But this script is just a demonstration -- to show a great
+way to write a quick-and-dirty daemon.<a name="IXTR3-5470" /> <a name="IXTR3-5471" /> <a name="IXTR3-5472" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.12. Destroying Processes with kill</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.14. Killing All Your Processes</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

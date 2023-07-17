@@ -1,0 +1,107 @@
+<html><head><title>The sed Stream Editor (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 34. The sed Stream Editor</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch34_01.htm#sect1">sed Sermon^H^H^H^H^H^HSummary</a><br />
+<a href="ch34_02.htm">Two Things You Must Know About sed</a><br />
+<a href="ch34_03.htm">Invoking sed</a><br />
+<a href="ch34_04.htm">Testing and Using a sed Script: checksed, runsed</a><br />
+<a href="ch34_05.htm">sed Addressing Basics</a><br />
+<a href="ch34_06.htm">Order of Commands in a Script</a><br />
+<a href="ch34_07.htm">One Thing at a Time</a><br />
+<a href="ch34_08.htm">Delimiting a Regular Expression</a><br />
+<a href="ch34_09.htm">Newlines in a sed Replacement</a><br />
+<a href="ch34_10.htm">Referencing the Search String in a Replacement</a><br />
+<a href="ch34_11.htm">Referencing Portions of a Search String</a><br />
+<a href="ch34_12.htm">Search and Replacement: One Match Among Many</a><br />
+<a href="ch34_13.htm">Transformations on Text</a><br />
+<a href="ch34_14.htm">Hold Space: The Set-Aside Buffer</a><br />
+<a href="ch34_15.htm">Transforming Part of a Line</a><br />
+<a href="ch34_16.htm">Making Edits Across Line Boundaries</a><br />
+<a href="ch34_17.htm">The Deliberate Scrivener</a><br />
+<a href="ch34_18.htm">Searching for Patterns Split Across Lines</a><br />
+<a href="ch34_19.htm">Multiline Delete</a><br />
+<a href="ch34_20.htm">Making Edits Everywhere Except...</a><br />
+<a href="ch34_21.htm">The sed Test Command</a><br />
+<a href="ch34_22.htm">Uses of the sed Quit Command</a><br />
+<a href="ch34_23.htm">Dangers of the sed Quit Command</a><br />
+<a href="ch34_24.htm">sed Newlines, Quoting, and Backslashes in a Shell Script</a><br /></p></div><div class="sect1"><a name="upt3-CHP-34-SECT-1" />
+<h2 class="sect1"><a name="sect1" />34.1. sed Sermon^H^H^H^H^H^HSummary</h2>
+
+<p><tt class="literal">^H^H^H</tt> are ASCII backspace characters. <a name="upt3-IDXTERM-5194" /> <a name="upt3-IDXTERM-5195" />Written
+printably in email and Usenet messages, they're a
+tongue-in-cheek way of "erasing"
+the characters before without actually erasing them. They let you say
+"I didn't want you to see
+that" when you actually do.
+</p>
+
+<p><i class="command">sed</i> (<em class="emphasis">s</em>tream
+<em class="emphasis">ed</em>itor) amazes me. Why? It's
+not just that <i class="command">sed</i> can edit data as it streams
+through a pipe (like all well-behaved Unix <b class="emphasis-bold">filters</b> (<a href="ch01_05.htm#upt3-CHP-1-SECT-5">Section 1.5</a>) do).
+<i class="command">sed</i> can test and branch and substitute and hold
+and exchange data as it streams through, but so can almost any
+scripting language. Maybe it's the minimalist in me
+that loves a tiny program (by today's standards, at
+least) with just a few operations -- but operations so well-chosen
+that they make the tool powerful for its size. Sure, sure, Perl
+probably can do everything that <i class="command">sed</i> can -- and
+do each of those things in twenty different ways. Ah,
+I've got it: when I'm trying to do
+anything more than a simple substitution on data streaming by,
+<i class="command">sed</i>'s elegant simplicity almost
+forces me to strip a problem to its basics, to think of what I really
+need to do. No functions, no libraries, nothing except beautifully
+simple functionality.
+</p>
+
+<p>[As someone who learned Perl regular expressions before I learned
+<i class="command">sed</i>, I can relate to what Jerry is saying. One of
+the things I like about the classic Unix toolbox programs like
+<i class="command">sed</i> is that they really do force you into a sort
+of Shaker-like elegant simplicity; the best programs, no matter what
+the language, have a quality like a Shaker chair: pure function, but
+with a respect for the fact that function doesn't
+have to be ugly.  -- <em class="emphasis">SJC</em>]
+</p>
+
+<p>End of sermon. <tt class="literal">;-)</tt> Even if you
+aren't into elegance and simplicity, and you just
+wanna get the job done, what do we cover about <i class="command">sed</i>
+that might be useful?
+</p>
+
+<p>In this chapter, we start out with the basics: <a href="ch34_02.htm#upt3-CHP-34-SECT-2">Section 34.2</a>, <a href="ch34_03.htm#upt3-CHP-34-SECT-3">Section 34.3</a>, <a href="ch34_04.htm#upt3-CHP-34-SECT-4">Section 34.4</a>, <a href="ch34_05.htm#upt3-CHP-34-SECT-5">Section 34.5</a>, <a href="ch34_06.htm#upt3-CHP-34-SECT-6">Section 34.6</a>, and <a href="ch34_07.htm#upt3-CHP-34-SECT-7">Section 34.7</a> show you how
+to get started, how to test your scripts, and how to structure more
+advanced scripts. <a href="ch34_08.htm#upt3-CHP-34-SECT-8">Section 34.8</a> through <a href="ch34_14.htm#upt3-CHP-34-SECT-14">Section 34.14</a> cover regular expressions and complex
+transformations. <a href="ch34_15.htm#upt3-CHP-34-SECT-15">Section 34.15</a> through <a href="ch34_24.htm#upt3-CHP-34-SECT-24">Section 34.24</a> deal with advanced topics such as multiline
+matching and deletions, tests, and exiting a script when
+you're done.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">33.8. nom: List Files That Don't Match a Wildcard</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.2. Two Things You Must Know About sed</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

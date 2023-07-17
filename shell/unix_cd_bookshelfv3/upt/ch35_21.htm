@@ -1,0 +1,151 @@
+<html><head><title>Handling Command-Line Arguments with a for Loop (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.21. Handling Command-Line Arguments with a for Loop</h2>
+
+<p><a name="IXT-35-3721" />Sometimes you want a
+script that will step through the command-line arguments one by one.
+(The <b class="emphasis-bold">"$@" parameter</b> (<a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>) gives you all of them at once.) The Bourne
+shell <i class="command">for</i> loop can do this. The
+<i class="command">for</i> loop looks like this:
+</p>
+
+<blockquote><pre class="code">for arg in <em class="replaceable"><tt>list</tt></em>
+do
+    ...<em class="replaceable"><tt>handle $arg</tt></em>...
+done</pre></blockquote>
+
+<p>If you omit the <tt class="literal">in</tt><em class="replaceable">
+list</em>, the loop steps through the command-line
+arguments. It puts the first command-line argument in
+<em class="emphasis">arg</em> (or whatever else you choose to call the
+<b class="emphasis-bold">shell variable</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>)), then executes the commands from
+<tt class="literal">do</tt> to <tt class="literal">done</tt>. Then it puts the
+next command-line argument in <em class="emphasis">arg</em>, does the
+loop, and so on, ending the loop after handling all the arguments.
+</p>
+
+<p><a name="IXT-35-3722" />For an example of a <i class="command">for</i>
+loop, let's hack on the <b class="emphasis-bold">zmore</b> (<a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>) script.
+</p>
+
+<p><tt class="literal">case</tt> <a href="ch35_11.htm#upt3-CHP-35-SECT-11">Section 35.11</a></p>
+
+<blockquote><pre class="code">#!/bin/sh
+# zmore - Uncompress file(s), display with "more"
+# Usage: zmore [more options] file [...files]
+stat=1  # Default exit status; reset to 0 before normal exit
+temp=/tmp/zmore$$
+trap 'rm -f $temp; exit $stat' 0
+trap 'echo "`basename $0`: Ouch! Quitting early..." 1&gt;&amp;2' 1 2 15
+
+files=  switches=
+for arg
+do
+    case "$arg" in
+    -*) switches="$switches $arg" ;;
+    *)  files="$files $arg" ;;
+    esac
+done
+
+case "$files" in
+"") echo "Usage: `basename $0` [more options] file [files]" 1&gt;&amp;2 ;;
+*)  for file in $files
+    do
+        zcat "$file" | more $switches
+    done
+    stat=0
+    ;;
+esac</pre></blockquote>
+
+<p>We added a <i class="command">for</i> loop to get and check each
+command-line argument. For example, let's say that a
+user typed the following:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>zmore -s afile ../bfile</b></tt></pre></blockquote>
+
+<p><a name="IXT-35-3723" /><a name="IXT-35-3724" /> <a name="IXT-35-3725" />The first pass
+through the <i class="command">for</i> loop, <tt class="literal">$arg</tt> is
+<tt class="literal">-s</tt>. Because the argument starts with a minus sign
+(<tt class="literal">-</tt>), the <i class="command">case</i> treats it as an
+option. Now the <tt class="literal">switches</tt> variable is replaced by
+its previous contents (an empty string), a space, and
+<tt class="literal">-s</tt>. Control goes to the <em class="emphasis">esac</em>
+and the loop repeats with the next argument.
+</p>
+
+<p>The next argument, <tt class="literal">afile</tt>, doesn't
+look like an option. So now the <tt class="literal">files</tt> variable
+will contain a space and <tt class="literal">afile</tt>.
+</p>
+
+<p>The loop starts over once more with <tt class="literal">../bfile</tt> in
+<tt class="literal">$arg</tt>. Again, this looks like a file, so now
+<tt class="literal">$files</tt> has  <tt class="literal">afile ../bfile</tt>.
+Because <tt class="literal">../bfile</tt> was the last argument, the loop
+ends; <tt class="literal">$switches</tt> has the options and
+<tt class="literal">$files</tt> has all the other arguments.
+</p>
+
+<p>Next, we added another <i class="command">for</i> loop. This one has the
+word <tt class="literal">in</tt> followed by <tt class="literal">$files</tt>, so
+the loop steps through the contents of <tt class="literal">$files</tt>. The
+loop runs <i class="command">zcat</i> on each file, piping it to
+<i class="command">more</i> with any switches you gave.
+</p>
+
+<p>Note that <tt class="literal">$switches</tt> isn't
+<b class="emphasis-bold">quoted</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>). This way, if <tt class="literal">$switches</tt> is
+empty, the shell won't pass an empty argument to
+<i class="command">more</i>. Also, if <tt class="literal">$switches</tt> has
+more than one switch, the shell will break the switches into separate
+arguments at the spaces and pass them individually to
+<i class="command">more</i>.
+</p>
+
+<p><a name="IXT-35-3726" /><a name="IXT-35-3727" /><a name="IXT-35-3728" />You can use a
+<i class="command">for</i> loop with any space-separated (actually,
+<b class="emphasis-bold">IFS</b> (<a href="ch36_23.htm#upt3-CHP-36-SECT-23">Section 36.23</a>)-separated) list of words -- not just
+filenames. You don't have to use a shell variable as
+the list; you can use <b class="emphasis-bold">command
+substitution</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) (backquotes)
+or <b class="emphasis-bold">shell wildcards</b> (<a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a>), or just
+"hardcode" the list of words:
+</p>
+<p><tt class="literal">lpr</tt> <a href="ch45_02.htm#upt3-CHP-45-SECT-2">Section 45.2</a></p>
+
+<blockquote><pre class="code">for person in Joe Leslie Edie Allan
+do
+   echo "Dear $person," | cat - form_letter | lpr
+done</pre></blockquote>
+
+<p><a name="IXT-35-3729" />The <b class="emphasis-bold">getopt and getopts</b> (<a href="ch35_24.htm#upt3-CHP-35-SECT-24">Section 35.24</a>) commands handle command-line arguments in a
+more standard way than <i class="command">for</i> loops.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.20. Handling Command-Line Arguments in Shell Scripts</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.22. Handling Arguments with while and shift</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

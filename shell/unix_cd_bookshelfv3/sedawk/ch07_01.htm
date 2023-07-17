@@ -1,0 +1,100 @@
+<html><head><title>Writing Scripts
+for awk (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 7. Writing Scripts
+for awk</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch07_01.htm#sect1">Playing the Game</a><br />
+<a href="ch07_02.htm">Hello, World</a><br />
+<a href="ch07_03.htm">Awk's Programming Model</a><br />
+<a href="ch07_04.htm">Pattern Matching</a><br />
+<a href="ch07_05.htm">Records and Fields</a><br />
+<a href="ch07_06.htm">Expressions</a><br />
+<a href="ch07_07.htm">System Variables</a><br />
+<a href="ch07_08.htm">Relational and Boolean Operators</a><br />
+<a href="ch07_09.htm">Formatted Printing</a><br />
+<a href="ch07_10.htm">Passing Parameters Into a Script</a><br />
+<a href="ch07_11.htm">Information Retrieval</a><br /></p></div><p>As mentioned in the preface, this book describes POSIX awk; that is,
+the awk language as specified by the POSIX standard. Before diving into
+the details, we'll provide a bit of history.</p><p>
+<a name="ch07.writ" />
+<a name="ch07.writ2" />
+The original awk was a nice little language. It first saw the light
+of day with Version 7 UNIX, around 1978.  It caught on, and people
+used it for significant programming.</p><p>In 1985, the original authors, seeing that awk was being used for
+more serious programming than they had ever intended, decided to
+beef up the language.  (See <a href="ch11_01.htm">Chapter 11, "A Flock of awks"</a>, for
+a description of the original awk, and all the things it did not
+have when compared to the new one.)
+The new version was finally released to the world at large in 1987,
+and it is this version that is still found on SunOS 4.1.x systems.</p><p>In 1989, for System V Release 4, awk was updated in some minor
+ways.<a href="#FOOTNOTE-40">[40]</a>
+This version became the basis for the awk feature list in the POSIX
+standard.  POSIX clarified a number of things about awk, and added the
+<b class="emphasis-bold">CONVFMT</b> variable (to be discussed later in this chapter).
+<a name="IXT-7-265805" /></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-40" /><p> [40]The <span class="option">-v</span> option and
+<b class="emphasis-bold">tolower()</b> and
+<b class="emphasis-bold">toupper()</b> functions were added, and
+<b class="emphasis-bold">srand()</b> and <b class="emphasis-bold">printf</b>
+were cleaned up.  The details will be presented in this and the
+following chapters.</p>
+
+</blockquote><p>As you read the rest of this book, bear in mind that the term
+<b class="emphasis-bold">awk</b> refers to POSIX awk, 
+
+
+and not to any particular
+implementation, whether the original one from Bell Labs, or any of the
+others discussed in <a href="ch11_01.htm">Chapter 11, "A Flock of awks"</a>.  However, in the
+few cases where different versions have fundamental differences of
+behavior, that will be pointed out in the main body of the discussion.</p><a name="IXT-7-266010" /><a name="IXT-7-266011" /><div class="sect1"><a name="sedawk-ch-7-sect-1" />
+<h2 class="sect1"><a name="sect1" />7.1. Playing the Game</h2>
+
+<p>To write an awk script, you must become familiar with the rules of the
+game.  The rules can be stated plainly and you will find them
+described in <a href="appb_01.htm">Appendix B, "Quick Reference
+for awk"</a>, rather than in this
+chapter.  The goal of this chapter is not to describe the rules but to
+show you how to play the game.  In this way, you will become
+acquainted with many of the features of the language and see examples
+that illustrate how scripts actually work.  Some people prefer to
+begin by reading the rules, which is roughly equivalent to learning to
+use a program from its manual page or learning to speak a language by
+scanning its rules of grammar--not an easy task.  Having a good
+grasp of the rules, however, is essential once you begin to use awk
+regularly.  But the more you use awk, the faster the rules of the game
+become second nature.  You learn them through trial and
+error--spending a long time trying to fix a silly syntax error
+such as a missing space or brace has a magical effect upon long-term
+memory.  Thus, the best way to learn to write scripts is to begin
+writing them.  As you make progress writing scripts, you will no doubt
+benefit from reading the rules (and rereading them) in 
+<a href="appb_01.htm">Appendix B, "Quick Reference
+for awk"</a> or the awk manpage or <em class="citetitle">The AWK
+Programming Language</em> book.  You can do that
+later--let's get started now.</p>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.5. To Join a Phrase</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.2. Hello, World</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

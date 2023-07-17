@@ -1,0 +1,217 @@
+<html><head><title>Managing Users and Passwords (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.8. Managing Users and Passwords</h2>
+
+<p><a name="mosxgeeks-IDXTERM-225" />
+<a name="mosxgeeks-IDXTERM-226" />The
+NetInfo equivalent of the <em class="filename">passwd</em> file resides
+under the <em class="filename">/users</em> portion of the NetInfo
+directory. Mac OS X uses
+<em class="filename">/etc/master.passwd</em><a name="IXT-3-410" /> for storing encrypted passwords. That
+<em class="filename">master.passwd</em> file is called the
+<em class="emphasis">shadow password file</em><a name="IXT-3-411" /> because it shadows the other,
+nonsensitive information contained in the
+<em class="filename">/etc/passwd</em><a name="IXT-3-412" /> file. Only the <em class="filename">root</em>
+user can read the shadow password file. Nonprivileged users can use
+the regular <em class="filename">passwd</em> file to discover other
+information, such as a user's full name or home
+directory.
+</p>
+
+<p>The <em class="filename">/etc/passwd</em> and
+/<em class="filename">etc/master.passwd</em> files are consulted only
+while the system is in single-user mode, or if the system has been
+reconfigured to use BSD Configuration Files (see <a href="ch03_03.htm#mosxgeeks-CHP-3-SECT-3">Section 3.3</a>, earlier in this chapter). To add a normal user to your
+system, you should use System Preferences <img src="figs/U2192.gif" alt="Figure " />
+Accounts. However, if you want to bulk-load NetInfo with many users
+or create a user while logged in over <em class="filename">ssh</em>, you
+can use <em class="filename">nicl</em> or <em class="filename">niload</em>.
+</p>
+
+<p>You can list all users with the
+<em class="filename">nireport</em><a name="IXT-3-413" /> utility. Supply the NetInfo domain
+(<em class="filename">.</em>, the local domain), the directory
+(<em class="filename">/users</em>), and the properties you want to inspect
+(<em class="filename">uid</em>, <em class="filename">name</em>,
+<em class="filename">home</em>, <em class="filename">realname</em>, and
+<em class="filename">shell</em>):
+</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">nireport . /users uid name home realname shell</b>
+-2      nobody  /dev/null           Unprivileged User       /dev/null
+0       root    /var/root           System Administrator    /bin/tcsh
+1       daemon  /var/root           System Services         /dev/null
+99      unknown /dev/null           Unknown User            /dev/null
+70      www     /Library/WebServer  World Wide Web Server   /dev/null</pre></blockquote>
+
+<a name="mosxgeeks-CHP-3-SECT-8.1" /><div class="sect2">
+<h3 class="sect2">3.8.1. Creating a User with niload</h3>
+
+<p>The <em class="filename">niload</em><a name="IXT-3-414" />
+<a name="IXT-3-415" />
+utility understands the flat file format used by
+<em class="filename">/etc/passwd</em>
+(<tt class="literal">name:password:uid:gid:class:change:expire:gecos:home_dir:shell</tt>).
+See the <em class="filename">passwd(5)</em> manpage for a description of
+each field. To add a new user, create a file that adheres to that
+format and load it with <em class="filename">niload</em>. You can use a
+here document rather than a separate file. This example creates a
+user for Ernest Rothman with a UID of 701 and membership in the
+<em class="filename">staff </em>(GID 20) group:
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">niload passwd . &lt;&lt;EOF</b>
+? <b class="emphasis-bold">rothman:*:701:20::0:0:Ernest Rothman:/Users/rothman:/bin/tcsh</b>
+? <b class="emphasis-bold">EOF</b></pre></blockquote>
+
+<p>As you can see from this example, we set the password field to
+<tt class="literal">*</tt>, which disables logins for that account. To set
+the password, we'll use the <em class="filename">passwd
+</em>command to set it:
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">passwd rothman</b>
+Changing password for rothman.
+New password: <b class="emphasis-bold">********</b>
+Retype new password: <b class="emphasis-bold">********</b></pre></blockquote>
+
+<p>If you <em class="filename">niload</em> a user that already exists, that
+user will not be overwritten or changed in any way. You should delete
+the user with <em class="filename">nicl</em> first (see <a href="ch03_07.htm#mosxgeeks-CHP-3-SECT-7.5">Section 3.7.5</a>, earlier
+in this chapter). Before the user can log in, you must create his
+home directory (see <a href="ch03_08.htm#mosxgeeks-CHP-3-SECT-8.3">Section 3.8.3</a>,
+later in this chapter).
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-3-SECT-8.2" /><div class="sect2">
+<h3 class="sect2">3.8.2. Creating a User with nicl</h3>
+
+<p>To create a user with
+<em class="filename">nicl</em><a name="IXT-3-416" />, you'll need to create
+a directory under <em class="filename">/users</em>, and set the
+<em class="filename">uid</em>, <em class="filename">gid</em>,
+<em class="filename">shell</em>, <em class="filename">realname</em>, and
+<em class="filename">home</em> properties. The following code creates the
+same user shown in the previous section, <a href="ch03_08.htm#mosxgeeks-CHP-3-SECT-8.1">Section 3.8.1</a>.
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">nicl / -create /users/rothman uid 701</b>
+# <b class="emphasis-bold">nicl / -create /users/rothman gid 20</b>
+# <b class="emphasis-bold">nicl / -create /users/rothman shell /bin/tcsh</b>
+# <b class="emphasis-bold">nicl / -create /users/rothman home /Users/rothman</b>
+# <b class="emphasis-bold">nicl / -create /users/rothman realname "Ernest Rothman"</b>
+# <b class="emphasis-bold">nicl / -create /users/rothman passwd \*</b></pre></blockquote>
+
+<p>After you create the user, you should set the password as shown in
+the previous section.
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-3-SECT-8.3" /><div class="sect2">
+<h3 class="sect2">3.8.3. Creating a User's Home Directory</h3>
+
+<p>One thing that NetInfo can't do for you is create
+the user's <a name="IXT-3-417" />
+<a name="IXT-3-418" />home directory. Mac OS X keeps a skeleton
+directory under the <em class="filename">/System/Library/User
+Template</em> directory. If you look in this directory,
+you'll see localized versions of a
+user's home directory. To copy the localized English
+version of the home directory, use the <em class="filename">ditto</em>
+command:
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">ditto /System/Library/User\ Template/English.lproj /Users/rothman</b></pre></blockquote>
+
+<p>Then, use <em class="filename">chown</em> to recursively set the ownership
+of the home directory and all its contents (make sure you set the
+group to a group of which the user is a member):
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">chown -R rothman:staff /Users/rothman</b></pre></blockquote>
+
+<p>This change makes the new user the owner of his home directory and
+all its contents.
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-3-SECT-8.4" /><div class="sect2">
+<h3 class="sect2">3.8.4. Modifying a User</h3>
+
+<p>You can change a user's properties by deleting a
+property with<em class="filename"> -delete
+</em><a name="IXT-3-419" />and adding it again with
+-<em class="filename">create</em><a name="IXT-3-420" />. For example, to change
+<em class="filename">rothman</em>'s shell to
+<em class="filename">bash</em>, use:
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">nicl / -delete /users/rothman shell</b>
+# <b class="emphasis-bold">nicl / -create /users/rothman shell /bin/bash</b></pre></blockquote>
+
+
+<a name="ch03-49-fm2xml" /><blockquote><b>TIP:</b> 
+You can also modify most user settings with System Preferences
+<img src="figs/U2192.gif" alt="Figure " /> Accounts.
+</p>
+</blockquote>
+
+</div>
+<a name="mosxgeeks-CHP-3-SECT-8.5" /><div class="sect2">
+<h3 class="sect2">3.8.5. Listing Users with nidump</h3>
+
+<p>Use <em class="filename">nidump</em><a name="IXT-3-421" /> to confirm that
+<em class="filename">rothman</em> was added successfully. To list users
+with <em class="filename">nidump</em>, pass in the format (in this case,
+the <em class="filename">passwd</em> file) and the domain (use
+<em class="filename">.</em> for the local domain):
+</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">nidump passwd . | grep rothman</b>
+rothman:nIhowm2p0BGsE:701:20::0:0:Ernest Rothman:/Users/rothman:/bin/tcsh</pre></blockquote>
+
+</div>
+<a name="mosxgeeks-CHP-3-SECT-8.6" /><div class="sect2">
+<h3 class="sect2">3.8.6. Deleting a User</h3>
+
+<p>To
+<a name="IXT-3-422" />delete
+a user, use <em class="filename">nicl</em>'s
+-<em class="filename">delete </em>switch. Since -<em class="filename">delete
+</em>recursively deletes everything under the specified
+directory, use this option with caution:
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">nicl / -delete /users/rothman</b></pre></blockquote>
+
+<p>If you want to also delete that user's home
+directory, you will have to do it manually, using <em class="filename">rm
+-r</em>.<a name="IXTR3-439" /> <a name="IXTR3-440" /> 
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.7. Managing Groups</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.9. Managing Hostnames and IP Addresses</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,145 @@
+<html><head><title>Searching Through Files (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 13. Searching Through Files</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch13_01.htm#sect1">Different Versions of grep</a><br />
+<a href="ch13_02.htm">Searching for Text with grep</a><br />
+<a href="ch13_03.htm">Finding Text That Doesn't Match</a><br />
+<a href="ch13_04.htm">Extended Searching for Text with egrep</a><br />
+<a href="ch13_05.htm">grepping for a List of Patterns</a><br />
+<a href="ch13_06.htm">Approximate grep: agrep</a><br />
+<a href="ch13_07.htm">Search RCS Files with rcsgrep</a><br />
+<a href="ch13_08.htm">GNU Context greps</a><br />
+<a href="ch13_09.htm">A Multiline Context grep Using sed</a><br />
+<a href="ch13_10.htm">Compound Searches</a><br />
+<a href="ch13_11.htm">Narrowing a Search Quickly</a><br />
+<a href="ch13_12.htm">Faking Case-Insensitive Searches</a><br />
+<a href="ch13_13.htm">Finding a Character in a Column</a><br />
+<a href="ch13_14.htm">Fast Searches and Spelling Checks with "look"</a><br />
+<a href="ch13_15.htm">Finding Words Inside Binary Files</a><br />
+<a href="ch13_16.htm">A Highlighting grep</a><br /></p></div><div class="sect1"><a name="upt3-CHP-13-SECT-1" />
+<h2 class="sect1"><a name="sect1" />13.1. Different Versions of grep</h2>
+
+<blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Summary Box</h4>
+<p><i class="command">grep</i><a name="upt3-IDXTERM-1960" />
+<a name="upt3-IDXTERM-1961" /> <a name="upt3-IDXTERM-1962" /> is one of
+Unix's most useful tools. As a result, all users
+seem to want their own, slightly different version that solves a
+different piece of the problem. (Maybe this is a problem in itself;
+there really should be only one <i class="command">grep</i>, as the
+manpage says.) Three versions of <i class="command">grep</i> come with
+every Unix system; in addition, there are six or seven freely
+available versions that we'll mention here, as well
+as probably dozens of others that you can find kicking around the
+Net.
+</p>
+&nbsp;
+<p>Here are the different versions of <i class="command">grep</i> and what
+they offer. We'll start with the standard versions:
+</p>
+&nbsp;
+<dl>
+<a name="IXT-13-5822" /><dt><i>Plain old <i class="command">grep</i> </i></dt>
+<dd>
+Great for searching with regular expressions (<a href="ch13_02.htm#upt3-CHP-13-SECT-2">Section 13.2</a>). 
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-13-5823" /><a name="IXT-13-5824" /><dt><i>Extended <i class="command">grep</i> (or <i class="command">egrep</i>)</i></dt>
+<dd>
+Handles <a name="IXT-13-5825" />extended regular expressions. It is also,
+arguably, the fastest of the standard <i class="command">grep</i>s
+(<a href="ch13_04.htm#upt3-CHP-13-SECT-4">Section 13.4</a>).
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-13-5826" /><a name="IXT-13-5827" /><dt><i>Fixed <i class="command">grep</i> (or <i class="command">fgrep</i>)</i></dt>
+<dd>
+So named because it matches <a name="IXT-13-5828" />fixed strings. It
+is sometimes inaccurately called "fast
+<i class="command">grep</i>"; often it is really the
+slowest of them all. It is useful to search for patterns with literal
+backslashes, asterisks, and so on that you'd
+otherwise have to escape somehow. <i class="command">fgrep</i> has the
+interesting ability to search for multiple strings (<a href="ch13_05.htm#upt3-CHP-13-SECT-5">Section 13.5</a>). 
+</p>
+</dd>
+&nbsp;
+</dl>
+&nbsp;
+<p>Of course, on many modern Unixes all three are the same executable,
+just with slightly different behaviors, and so you may not see
+dramatic speed differences between them. Now for the freeware
+versions:
+</p>
+&nbsp;
+<dl>
+<a name="IXT-13-5829" /><a name="IXT-13-5830" /><dt><i><i class="command">agrep</i>, or "approximate <i class="command">grep</i>"</i></dt>
+<dd>
+A tool that finds lines that "more or
+less" match your search string. A very interesting
+and useful tool, it's part of the
+<i class="command">glimpse</i> package, which is an indexing and query
+system for fast searching of huge amounts of text.
+<i class="command">agrep</i> is introduced in <a href="ch13_06.htm#upt3-CHP-13-SECT-6">Section 13.6</a>. 
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<dt><i>Very fast versions of <i class="command">grep</i>, such as GNU <i class="command">grep</i>/<i class="command">egrep</i>/<i class="command">fgrep</i></i></dt>
+<dd>
+Most free Unixes use GNU <i class="command">grep</i> as their main
+<i class="command">grep</i>.
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-13-5831" /><a name="IXT-13-5832" /><dt><i><i class="command">rcsgrep</i></i></dt>
+<dd>
+Searches through <b class="emphasis-bold">RCS files</b> (<a href="ch39_05.htm#upt3-CHP-39-SECT-5">Section 39.5</a>) (<a href="ch13_07.htm#upt3-CHP-13-SECT-7">Section 13.7</a>).
+</p>
+</dd>
+&nbsp;
+</dl>
+&nbsp;
+<p>In addition, you can simulate the action of
+<i class="command">grep</i><a name="IXT-13-5833" /><a name="IXT-13-5834" /><a name="IXT-13-5835" /> with <i class="command">sed</i>,
+<i class="command">awk</i>, and <i class="command">perl</i>. These utilities
+allow you to write such variations as a <i class="command">grep</i> that
+searches for a <b class="emphasis-bold">pattern that can be split across
+several lines</b> (<a href="ch13_09.htm#upt3-CHP-13-SECT-9">Section 13.9</a>) and other
+<b class="emphasis-bold">context</b> <i class="command">grep</i>
+<b class="emphasis-bold">programs</b> (<a href="ch41_12.htm#upt3-CHP-41-SECT-12">Section 41.12</a>), which show you a few lines before and after
+the text you find. (Normal <i class="command">grep</i>s just show the
+lines that match.)
+</p>
+&nbsp;
+<p> <em class="emphasis">-- ML</em></p>
+</td></tr></table><p></blockquote>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.13. Numbering Lines</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.2. Searching for Text with grep</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

@@ -1,0 +1,243 @@
+<html><head><title>Confusion with Whitespace Field Delimiters (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch22_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch22_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">22.4. Confusion with Whitespace Field Delimiters</h2>
+
+<p>One would hope that a simple task like sorting would be relatively
+unambiguous. Unfortunately, it isn't. The behavior
+of <i class="command">sort</i> can be very puzzling.
+I'll try to straighten out some of the
+confusion -- at the same time, I'll be leaving
+myself open to abuse by the real <i class="command">sort</i> experts. I
+hope you appreciate this! Seriously, though: if you know of any other
+wrinkles to the story, please let us know and we'll
+add them in the next edition.
+</p>
+
+<p>The trouble with <i class="command">sort</i> is figuring out where one
+field ends and another begins. It's simplest if you
+can <b class="emphasis-bold">specify an explicit field
+delimiter</b> (<a href="ch22_03.htm#upt3-CHP-22-SECT-3">Section 22.3</a>). This makes it
+easy to tell where fields end and begin. But by default,
+<i class="command">sort</i> uses whitespace characters (tabs and spaces)
+to separate fields, and the rules for interpreting whitespace field
+delimiters are unfortunately complicated. As I see them, they are:
+</p>
+
+<ul><li>
+<p>The first whitespace character you encounter is a
+"field delimiter"; it marks the end
+of the old field and the beginning of the next field.
+</p>
+</li><li>
+<p>Any whitespace character following a field delimiter is
+<em class="emphasis">part of</em> the new field. That is, if you have two
+or more whitespace characters in a row, the first one is used as a
+field delimiter and isn't sorted. The remainder
+<em class="emphasis">are</em> sorted, as part of the next field.
+</p>
+</li><li>
+<p>Every field has at least one nonwhitespace character, unless
+you're at the end of the line. (That is, null fields
+only occur when you've reached the end of a line.)
+</p>
+</li><li>
+<p>All whitespace is not equal. Sorting is done according to the ASCII
+collating sequence. Therefore, TABs are sorted before spaces.
+</p>
+</li></ul>
+<p>Here is a silly but instructive example that demonstrates most of the
+hard cases. We'll sort the file
+<em class="emphasis">sortme</em>, which is:
+</p>
+
+<blockquote><pre class="code">        apple   Fruit shipment
+20      beta    beta test sites
+ 5              Something or other</pre></blockquote>
+
+<p>All is not as it seems -- <b class="emphasis-bold">cat -t
+-v</b> (<a href="ch12_05.htm#upt3-CHP-12-SECT-5">Section 12.5</a>, <a href="ch12_04.htm#upt3-CHP-12-SECT-4">Section 12.4</a>) shows that the file really looks like this:
+</p>
+
+<blockquote><pre class="code">^Iapple^IFruit shipment
+20^Ibeta^Ibeta test sites
+ 5^I^ISomething or other</pre></blockquote>
+
+<p><tt class="literal">^I</tt> indicates a tab character. Before showing you
+what <i class="command">sort</i> does with this file,
+let's break it into fields, being very careful to
+apply the rules above. In the table, we use quotes to show exactly
+where each field begins and ends:
+</p>
+
+<a name="ch22-3-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+
+
+
+<tr>
+<th>
+
+</th>
+<th>
+<p>Field 0</p>
+</th>
+<th>
+<p>Field 1</p>
+</th>
+<th>
+<p>Field 2</p>
+</th>
+<th>
+<p>Field 3</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Line 1</p>
+</td>
+<td>
+<p>"^Iapple"</p>
+</td>
+<td>
+<p>"Fruit"</p>
+</td>
+<td>
+<p>"shipment"</p>
+</td>
+<td>
+<p>null (no more data)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Line 2</p>
+</td>
+<td>
+<p>"20"</p>
+</td>
+<td>
+<p>"beta"</p>
+</td>
+<td>
+<p>"beta"</p>
+</td>
+<td>
+<p>"test"</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Line 3</p>
+</td>
+<td>
+<p>" 5"</p>
+</td>
+<td>
+<p>"^Isomething"</p>
+</td>
+<td>
+<p>"or"</p>
+</td>
+<td>
+<p>"other"</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>OK, now let's try some <i class="command">sort</i>
+commands; I've added annotations on the right,
+showing what character the "sort"
+was based on. First, we'll sort on field
+zero -- that is, the first field in each line:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sort sortme</b></tt>                     <i class="lineannotation">...sort on field zero</i>
+        apple   Fruit shipments          <i class="lineannotation">field 0, first character: TAB</i>
+ 5              Something or other       <i class="lineannotation">field 0, first character: SPACE</i>
+20      beta    beta test sites          <i class="lineannotation">field 0, first character: 2</i></pre></blockquote>
+
+<p>As I noted earlier, a TAB precedes a space in the collating sequence.
+Everything is as expected. Now let's try another,
+this time sorting on field 1 (the second field):
+</p>
+
+<blockquote><pre class="code">+% <tt class="userinput"><b>sort +1 sortme</b></tt>                  <i class="lineannotation">...sort on field 1</i>
+ 5              Something or other       <i class="lineannotation">field 1, first character: TAB</i>
+        apple   Fruit shipments          <i class="lineannotation">field 1, first character: F</i>
+20      beta    beta test sites          <i class="lineannotation">field 1, first character: b</i></pre></blockquote>
+
+<p>Again, the initial TAB causes "something or
+other" to appear first. "Fruit
+shipments" preceded
+"beta" because in the ASCII table,
+uppercase letters precede lowercase letters. Now,
+let's sort on the next field:
+</p>
+
+<blockquote><pre class="code">+% <tt class="userinput"><b>sort +2 sortme</b></tt>                  <i class="lineannotation">...sort on field 2</i>
+20      beta    beta test sites          <i class="lineannotation">field 2, first character: b</i>
+ 5              Something or other       <i class="lineannotation">field 2, first character: o</i>
+        apple   Fruit shipments          <i class="lineannotation">field 2, first character: s</i></pre></blockquote>
+
+<p>No surprises here. And finally, sort on field 3 (the
+"fourth" field):
+</p>
+
+<blockquote><pre class="code">+% <tt class="userinput"><b>sort +3 sortme</b></tt>                  <i class="lineannotation">...sort on field 3</i>
+        apple   Fruit shipments          <i class="lineannotation">field 3,  NULL</i>
+ 5              Something or other       <i class="lineannotation">field 3, first character: o</i>
+20      beta    beta test sites          <i class="lineannotation">field 3, first character: t</i></pre></blockquote>
+
+<p>The only surprise here is that the NULL field gets sorted first.
+That's really no surprise, though: NULL has the
+ASCII value zero, so we should expect it to come first.
+</p>
+
+<p>OK, this was a silly example. But it was a difficult one; a casual
+understanding of what sort "ought to
+do" won't explain any of these
+cases, which leads to another point. If someone tells you to sort
+some terrible mess of a data file, you could be heading for a
+nightmare. But often, you're not just sorting;
+you're also <em class="emphasis">designing</em> the data
+file you want to sort. If you get to design the format for the input
+data, a little bit of care will save you lots of headaches. If you
+have a choice, <em class="emphasis">never</em> allow TABs in the file. And
+be careful of leading spaces; a word with an extra space before it
+will be sorted <em class="emphasis">before</em> other words. Therefore,
+use an explicit delimiter between fields (like a colon), or use the
+<span class="option">-b</span> option (and an explicit sort field), which tells
+<i class="command">sort</i> to ignore initial whitespace.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch22_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch22_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">22.3. Changing the sort Field Delimiter</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">22.5. Alphabetic and Numeric Sorting</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

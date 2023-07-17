@@ -1,0 +1,115 @@
+<html><head><title>Problems Deleting Directories (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch14_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch14_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">14.16. Problems Deleting Directories</h2>
+
+<p><a name="IXT-14-6281" /><a name="IXT-14-6282" /><a name="IXT-14-6283" />What if you want to get rid of a
+directory? The standard  --  and safest  --  way to do this is
+to use the Unix <i class="command">rmdir</i><a name="IXT-14-6284" />
+"remove directory" utility:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rmdir files</b></tt></pre></blockquote>
+
+<p>The <i class="command">rmdir</i> command often confuses new users. It
+will <em class="emphasis">only</em> remove a directory if it is completely
+empty; otherwise, you'll get an error message:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rmdir files</b></tt>
+rmdir: files: Directory not empty
+% <tt class="userinput"><b>ls files</b></tt>
+%</pre></blockquote>
+
+<p>As in the example, <i class="command">ls</i> will often show that the
+directory is empty. What's going on?
+</p>
+
+<p>It's common for editors and other programs to create
+"<a name="IXT-14-6285" /> <a name="IXT-14-6286" />invisible" files (files
+with names beginning with a dot). The<a name="IXT-14-6287" /> <i class="command">ls</i>
+command normally doesn't list them; if you want to
+see them, you have to use <b class="emphasis-bold">ls -A</b>
+(<a href="ch08_09.htm#upt3-CHP-8-SECT-9">Section 8.9</a>):<a href="#FOOTNOTE-45">[45]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-45" /><p> [45]If your version of
+<i class="command">ls</i> doesn't have the
+<span class="option">-A</span> option, use <span class="option">-a</span> instead.
+You'll see the two <b class="emphasis-bold">special
+directory entries</b> <b class="emphasis-bold">. and
+..</b> (<a href="ch08_09.htm#upt3-CHP-8-SECT-9">Section 8.9</a>), which you can
+ignore.</p> </blockquote>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rmdir files</b></tt>
+rmdir: files: Directory not empty
+% <tt class="userinput"><b>ls -A files</b></tt>
+.BAK.textfile2</pre></blockquote>
+
+<p>Here, we see that the directory wasn't empty after
+all: there's a backup file that was left behind by
+some editor. You may have used <tt class="literal">rm
+*</tt><a name="IXT-14-6288" /> to clean the directory out, but that
+won't work: <i class="command">rm</i> also ignores files
+beginning with dots, unless you explicitly tell it to delete them. We
+really need a <a name="IXT-14-6289" />wildcard
+pattern like <tt class="literal">.??*</tt> or
+<tt class="literal">.[a-zA-Z0-9]*</tt> to catch normal dotfiles without
+catching the directories <tt class="literal">.</tt> and
+<tt class="literal">..</tt>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rmdir files</b></tt>
+rmdir: files: Directory not empty
+% <tt class="userinput"><b>ls -A files</b></tt>
+.BAK.textfile2
+% <tt class="userinput"><b>rm files/.??*</b></tt>
+% <tt class="userinput"><b>rmdir files</b></tt>
+%</pre></blockquote>
+
+<p>Other pitfalls might be files whose names consist of
+<a name="IXT-14-6290" /><a name="IXT-14-6291" />nonprinting
+characters or blank spaces -- sometimes these get created by
+accident or by malice (yes, some people think this is funny). Such
+files will usually give you <b class="emphasis-bold">"suspicious" ls
+output</b> (<a href="ch08_11.htm#upt3-CHP-8-SECT-11">Section 8.11</a>) (like a blank line).
+</p>
+
+<p>If you don't want to worry about all these special
+cases, just use <em class="emphasis">rm -r</em><a name="IXT-14-6292" />:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm -r files</b></tt></pre></blockquote>
+
+<p>This command removes the directory and everything
+that's in it, including other directories. A lot of
+people warn you about it; it's dangerous because
+it's easy to delete more than you realize.
+Personally, I use it all the time, and I've never
+made a mistake. I <em class="emphasis">never</em> bother with
+<i class="command">rmdir</i>.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch14_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch14_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">14.15. Removing a Strange File by its i-number</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">14.17. Deleting Stale Files</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

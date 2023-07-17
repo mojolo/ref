@@ -1,0 +1,210 @@
+<html><head><title>The Bourne Shell set Command (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_24.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_26.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.25. The Bourne Shell set Command</h2>
+
+<p>[Most of this article, except <em class="filename">IFS</em> and
+<tt class="literal">--</tt>, also applies to the C shell.  -- JP]
+</p>
+
+<p>You can pass options and arguments to a shell as you start it, as in:</p>
+
+<blockquote><pre class="code">sh -v file1 file2</pre></blockquote>
+
+<p>and also when a script is invoked with <tt class="literal">#!</tt>. The
+<i class="command">set</i> command lets you set command-line parameters,
+including most<a href="#FOOTNOTE-112">[112]</a> shell
+options, after you've started the shell. This simple
+idea has more uses than you might realize.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-112" /><p> [112]Some options for some shells can be
+set only from the command line as the shell is invoked. Check the
+shell's manual page.</p> </blockquote>
+
+<a name="upt3-CHP-35-SECT-25.1" /><div class="sect2">
+<h3 class="sect2">35.25.1. Setting Options</h3>
+
+<p><a name="IXT-35-3754" />The Bourne shell
+command line can have options like <span class="option">-e</span> (exit if any
+command returns nonzero status). It can also have other arguments;
+these are passed to shell scripts. You can set new command-line
+parameters while you're typing interactive commands
+(at a shell prompt) or in a shell script.
+</p>
+
+<p>To reset the command-line parameters, just type
+<i class="command">set</i> followed by the new parameters. For example,
+to ask the shell to show expanded versions of command lines after you
+type them, set the <b class="emphasis-bold">-v (verbose)
+option</b> (<a href="ch27_15.htm#upt3-CHP-27-SECT-15">Section 27.15</a>):
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>set -v</b></tt>
+$ <tt class="userinput"><b>mail $group1 &lt; message</b></tt>
+mail andy ellen heather steve wilma &lt; message
+$ <tt class="userinput"><b>mail $group2 &lt; message</b></tt>
+mail jpeek@jpeek.com randy@xyz.edu yori@mongo.medfly.com &lt; message
+$ <tt class="userinput"><b>set +v</b></tt></pre></blockquote>
+
+<p>On many Bourne shells, typing <tt class="literal">set +v</tt> cancels the
+<span class="option">v</span> option. On other (mostly early) shells,
+there's no <tt class="literal">+</tt> feature. To work
+around that problem, you could start a <b class="emphasis-bold">subshell</b> (<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) with
+<tt class="literal">sh -v</tt>, run the commands there, then exit the
+subshell to cancel the verbose option.
+</p>
+
+</div>
+<a name="upt3-CHP-35-SECT-25.2" /><div class="sect2">
+<h3 class="sect2">35.25.2. Setting (and Parsing) Parameters</h3>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: users</p>
+
+<p><a name="IXT-35-3755" /><a name="IXT-35-3756" />You <a name="IXT-35-3757" /><a name="IXT-35-3758" />can put filenames or any other strings in
+the command-line parameters interactively or from a shell script.
+That's handy for storing and parsing the output of a
+Unix command with <b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>). For example, you can get a list of all
+logged-in users from the parameters <tt class="literal">$1</tt>,
+<tt class="literal">$2</tt>, and so on. Use
+<i class="command">users</i><a name="IXT-35-3759" /> <a name="IXT-35-3760" /> (or <i class="command">rusers</i> to find
+all the logged in users on the local network) if your system has it.
+Otherwise, use <b class="emphasis-bold">who</b>
+(<a name="IXT-35-3761" /><a name="IXT-35-3762" /><a href="ch02_08.htm#upt3-CHP-2-SECT-8">Section 2.8</a>) and <b class="emphasis-bold">cut</b>
+(<a href="ch21_14.htm#upt3-CHP-21-SECT-14">Section 21.14</a>) to strip off everything but the
+usernames:
+</p>
+
+<p><tt class="literal">for</tt> <a href="ch35_21.htm#upt3-CHP-35-SECT-21">Section 35.21</a></p>
+
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>set `users`</b></tt>
+$ <tt class="userinput"><b>set `who | cut -c1-8`</b></tt>
+$ <tt class="userinput"><b>for u</b></tt>
+&gt; <tt class="userinput"><b>do</b></tt>
+&gt; <i class="lineannotation">...do something with each user ($u)...</i>
+&gt; <tt class="userinput"><b>done</b></tt></pre></blockquote>
+
+<p>You can save the original parameters in another variable and reset
+them later:
+</p>
+
+<blockquote><pre class="code">oldparms="$*"
+set <em class="replaceable"><tt>something new</tt></em>
+    <i class="lineannotation">...use new settings...</i>
+set $oldparms</pre></blockquote>
+
+<p>Be sure to watch your quoting (as the next section explains).</p>
+
+<p><a name="IXT-35-3763" />If the first parameter you
+<i class="command">set</i> starts with a dash, like
+<tt class="literal">-e</tt>, the shell will treat it as its own option
+instead of as a string to put into the command-line parameters. To
+avoid this, use <tt class="literal">--</tt> (two dashes) as the first
+argument to <i class="command">set</i>. In this example,
+<tt class="literal">$1</tt> gets -<span class="option">e</span>, and the filenames
+expanded from the wildcard pattern go into <tt class="literal">$2</tt>,
+<tt class="literal">$3</tt>, etc.:
+</p>
+
+<blockquote><pre class="code">set -- -e file*</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-35-SECT-25.3" /><div class="sect2">
+<h3 class="sect2">35.25.3. (Avoiding?) set with No Arguments</h3>
+
+<p><a name="IXT-35-3764" />If you type
+<i class="command">set</i> by itself with no arguments, it will show a
+list of all currently set shell variables. In newer Bourne-type
+shells, it also shows <b class="emphasis-bold">shell
+functions</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>) and other shell
+settings.
+</p>
+
+<p>This can cause you grief if you accidentally don't
+pass arguments to <i class="command">set</i> in the middle of a script,
+and screenfuls of variables spew onto the user's
+screen. For example, your script runs <tt class="literal">set 'users'</tt>
+from a <b class="emphasis-bold">cron</b> (<a href="ch25_02.htm#upt3-CHP-25-SECT-2">Section 25.2</a>) job, in the middle of the night when no one
+is logged on. The <i class="command">users</i> command returns an empty
+string, so <i class="command">set</i> gets no arguments, so it outputs a
+long list of junk.
+</p>
+
+<p>The standard workaround for this problem is to always use a dummy
+first parameter -- typically, a single
+<tt class="literal">x</tt> -- when you're setting
+parameters. Then use <b class="emphasis-bold">shift</b> (<a href="ch35_22.htm#upt3-CHP-35-SECT-22">Section 35.22</a>) to shift away the <tt class="literal">x</tt>,
+leaving the other parameters (possibly none). For example:
+</p>
+
+<blockquote><pre class="code">set x `users`
+shift</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-35-SECT-25.4" /><div class="sect2">
+<h3 class="sect2">35.25.4. Watch Your Quoting</h3>
+
+<p><a name="IXT-35-3765" /><a name="IXT-35-3766" /><a name="IXT-35-3767" />Because
+the shell parses and scans the <a name="IXT-35-3768" /><a name="IXT-35-3769" />new parameters before it stores
+them, <b class="emphasis-bold">wildcards</b> (<a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a>) and other <b class="emphasis-bold">special
+characters</b> (<a href="ch27_17.htm#upt3-CHP-27-SECT-17">Section 27.17</a>) will be
+interpreted, so watch your <b class="emphasis-bold">quoting</b>
+(<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>). You can take advantage of this to
+parse lines of text into pieces that aren't
+separated with the usual spaces and TABs -- for instance, a line
+from a database with colon-separated fields -- by setting the
+<b class="emphasis-bold">IFS</b> (<a href="ch36_23.htm#upt3-CHP-36-SECT-23">Section 36.23</a>)
+variable before the <i class="command">set</i> command.
+</p>
+
+<p><a name="IXT-35-3770" />If you want to save any
+special quoting on the original command line, be careful: the quoting
+will be lost unless you're clever. For example, if
+<tt class="literal">$1</tt> used to be <em class="emphasis">John Smith</em>, it
+will be split after it's restored:
+<tt class="literal">$1</tt> will have <em class="emphasis">John</em> and
+<tt class="literal">$2</tt> will be <em class="emphasis">Smith</em>. A better
+solution might be to use a <b class="emphasis-bold">subshell</b>
+(<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>) for the part of the script where you
+need to reset the command-line parameters:
+</p>
+
+<blockquote><pre class="code"># reset command-line parameters during subshell only:
+(set <em class="replaceable"><tt>some new parameters</tt></em>
+   <i class="lineannotation">...do something with new parameters...</i>
+)
+# original parameters aren't affected from here on...</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-35-SECT-25.5" /><div class="sect2">
+<h3 class="sect2">35.25.5. Can't Set $0</h3>
+
+<p>One last note: <i class="command">set</i> won't set
+<tt class="literal">$0</tt>, the name of the script file.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_24.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_26.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.24. Standard Command-Line Parsing</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.26. test: Testing Files and Strings</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

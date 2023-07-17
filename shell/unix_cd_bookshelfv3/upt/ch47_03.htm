@@ -1,0 +1,167 @@
+<html><head><title>Securing Samba (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch47_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch47_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">47.3. Securing Samba</h2>
+
+<p><a name="IXT-47-2019" /><a name="IXT-47-2020" />The
+<a name="IXT-47-2021" />topic of security under Samba falls
+mainly into two categories: how to make the SMB server secure and how
+clients authenticate with the SMB server. Since the
+<a name="IXT-47-2022" />authentication
+issue is the thorniest, let's talk about it first.
+</p>
+
+<p><a name="IXT-47-2023" />In
+<a name="IXT-47-2024" /><a name="IXT-47-2025" />the
+<tt class="literal">[global]</tt> section of the
+<em class="filename">smb.conf</em><a name="IXT-47-2026" />
+file, there is a directive called <tt class="literal">security</tt> that
+can take one of four values: <em class="emphasis">share</em>,
+<em class="emphasis">user</em>, <em class="emphasis">server</em>, or
+<em class="emphasis">domain</em>. Choosing <em class="emphasis">share</em>
+means that each shared resource has a set of passwords associated
+with it. Users must present one of those passwords to use the
+resource. <em class="emphasis">User</em> security requires users to
+provide a username and password to gain access to any of the shares.
+Samba can ask another SMB server to authenticate user credentials,
+instead of using local files, by selecting the
+<em class="emphasis">server</em> security setting. If you choose this
+security option, you will need to provide the <tt class="literal">password
+server</tt> directive a space-separated list of NETBIOS machine
+names that will do the authentication. The last security option is
+<em class="emphasis">domain</em>. In this model, your machine joins an
+existing NT domain that does all the user credential authentication.
+</p>
+
+<p><a name="IXT-47-2027" />If you are new to Samba,
+your best bet is to use <em class="emphasis">user</em> security. The
+ugliest problem of Samba now rears its head: to use encrypted
+passwords or not to. The issue here is that older Windows clients
+(early Windows 95 and pre-SP3 NT 4.0) send user passwords over the
+network in clear text. The good news about clear text passwords is
+that Samba can use your system's
+<em class="filename">/etc/passwd</em><a name="IXT-47-2028" /> to authenticate users. All real accounts
+on your system will use their Unix username and password to connect
+to your SMB shares. The problems with this approach are:
+</p>
+
+<ul><li>
+<p>Passwords can be easily snooped from the network.</p>
+</li><li>
+<p>Every SMB user requires a real account on your system.</p>
+</li><li>
+<p>Newer SMB clients will need to be patched to connect to your shares.</p>
+</li></ul>
+<p>If the first two reasons don't scare you off using
+clear text passwords, the last reason is pretty daunting if you need
+to patch a lot of workstations. However, if you still want to go this
+route, you need to add the elements listed in <a href="ch47_03.htm#upt3-CHP-47-TABLE-1">Table 47-1</a> to each client's
+<a name="IXT-47-2029" />registry (using
+<i class="command">REGEDIT.EXE</i>).
+</p>
+
+<a name="upt3-CHP-47-TABLE-1" /><h4 class="objtitle">Table 47-1. Registry settings for clear text SMB passwords </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Operating system</p>
+</th>
+<th>
+<p>Registry hack</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Windows 95, Windows 98, Windows Me</p>
+</td>
+<td>
+<p>Create a new field called <tt class="literal">EnablePlainTextPassword</tt>
+with the <em class="emphasis">dword</em> value 1 in the registry key:
+<tt class="literal">\HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\VxD\VNETSUP\</tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Windows NT</p>
+</td>
+<td>
+<p>Create a new field called <tt class="literal">EnablePlainTextPassword</tt>
+with a <em class="emphasis">dword</em> value of 1 in the registry key:
+<tt class="literal">HKEY_LOCAL_MACHINE\system\CurrentControlSet\Services\Rdr\Parameters\</tt>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Windows 2000</p>
+</td>
+<td>
+<p>Create a new field <tt class="literal">EnablePlainTextPassword</tt> with a
+<em class="emphasis">dword</em> value of 1 in the registry key:
+<tt class="literal">HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanWorkStation\Parameters\</tt>
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>If you're not sold on clear text passwords, you will
+need to create a separate password file for SMB users. Luckily,
+there's a utility called
+<i class="command">smbpasswd</i><a name="IXT-47-2031" /> that can manage this file for you.
+Adding a new SMB user who already has a Unix account on your system
+is as simple as:
+</p>
+
+<blockquote><pre class="code"># smbpasswd <em class="replaceable"><tt>username</tt></em></pre></blockquote>
+
+<p>You will then be prompted for a password for this account. The
+drawback to this approach is the added maintenance of keeping the SMB
+passwords in sync with the Unix passwords. See <em class="emphasis">Using
+Samba</em> for some guidance here. The hope of the near future
+is to use an <a name="IXT-47-2032" />LDAP server (either
+Microsoft's Active Directory or a Unix LDAP server)
+for all system passwords. This is the dream of single-source logins
+and something the Samba team is working towards supporting.
+</p>
+
+<p>After authentication issues, the big security concerns about Samba
+involve <a name="IXT-47-2033" />access
+control. Some of the ways to handle access control have been shown in
+the configuration section of this article. Additionally, each share
+can use the <tt class="literal">valid users</tt> directive to limit the set
+of users to a space-separated list. You might also consider making
+the share <tt class="literal">read only</tt> and then put only a few users
+on the <tt class="literal">write</tt> <tt class="literal">list</tt>.
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch47_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch47_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">47.2. Installing and Configuring Samba</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">47.4. SWAT and GUI SMB Browsers</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,268 @@
+<html><head><title>Syntax (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">5.2. Syntax</h2><p>This section describes the many symbols peculiar to
+the C shell. The topics are arranged as follows:</p>
+<ul><li><p>Special files </p>
+</li><li><p>Filename metacharacters </p>
+</li><li><p>Quoting</p>
+</li><li><p>Command forms</p>
+</li><li><p>Redirection forms</p>
+</li></ul>
+
+<a name="unut-ch-5-sect-2.1" /><div class="sect2"><h3 class="sect2">5.2.1. Special Files</h3><p>
+<a name="IXT-5-122907" />
+<a name="IXT-5-122908" />
+<a name="IXT-5-122909" />
+<a name="IXT-5-122910" /></p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><tt class="literal">~/.cshrc</tt></td><td>Executed at each instance of shell invocation.</td></tr>
+<tr><td><tt class="literal">~/.login</tt></td><td>Executed by login shell after <tt class="literal">.cshrc</tt> at login.</td></tr>
+<tr><td><tt class="literal">~/.logout</tt></td><td>Executed by login shell at logout.</td></tr>
+<tr><td><tt class="literal">~/.history</tt></td><td>History list saved from previous login.</td></tr>
+<tr><td><tt class="literal">/etc/passwd</tt></td><td><p>Source of home directories for <tt class="literal">~</tt><em class="emphasis">name</em> abbreviations. (May come from NIS or NIS+ instead.)</p>
+</td></tr>
+</table><p>
+
+<a name="IXT-5-122911" />
+<a name="IXT-5-122912" /></div>
+
+<a name="unut-ch-5-sect-2.2" /><div class="sect2"><h3 class="sect2">5.2.2. Filename Metacharacters</h3><p>
+<a name="IXT-5-122913" />
+<a name="IXT-5-122914" />
+<a name="IXT-5-122915" />
+<a name="IXT-5-122916" /></p>
+<table border="1" cellpadding="3">
+<tr><th><em class="emphasis">Metacharacter</em></th><th><em class="emphasis">Description</em></th></tr>
+
+<tr><td><tt class="literal">*</tt></td><td>Match any string of zero or more characters.</td></tr>
+<tr><td><tt class="literal">?</tt></td><td>Match any single character.</td></tr>
+<tr><td><tt class="literal">[</tt><em class="replaceable"><tt>abc</tt></em>...<tt class="literal">]</tt></td><td><p>Match any one of the enclosed characters; a hyphen can be used to
+specify a range (e.g., a&#8211;z, A&#8211;Z, 0&#8211;9).</p>
+</td></tr>
+<tr><td><tt class="literal">{</tt><em class="replaceable"><tt>abc</em><tt class="literal">,</tt><em class="replaceable">xxx</tt></em><tt class="literal">,</tt>...<tt class="literal">}</tt></td><td><p>Expand each comma-separated string inside braces.
+The strings need not match actual filenames.</p>
+</td></tr>
+<tr><td><tt class="literal">~</tt></td><td>Home directory for the current user.</td></tr>
+<tr><td><tt class="literal">~</tt><em class="replaceable"><tt>name</em></td><td>Home directory of user <em class="emphasis">name</tt></em>.</td></tr>
+</table><p>
+
+<a name="unut-ch-5-sect-2.2.1" /><div class="sect3"><h3 class="sect3">5.2.2.1. Examples</h3><blockquote><pre class="code">% <tt class="userinput"><b>ls new*</b></tt>         <i class="lineannotation">Match new and new.1</i>
+% <tt class="userinput"><b>cat ch?</b></tt>         <i class="lineannotation">Match ch9 but not ch10</i>
+% <tt class="userinput"><b>vi [D-R]*</b></tt>       <i class="lineannotation">Match files that begin with uppercase D through R</i>
+% <tt class="userinput"><b>ls {ch,app}?</b></tt>    <i class="lineannotation">Expand, then match ch1, ch2, app1, app2</i>
+% <tt class="userinput"><b>mv info{,.old}</b></tt>  <i class="lineannotation">Expands to mv info info.old</i>
+% <tt class="userinput"><b>cd ~tom</b></tt>         <i class="lineannotation">Change to tom's home directory</i></pre></blockquote>
+</div>
+</div>
+
+<a name="unut-ch-5-sect-2.3" /><div class="sect2"><h3 class="sect2">5.2.3. Quoting</h3><p>
+<a name="IXT-5-122917" />
+<a name="IXT-5-122918" />Quoting disables a character's special meaning and
+allows it to be used literally, as itself.
+The characters in the following table have special meaning to the C shell.</p>
+<table border="1" cellpadding="3">
+<tr><th><em class="emphasis">Character</em></th><th><em class="emphasis">Meaning</em></th></tr>
+
+<tr><td><tt class="literal">;</tt></td><td>Command separator</td></tr>
+<tr><td><tt class="literal">&amp;</tt></td><td>Background execution</td></tr>
+<tr><td><tt class="literal">( )</tt></td><td>Command grouping</td></tr>
+<tr><td><tt class="literal">|</tt></td><td>Pipe</td></tr>
+<tr><td><tt class="literal">* ? [ ] ~</tt></td><td>Filename metacharacters</td></tr>
+<tr><td><tt class="literal">{ }</tt></td><td><p>String expansion characters;
+usually don't require quoting</p>
+</td></tr>
+<tr><td><tt class="literal">&lt; &gt; &amp; !</tt></td><td>Redirection symbols</td></tr>
+<tr><td><tt class="literal">! ^</tt></td><td>History substitution, quick substitution</td></tr>
+<tr><td><tt class="literal">" ' \</tt></td><td>Used in quoting other characters
+<a name="IXT-5-122919" />
+<a name="IXT-5-122920" /></td></tr>
+<tr><td><tt class="literal">&#8216;</tt></td><td>Command substitution</td></tr>
+<tr><td><tt class="literal">$</tt></td><td>Variable substitution</td></tr>
+<tr><td><tt class="literal">space tab newline</tt></td><td>Word separators</td></tr>
+</table><p>
+<p>These characters can be used for quoting:</p>
+<dl><dt><tt class="literal">"&#160;"</tt></dt><dd>Everything between <tt class="literal">"</tt> and <tt class="literal">"</tt> is
+taken literally, except for
+the following characters that keep their special meaning:</p>
+<dl><dt><tt class="literal">$</tt></dt><dd>Variable substitution will occur.</p>
+</dd>
+<dt><tt class="literal">&#8216;</tt></dt><dd>Command substitution will occur.</p>
+</dd>
+<dt><tt class="literal">"</tt></dt><dd>This marks the end of the double quote.</p>
+</dd>
+<dt><tt class="literal">\</tt></dt><dd>Escape next character.</p>
+</dd>
+<dt><tt class="literal">!</tt></dt><dd>The history character.</p>
+</dd>
+<dt><tt class="literal">newline</tt></dt><dd>The newline character.</p>
+</dd>
+</dl>
+</dd>
+<dt><tt class="literal">'&#160;'</tt></dt><dd>Everything between <tt class="literal">'</tt> and <tt class="literal">'</tt>
+is taken literally except for <tt class="literal">!</tt> (history) and another
+<tt class="literal">'</tt>, and newline.</p>
+</dd>
+<dt><tt class="literal">\</tt></dt><dd>The character following a <tt class="literal">\</tt> is taken literally.
+Use within <tt class="literal">""</tt> to escape <tt class="literal">"</tt>,
+<tt class="literal">$</tt>, <tt class="literal">&#8216;</tt>, and newline.
+Use within <tt class="literal">''</tt> to escape newlines. Often used to escape itself, spaces, or newlines.
+Always needed to escape a history character (usually <tt class="literal">!</tt>).</p>
+</dd>
+</dl>
+
+<a name="unut-ch-5-sect-2.3.1" /><div class="sect3"><h3 class="sect3">5.2.3.1. Examples</h3><blockquote><pre class="code">% <tt class="userinput"><b>echo 'Single quotes "protect" double quotes'</b></tt>
+Single quotes "protect" double quotes
+
+% <tt class="userinput"><b>echo "Don't double quotes protect single quotes too?"</b></tt>
+Don't double quotes protect single quotes too?
+
+% <tt class="userinput"><b>echo "You have `ls|wc -l` files in `pwd`"</b></tt>
+You have       43 files in /home/bob
+
+% <tt class="userinput"><b>echo The value of \$x is $x</b></tt>
+The value of $x is 100</pre></blockquote>
+</div>
+</div>
+
+<a name="unut-ch-5-sect-2.4" /><div class="sect2"><h3 class="sect2">5.2.4. Command Forms</h3><p>
+<a name="IXT-5-122921" />
+<a name="IXT-5-122922" /></p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&amp;</tt></td><td>Execute <em class="emphasis">cmd</tt></em></tt> in background.</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd1</em></tt> <tt class="literal">;</tt> <tt><em class="replaceable">cmd2</em></tt></td><td><p>Command sequence; execute multiple <em class="emphasis">cmd</tt></em></tt> s on the same line.</p>
+</td></tr>
+<tr><td><tt class="literal">(</tt><tt><em class="replaceable"><tt>cmd1</em></tt> <tt class="literal">;</tt> <tt><em class="replaceable">cmd2</tt></em></tt><tt class="literal">)</tt></td><td><p>Subshell;
+treat <em class="emphasis">cmd1</em></tt> and <em class="emphasis">cmd2</em></tt> as a command group.</p>
+</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd1</em></tt> <tt class="literal">|</tt> <tt><em class="replaceable">cmd2</em></tt></td><td><p>Pipe; use output from <em class="emphasis">cmd1</em></tt> as input to <em class="emphasis">cmd2</tt></em></tt>.</p>
+</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd1</em></tt> <tt class="literal">&#8216;</tt><tt><em class="replaceable">cmd2</tt></em></tt><tt class="literal">&#8216;</tt></td><td><p>Command substitution;
+use <em class="emphasis">cmd2</em></tt> output as arguments to <em class="emphasis">cmd1</em></tt>.</p>
+</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd1</em></tt> <tt class="literal">&amp;&amp;</tt> <tt><em class="replaceable">cmd2</em></tt></td><td><p>AND; execute <em class="emphasis">cmd1</em></tt> and then (if <em class="emphasis">cmd1</tt></em></tt> succeeds)
+<em class="emphasis">cmd2</em></tt>.
+This is a &#8220;short-circuit&#8221; operation;
+<em class="emphasis">cmd2</em></tt> is never executed if <em class="emphasis">cmd1</em></tt> fails.</p>
+</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd1</em></tt> <tt class="literal">||</tt> <tt><em class="replaceable">cmd2</em></tt></td><td><p>OR; execute either <em class="emphasis">cmd1</em></tt> or (if <em class="emphasis">cmd1</tt></em></tt> fails)
+<em class="emphasis">cmd2</em></tt>.
+This is a &#8220;short-circuit&#8221; operation;
+<em class="emphasis">cmd2</em></tt> is never executed if <em class="emphasis">cmd1</em></tt> succeeds.</p>
+</td></tr>
+</table><p>
+
+<a name="unut-ch-5-sect-2.4.1" /><div class="sect3"><h3 class="sect3">5.2.4.1. Examples</h3><blockquote><pre class="code">% <tt class="userinput"><b>nroff file &gt; file.out &amp;</b></tt>            <i class="lineannotation">Format in the background</i>
+% <tt class="userinput"><b>cd; ls</b></tt>                             <i class="lineannotation">Execute sequentially</i>
+% <tt class="userinput"><b>(date; who; pwd) &gt; logfile</b></tt>         <i class="lineannotation">All output is redirected</i>
+% <tt class="userinput"><b>sort file | pr -3 | lp</b></tt>             <i class="lineannotation">Sort file, page output, then print</i>
+% <tt class="userinput"><b>vi `grep -l ifdef *.c`</b></tt>             <i class="lineannotation">Edit files found by grep</i>
+% <tt class="userinput"><b>egrep '(yes|no)' `cat list`</b></tt>        <i class="lineannotation">Specify a list of files to search</i>
+% <tt class="userinput"><b>grep XX file &amp;&amp; lp file</b></tt>            <i class="lineannotation">Print file if it contains the pattern,</i>
+% <tt class="userinput"><b>grep XX file || echo XX not found</b></tt>  <i class="lineannotation">otherwise, echo an error message</i></pre></blockquote>
+</div>
+</div>
+
+<a name="unut-ch-5-sect-2.5" /><div class="sect2"><h3 class="sect2">5.2.5. Redirection Forms</h3><p>
+<a name="IXT-5-122923" />
+<a name="IXT-5-122924" /></p>
+<table border="1" cellpadding="3"><tr><th><em class="emphasis">File Desciptor</em></tt></th><th><em class="emphasis">Name</em></tt></th><th><em class="emphasis">Common Abbreviation</em></tt></th><th><em class="emphasis">Typical Default</em></tt></th></tr>
+
+<tr><td>0</td><td>Standard input</td><td>stdin</td><td>Keyboard</td></tr>
+<tr><td>1</td><td>Standard output</td><td>stdout</td><td>Terminal</td></tr>
+<tr><td>2</td><td>Standard error</td><td>stderr</td><td>Terminal</td></tr>
+</table><p>
+<p>The usual input source or output destination can
+be changed, as seen in the following sections.</p>
+
+<a name="unut-ch-5-sect-2.5.1" /><div class="sect3"><h3 class="sect3">5.2.5.1. Simple redirection</h3><dl><dt><i><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;</tt> <tt><em class="replaceable">file</em></tt></i></dt><dd>Send output of <em class="emphasis">cmd</em></tt> to <em class="emphasis">file</tt></em></tt> (overwrite).</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;!</tt> <tt><em class="replaceable">file</tt></em></tt></i></dt><dd>Same as above, even if <tt class="literal">noclobber</tt> is set.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;&gt;</tt> <tt><em class="replaceable">file</em></tt></i></dt><dd>Send output of <em class="emphasis">cmd</em></tt> to <em class="emphasis">file</tt></em></tt> (append).</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;&gt;!</tt> <tt><em class="replaceable">file</em></tt></i></dt><dd>Same as above, but write to <em class="emphasis">file</tt></em></tt> even if
+<tt class="literal">noclobber</tt> is set.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&lt;</tt> <tt><em class="replaceable">file</em></tt></i></dt><dd>Take input for <em class="emphasis">cmd</em></tt> from <em class="emphasis">file</tt></em></tt>.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&lt;&lt;</tt> <tt><em class="replaceable">text</em></tt></i></dt><dd>Read standard input up to a line identical to
+<em class="emphasis">text</em></tt> (<em class="emphasis">text</tt></em></tt> can be stored in a shell
+variable).  Input is usually typed at the terminal or in the shell
+program. Commands that typically use this syntax include <tt class="literal">cat</tt>,
+<tt class="literal">echo</tt>, <tt class="literal">ex</tt>, and <tt class="literal">sed</tt>.
+If <em class="emphasis">text</em></tt> is quoted (using any of the shell-quoting
+mechanisms), the input is passed through verbatim.</p>
+</dd>
+</dl>
+</div>
+
+<a name="unut-ch-5-sect-2.5.2" /><div class="sect3"><h3 class="sect3">5.2.5.2. Multiple redirection</h3>
+<table border="1" cellpadding="3">
+
+<tr><td><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;&amp;</tt> <tt><em class="replaceable">file</em></tt></td><td>Send both standard output and standard error to <em class="emphasis">file</tt></em></tt>.</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;&amp;!</tt> <tt><em class="replaceable">file</tt></em></tt></td><td>Same as above, even if <tt class="literal">noclobber</tt> is set.</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;&gt;&amp;</tt> <tt><em class="replaceable">file</tt></em></tt></td><td><p>Append standard output and standard error
+to end of <em class="emphasis">file</em></tt>.</p>
+</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;&gt;&amp;!</tt> <tt><em class="replaceable">file</em></tt></td><td><p>Same as above, but append to or create <em class="emphasis">file</tt></em></tt> even if
+<tt class="literal">noclobber</tt> is set.</p>
+</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd1</em></tt> <tt class="literal">|&amp;</tt> <tt><em class="replaceable">cmd2</tt></em></tt></td><td>Pipe standard error together with standard output.</td></tr>
+<tr><td><tt class="literal">(</tt><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">&gt;</tt> <tt><em class="replaceable">f1</em></tt><tt class="literal">) &gt;&amp;</tt> <tt><em class="replaceable">f2</em></tt></td><td><p>Send standard output to file <em class="emphasis">f1</tt></em></tt>,
+standard error to file <em class="emphasis">f2</em></tt>.</p>
+</td></tr>
+<tr><td><tt><em class="replaceable"><tt>cmd</em></tt> <tt class="literal">| tee</tt> <tt><em class="replaceable">files</em></tt></td><td><p>Send output of <em class="emphasis">cmd</tt></em></tt> to standard output (usually the terminal)
+and to <em class="emphasis">files</em></tt>.  (See the Example in
+<a href="ch02_01.htm">Chapter 2</a>,
+under <b class="emphasis-bold">tee</b>.)</p>
+</td></tr>
+</table><p>
+</div>
+
+<a name="unut-ch-5-sect-2.5.3" /><div class="sect3"><h3 class="sect3">5.2.5.3. Examples</h3><blockquote><pre class="code">% <tt class="userinput"><b>cat part1 &gt; book</b></tt>
+% <tt class="userinput"><b>cat part2 part3 &gt;&gt; book</b></tt>
+% <tt class="userinput"><b>mail tim &lt; report</b></tt>
+% <tt class="userinput"><b>cc calc.c &gt;&amp; error_out</b></tt>
+% <tt class="userinput"><b>cc newcalc.c &gt;&amp;! error_out</b></tt>
+% <tt class="userinput"><b>grep Unix ch* |&amp; pr</b></tt>
+% <tt class="userinput"><b>(find / -print &gt; filelist) &gt;&amp; no_access</b></tt>
+
+% <tt class="userinput"><b>sed 's/^/XX /g' &lt;&lt; "END_ARCHIVE"</b></tt>
+<tt class="userinput"><b>This is often how a shell archive is "wrapped",</b></tt>
+<tt class="userinput"><b>bundling text for distribution.  You would normally</b></tt>
+<tt class="userinput"><b>run sed from a shell program, not from the command line.</b></tt>
+
+
+<tt class="userinput"><b>"END_ARCHIVE"</b></tt>
+XX This is often how a shell archive is "wrapped",
+XX bundling text for distribution.  You would normally
+XX run sed from a shell program, not from the command line.</pre></blockquote>
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5. The C Shell</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.3. Variables</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,184 @@
+<html><head><title>When Does a User Become a User (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch49_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch49_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">49.2. When Does a User Become a User</h2>
+
+<p><a name="upt3-IDXTERM-7774" />A user is added to the system when
+they're given an entry in the
+<em class="filename">passwd</em><a name="IXT-49-373" /> file, as in the following entry:
+</p>
+
+<blockquote><pre class="code">mike:*:1007:1007:Mike User:/usr/home/mike:/usr/local/bin/bash</pre></blockquote>
+
+<p>The elements, delimited by colons that make up this record, are:</p>
+
+<dl>
+<dt><i>Username</i></dt>
+<dd>
+Name used to login to system</p>
+</dd>
+
+
+<dt><i>Password entry</i></dt>
+<dd>
+Encrypted password, asterisk symbolizing bad password or use of
+shadow file, or exclamation point (!) to signify that the password is
+in <em class="filename">/etc/security/passwd</em> or in
+<em class="filename">/etc/master.passwd</em> in FreeBSD systems
+</p>
+</dd>
+
+
+<dt><i>UID</i></dt>
+<dd>
+Unique user identifier</p>
+</dd>
+
+
+<dt><i>Primary group ID</i></dt>
+<dd>
+ID of group that will be primary group for user</p>
+</dd>
+
+
+<dt><i>Comment</i></dt>
+<dd>
+General text holding name, address, and so on</p>
+</dd>
+
+
+<dt><i>User's home directory</i></dt>
+<dd><p /></dd>
+
+
+<dt><i>User's startup shell</i></dt>
+<dd><p /></dd>
+
+</dl>
+
+<p>In the example, "mike" has a
+<a name="IXT-49-374" /><a name="IXT-49-375" />UID of 1007, belongs to group 1007, has a
+home directory in <em class="filename">/usr/home/mike</em></tt>, and logs into
+a bash shell. In this FreeBSD system, the password is stored in a
+separate shadow file.
+</p>
+
+<p><a name="IXT-49-376" /><a name="IXT-49-377" />Usernames
+are usually no more than 8 characters, though this differs based on
+type of system. Usernames consist of alphanumeric characters and are
+case-sensitive. Case sensitivity also applies with passwords, which
+can be longer and use other characters.
+</p>
+
+<p>The UID must be unique, as would be expected. When a new user is
+added, the next available UID is usually used, but
+there's no restriction on having gaps or using order
+with UIDs. However, if the Unix box is part of a network, it is
+essential that the person's UID be unique across the
+network. The same constraints apply to the group ID: in most cases a
+new group ID equal to the UID is assigned the person. Addition to
+other groups occurs after the person is added to the system.
+</p>
+
+<p>The UID of 0 (zero) is the
+<a name="IXT-49-378" />superuser, root. The
+<a name="IXT-49-379" />GID of 0 (zero) is
+<a name="IXT-49-380" />wheel, the superuser group.
+</p>
+
+<p>The user's name, address, office location, etc. can
+be included in the comment field, and the default home directory
+(created before adding the user) and person's
+startup shell is added to the record.
+</p>
+
+<p>Adding users varies widely between systems. Apple's
+<a name="IXT-49-381" />Darwin uses a separate system called
+<em class="filename">NetInfo</em></tt>, an open source application (available
+at <a href="http://sourceforge.net/projects/netinfo4unix/">http://sourceforge.net/projects/netinfo4unix/</a>)
+to manage users, groups, directories, and so on. A daemon uses
+information from NetInfo to control user access; the user
+"flat files," as
+<em class="emphasis">passwd</em></tt> and <em class="emphasis">group</em></tt> are known
+in this system, are used only in single-user environments.
+</p>
+
+<p>In <a name="IXT-49-382" /><a name="IXT-49-383" />Linux, Solaris, and other systems, the
+process of adding a user is simplified with a utility,
+<em class="filename">adduser</em></tt><a name="IXT-49-384" /> (or
+<em class="filename">useradd</em></tt><a name="IXT-49-385" />). The simple form of the utility is:
+</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>adduser</b></tt> <tt><em class="replaceable"><tt>username</tt></em></tt></pre></blockquote>
+
+<p>The utility is called with the username of the new user. Based on the
+system, the user is then added with defaults or
+you're interactively asked for more information. Or
+you can specify information on the command line
+that's used to create the user.
+</p>
+
+<p>In Red Hat <a name="IXT-49-386" />Linux, <em class="filename">adduser</em></tt> is
+an alias for <em class="filename">useradd</em></tt>. Default values are used
+for each user, such as a home location of
+<em class="emphasis">/home/username</em></tt> and a default shell
+(<em class="emphasis">bash</em></tt>), unless specified otherwise on the
+command line. In the following example, a new user,
+<em class="emphasis">testuser</em></tt>, is added. Command-line options are
+used to override the default information:
+</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>useradd -c "Test User" -d /home/local/testuser -G 501, 502 -p changepassword</b></tt>
+<tt class="userinput"><b>-s /bin/bash -e 2002-05-24</b></tt></pre></blockquote>
+
+<p>In this example, <tt class="literal">-c</tt> is used to add a username
+comment (the user's full name),
+<tt class="literal">-G</tt> specifies what groups to add the person to,
+<tt class="literal">-p</tt> adds a password, <tt class="literal">-s</tt> sets the
+person's default shell, and <tt class="literal">-e</tt>
+specifies that the username expires on a certain date. The person is
+added to their own group -- 503 in this example. To override this
+I would use the <tt class="literal">-g</tt> command-line
+parameter -- the <tt class="literal">-G</tt> only adds the person to
+additional groups, it doesn't override default
+behavior.
+</p>
+
+<p>Within <a name="IXT-49-387" /><a name="IXT-49-388" />Mac OS X, user and group management is
+handled through Netinfo. Find out more about Netinfo at <a href="http://www.opensource.apple.com/projects/documentation/howto/html/netinfo.html">http://www.opensource.apple.com/projects/documentation/howto/html/netinfo.html</a>.
+The command-line utility to add a user via Netinfo is niutil. An
+example of its use is:
+</p>
+
+<blockquote><pre class="code">shelleyp% niutil-create//users/newbie</pre></blockquote>
+
+<p>Use the system's manpages to see if
+<em class="filename">useradd</em></tt> or <em class="filename">adduser</em></tt> is
+installed and the command line parameters supported.<a name="IXTR3-434" />
+</p>
+
+<p> <em class="emphasis">-- SP</em></tt></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch49_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch49_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">49. Root, Group, and User Management</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">49.3. Forgetting the root Password</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

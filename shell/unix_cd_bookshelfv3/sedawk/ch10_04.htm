@@ -1,0 +1,277 @@
+<html><head><title>A Menu-Based Command Generator (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.4. A Menu-Based Command Generator</h2>
+
+<p>
+<a name="ch10.get8" />
+<a name="ch10.comm1" />
+<a name="ch10.comm2" />
+In this section, we look at a general use of the
+<b class="emphasis-bold">system()</b> and <b class="emphasis-bold">getline</b>
+functions to implement a menu-based command generator.  The object of
+this program is to give unsophisticated users a simple way to execute
+long or complex UNIX commands.  A menu is used to prompt the user with
+a description of the task to be performed, allowing the user to choose
+by number any selection of the menu to execute.</p>
+
+<p>This program is designed as a kind of interpreter that reads from a
+file the descriptions that appear in the menu and the actual command
+lines that are executed.  That way, multiple menu-command files can be
+used, and they can be easily modified by awk-less users without
+changing the program.</p>
+
+<p>The format of a menu-command file contains the menu title as the first
+line in the file.  Subsequent lines contain two fields: the first is
+the description of the action to be performed and the second is the
+command line that performs it.  An example is shown below:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat uucp_commands</b></tt>
+UUCP Status Menu
+Look at files in PUBDIR:find /var/spool/uucppublic -print
+Look at recent status in LOGFILE:tail /var/spool/uucp/LOGFILE
+Look for lock files:ls /var/spool/uucp/*.LCK</pre></blockquote>
+
+<p>The first step in implementing the menu-based command generator is to
+read the menu-command file.  We read the first line of this file and
+assign it to a variable named <b class="emphasis-bold">title</b>.  The rest of
+the lines contain two fields and are read into two arrays, one for the
+menu items and one for the commands to be executed.  A
+<b class="emphasis-bold">while</b> loop is used, along with
+<b class="emphasis-bold">getline</b>, to read one line at a time from the file.</p>
+
+<blockquote><pre class="code">BEGIN { FS = ":"
+if ((getline &lt; CMDFILE) &gt; 0)
+	title = $1
+else
+	exit 1
+while ((getline &lt; CMDFILE) &gt; 0) {
+	# load array
+	++sizeOfArray
+	# array of menu items
+	menu[sizeOfArray] = $1
+	# array of commands associated with items
+	command[sizeOfArray] = $2
+	} 
+...
+}</pre></blockquote>
+
+<p>Look carefully at the syntax of the expression tested by the
+<b class="emphasis-bold">if</b> statement and the <b class="emphasis-bold">while</b> loop.</p>
+
+<blockquote><pre class="code">(getline &lt; CMDFILE) &gt; 0</pre></blockquote>
+
+<p>The variable <b class="emphasis-bold">CMDFILE</b> is the name of the
+menu-command file, which is passed as a command-line parameter.  The
+two angle-bracket symbols have completely different functions.  The
+"&lt;" symbol is interpreted by <b class="emphasis-bold">getline</b> as the
+input redirection operator.  Then the value returned by
+<b class="emphasis-bold">getline</b> is tested to see if it is greater than
+("&gt;") 0.  It is parenthesized on purpose, in order to make this
+clear.  In other words, "getline &lt; <b class="emphasis-bold">CMDFILE</b>" is
+evaluated first and then its return value is compared to 0.</p>
+
+<p>This procedure is placed in the <b class="emphasis-bold">BEGIN</b> pattern.
+However, there is one catch.  Because we intended to pass the name of
+the menu file as a command-line parameter, the variable
+<b class="emphasis-bold">CMDFILE</b> would not normally be defined and available
+in the <b class="emphasis-bold">BEGIN</b> pattern.  In other words, the
+following command will <em class="emphasis">not</em> work:</p>
+
+<blockquote><pre class="code"><tt class="literal">awk</tt> <em class="replaceable"><tt>script</tt></em> <tt class="literal">CMDFILE="uucp_commands" </tt> <tt class="literal">-</tt></pre></blockquote><p>because <b class="emphasis-bold">CMDFILE</b> variable won't be defined until the
+first line of input is read.</p>
+
+<p>
+<a name="IXT-10-266163" />
+Fortunately, awk provides the <span class="option">-v</span> option to handle
+just such a case.  Using the <span class="option">-v</span> option makes sure
+that the variable is set immediately and thus available in the
+<b class="emphasis-bold">BEGIN</b> pattern.</p>
+
+<blockquote><pre class="code"><tt class="literal">awk -v CMDFILE="uucp_commands" </tt> <em class="replaceable"><tt>script</tt></em><tt class="literal"> -</tt></pre></blockquote>
+<p>If your version of awk doesn't have the <span class="option">-v</span> option,
+you can pass the value of <b class="emphasis-bold">CMDFILE</b> as a shell
+variable.  Create a shell script to execute awk and in it define
+<b class="emphasis-bold">CMDFILE</b>.  Then change the line that reads
+<b class="emphasis-bold">CMDFILE</b> in the <b class="emphasis-bold">invoke</b> script
+(see below) as follows:</p>
+
+<blockquote><pre class="code">while ((getline &lt; '"$CMDFILE"') &gt; 0 ) {</pre></blockquote>
+
+<p>Once the menu-command file is loaded, the program must display the
+menu and prompt the user.  This is implemented as a function because
+we need to call it in two places: from the <b class="emphasis-bold">BEGIN</b>
+pattern to prompt the user initially, and after we have processed the
+user's response so that another choice can be made.  Here's the
+<b class="emphasis-bold">display_menu()</b> function:</p>
+
+<blockquote><pre class="code">function display_menu() {
+	# clear screen -- comment out if clear does not work
+	system("clear")
+	# print title, list of items, exit item, and prompt
+	print "\t" title
+	for (i = 1; i &lt;= sizeOfArray; ++i)
+		printf "\t%d. %s\n", i, menu[i]
+	printf "\t%d. Exit\n", i
+	printf("Choose one: ")
+}</pre></blockquote>
+
+<p>The first thing we do is use the <b class="emphasis-bold">system()</b>
+function to call a command to clear the screen. (On my system,
+<b class="emphasis-bold">clear</b> does this; on others it may be
+<b class="emphasis-bold">cls</b> or some other command. Comment out the line if
+you cannot find such a command.)  Then we print the title and each of
+the items in a numbered list.  The last item is always "Exit."
+Finally, we prompt the user for a choice.</p>
+
+<p>The program will take standard input so that the user's answer to the
+prompt will be the first line of input.  Our reading of the
+menu-command file was done within the program and not as part of the
+input stream.  Thus, the main procedure of the program is to respond
+to the user's choice and execute a command.  Here's that part of the
+program:</p>
+
+<blockquote><pre class="code"># Applies the user response to prompt
+{
+   # test value of user response
+   if ($1 &gt; 0 &amp;&amp; $1 &lt;= sizeOfArray) {
+	# print command that is executed
+	printf("Executing ... %s\n", command[$1]) 
+	# then execute it. 
+	system(command[$1])
+	printf("&lt;Press RETURN to continue&gt;")
+ 	# wait for input before displaying menu again
+	getline
+   }
+   else 
+	exit	
+   # re-display menu 
+   display_menu()
+}</pre></blockquote>
+
+<p>First, we test the range of the user's response.  If the response
+falls outside the range, we simply exit the program.  If it is a valid
+response, then we retrieve the command from the array
+<b class="emphasis-bold">command</b>, display it, and then execute it using the
+<b class="emphasis-bold">system()</b> function.  The user sees the
+result of the command on the screen followed by the message "&lt;Press
+RETURN to continue&gt;."  The purpose of this message is to wait for
+the user to finish before clearing the screen and redisplaying the
+menu.  The <b class="emphasis-bold">getline</b> function causes the program to
+wait for a response.  Note that we don't do anything with the
+response.  The <b class="emphasis-bold">display_menu()</b> function is
+called at the end of this procedure to redisplay the menu and prompt
+for another line of input.</p>
+
+<p>Here's the <b class="emphasis-bold">invoke</b> program in full:</p>
+
+<blockquote><pre class="code">awk -v CMDFILE="uucp_commands"  '# invoke -- menu-based
+                                  # command generator
+# first line in CMDFILE is the title of the menu
+# subsequent lines contain: $1 - Description;
+# $2 Command to execute
+BEGIN { FS = ":" 
+# process CMDFILE, reading items into menu array 
+  if ((getline &lt; CMDFILE) &gt; 0)
+	title = $1
+  else
+	exit 1
+  while ((getline &lt; CMDFILE) &gt; 0) {
+	# load array
+	++sizeOfArray
+	# array of menu items
+	menu[sizeOfArray] = $1
+	# array of commands associated with items
+	command[sizeOfArray] = $2
+  } 
+  # call function to display menu items and prompt
+  display_menu()
+}
+# Applies the user response to prompt
+{
+   # test value of user response
+   if ($1 &gt; 0 &amp;&amp; $1 &lt;= sizeOfArray) {
+	# print command that is executed
+	printf("Executing ... %s\n", command[$1]) 
+	# then execute it. 
+	system(command[$1])
+	printf("&lt;Press RETURN to continue&gt;")
+ 	# wait for input before displaying menu again
+	getline
+   }
+   else 
+	exit	
+   # re-display menu 
+   display_menu()
+}
+
+function display_menu() {
+	# clear screen -- if clear does not work, try "cls"
+	system("clear")
+	# print title, list of items, exit item, and prompt
+	print "\t" title
+	for (i = 1; i &lt;= sizeOfArray; ++i)
+		printf "\t%d. %s\n", i, menu[i]
+	printf "\t%d. Exit\n", i
+	printf("Choose one: ")
+}' -</pre></blockquote>
+
+<p>When a user runs the program, the following output is displayed:</p>
+
+<blockquote><pre class="code">UUCP Status Menu
+        1. Look at files in PUBDIR
+        2. Look at recent status in LOGFILE
+        3. Look for lock files
+        4. Exit
+Choose one:</pre></blockquote>
+
+<p>The user is prompted to enter the number of a menu selection.
+Anything other than a number between 1 and 3 exits the menu.  For
+instance, if the user enters "1" to see a list of files in
+<em class="emphasis">uucp</em>'s public directory, then the following
+result is displayed on the screen:</p>
+
+<blockquote><pre class="code">Executing ...find /var/spool/uucppublic -print
+/var/spool/uucppublic
+/var/spool/uucppublic/dale
+/var/spool/uucppublic/HyperBugs
+&lt;Press RETURN to continue&gt;</pre></blockquote>
+
+<p>When the user presses the RETURN key, the menu is
+redisplayed on the screen.  The user can quit from the program by
+choosing "4".</p>
+
+<p>This program is really a shell for executing commands.  Any sequence
+of commands (even other awk programs) can be executed by modifying the
+menu-command file.  In other words, the part of the program that might
+change the most is extracted from the program itself and maintained in
+a separate file.  This allows the menu list to be changed and extended
+very easily by a nontechnical user.</p>
+
+<a name="IXT-10-266164" />
+<a name="IXT-10-266165" />
+<a name="IXT-10-266166" />
+<a name="IXT-10-266167" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.3. The system() Function</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.5. Directing Output to Files and Pipes</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

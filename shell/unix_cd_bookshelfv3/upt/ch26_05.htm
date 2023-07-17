@@ -1,0 +1,295 @@
+<html><head><title>Know When to Be "nice" to Other Users...and When Not To (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch26_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch26_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">26.5. Know When to Be "nice" to Other Users...and When Not To</h2>
+
+<p><a name="upt3-IDXTERM-3864" />
+<a name="upt3-IDXTERM-3865" /> <a name="upt3-IDXTERM-3866" /> <a name="upt3-IDXTERM-3867" />The
+<span class="acronym">BSD</span>-System V split isn't so
+obvious in modern Unixes, but the different priority systems still
+live in various flavors. This article should help you understand the
+system in whatever version you have.
+</p>
+
+<p>If you are going to run a <b class="emphasis-bold">CPU-bound</b>
+(<a name="IXT-26-5016" /><a href="ch26_01.htm#upt3-CHP-26-SECT-1">Section 26.1</a>) process that will monopolize the CPU from
+other processes, you may reduce the urgency of that more intensive
+process in the eyes of the process <a name="IXT-26-5017" />scheduler by using
+<i class="command">nice</i> before you run the program. For example:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>nice <em class="replaceable"><tt>executable_filename</tt></em></b></tt></pre></blockquote>
+
+<p>On most systems, no user can directly change a
+process's priority (only the scheduler does that),
+and only the administrator can use <i class="command">nice</i> to make a
+process more urgent. In practice, <i class="command">nice</i> is rarely
+used on multiuser systems -- the tragedy of the commons -- but
+you may be able to get more processes running simultaneously by
+judicious use of this program.
+</p>
+
+<p><a name="IXT-26-5018" /> <a name="IXT-26-5019" /><a name="IXT-26-5020" /><a name="IXT-26-5021" />If
+you're not familiar with Unix, you will find its
+definition of priority confusing -- it's the
+opposite of what you would expect. A process with a high
+<em class="emphasis">nice</em> number runs at low priority, getting
+relatively little of the processor's attention;
+similarly, jobs with a low <em class="emphasis">nice</em> number run at
+high priority. This is why the <em class="emphasis">nice</em> number is
+usually called <em class="emphasis">niceness</em>: a job with a lot of
+niceness is very kind to the other users of your system (i.e., it
+runs at low priority), while a job with little niceness hogs the CPU.
+The term "niceness" is awkward,
+like the priority system itself. Unfortunately, it's
+the only term that is both accurate (<em class="emphasis">nice</em>
+numbers are used to compute priorities but are not the priorities
+themselves) and avoids horrible circumlocutions
+("increasing the priority means lowering the
+priority...").
+</p>
+
+<p>Many supposedly experienced users claim that <i class="command">nice</i>
+has virtually no effect. Don't listen to them. As a
+general rule, reducing the priority of an
+<a name="IXT-26-5022" />I/O-bound job (a job
+that's waiting for I/O a lot of the time)
+won't change things very much. The system rewards
+jobs that spend most of their time waiting for I/O by increasing
+their priority. But reducing the priority of a CPU-bound process can
+have a significant effect. Compilations, batch typesetting programs
+(<i class="command">troff</i>, T<sub class="subscript">E</sub>X, etc.),
+applications that do a lot of math, and similar programs are good
+candidates for <i class="command">nice</i>. On a moderately loaded
+system, I have found that <i class="command">nice</i> typically makes a
+CPU-intensive job roughly 30 percent slower and consequently frees
+that much time for higher priority jobs. You can often significantly
+improve keyboard response by running CPU-intensive jobs at low
+priority.
+</p>
+
+<p><a name="IXT-26-5023" />Note that
+<a name="IXT-26-5024" />System V Release 4 has a much more
+complex priority system, including real-time priorities. Priorities
+are managed with the <i class="command">priocntl</i> command. The older
+<i class="command">nice</i> command is available for compatibility. Other
+Unix implementations (including HP and Concurrent) support real-time
+scheduling. These implementations have their own tools for managing
+the scheduler.
+</p>
+
+<p><a name="IXT-26-5025" />The <i class="command">nice</i> command sets
+a job's niceness, which is used to compute its
+priority. It may be one of the most nonuniform commands in the
+universe. There are four versions, each slightly different from the
+others. <a name="IXT-26-5026" />BSD Unix has one
+<i class="command">nice</i> that is built into the C shell, and another
+standalone version can be used by other shells. System V also has one
+<i class="command">nice</i> that is built into the C shell and a separate
+standalone version.
+</p>
+
+<p><a name="IXT-26-5027" /><a name="IXT-26-5028" /> <a name="IXT-26-5029" />Under
+BSD Unix, you must also know about <b class="emphasis-bold">the
+renice(8) command</b> (<a href="ch26_07.htm#upt3-CHP-26-SECT-7">Section 26.7</a>); this
+lets you change the niceness of a job after it is running. Under
+System V, you can't modify a job's
+niceness once it has started, so there is no equivalent.
+</p>
+
+<a name="ch26-3-fm2xml" /><blockquote><b>NOTE:</b> 
+Think carefully before you <i class="command">nice</i> an interactive job
+like a text editor. See <a href="ch26_06.htm#upt3-CHP-26-SECT-6">Section 26.6</a>.
+</p>
+</blockquote>
+
+<p>We'll tackle the different variations of
+<i class="command">nice</i> in order.
+</p>
+
+<a name="upt3-CHP-26-SECT-5.1" /><div class="sect2">
+<h3 class="sect2">26.5.1. BSD C Shell nice</h3>
+
+<p><a name="IXT-26-5030" /><a name="IXT-26-5031" /><a name="IXT-26-5032" />Under BSD
+Unix, <em class="emphasis">nice</em> numbers run from -20 to 20. The -20
+designation corresponds to the highest priority; 20 corresponds to
+the lowest. By default, Unix assigns the <em class="emphasis">nice</em>
+number 0 to user-executed jobs. The lowest
+<em class="emphasis">nice</em><a name="IXT-26-5033" />
+numbers (-20 to -17) are unofficially reserved for system processes.
+Assigning a user's job to these
+<em class="emphasis">nice</em> numbers can cause problems. Users can
+always request a higher <em class="emphasis">nice</em> number (i.e., a
+lower priority) for their jobs. Only the <b class="emphasis-bold">superuser</b> (<a href="ch01_18.htm#upt3-CHP-1-SECT-18">Section 1.18</a>) can
+raise a job's priority.
+</p>
+
+<p>To submit a job at a greater niceness, precede it with the modifier
+<i class="command">nice</i>. For example, the following command runs an
+<i class="command">awk</i> command at low priority:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>nice awk -f proc.awk datafile &gt; awk.out</b></tt></pre></blockquote>
+
+<p>By default, the <i class="command">csh</i> version of
+<i class="command">nice</i> will submit this job with a
+<em class="emphasis">nice</em> level of 4. To submit a job with an
+arbitrary <em class="emphasis">nice</em> number, use
+<i class="command">nice</i> one of these ways, where
+<em class="emphasis">n</em> is an integer between 0 and 20:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>nice + <em class="replaceable"><tt>n command</tt></em></b></tt>
+% <tt class="userinput"><b>nice - <em class="replaceable"><tt>n command</tt></em></b></tt></pre></blockquote>
+
+<p>The <em class="emphasis">+n</em> designation requests a positive
+<em class="emphasis">nice</em> number (low priority);
+<em class="emphasis">-n</em> requests a negative <em class="emphasis">nice</em>
+number. Only a superuser may request a negative
+<em class="emphasis">nice</em> number.
+</p>
+
+</div>
+<a name="upt3-CHP-26-SECT-5.2" /><div class="sect2">
+<h3 class="sect2">26.5.2. BSD Standalone nice</h3>
+
+<p><a name="IXT-26-5034" /> <a name="IXT-26-5035" />The
+standalone version of <i class="command">nice</i> differs from C shell
+<i class="command">nice</i> in that it is a separate program, not a
+command built in to the C shell. You can therefore use the standalone
+version in any situation: within <b class="emphasis-bold">makefiles</b> (<a href="ch11_10.htm#upt3-CHP-11-SECT-10">Section 11.10</a>), when
+you are running the Bourne shell, etc. The principles are the same.
+<em class="emphasis">nice</em> numbers run from -20 to 20, with the
+default being 0. Only the syntax has been changed to confuse you. For
+the standalone version, <tt class="literal">-</tt><em class="emphasis">n</em>
+requests a positive <em class="emphasis">nice</em><a name="IXT-26-5036" /> number (lower priority) and
+<tt class="literal">--</tt><em class="emphasis">n</em> requests a negative
+<em class="emphasis">nice</em> number (higher priority -- superuser
+only). Consider these commands:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>nice -6 awk -f proc.awk datafile &gt; awk.out</b></tt>
+# <tt class="userinput"><b>nice --6 awk -f proc.awk datafile &gt; awk.out</b></tt></pre></blockquote>
+
+<p>The first command runs <i class="command">awk</i> with a high
+<em class="emphasis">nice</em> number (i.e., 6). The second command, which
+can be issued only by a superuser, runs <i class="command">awk</i> with a
+low <em class="emphasis">nice</em> number (i.e., -6). If no level is
+specified, the default argument is -10.
+</p>
+
+</div>
+<a name="upt3-CHP-26-SECT-5.3" /><div class="sect2">
+<h3 class="sect2">26.5.3. System V C Shell nice</h3>
+
+<p><a name="IXT-26-5037" /> <a name="IXT-26-5038" />System V takes a slightly different view of
+<em class="emphasis">nice</em><a name="IXT-26-5039" /> numbers. <em class="emphasis">nice</em>
+levels run from 0 to 39; the default is 20. The numbers are different
+but their meanings are the same: 39 corresponds to the lowest
+possible priority, and 0 is the highest. A few System V
+implementations support real-time submission via
+<i class="command">nice</i>. Jobs submitted by root with extremely low
+<em class="emphasis">nice</em> numbers (-20 or below) allegedly get all of
+the CPU's time. Systems on which this works properly
+are very rare and usually advertise support for real-time processing.
+In any case, running jobs this way will destroy multiuser
+performance. This feature is completely different from real-time
+priorities in System V Release 4.
+</p>
+
+<p>With these exceptions, the C shell version of <i class="command">nice</i>
+is the same as its BSD cousin. To submit a job at a low priority, use
+the command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>nice <em class="replaceable"><tt>command</tt></em></b></tt></pre></blockquote>
+
+<p>This increases the command's
+<a name="IXT-26-5040" />niceness by the default amount (4, the
+same as BSD Unix); <em class="emphasis">command</em> will run at
+<em class="emphasis">nice</em> level 24. To run a job at an arbitrary
+priority, use one of the following commands, where
+<em class="emphasis">n</em> is an integer between 0 and 19:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>nice + <em class="replaceable"><tt>n command</tt></em></b></tt>
+% <tt class="userinput"><b>nice - <em class="replaceable"><tt>n command</tt></em></b></tt></pre></blockquote>
+
+<p>The <em class="emphasis">+n</em> entry requests a higher
+<em class="emphasis">nice</em> level (a decreased priority), while
+<em class="emphasis">-n</em> requests a lower <em class="emphasis">nice</em>
+level (a higher priority). Again, this is similar to BSD Unix, with
+one important difference: <em class="emphasis">n</em> is now relative to
+the default <em class="emphasis">nice</em> level. That is, the following
+command runs <i class="command">awk</i> at <em class="emphasis">nice</em>
+level 26:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>nice +6 awk -f proc.awk datafile &gt; awk.out</b></tt></pre></blockquote>
+
+</div>
+<a name="upt3-CHP-26-SECT-5.4" /><div class="sect2">
+<h3 class="sect2">26.5.4. System V Standalone nice</h3>
+
+<p><a name="IXT-26-5041" />Once again,
+the standalone version of <i class="command">nice</i> is useful if you
+are writing makefiles or shell scripts or if you use the Bourne shell
+as your interactive shell. It is similar to the C shell version, with
+these differences:
+</p>
+
+<ul><li>
+<p>With no arguments, standalone <i class="command">nice</i> increases the
+<em class="emphasis">nice</em><a name="IXT-26-5042" /> number by 10 instead of by 4; this is a
+significantly greater reduction in the program's
+priority.
+</p>
+</li><li>
+<p>With the argument <em class="emphasis">-n</em>, <i class="command">nice</i>
+increases the <em class="emphasis">nice</em> number by
+<em class="emphasis">n</em> (reducing priority).
+</p>
+</li><li>
+<p>With the argument <em class="emphasis">- -n</em>, <i class="command">nice</i>
+decreases the <em class="emphasis">nice</em> number by
+<em class="emphasis">n</em> (increasing priority; superuser only).
+</p>
+</li></ul>
+<p>Consider these commands:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>nice -6 awk -f proc.awk datafile &gt; awk.out</b></tt>
+# <tt class="userinput"><b>nice --6 awk -f proc.awk datafile &gt; awk.out</b></tt></pre></blockquote>
+
+<p>The first command runs <i class="command">awk</i> at a higher
+<em class="emphasis">nice</em> level (i.e., 26, which corresponds to a
+lower priority). The second command, which can be given only by the
+superuser, runs <i class="command">awk</i> at a lower
+<em class="emphasis">nice</em> level (i.e., 14).
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch26_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch26_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">26.4. Checking System Load: uptime</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">26.6. A nice Gotcha</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

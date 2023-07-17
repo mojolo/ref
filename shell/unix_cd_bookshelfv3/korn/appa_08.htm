@@ -1,0 +1,890 @@
+<html><head><title>zsh (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appa_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="appa_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">A.8. zsh</h2>
+
+<p>
+<a name="korn2-IDXTERM-2080" />
+<a name="IXT-A-286907" />
+
+<em class="emphasis">zsh</em> is a powerful interactive shell and scripting language with many
+features found in
+<em class="emphasis">ksh</em>,
+<em class="emphasis">bash</em>,
+and
+<em class="emphasis">tcsh</em>,
+as well as several unique
+features.
+<em class="emphasis">zsh</em>
+has most of the features of <em class="emphasis">ksh88</em>
+but few of <em class="emphasis">ksh93</em>.
+It is freely available and should compile and run on just
+about any modern version of Unix.  Ports for other operating systems
+are also available.
+The <em class="emphasis">zsh</em> home page is
+<a href="http://www.zsh.org">http://www.zsh.org</a>.
+
+The current version is 4.0.2.
+</p>
+
+<p>
+In this section we cover:
+</p>
+
+<ul>
+
+<li><p>
+Extended globbing
+</p></li>
+
+<li><p>
+Completion
+</p></li>
+
+<li><p>
+Command-line editing
+</p></li>
+
+<li><p>
+Prompts and prompt themes
+</p></li>
+
+<li><p>
+Differences between <em class="emphasis">zsh</em> and <em class="emphasis">ksh</em>
+</p></li>
+
+</ul>
+
+<a name="korn2-APP-A-SECT-8.1" /><div class="sect2">
+<h3 class="sect2">A.8.1. Extended Globbing</h3>
+
+<p>
+A very useful feature is the recursive glob<a href="#FOOTNOTE-152">[152]</a>
+operator, <tt class="literal">**</tt>.
+For example,
+a recursive <em class="emphasis">grep</em> is simple to construct:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-152" /><p> [152]
+<em class="emphasis">Globbing</em> is technical slang for wildcard expansion.
+</p>
+</blockquote>
+
+<blockquote><pre class="code">
+grep foo **/*.c
+</pre></blockquote>
+
+<p>
+Or to recursively find all files or directories named <em class="emphasis">core</em>, try:
+</p>
+
+<blockquote><pre class="code">
+print **/core
+</pre></blockquote>
+
+<?troff .Nd 10?>
+
+<p>
+Another useful feature is <em class="emphasis">glob qualifiers</em>.
+There are many of these, for
+example, to print out only regular files in the current directory:
+</p>
+
+<blockquote><pre class="code">
+print *(.)
+</pre></blockquote>
+
+<p>
+or just the directories:
+</p>
+
+<blockquote><pre class="code">
+print *(/)
+</pre></blockquote>
+
+<p>
+Combining these with the recursive glob operator can be handy. We
+can improve the above example of finding <em class="emphasis">core</em> files by limiting the
+search to regular files only:
+</p>
+
+<blockquote><pre class="code">
+print **/core(.)
+</pre></blockquote>
+
+<p>
+Another qualifier is <tt class="literal">U</tt> for file system objects you own.  The following
+prints all files you own in <em class="emphasis">/tmp</em> and below:
+</p>
+
+<blockquote><pre class="code">
+print /tmp/**/*(U)
+</pre></blockquote>
+
+<p>
+The glob qualifiers can also be combined.  For example, using the
+socket file keyword <tt class="literal">=</tt>
+in combination with <tt class="literal">U</tt>, it's easy to find
+socket files in <em class="emphasis">/tmp</em> and below that you own:
+</p>
+
+<blockquote><pre class="code">
+print /tmp/**/*(U=)
+</pre></blockquote>
+
+<p>
+File size qualifiers are also available.  For example, to find all files
+in your home directory that are greater than 10 megabytes in size:
+</p>
+
+<blockquote><pre class="code">
+print ~/**/*(Lm+10)
+</pre></blockquote>
+
+<p>
+And file permission qualifiers are also available.  For example, the <tt class="literal">W</tt>
+qualifier selects world-writable file system objects.  You can
+use it to find all directories in your home directory and below that
+are owned by you and that are world-writeable:
+</p>
+
+<blockquote><pre class="code">
+print ~/**/*(UW/)
+</pre></blockquote>
+
+<p>
+See <em class="emphasis">zshexpn</em>(1) for more information.
+</p>
+</div>
+
+<a name="korn2-APP-A-SECT-8.2" /><div class="sect2">
+<h3 class="sect2">A.8.2. Completion</h3>
+
+<p>
+The <em class="emphasis">zsh</em> completion system is extremely sophisticated.
+The main idea is that any time you are about to type something on the
+command line, if you hit TAB, <em class="emphasis">zsh</em> will try to
+complete it.  <em class="emphasis">zsh</em> comes with many defaults for
+completion and is also fully customizable.
+</p>
+
+<p>
+To get a full set of default completion features, run the following
+commands (normally in your <em class="emphasis">~/.zshrc</em> startup file):
+</p>
+
+<blockquote><pre class="code">
+autoload -U compinit
+compinit
+</pre></blockquote>
+
+<p>
+Now let's look at some examples.
+We represent the TAB key in examples as <tt class="literal">[TAB]</tt>.
+</p>
+
+<p>
+First, <em class="emphasis">zsh</em> is smart about doing completions.
+For example, <tt class="literal">cd[TAB]</tt> only
+expands directories, thus eliminating completion noise.
+</p>
+
+<p>
+Have you ever been frustrated because you can't think of exactly the
+name of the command you want to find more information on, and
+<em class="emphasis">man -k</em><a href="#FOOTNOTE-153">[153]</a>
+hasn't been configured on your system?  Well, <em class="emphasis">zsh</em>
+will complete available man pages for you:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-153" /><p> [153]
+This does a keyword search of an online database extracted from
+the man pages.
+</p>
+</blockquote>
+
+
+<blockquote><pre class="code">
+g@sifl:pts/7% <tt class="userinput"><b>man zsh[TAB]</b></tt>
+zsh           zshcompctl    zshcontrib    zshmodules    zshzftpsys  
+zshall        zshcompsys    zshexpn       zshoptions    zshzle      
+zshbuiltins   zshcompwid    zshmisc       zshparam
+</pre></blockquote>
+
+
+<p>
+Or maybe you want to find out a process name or PID you want to kill:
+</p>
+
+<blockquote><pre class="code">
+g@sifl:pts/2% <tt class="userinput"><b>kill [TAB]</b></tt>
+ 9652 pts/2    00:00:00 zsh                                                    
+ 9653 pts/2    00:00:00 ps                                                     
+</pre></blockquote>
+
+
+<p>
+For <em class="emphasis">finger</em>, it expands users:
+</p>
+
+<blockquote><pre class="code">
+g@sifl:pts/7% <tt class="userinput"><b>finger o[TAB]</b></tt>
+odin	omg	oof        operator	orb
+</pre></blockquote>
+
+<p>
+and hosts:
+</p>
+
+<blockquote><pre class="code">
+g@sifl:pts/7% <tt class="userinput"><b>finger oof@[TAB]</b></tt>
+brak	localhost 	sifl 	zorak
+</pre></blockquote>
+
+
+<p>
+Using the distributed <em class="emphasis">compdef</em> function, you can
+define your own completions, using either your own custom functions
+or the completion functions that come with <em class="emphasis">zsh</em>.
+For example, the distribution defines the <em class="emphasis">kill</em>
+command to use the <em class="emphasis">_pids</em> distribution function to
+provide process identifiers.  You can also use it to define completion for
+other commands, such as the Solaris <em class="emphasis">pstack</em> command:
+</p>
+
+<blockquote><pre class="code">
+compdef _pids pstack
+</pre></blockquote>
+
+<p>
+Once this is done, you can apply completion to the <em class="emphasis">pstack</em>
+command like so:
+</p>
+
+<blockquote><pre class="code">
+g@sifl:pts/7% <tt class="userinput"><b>pstack [TAB]</b></tt>
+13606 pts/7    00:00:00 zsh                                                    
+13607 pts/7    00:00:00 ps
+</pre></blockquote>
+
+<p>
+Another very useful distribution completion function is
+<em class="emphasis">_gnu_generic</em>.  This can be applied to any command
+that uses the GNU <tt class="literal">--long-option</tt>
+command-line option conventions.  The <em class="emphasis">zsh</em>
+distribution specifies many GNU commands to complete<?troff .ne 10?> with this function
+(such as <em class="emphasis">tar</em>):
+</p>
+
+<blockquote><pre class="code">
+g@sifl:pts/7% <tt class="userinput"><b>tar --v[TAB]</b></tt>
+--verbose      --verify       --version      --volno-file 
+</pre></blockquote>
+
+<p>
+And this is just the tip of the proverbial iceberg.  There is
+much more to the <em class="emphasis">zsh</em> completion system; see
+<em class="emphasis">zshcompsys</em>(1) for the (gory) details.
+</p>
+</div>
+
+<a name="korn2-APP-A-SECT-8.3" /><div class="sect2">
+<h3 class="sect2">A.8.3. Command-Line Editor</h3>
+
+<p>
+The <em class="emphasis">zsh</em> command-line editor is extremely powerful.
+It has several
+unique features, including multiline editing and an input buffer stack.
+The multiline command editor makes composing small scripts on the
+command line much easier then just having one line to edit with.
+</p>
+
+<p>
+The input buffer stack comes in very handy.  While you are typing a
+command, you can type ESC q, and the current line is pushed onto
+the buffer stack. The input line is then cleared, and you can type another
+command. When that has been executed, the previous line is popped off the
+stack and you can continue with that command.
+See <em class="emphasis">zshzle</em>(1) for more details.
+</p>
+
+</div>
+
+
+<a name="korn2-APP-A-SECT-8.4" /><div class="sect2">
+<h3 class="sect2">A.8.4. Prompts and Prompt Themes</h3>
+
+<p>
+While most modern shells have customizable prompts, <em class="emphasis">zsh</em> raises it
+to an art form.  One of the unique features is a right side
+prompt, <tt class="literal">RPROMPT</tt>, which is very useful for
+holding the current directory.  This in turn removes
+clutter from the left hand prompt:
+</p>
+
+<blockquote><pre class="code">
+g@sifl:pts/2% <tt class="userinput"><b>RPROMPT='%~'</b></tt>
+g@sifl:pts/2%                                    ~/src/xemacs-21.1.14
+</pre></blockquote>
+
+<p>
+Also, you can define colors and bold fonts, and the prompt can be more
+than one line.
+</p>
+
+<p>
+And as the notion of <em class="emphasis">themes</em><a href="#FOOTNOTE-154">[154]</a>
+has become popular in GUIs such as GNOME,
+<em class="emphasis">zsh</em> prompt themes can be defined; the distribution ships with
+several to choose from.  To enable prompt themes, add these lines to
+your <em class="emphasis">~/.zshrc</em>:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-154" /><p> [154]
+Some popular GUIs, such as GNOME, support themes.  Rather than having
+one immutable look and feel, they can be changed to different
+styles, or themes.  The distributions of these GUIs often contain
+several to choose from.  Some of these tend to emulate other GUI's,
+while others are new and are mostly fun window dressing.
+</p>
+</blockquote>
+
+<blockquote><pre class="code">
+autoload -U promptinit
+promptinit
+</pre></blockquote>
+
+<p>
+To see what themes are available, run:
+</p>
+
+<blockquote><pre class="code">
+g@sifl:pts/2% <tt class="userinput"><b>prompt -l</b></tt>                                             ~
+Currently available prompt themes:
+adam1 adam2 bart bigfade clint elite2 elite fade fire off oliver
+redhat suse zefram
+</pre></blockquote>
+
+<p>
+To enable a theme, use the <em class="emphasis">-s</em> option. For example:
+</p>
+
+<blockquote><pre class="code">
+g@sifl:pts/7% <tt class="userinput"><b>prompt -s bart</b></tt>                                        ~
+sifl [prompt -s bart] ~                              01-10-04 11:58PM
+g@sifl:pts/7%                                                       ~
+</pre></blockquote>
+
+<p>
+You can see that <em class="emphasis">bart</em> is a two-line prompt with several components such as
+the host name, the previous command, the current directory, and the date and time.
+See <em class="emphasis">zshcontrib</em>(1) for more details on prompt themes.
+</p>
+</div>
+
+<a name="korn2-APP-A-SECT-8.5" /><div class="sect2">
+<h3 class="sect2">A.8.5. Differences Between zsh and ksh</h3>
+
+<p>
+This section is derived from information in the <em class="emphasis">zsh</em> FAQ.
+</p>
+
+<p>
+Most features of <em class="emphasis">ksh88</em> (and hence also of
+the Bourne shell,
+<em class="emphasis">sh</em>) are implemented in <em class="emphasis">zsh</em>;
+problems can arise because the implementation is slightly different. Note
+also that not all <em class="emphasis">ksh</em>'s are the same either. This is
+based on the 11/16/88f version of <em class="emphasis">ksh</em>; differences
+from <em class="emphasis">ksh93</em> are more substantial.
+</p>
+
+<p>
+As a summary of the status:
+</p>
+
+<ol>
+
+<li><p>
+Because of all the options, it is not safe to assume a general
+<em class="emphasis">zsh</em> run by a user will behave as if
+<em class="emphasis">sh</em> or <em class="emphasis">ksh</em> compatible.
+</p></li>
+
+<li><p>
+Invoking <em class="emphasis">zsh</em> as <em class="emphasis">sh</em>
+or <em class="emphasis">ksh</em> (or if either is a symbolic link to
+<em class="emphasis">zsh</em>) sets appropriate options and improves
+compatibility (from within <em class="emphasis">zsh</em> itself, calling
+<tt class="literal">ARGV0=sh zsh</tt> will also work).
+</p></li>
+
+<li><p>
+From Version 3.0 onward, the degree of compatibility
+with <em class="emphasis">sh</em> under these circumstances is
+very high: <em class="emphasis">zsh</em> can now be used with GNU
+<em class="emphasis">configure</em> or <em class="emphasis">perl</em>'s
+<em class="emphasis">Configure</em>, for example.
+</p></li>
+
+<li><p>
+The degree of compatibility with <em class="emphasis">ksh</em> is also high, but a few things
+are missing: for example, the more sophisticated pattern-matching
+expressions are different for versions before 3.1.3 -- see the
+detailed list below.
+</p></li>
+
+<li><p>
+Also from 3.0, the command <em class="emphasis">emulate</em> is
+available: <tt class="literal">emulate ksh</tt> and <tt class="literal">emulate
+sh</tt> set various options as well as changing the effect
+of single-letter option flags, as if the shell had been invoked
+with the appropriate name. Including the command <tt class="literal">emulate
+sh; setopt localoptions</tt> in a shell function turns on
+<em class="emphasis">sh</em> emulation for that function only. In 4.0 (and
+in 3.0.6 through 8), this can be abbreviated as <tt class="literal">emulate -L
+sh</tt>.
+</p></li>
+
+</ol>
+
+<p>
+The classic difference is word splitting:
+<em class="emphasis">zsh</em> keeps the result of plain <tt class="literal">$variable</tt>
+as one word, even if the variable contains white space.
+This trips up many beginning <em class="emphasis">zsh</em> users.
+The answer is to set <tt class="literal">SH_WORD_SPLIT</tt>
+for backward compatibility. The next most classic difference is that
+unmatched glob patterns cause the command to abort; set <tt class="literal">NO_NOMATCH</tt>
+for those.
+</p>
+
+<p>
+<em class="emphasis">zsh</em> has a large set of
+options which increase <em class="emphasis">ksh</em> compatibility,
+though maybe decreasing <em class="emphasis">zsh</em>'s abilities: see the manual entries
+for the details.
+If invoked as
+<em class="emphasis">ksh</em>, the shell sets suitable options.
+</p>
+
+<p>
+Here are some differences from <em class="emphasis">ksh</em> which might
+prove significant for <em class="emphasis">ksh</em> programmers, some of
+which may be interpreted as bugs. Note that this
+list is deliberately rather full and that most of the items are fairly
+minor. Those marked with <img src="figs/U2020.gif" alt="Figure " /> perform in a <em class="emphasis">ksh</em>-like
+manner if the shell is invoked with the name <em class="emphasis">ksh</em>
+or if <tt class="literal">emulate ksh</tt> is in effect. Capitalized words
+with underscores in their names refer to shell options.
+</p>
+
+<dl>
+
+<dt><i>Syntax</i></dt>
+<dd>
+
+  <ul>
+
+  <li><p>
+  <img src="figs/U2020.gif" alt="Figure " /> Shell word splitting: see above.
+  </p></li>
+
+  <li><p>
+  <img src="figs/U2020.gif" alt="Figure " /> Arrays are (by default) more <em class="emphasis">csh</em></tt>-like
+  than <em class="emphasis">ksh</em></tt>-like: subscripts start at 1, not 0;
+  <tt class="literal">array[0]</tt> refers to <tt class="literal">array[1]</tt>;
+  <tt class="literal">$array</tt> refers to the whole array, not
+  <tt class="literal">$array[0]</tt>; braces are unnecessary: <tt class="literal">$a[1]</tt>
+  is the same as <tt class="literal">${a[1]}</tt>, etc. Set the
+  <tt class="literal">KSH_ARRAYS</tt> option for compatibility.
+  </p></li>
+
+  <li><p>
+  Coprocesses are established by <em class="emphasis">coproc</em></tt>;
+  <tt class="literal">|&amp;</tt> behaves like <em class="emphasis">csh</em></tt>.<a href="#FOOTNOTE-155">[155]</a>
+  Handling of coprocess file descriptors is also different.
+  </p><blockquote class="footnote">
+  <a name="FOOTNOTE-155" /><p> [155]
+  In <em class="emphasis">csh</em></tt>, <tt class="literal">|&amp;</tt> sends both
+  standard output and standard error down the same pipeline; it is
+  equivalent to ... <tt class="literal">2&gt;&amp;1 |</tt> ....
+  </p>
+  </blockquote></li>
+
+  <li><p>
+  For <tt><em class="replaceable"><tt>cmd1</tt></em></tt>
+  <tt class="literal">&amp;&amp;</tt>
+  <tt><em class="replaceable"><tt>cmd2</tt></em></tt>
+  <tt class="literal">&amp;</tt>,
+  only <em class="emphasis">cmd2</em></tt>, instead of the whole expression, is run in
+  the background in <em class="emphasis">zsh</em></tt>. The manual implies that this is a bug.
+  Use <tt class="literal">{</tt>
+  <tt><em class="replaceable"><tt>cmd1</tt></em></tt>
+  <tt class="literal">&amp;&amp;</tt>
+  <tt><em class="replaceable"><tt>cmd2</tt></em></tt>
+  <tt class="literal">} &amp;</tt> as a workaround.
+  </p></li>
+
+  </ul>
+</dd>
+
+
+
+<dt><i>Command-line substitutions, globbing, etc.</i></dt>
+<dd>
+
+   <ul>
+
+   <li><p>
+   <img src="figs/U2020.gif" alt="Figure " /> Failure to match a globbing pattern causes
+   an error (use <tt class="literal">NO_NOMATCH</tt>).
+   </p></li>
+
+   <li><p>
+   <img src="figs/U2020.gif" alt="Figure " /> The results of parameter substitutions are treated as plain text:
+   <tt class="literal">foo="*"; print $foo</tt> prints all files
+   in <em class="emphasis">ksh</em> but prints <tt class="literal">*</tt> in <em class="emphasis">zsh</em>
+   (use <tt class="literal">GLOB_SUBST</tt>).
+   </p></li>
+
+   <li><p>
+   <img src="figs/U2020.gif" alt="Figure " /> The prompt variables (e.g., <tt class="literal">PS1</tt>)
+   do not undergo parameter substitution by default (use <tt class="literal">PROMPT_SUBST</tt>).
+   </p></li>
+
+   <li><p>
+   <img src="figs/U2020.gif" alt="Figure " /> Standard globbing does not allow <em class="emphasis">ksh</em>-style
+   pattern-lists. <a href="appa_08.htm#korn2-APP-A-TABLE-1">Table A-1</a> shows equivalent
+   patterns.
+   </p>
+   <p>
+   The <tt class="literal">^</tt>, <tt class="literal">~</tt> and
+   <tt class="literal">#</tt> (but not <tt class="literal">|</tt>) forms
+   require setting <tt class="literal">EXTENDED_GLOB</tt>. From version 3.1.3, the
+   <em class="emphasis">ksh</em> forms are fully supported when the option
+   <tt class="literal">KSH_GLOB</tt> is in effect; for previous versions you
+   must use the equivalents given in <a href="appa_08.htm#korn2-APP-A-TABLE-1">Table A-1</a>.
+   </p></li>
+
+   <li><p>
+   Unquoted assignments do file expansion after colons (intended
+   for <tt class="literal">PATH</tt>-style variables).
+   </p></li>
+
+   <li><p>
+   <em class="emphasis">integer</em> does not allow <em class="emphasis">-i</em>.
+   </p></li>
+
+   <li><p>
+   <em class="emphasis">typeset</em> and <em class="emphasis">integer</em>
+   have special behavior for assignments in <em class="emphasis">ksh</em>,
+   but not in <em class="emphasis">zsh</em>. For example, this doesn't work in <em class="emphasis">zsh</em>:
+
+<blockquote><pre class="code">
+integer k=$(wc -l ~/.zshrc)
+</pre></blockquote>
+ 
+   because the return value from <em class="emphasis">wc</em> includes leading whitespace, which causes
+   wordsplitting. <em class="emphasis">ksh</em> handles the assignment specially, as a single word.
+   </p></li>
+
+
+  </ul>
+</dd>
+
+</dl>
+
+
+
+<a name="korn2-APP-A-TABLE-1" /><h4 class="objtitle">Table A-1. ksh/zsh pattern equivalents</h4><table border="1" cellpadding="3">
+
+
+
+
+
+<tr>
+<th>ksh</th>
+<th>zsh</th>
+<th>Meaning</th>
+</tr>
+
+
+
+<tr>
+<td><tt class="literal">!(foo)</tt></td>
+<td><tt class="literal">^foo</tt></td>
+<td><p>
+Anything but <tt class="literal">foo.</tt>
+</p></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><tt class="literal">foo1~foo2</tt></td>
+<td><p>
+Anything matching <tt class="literal">foo1</tt> but not <tt class="literal">foo2</tt>.<a href="#FOOTNOTE-156">[156]</a>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">@(foo1|foo2|...)</tt></td>
+<td><tt class="literal">(foo1|foo2|...)</tt></td>
+<td><p>
+One of <tt class="literal">foo1</tt> or <tt class="literal">foo2</tt> or ...
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">?(foo)</tt></td>
+<td><tt class="literal">(foo|)</tt></td>
+<td><p>
+Zero or one occurrences of <tt class="literal">foo</tt>.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">*(foo)</tt></td>
+<td><tt class="literal">(foo)#</tt></td>
+<td><p>
+Zero or more occurrences of <tt class="literal">foo</tt>.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">+(foo)</tt></td>
+<td><tt class="literal">(foo)##</tt></td>
+<td><p>
+One or more occurrences of <tt class="literal">foo</tt>.
+</p></td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-156" /><p> [156]
+Note that <tt class="literal">~</tt> is the only globbing operator
+to have a lower precedence than <tt class="literal">/</tt>. For
+example, <tt class="literal">**/foo~*bar*</tt> matches any file
+in a subdirectory called <em class="emphasis">foo</em>, except
+where <em class="emphasis">bar</em> occurred somewhere in the path
+(e.g. <em class="emphasis">users/barstaff/foo</em> will be excluded by
+the <tt class="literal">~</tt> operator). As the <tt class="literal">**</tt>
+operator cannot be grouped (inside parentheses it is treated as
+<tt class="literal">*</tt>), this is the way to exclude some subdirectories
+from matching a <tt class="literal">**</tt>.
+</p></blockquote>
+
+<dl>
+<dt><i>Command execution</i></dt>
+<dd>
+
+  <ul>
+
+  <li><p>
+  <img src="figs/U2020.gif" alt="Figure " /> There is no <tt class="literal">ENV</tt> variable
+  (use <em class="emphasis">/etc/zshrc</em></tt>, <em class="emphasis">~/.zshrc</em></tt>;
+  note also <tt class="literal">$ZDOTDIR</tt>).
+  </p></li>
+
+  <li><p>
+  <tt class="literal">$PATH</tt> is not searched for
+  commands specified at invocation without <em class="emphasis">-c</em></tt>.
+  </p></li>
+
+  </ul>
+</dd>
+
+
+
+<dt><i>Aliases and functions</i></dt>
+<dd>
+
+  <ul>
+
+  <li><p>
+  The order in which aliases and functions are defined is significant:
+  function definitions with <tt class="literal">()</tt> expand aliases.
+  </p></li>
+
+  <li><p>
+  Aliases and functions cannot be exported.
+  </p></li>
+
+  <li><p>
+  There are no tracked aliases: command hashing replaces these.
+  </p></li>
+
+  <li><p>
+  The use of aliases for key bindings is replaced by <em class="emphasis">bindkey</em>.
+  </p></li>
+
+  <li><p>
+  <img src="figs/U2020.gif" alt="Figure " /> Options are not local to functions
+  (use <tt class="literal">LOCAL_OPTIONS</tt>; note this
+  may always be unset locally to propagate options settings from a function to the calling level).
+  </p></li>
+
+  <li><p>
+  Functions defined with
+  <tt class="literal">function</tt>
+  <em class="replaceable"><tt>funcname</tt></em>
+  <tt class="literal">{</tt>
+  <em class="replaceable"><tt>body</tt></em>
+  <tt class="literal">;}</tt>
+  behave the same
+  way as those defined with
+  <em class="replaceable"><tt>funcname</tt></em>
+  <tt class="literal">() {</tt>
+  <em class="replaceable"><tt>body</tt></em>
+  <tt class="literal">;}</tt>.
+  In <em class="emphasis">ksh93</em>, only the former
+  behave as true functions,
+  and the latter
+  behave as if the body were read from a file with the dot command.
+  </p></li>
+
+  </ul>
+</dd>
+
+
+
+
+<dt><i>Traps and signals</i></dt>
+<dd>
+
+  <ul>
+
+  <li><p>
+  <img src="figs/U2020.gif" alt="Figure " /> Traps are not local to functions.
+  The option <tt class="literal">LOCAL_TRAPS</tt> is available from 3.1.6.
+  </p></li>
+
+  <li><p>
+  TRAPERR has become TRAPZERR (this was forced by UNICOS which has SIGERR).
+  </p></li>
+
+
+  </ul>
+</dd>
+
+
+
+<dt><i>Editing</i></dt>
+<dd>
+
+  <ul>
+
+  <li><p>
+  The options
+  <em class="emphasis">emacs</em>,
+  <em class="emphasis">gmacs</em>,
+  and
+  <em class="emphasis">viraw</em>
+  are not supported. Use <em class="emphasis">bindkey</em> to change
+  the editing behavior:
+  <tt class="literal">set -o emacs</tt> becomes <tt class="literal">bindkey -e</tt>
+  and
+  <tt class="literal">set -o vi</tt> becomes <tt class="literal">bindkey -v</tt>;
+  for
+  <em class="emphasis">gmacs</em>, go to emacs-mode
+  and use <tt class="literal">bindkey \^t gosmacs-transpose-characters.</tt>
+  </p></li>
+
+  <li><p>
+  The <em class="emphasis">keyword</em> option does not exist and
+  <em class="emphasis">set -k</em> is instead
+  <em class="emphasis">interactivecomments</em>.
+  
+  </p></li>
+
+  <li><p>
+  <img src="figs/U2020.gif" alt="Figure " /> Management of histories in multiple shells is different: the
+  history list is not saved and restored after each command. The option
+  <tt class="literal">SHARE_HISTORY</tt> appeared in 3.1.6 and is set in
+  <em class="emphasis">ksh</em> compatibility mode to remedy this.
+  </p></li>
+
+  <li><p>
+  <tt class="literal">\</tt> does not escape editing chars (use CTRL-V).
+  </p></li>
+
+  <li><p>
+  Not all <em class="emphasis">ksh</em> bindings are set (e.g. ESC #; try  ESC q).
+  </p></li>
+
+  <li><p>
+  <img src="figs/U2020.gif" alt="Figure " /> <tt class="literal">#</tt> in an interactive shell is not treated as a comment by default.
+  </p></li>
+
+  </ul>
+</dd>
+
+
+
+<dt><i>Built-in commands</i></dt>
+<dd>
+
+  <ul>
+
+  <li><p>
+  Some built-ins (<em class="emphasis">r</em></tt>,
+  <em class="emphasis">autoload</em></tt>,
+  <em class="emphasis">history</em></tt>,
+  <em class="emphasis">integer</em></tt>,
+  ...) are aliases in <em class="emphasis">ksh</em></tt>.
+  </p></li>
+
+  <li><p>
+  There is no built-in command <em class="emphasis">newgrp</em></tt>:
+  use <tt class="literal">alias newgrp="exec newgrp"</tt>.
+  </p></li>
+
+  <li><p>
+  <em class="emphasis">jobs</em></tt> has no <em class="emphasis">-n</em></tt> flag.
+  </p></li>
+
+  <li><p>
+  <em class="emphasis">read</em></tt> has no <em class="emphasis">-s</em></tt> flag.
+  </p></li>
+
+  </ul>
+</dd>
+
+
+<dt><i>Other idiosyncrasies</i></dt>
+<dd>
+
+  <ul>
+
+  <li><p>
+  <tt class="literal">select</tt> always redisplays the list of selections on each loop.
+  </p></li>
+
+  </ul>
+</dd>
+
+
+</dl>
+
+</div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appa_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="appa_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">A.7. bash</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">A.9. Workalikes on PC Platforms</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

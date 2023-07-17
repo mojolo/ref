@@ -1,0 +1,290 @@
+<html><head><title>Formatted Printing (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.9. Formatted Printing</h2>
+
+<p>
+<a name="ch07.print1" />
+<a name="ch07.print2" />
+<a name="ch07.print4" />
+<a name="ch07.print5" />
+Many of the scripts that we've written so far perform the
+data processing tasks just fine, but the output has not
+been formatted properly.  That is because there is only
+so much you can do with the basic <b class="emphasis-bold">print</b>
+statement.  And since one of awk's most common functions
+is to produce reports, it is crucial that we be able to
+format our reports in an orderly fashion.
+The <b class="emphasis-bold">filesum</b> program performs the arithmetic tasks well but 
+the report lacks an orderly format.</p>
+
+<p>
+<a name="ch07.print3" />
+Awk offers an alternative to the <b class="emphasis-bold">print</b> statement, <b class="emphasis-bold">printf</b>,
+which is borrowed from the C programming language.  
+The <b class="emphasis-bold">printf</b> statement can output a simple string
+just like the <b class="emphasis-bold">print</b> statement.</p>
+
+<blockquote><pre class="code">awk 'BEGIN { printf ("Hello, world\n") }'</pre></blockquote>
+
+<p>The main difference that you will notice at the outset is
+that, unlike <b class="emphasis-bold">print</b>, <b class="emphasis-bold">printf</b> does not
+automatically supply a newline.  You must specify it 
+explicitly as "\n".</p>
+
+<p>The full syntax of the <b class="emphasis-bold">printf</b> statement has two parts:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">printf</b> ( <em class="emphasis">format-expression</em> [<b class="emphasis-bold">,</b> <em class="emphasis">arguments</em>]<b class="emphasis-bold"> )</b></pre></blockquote><p>The parentheses are optional. 
+The first part is an expression that 
+describes the format specifications; usually this is supplied
+as a string constant in quotes.  The second
+part is an argument list, such as a list of variable names,
+that correspond to the format specifications.  
+<a name="IXT-7-265991" />
+<a name="IXT-7-265992" />
+A format specification is preceded by a percent sign (%) and the
+specifier is one of the characters shown in <a href="ch07_09.htm#sedawk-ch-7-tab-6">Table 7.6</a>.
+The two main format specifiers are <b class="emphasis-bold">s</b> for strings and <b class="emphasis-bold">d</b>
+for decimal integers.<a href="#FOOTNOTE-50">[50]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-50" /><p> [50]The way <b class="emphasis-bold">printf</b> does rounding is
+discussed in <a href="appb_01.htm">Appendix B, "Quick Reference
+for awk"</a>.</p>
+
+</blockquote>
+
+<a name="sedawk-ch-7-tab-6" /><h4 class="objtitle">Table 7.6. Format Specifiers Used in printf</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Character</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>c</td>
+<td>ASCII character</td>
+</tr>
+
+<tr>
+<td>d</td>
+<td>Decimal integer</td>
+</tr>
+
+<tr>
+<td>i</td>
+<td>Decimal integer. (Added in POSIX)</td>
+</tr>
+
+<tr>
+<td>e</td>
+<td>Floating-point format ([-]<em class="emphasis">d</em>.<em class="emphasis">precision</em><b class="emphasis-bold">e</b>[+-]<em class="emphasis">dd</em>)</td>
+</tr>
+
+<tr>
+<td>E</td>
+<td>Floating-point format ([-]<em class="emphasis">d</em>.<em class="emphasis">precision</em><b class="emphasis-bold">E</b>[+-]<em class="emphasis">dd</em>)</td>
+</tr>
+
+<tr>
+<td>f</td>
+<td>Floating-point format ([-]<em class="emphasis">ddd</em>.<em class="emphasis">precision</em>)</td>
+</tr>
+
+<tr>
+<td>g</td>
+<td><b class="emphasis-bold">e</b> or <b class="emphasis-bold">f</b> conversion, whichever is shortest, with trailing zeros removed</td>
+</tr>
+
+<tr>
+<td>G</td>
+<td><b class="emphasis-bold">E</b> or <b class="emphasis-bold">f</b> conversion, whichever is shortest, with trailing zeros removed</td>
+</tr>
+
+<tr>
+<td>o</td>
+<td>Unsigned octal value</td>
+</tr>
+
+<tr>
+<td>s</td>
+<td>String</td>
+</tr>
+
+<tr>
+<td>x</td>
+<td>Unsigned hexadecimal number. Uses <b class="emphasis-bold">a</b>-<b class="emphasis-bold">f</b> for 10 to 15</td>
+</tr>
+
+<tr>
+<td>X</td>
+<td>Unsigned hexadecimal number. Uses <b class="emphasis-bold">A</b>-<b class="emphasis-bold">F</b> for 10 to 15</td>
+</tr>
+
+<tr>
+<td>%</td>
+<td>Literal %</td>
+</tr>
+
+
+</table><p>
+
+<p>This example uses the <b class="emphasis-bold">printf</b> statement to produce
+the output for rule 2 in the <b class="emphasis-bold">filesum</b> program.
+It outputs a string and a decimal value found in two different
+fields:</p>
+
+<blockquote><pre class="code">printf("%d\t%s\n", $5, $9)</pre></blockquote>
+
+<p>The value of <b class="emphasis-bold">$5</b> is to be output, followed by a tab (\t) and
+<b class="emphasis-bold">$9</b> and then a newline (\n).<a href="#FOOTNOTE-51">[51]</a>
+For each format specification, you must supply a corresponding 
+argument.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-51" /><p> [51]Compare this statement with the <b class="emphasis-bold">print</b> statement in the
+<b class="emphasis-bold">filesum</b> program that prints the header line. The <b class="emphasis-bold">print</b>
+statement automatically supplies a newline (the value of <b class="emphasis-bold">ORS</b>);
+when using <b class="emphasis-bold">printf</b>, you must supply the newline, it is never
+automatically provided for you.</p>
+
+</blockquote>
+
+<p>
+<a name="IXT-7-265993" />
+<a name="IXT-7-265994" />
+This <b class="emphasis-bold">printf</b> statement can be used to specify the width
+and alignment of output fields.  A format expression
+can take three optional modifiers following "%" and preceding the format
+specifier:</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>%-</b></tt><em class="replaceable"><tt>width</em><tt class="userinput"><b>.</b></tt><em class="replaceable">precision format-specifier</tt></em></pre></blockquote>
+
+<p>The <em class="emphasis">width</em> of the output field is a numeric value. 
+When you specify a field width, the contents of the field
+will be right-justified by default.  You must specify
+"-" to get left-justification.  Thus, "%-20s" outputs
+a string left-justified in a field 20 characters wide.  If
+the string is less than 20 characters, the field will be
+padded with whitespace to fill.
+In the following examples,
+a "|" is output to indicate the actual width of the field.
+The first example right-justifies the text:</p>
+
+<blockquote><pre class="code">printf("|%10s|\n", "hello")</pre></blockquote>
+
+<p>It produces:</p>
+
+<blockquote><pre class="code">|     hello|</pre></blockquote>
+
+<p>The next example left-justifies the text:</p>
+
+<blockquote><pre class="code">printf("|%-10s|\n", "hello")</pre></blockquote>
+
+<p>It produces:</p>
+
+<blockquote><pre class="code">|hello     |</pre></blockquote>
+
+<p>
+<a name="IXT-7-265995" />
+<a name="IXT-7-265996" />
+The <em class="emphasis">precision</em> modifier, used for decimal
+or floating-point values, controls the number of digits
+that appear to the right of the decimal point.
+For string values, it controls the maximum number of characters
+from the string that will be printed.
+Note that the default precision for the output of numeric
+values is "%.6g".</p>
+
+<p>You can specify both the <em class="emphasis">width</em> and <em class="emphasis">precision</em> dynamically,
+via values in the <b class="emphasis-bold">printf</b> or <b class="emphasis-bold">sprintf</b> argument list.
+You do this by specifying asterisks, instead of literal values.</p>
+
+<blockquote><pre class="code">printf("%*.*g\n", 5, 3, myvar);</pre></blockquote>
+
+<p>In this example, the width is 5, the precision is 3, and the value
+to print will come from <b class="emphasis-bold">myvar</b>.</p>
+
+<p>The default precision used by the <b class="emphasis-bold">print</b> statement when outputting
+numbers
+can be changed
+by setting the system variable <b class="emphasis-bold">OFMT</b>.
+<a name="IXT-7-265997" />
+For instance, if you are using awk 
+to write reports that contain dollar values, you might
+prefer to change <b class="emphasis-bold">OFMT</b> to "%.2f".</p>
+
+<p>Using the full syntax of the format expression
+can solve the problem with <b class="emphasis-bold">filesum</b> 
+of getting fields and headings properly aligned. 
+One reason we output the file size before the filename was that
+the fields had a greater chance of aligning themselves
+if they were output in that order.
+The solution that <b class="emphasis-bold">printf</b> offers us is the ability to
+fix the width of output fields; therefore, each field begins
+in the same column.</p>
+
+<p>Let's rearrange the output fields in the <b class="emphasis-bold">filesum</b> report.
+We want a minimum field width so that the second field begins
+at the same position.  You specify 
+the field width place between the <b class="emphasis-bold">%</b> and the conversion
+specification.  "%-15s" specifies a minimum field width 
+of 15 characters in which 
+the value is left-justified.  "%10d", without the hyphen, 
+is right-justified, which is what we want for a decimal value.</p>
+
+<blockquote><pre class="code">printf("%-15s\t%10d\n", $9, $5)       # print filename and size</pre></blockquote>
+
+<p>This will produce a report in which the data 
+is aligned in columns and the numbers are right-justified.
+Look at how the <b class="emphasis-bold">printf</b> statement
+is used in the <b class="emphasis-bold">END</b> action:</p>
+
+<blockquote><pre class="code">printf("Total: %d bytes  (%d files)\n", sum, filenum)</pre></blockquote>
+
+<p>The column header in the <b class="emphasis-bold">BEGIN</b> rule is also changed appropriately.
+With the use of the <b class="emphasis-bold">printf</b> statement, <b class="emphasis-bold">filesum</b>
+now produces the following output:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>filesum g*</b></tt>
+FILE                 BYTES
+g                       23
+gawk                  2237
+gawk.mail             1171
+gawk.test               74
+gawkro                 264
+gfilesum               610
+grades                  64
+grades.awk             231
+grepscript               6
+Total: 4680 bytes  (9 files)</pre></blockquote>
+
+<a name="IXT-7-265998" />
+<a name="IXT-7-265999" />
+<a name="IXT-7-266000" />
+<a name="IXT-7-266001" />
+<a name="IXT-7-266002" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.8. Relational and Boolean Operators</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.10. Passing Parameters Into a Script</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

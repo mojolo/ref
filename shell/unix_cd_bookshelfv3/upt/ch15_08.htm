@@ -1,0 +1,173 @@
+<html><head><title>How Much Disk Space? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch15_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">15.8. How Much Disk Space?</h2>
+
+<p><a name="IXT-15-6179" />Two tools, <i class="command">df</i> and
+<i class="command">du</i>, report how much disk space is free and how
+much is used by any given directory. For each filesystem,
+<i class="command">df</i> tells you the capacity, how much space is in
+use, and how much is free. By default, it lists both local and remote
+(i.e., <b class="emphasis-bold">NFS</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>)) filesystems. Under Linux or BSD Unix, the
+output from <i class="command">df</i> looks like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>df</b></tt>
+Filesystem  1K-blocks     Used    Avail Capacity  Mounted on
+/dev/ad0s1a     99183    37480    53769    41%    /
+/dev/ad2s1e   3943876  1873453  1754913    52%    /home
+/dev/ad0s1f   3360437  1763460  1328143    57%    /usr
+/dev/ad0s1e    508143    16925   450567     4%    /var
+procfs              4        4        0   100%    /proc
+toy:/usr     17383462 15470733   522053    97%    /toy
+   ...</pre></blockquote>
+
+<p>This report shows information about four local filesystems, the local
+<em class="emphasis">procfs</em> filesystem, and one remote filesystem
+(from the system <em class="emphasis">toy</em>). Note that a normal
+filesystem that is 100% full really has 5 to 10% free space -- but
+only the <b class="emphasis-bold">superuser</b> (<a href="ch01_18.htm#upt3-CHP-1-SECT-18">Section 1.18</a>) can use this reserved space, and that usually
+isn't a good idea. The reserved space is primarily
+for recovering from the disk filling up for some reason; the
+superuser can still successfully copy files and the like to free up
+space. Special filesystems often don't do this sort
+of block reservation; procfs and ISO-9660 (CD-ROM and CD-R)
+filesystems don't care.
+</p>
+
+<p><i class="command">df</i> can be invoked in several other ways:</p>
+
+<ul><li>
+<p>If you already know that you're interested in a
+particular filesystem, you can use a command such as <em class="emphasis">df
+/home</em> or <em class="emphasis">df</em> . (. means
+"the current directory" (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>)). 
+</p>
+</li><li>
+<p>If your system uses NFS and you are interested only in local
+(non-NFS) filesystems, use the command <em class="emphasis">df -t ufs</em>
+(most BSDs) or <em class="emphasis">df -t ext2fs</em> (most Linuxes). You
+should always use this command if remote file servers are down. If
+you have mounted remote disks that are unavailable,
+<i class="command">df</i> will be extremely slow or hang completely.
+</p>
+</li><li>
+<p>If you are interested in inode usage rather than filesystem data
+capacity, use the command <em class="emphasis">df -i</em>. This produces a
+similar report showing inode statistics.
+</p>
+</li></ul>
+<p>If you are using the older System V filesystem (for example, on
+Solaris), the report from <i class="command">df</i> will look different.
+The information it presents, however, is substantially the same. Here
+is a typical report:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>df</b></tt>
+/       (/dev/root ):    1758 blocks    3165 i-nodes
+/u      (/dev/u    ):     108 blocks   13475 i-nodes
+/usr    (/dev/usr  ):   15694 blocks    8810 i-nodes</pre></blockquote>
+
+<p>[If you get this sort of output from <i class="command">df</i>, you may
+be able to get the BSDish display by using <i class="command">df -P</i>
+or <i class="command">df -k</i>. You may also want to try the GNU
+<i class="command">df</i>.  -- DH]
+</p>
+
+<p>There are 1,758 physical blocks (always measured as 512-byte blocks
+for this sort of <i class="command">df</i>, regardless of the
+filesystem's logical block size) and 3,165 inodes
+available on the root filesystem. To find out the
+filesystem's total capacity, use <em class="emphasis">df
+-t</em>. The command <em class="emphasis">df -l</em> only reports on
+your system's local filesystems, omitting
+filesystems mounted by NFS or RFS.
+</p>
+
+<p>It is often useful to know how much storage a specific directory
+requires. This can help you to determine if any users are occupying
+more than their share of storage. The
+<i class="command">du</i><a name="IXT-15-6180" /> utility
+provides such a report. Generally you want to use the
+<span class="option">-k</span> to <i class="command">du</i>; by default its reports
+are in disk blocks and thus somewhat harder to read.
+<span class="option">-k</span> asks <i class="command">df</i> to report its numbers
+in kilobytes. Here's a simple report from
+<i class="command">du</i>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>du -k</b></tt>
+107     ./reports
+888     ./stuff
+32      ./howard/private
+33      ./howard/work
+868     ./howard
+258     ./project/code
+769     ./project
+2634    .</pre></blockquote>
+
+<p><i class="command">du</i> shows that the current directory and all of its
+subdirectories occupy about 2.5 MB (2,634 KB). The biggest
+directories in this group are <em class="emphasis">stuff</em> and
+<em class="emphasis">howard</em>, which have a total of 888 KB and 868 KB,
+respectively. The total for each directory includes the totals for
+any subdirectories, as well as files in the directory itself. For
+instance, the two subdirectories <em class="emphasis">private</em> and
+<em class="emphasis">work</em> contribute 65 KB to
+<em class="emphasis">howard</em>; the rest of the 868 KB is from files in
+<em class="emphasis">howard</em> itself. (So, to get the grand total of
+2,634, <i class="command">du</i> adds 107, 888, 868, and 769, plus files
+in the top-level directory.) <i class="command">du</i> does not show
+individual files as separate items unless you use its
+<span class="option">-a</span> option.
+</p>
+
+<p>The <span class="option">-s</span><a name="IXT-15-6181" />
+option tells <i class="command">du</i> to report the total amount of
+storage occupied by a directory; it suppresses individual reports for
+all subdirectories. For example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>du -s</b></tt>
+2634    .</pre></blockquote>
+
+<p>This is essentially the last line of the previous report.
+<em class="emphasis">du -s</em> is particularly useful for showing only
+the files in the current directory, rather than showing every
+directory down the tree:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd /home</b></tt>
+% <tt class="userinput"><b>du -sk *</b></tt>
+69264   boots
+18236   chaos
+1337820 deb
+...</pre></blockquote>
+
+<p><em class="emphasis">--ML, from <em class="emphasis">System Performance Tuning</em>
+(O'Reilly, 2002)</em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch15_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">15.7. Save Space: tar and compress a Directory Tree</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">15.9. Compressing a Directory Tree: Fine-Tuning</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

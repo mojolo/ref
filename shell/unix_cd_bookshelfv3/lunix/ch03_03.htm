@@ -1,0 +1,471 @@
+<html><head><title>Protecting and Sharing Files (Learning the Unix Operating System, 5th Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Jerry Peek, John Strang and Grace Todino-Gonguet" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00261-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Unix Operating System, 5th Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning Unix" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.3. Protecting and Sharing Files</h2>
+
+<p>
+<a name="lunix5-IDXTERM-408" />
+<a name="lunix5-IDXTERM-409" />
+Unix makes it easy for users to share files and directories.
+For instance, everyone in a group can read documents stored in one of
+their manager's directories without needing to make their own
+copies--if the manager has allowed access.
+There might be no need to fill peoples' email inboxes with file
+attachments if everyone can access those files directly through
+the Unix filesystem.
+</p>
+
+<p>
+Here's a brief introduction to file security and sharing.
+Networked systems with multiple users, such as Unix, have complex
+security issues that take tens or hundreds of pages to explain.
+If you have critical security needs or you just want more information,
+talk to your system staff or see an up-to-date book on Unix security.
+</p>
+
+<blockquote><b>WARNING:</b> 
+
+Note that the system's superuser (the system administrator and possibly
+other users) can do anything to any file at any time, no matter what
+its permissions are.
+So, access permissions won't keep your private information safe from
+<em class="emphasis">everyone</em>--although let's hope that you can
+trust your system staff!
+</p>
+
+<p>
+Your system staff should also keep backup copies of users' files.
+These backup copies may be readable by anyone who has physical access to
+them.
+That is, anyone who can take the backup out of a cabinet (or
+wherever) and mount it on a computer system may be able to read the file
+copies.
+The same is true for files stored on floppy disks and any other
+removable media.
+(Once you take a file off of a Unix system, that system can't control
+access to it anymore.)
+</p>
+</blockquote>
+
+<a name="lunix5-CHP-3-SECT-3.1" /><div class="sect2">
+<h3 class="sect2">3.3.1. Directory Access Permissions</h3>
+
+<p>
+<a name="IXT-3-279804" />
+<a name="IXT-3-279805" />
+A directory's access permissions help to control access to the files
+and subdirectories in that directory:
+</p>
+
+<ul>
+<li><p>
+If a directory has read permission, a user can run
+<b class="emphasis-bold">ls</b> to see what's in the directory
+and use wildcards to match files in it.
+</p></li>
+
+<li><p>
+A directory that has write permission allows users to add, rename, and
+delete files in the directory.
+</p></li>
+
+<li><p>
+To access a directory--that is, to read or write the files in
+the directory or to run the files if they're programs--a user
+needs execute permission on that directory.
+Note that to access a directory, a user must <em class="emphasis">also</em>
+have execute permission to
+all of its parent directories, all the way up to the root!
+</p>
+
+</li>
+</ul>
+
+</div>
+
+
+
+
+<a name="lunix5-CHP-3-SECT-3.2" /><div class="sect2">
+<h3 class="sect2">3.3.2. File Access Permissions</h3>
+
+<p>
+<a name="IXT-3-279806" />
+The access permissions on a file control what can be done to the file's
+<em class="emphasis">contents</em>.
+The access permissions on the <em class="emphasis">directory</em> where the
+file is kept control whether the file can be renamed or removed.
+(If this seems confusing, think of it this way:
+the directory is actually a list of files.
+Adding, renaming, or removing a file changes the contents of the directory.
+If the directory isn't writable, you can't change that list.)
+</p>
+
+<p>
+Read permission controls whether you can read a file's contents.
+Write permission lets you change a file's contents.
+A file shouldn't have execute permission unless it's a program.
+</p>
+
+</div>
+
+
+
+
+<a name="lunix5-CHP-3-SECT-3.3" /><div class="sect2">
+<h3 class="sect2">3.3.3. Setting Permissions with chmod</h3>
+
+<p>
+
+
+<a name="lunix5-IDXTERM-413" />
+<a name="IXT-3-279807" />
+Once you know what permissions a file or directory needs--and if you're
+the owner (listed in the third column of
+<b class="emphasis-bold">ls -l</b> output)--you can change the
+permissions with the <b class="emphasis-bold">chmod</b> program.
+</p>
+
+<p>
+There are two ways to change permissions: by specifying the permissions to
+add or delete, or by specifying the exact permissions.<a href="#FOOTNOTE-8">[8]</a>
+For instance, if a directory's permissions are almost correct,
+but you also need to make it writable by its group,
+tell <b class="emphasis-bold">chmod</b> to add group-write permission.
+But if you need to make more than one change to the permissions--for
+instance, you want to add read and execute permission, but delete write
+permission--it's easier to set all permissions explicitly instead
+of changing them one-by-one.
+The syntax is:
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-8" /><p> [8]
+Early versions of <b class="emphasis-bold">chmod</b> can't add or
+delete particular permissions.
+Instead, you have to give an exact permission as three digits
+between 0 and 7.
+If you need to use <b class="emphasis-bold">chmod</b> that way,
+please see a more detailed Unix reference.
+</p>
+</blockquote>
+
+
+<p>
+<b class="emphasis-bold">chmod</b> <em class="emphasis">permissions file(s)</em>
+</p>
+
+
+<p>
+Let's start with the rules; we see examples next.
+The <em class="emphasis">permissions</em> argument has three parts, which you
+must give in order with no space between.
+</p>
+
+<ol>
+<li><p>
+<a name="IXT-3-279808" />
+<a name="IXT-3-279809" />
+<a name="IXT-3-279810" />
+<a name="IXT-3-279811" />
+<a name="IXT-3-279812" />
+<a name="IXT-3-279813" />
+The category of permission you want to change.
+There are three: the owner's permission
+(which <b class="emphasis-bold">chmod</b> calls "user,"
+abbreviated <tt class="literal">u</tt>),
+the group's permission (<tt class="literal">g</tt>), or
+others' permission (<tt class="literal">o</tt>).
+To change more than one category, string the letters together, such as
+<tt class="literal">go</tt> for "group and others," or
+simply use <tt class="literal">a</tt> to mean "all" (same as <tt class="literal">ugo</tt>).
+</p></li>
+
+<li><p>
+Whether you want to add (<tt class="literal">+</tt>) the permission,
+delete (<tt class="literal">-</tt>) it, or specify it exactly (<tt class="literal">=</tt>).
+</p></li>
+
+<li><p>
+<a name="IXT-3-279814" />
+<a name="IXT-3-279815" />
+<a name="IXT-3-279816" />
+<a name="IXT-3-279817" />
+What permissions you want to affect:
+read (<tt class="literal">r</tt>), write (<tt class="literal">w</tt>), or
+execute (<tt class="literal">x</tt>).
+To change more than one permission, string the letters together--for example,
+<tt class="literal">rw</tt> for "read and write."
+</p></li>
+</ol>
+
+<p>
+<a name="IXT-3-279818" />
+Some examples should make this clearer!
+In the following command lines, you can replace <em class="emphasis">dirname</em>
+or <em class="emphasis">filename</em> with the pathname (absolute or
+relative) of the directory or file.
+An easy way to change permissions on the working directory is by using
+its relative pathname, <b class="emphasis-bold">.</b> (dot),
+as in "<b class="emphasis-bold">chmod a-w .</b>".
+You can combine two permission changes in the same
+<b class="emphasis-bold">chmod</b> command by separating them with
+a comma (<tt class="literal">,</tt>), as shown in the final example.
+</p>
+
+<ul>
+
+<li>
+<p>
+To protect a file from accidental editing, 
+delete everyone's write permission with the command
+"<b class="emphasis-bold">chmod a-w</b> <em class="emphasis">filename</em>".
+On the other hand, if you own an unwritable file that you want to edit,
+but you don't want to change other peoples' write permissions, you can
+add "user" (owner) write permission with
+"<b class="emphasis-bold">chmod u+w</b> <em class="emphasis">filename</em>".
+</p>
+</li>
+
+<li>
+<p>
+To keep yourself from accidentally removing files
+(or adding or renaming files) in an important directory of yours,
+delete your own write permission with the command
+"<b class="emphasis-bold">chmod u-w</b> <em class="emphasis">dirname</em>".
+If other users have that permission, too, you could delete
+everyone's write permission with 
+"<b class="emphasis-bold">chmod a-w</b> <em class="emphasis">dirname</em>".
+</p>
+</li>
+
+<li>
+<p>
+
+<a name="IXT-3-279819" />
+<a name="IXT-3-279820" />
+<a name="IXT-3-279821" />
+<a name="IXT-3-279822" />
+<a name="IXT-3-279823" />
+If you want you and your group to be able to read and write all the
+files in your working directory--but those files have various
+permissions now, so adding and deleting the permissions individually
+would be a pain--this is a good place to use the <tt class="literal">=</tt>
+operator to set the exact permissions you want.
+Use the filename wildcard <tt class="literal">*</tt>, which means "everything
+in this directory" (explained in
+ <a href="ch04_02.htm#lunix5-CHP-4-SECT-2">Section 4.2</a> of <a href="ch04_01.htm">Chapter 4</a>)
+and type:
+"<b class="emphasis-bold">chmod ug=rw *</b>".
+</p>
+
+<p>
+If your working directory had any subdirectories, though, that command
+would be wrong because it takes away execute permission from the
+subdirectories, so the subdirectories couldn't be accessed anymore.
+In that case, you could try a more specific wildcard.
+Or, instead of a wildcard, you can simply list the filenames you want to
+change, separated by spaces, as in
+"<b class="emphasis-bold">chmod ug=rw afile bfile cfile</b>".
+</p>
+</li>
+
+<li>
+<p>
+To protect the files in a directory and all its
+subdirectories from everyone else on your system, but still keep
+the access permissions <em class="emphasis">you</em> have there, you could
+use "<b class="emphasis-bold">chmod go-rwx</b> <em class="emphasis">dirname</em>"
+in order to delete all "group" and "others" permission to read, write, and execute.
+A simpler way is to use the command
+"<b class="emphasis-bold">chmod go=</b> <em class="emphasis">dirname</em>"
+to set "group" and "others" permission to exactly nothing.
+</p>
+</li>
+
+<li>
+<p>
+You want  full access to a directory.
+Other people on the system should be able to see what's in the
+directory--and read or edit the files if the file permissions allow
+it--but not rename, remove, or add files.
+To do that, give yourself all permissions,
+but give "group" and "others" only read and execute permission.
+Use the command
+"<b class="emphasis-bold">chmod u=rwx,go=rx</b> <em class="emphasis">dirname</em>".
+</p>
+</li>
+</ul>
+
+<p>
+After you change permissions, it's a good idea to check your work at first
+with "<b class="emphasis-bold">ls -l</b> <em class="emphasis">filename</em>"
+or "<b class="emphasis-bold">ls -ld</b> <em class="emphasis">dirname</em>".
+</p>
+</div>
+
+
+
+
+
+<a name="lunix5-CHP-3-SECT-3.4" /><div class="sect2">
+<h3 class="sect2">3.3.4. More Protection Under Linux</h3>
+
+<p>
+<a name="IXT-3-279824" />
+<a name="IXT-3-279825" />
+<a name="IXT-3-279826" />
+<a name="IXT-3-279827" />
+Most Linux systems have a program named <b class="emphasis-bold">chattr</b>
+that gives you more choices on file and directory protection.
+<b class="emphasis-bold">chattr</b> is being developed, and your
+version may not have all the features that it will have in later
+Linux versions.
+For instance, <b class="emphasis-bold">chattr</b> can make a
+Linux file <em class="emphasis">append-only</em> (so it can't be overwritten,
+only added to), <em class="emphasis">compressed</em> (to save disk space
+automatically), <em class="emphasis">immutable</em> (so it can't be changed
+at all), <em class="emphasis">undeletable</em>, and more.
+Check your online documentation (type
+<b class="emphasis-bold">man chattr</b>--see
+<a href="ch08_01.htm">Chapter 8</a>).
+</p>
+
+<a name="lunix5-CHP-3-SECT-3.4.1" /><div class="sect3">
+<h3 class="sect3">3.3.4.1. Problem checklist</h3>
+
+<dl>
+
+<dt><i><em class="emphasis">I get the message "chmod: Not owner."</em></tt></i></dt>
+<dd>
+
+Only the owner of a file or directory--or the superuser--can set
+its permissions.
+Use <b class="emphasis-bold">ls -l</b> to find the owner, or ask a
+system staff person to change the permissions.
+</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">A file is writable, but my program says it can't be written.</em></tt></i></dt>
+<dd>
+
+First, check the file permissions with <b class="emphasis-bold">ls -l</b>
+and be sure you're in the category (user, group, or others) that
+has write permission.
+</p>
+<p>The problem may also be in the permissions of the
+file's <em class="emphasis">directory</em>.
+Some programs need permission to write more files into the same directory
+(for example, temporary files), or to rename
+files (for instance, making a file into a backup) while editing.
+If it's safe to add write permission to the directory (if other files
+in the directory don't need protection from removal or
+renaming) try that.
+Otherwise, copy the file to a writable directory
+(with <b class="emphasis-bold">cp</b>), edit it there, then
+copy it back to the original directory.
+</p>
+</dd>
+
+</dl>
+
+<a name="IXTR3-48" />
+</div>
+</div>
+
+<a name="lunix5-CHP-3-SECT-3.5" /><div class="sect2">
+<h3 class="sect2">3.3.5. Changing Group and Owner</h3>
+
+<p>
+<a name="IXT-3-279828" />
+<a name="IXT-3-279829" />
+Group ownership lets a certain group of users have access to a file
+or directory.
+You might need to let a different group have access.
+The <b class="emphasis-bold">chgrp</b> program sets the group owner
+of a file or directory.
+You can set the group to any of the groups you belong to.
+(The system staff control the list of groups you're in.)
+On most versions of Unix, the <b class="emphasis-bold">groups</b>
+program lists your groups.
+</p>
+
+<p>
+For example, if you're an instructor creating a directory named
+<em class="emphasis">csc303</em> for students in a course, the directory's
+original group owner might be <em class="emphasis">faculty</em>.
+You'd like the students, all of whom are in the group named
+<em class="emphasis">csstudnt</em>, to access the directory;
+members of other groups should have no access.
+Use commands such as these:<a href="#FOOTNOTE-9">[9]</a>
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-9" /><p> [9]
+Many Unix systems also let you set a directory's group ownership so
+that any files you later create in that directory will be owned by the
+same group as the directory.
+Try the command
+"<b class="emphasis-bold">chmod g+s</b> <em class="emphasis">dirname</em>".
+If this works, the permissions listing from
+<b class="emphasis-bold">ls -ld</b> should show an <em class="emphasis">s</em>
+in place of the second <em class="emphasis">x</em>, such as
+<tt class="literal">drwxr-s---</tt>.
+</p>
+</blockquote>
+
+<p><blockquote><pre class="code">
+$ <tt class="userinput"><b>groups</b></tt>
+faculty csstudnt wheel research
+$ <tt class="userinput"><b>mkdir csc303</b></tt>
+$ <tt class="userinput"><b>ls -ld csc303</b></tt>
+drwxr-xr-x    2 roberts  faculty      4096 Aug 25 13:35 csc303
+$ <tt class="userinput"><b>chgrp csstudnt csc303</b></tt>
+$ <tt class="userinput"><b>chmod o= csc303</b></tt>
+$ <tt class="userinput"><b>ls -ld csc303</b></tt>
+drwxr-x---    2 roberts  csstudnt     4096 Aug 25 13:35 csc303
+</pre></blockquote></p>
+
+<p>
+<a name="IXT-3-279830" />
+The <b class="emphasis-bold">chown</b> program changes the owner of
+a file or directory.
+On most Unix systems, only the superuser can use
+<b class="emphasis-bold">chown</b>.<a href="#FOOTNOTE-10">[10]</a>
+</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-10" /><p> [10]
+<a name="IXT-3-279831" />
+If you have permission to read another user's file, you can make
+a copy of it (with <b class="emphasis-bold">cp</b>;
+see <a href="ch04_04.htm#lunix5-CHP-4-SECT-4.2">Section 4.4.2</a> in <a href="ch04_01.htm">Chapter 4</a>).
+You'll own the copy.
+</p>
+</blockquote>
+
+<a name="IXTR3-49" />
+<a name="IXTR3-50" />
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.2. Looking Inside Files with less</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.4. Graphical Filesystem Browsers</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

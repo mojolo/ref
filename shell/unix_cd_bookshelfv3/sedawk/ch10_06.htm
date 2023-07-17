@@ -1,0 +1,215 @@
+<html><head><title>Generating Columnar Reports (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.6. Generating Columnar Reports</h2>
+
+<p>
+<a name="ch10.col" />
+<a name="ch10.col2" />
+This section describes a small-scale business application that
+produces reports with dollar amounts.  While this application doesn't
+introduce any new material, it does emphasize the data processing and
+reporting capabilities of awk.  (Surprisingly, some people do use awk
+to write small business applications.)</p>
+
+<p>It is presumed that a script exists for data entry.  The data-entry
+script has two jobs: the first is to enter the customer's name and
+mailing address for later use in building a mailing list; the second
+is to record the customer's order of any of seven items, the number of
+items ordered, and the price per item.  The data collected for the
+mailing list and the customer order were written to separate files.</p>
+
+<p>Here are two sample customer records from the customer order file:</p>
+
+<blockquote><pre class="code">Charlotte Webb 
+P.O  N61331 97 Y 045 	Date: 03/14/97
+#1 3  7.50
+#2 3  7.50
+#3 1  7.50
+#4 1  7.50
+#7 1  7.50 
+
+Martin S. Rossi 
+P.O  NONE 	Date: 03/14/97
+#1 2  7.50
+#2 5  6.75</pre></blockquote>
+
+<p>Each order covers multiple lines, and a blank line separates one order
+from another.  The first two lines supply the customer's name,
+purchase order number and the date of the order.  Each subsequent line
+identifies an item by number, the number ordered, and the price of the
+item.</p>
+
+<p>Let's write a simple program that multiplies the number of items by
+the price.  The script can ignore the first two lines of each record.
+We only want to read the lines where an item is specified, as in the
+following example.</p>
+
+<blockquote><pre class="code">awk '/^#/ {
+		amount = $2 * $3
+		printf "%s %6.2f\n", $0, amount
+		next
+	 }
+{ print }' $*</pre></blockquote>
+
+<p>The main procedure only affects lines that match the pattern.  It
+multiplies the second field by the third field, assigning the value to
+the variable <b class="emphasis-bold">amount</b>.  The <b class="emphasis-bold">printf</b>
+conversion <b class="emphasis-bold">%f</b> is used to print a floating-point
+number; "6.2" specifies a minimum field width of six and a precision
+of two.  Precision is the number of digits to the right of the decimal
+point; the default for <b class="emphasis-bold">%f</b> is six.  We print the
+current record along with the value of the variable
+<b class="emphasis-bold">amount</b>.  If a line is printed within this
+procedure, the next line is read from standard input.  Lines not
+matching the pattern are simply passed through.  Let's look at how
+<b class="emphasis-bold">addem</b> works:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>addem orders</b></tt>
+Charlotte Webb 
+P.O  N61331 97 Y 045 	Date: 03/14/97
+#1 3  7.50  22.50
+#2 3  7.50  22.50
+#3 1  7.50   7.50
+#4 1  7.50   7.50
+#7 1  7.50   7.50
+
+Martin S. Rossi 
+P.O  NONE 	Date: 03/14/97
+#1 2  7.50  15.00
+#2 5  6.75  33.75</pre></blockquote>
+
+<p>This program did not need to access the customer record as a whole; it
+simply acted on the individual item lines.  Now, let's design a
+program that reads multiline records and accumulates order
+information for display in a report.  This report should display for
+each item the total number of copies and the total amount.  We also
+want totals reflecting all copies ordered and the sum of all orders.</p>
+
+<p>Our new script will begin by setting the field and record separators:</p>
+
+<blockquote><pre class="code">BEGIN { FS = "\n"; RS = "" }</pre></blockquote>
+
+<p>Each record has a variable number of fields, depending upon how many
+items have been ordered.  First, we check that the input record has at
+least three fields.  Then a <b class="emphasis-bold">for</b> loop is built to
+read all of the fields beginning with the third field.</p>
+
+<blockquote><pre class="code">NF &gt;= 3 {
+for (i = 3; i &lt;= NF; ++i) {</pre></blockquote>
+
+<p>In database terms, each field has a value and each value can be
+further broken up as subvalues.  That is, if the value of a field in a
+multiline record is a single line, subvalues are the words that are
+on that line.  We can use the <b class="emphasis-bold">split()</b>
+function to divide a field into subvalues.</p>
+
+<p>The following part of the script splits each field into subvalues.
+<b class="emphasis-bold">$i</b> will supply the value of the current field that
+will be divided into elements of the array <b class="emphasis-bold">order</b>:</p>
+
+<blockquote><pre class="code">sv = split($i, order, " ")
+if (sv == 3) {
+       <em class="emphasis">procedure</em>
+} else
+       print "Incomplete Record"
+} # end for loop</pre></blockquote>
+
+<p>The number of elements returned by the function is saved in a variable
+<b class="emphasis-bold">sv</b>.  This allows us to test that there are three
+subvalues.  If there are not, the <b class="emphasis-bold">else</b> statement is
+executed, printing the error message to the screen.</p>
+
+<p>Next we assign each individual element of the array to a specific
+variable.  This is mainly to make it easier to remember what each
+element represents:</p>
+
+<blockquote><pre class="code">title = order[1] 
+copies = order[2] 
+price = order[3]</pre></blockquote>
+
+<p>Then we perform a group of arithmetic operations on these
+values:</p>
+
+<blockquote><pre class="code">amount = copies * price  
+total_vol += copies
+total_amt += amount
+vol[title] += copies
+amt[title] += amount</pre></blockquote>
+
+<p>We accumulate these values until the last input record is read.  The
+<b class="emphasis-bold">END</b> procedure prints the report.</p>
+
+<p>Here's the complete program:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat addemup</b></tt>
+#! /bin/sh
+# addemup -- total customer orders 
+awk 'BEGIN { FS = "\n"; RS = "" }
+NF &gt;= 3 {
+	for (i = 3; i &lt;= NF; ++i) { 	
+		sv = split($i, order, " ")
+		if (sv == 3) {
+			title = order[1] 
+			copies = order[2] 
+			price = order[3]
+			amount = copies * price  
+			total_vol += copies
+			total_amt += amount
+			vol[title] += copies
+			amt[title] += amount
+		} else
+			print "Incomplete Record"
+	}
+}
+
+END { 
+   printf "%5s\t%10s\t%6s\n\n", "TITLE", "COPIES SOLD", "TOTAL"
+   for (title in vol)
+       printf "%5s\t%10d\t$%7.2f\n", title, vol[title], amt[title] 
+   printf "%s\n", "-------------"
+   printf "\t%s%4d\t$%7.2f\n", "Total ", total_vol, total_amt
+}' $*</pre></blockquote>
+
+<p>We have defined two arrays that have the same subscript.  We only need
+to have one <b class="emphasis-bold">for</b> loop to read both arrays.</p>
+
+<p><b class="emphasis-bold">addemup</b>, an order report generator, produces the
+following output:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>addemup orders</b></tt>
+TITLE     COPIES SOLD      TOTAL
+
+   #1              5     $  37.50
+   #2              8     $  56.25
+   #3              1     $   7.50
+   #4              1     $   7.50
+   #7              1     $   7.50
+-------------
+     Total        16     $ 116.25</pre></blockquote>
+
+<a name="IXT-10-266187" />
+<a name="IXT-10-266188" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.5. Directing Output to Files and Pipes</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.7. Debugging</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

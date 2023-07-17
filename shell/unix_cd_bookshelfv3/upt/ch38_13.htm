@@ -1,0 +1,96 @@
+<html><head><title>The cpio Tape Archiver (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch38_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">38.13. The cpio Tape Archiver</h2>
+
+<p><a name="IXT-38-3039" /><a name="IXT-38-3040" /><a name="IXT-38-3041" />There
+<a name="IXT-38-3042" />was a time when people used to debate
+whether <b class="emphasis-bold">BSD tar</b> (<a href="ch38_02.htm#upt3-CHP-38-SECT-2">Section 38.2</a>, <a href="ch39_02.htm#upt3-CHP-39-SECT-2">Section 39.2</a>) (tape
+archiver) or System V <i class="command">cpio</i> (copy in/out) was the
+better file archive and backup program. At this point, though, no one
+ships out <i class="command">cpio</i> archives over <b class="emphasis-bold">the Net</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>).
+<i class="command">tar</i> is widespread, and there are free versions
+available, including <b class="emphasis-bold">GNU tar</b> (<a href="ch39_03.htm#upt3-CHP-39-SECT-3">Section 39.3</a>). 
+</p>
+
+<p>There's still a good reason to use
+<i class="command">cpio</i>: it's better at
+<a name="IXT-38-3043" />recovering backups from partially
+damaged media. If a block of your tape or disk archive goes bad,
+<i class="command">cpio</i> can probably recover all files except the one
+with the bad block. A <i class="command">tar</i> archive may not fare as
+well. Though we don't give it much air time in this
+book, here are a few <i class="command">cpio</i> basics:
+</p>
+
+<ul><li>
+<p>To write out an archive, use the <span class="option">-o</span> option and
+redirect output either to a tape device or to an archive file. The
+list of files to be archived is often specified with <b class="emphasis-bold">find</b> (<a href="ch09_01.htm#upt3-CHP-9-SECT-1">Section 9.1</a>), but it
+can be generated in other ways -- <i class="command">cpio</i> expects
+a list of filenames on its standard input. For example:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -name "*.old" -print | cpio -ocBv &gt; /dev/rst8</b></tt></pre></blockquote>
+<p>or:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -print | cpio -ocBv &gt; mydir.cpio</b></tt></pre></blockquote>
+</li>
+<li>
+<p>To read an archive in, use the <span class="option">-i</span> option and
+redirect input from the file or tape drive containing the archive.
+The <span class="option">-d</span> option is often important; it tells
+<i class="command">cpio</i> to create directories as needed when copying
+files in. You can restore all files from the archive or specify a
+filename pattern (with wildcards quoted to protect them from the
+shell) to select only some of the files. For example, the following
+command restores from a tape drive all C source files:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cpio -icdv "*.c" &lt; /dev/rst8</b></tt></pre></blockquote>
+
+<p>Subdirectories are created if needed (<span class="option">-d</span>), and
+<i class="command">cpio</i> will be verbose (<span class="option">-v</span>),
+announcing the name of each file that it successfully reads in.
+</p>
+</li>
+<li>
+<p>To copy an archive to another directory, use the <span class="option">-p</span>
+option, followed by the name of the destination directory. (On some
+versions of <i class="command">cpio</i>, this top-level destination
+directory must already exist.) For example, you could use the
+following command to copy the contents of the current directory
+(including all subdirectories) to another directory:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -depth -print | cpio -pd newdir</b></tt></pre></blockquote>
+</li></ul>
+<p>There are lots of other options for things like resetting file access
+times or ownership or changing the blocking factor on the tape. See
+your friendly neighborhood manual page for details. Notice that
+options are typically "squashed
+together" into an option string rather than written
+out as separate options.
+</p>
+
+<p><em class="emphasis">--TOR and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch38_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">38.12. Getting tar's Arguments in the Right Order</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">38.14. Industrial Strength Backups</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

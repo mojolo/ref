@@ -1,0 +1,176 @@
+<html><head><title>Shell Script Debugging and Gotchas (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_27.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch37_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 37. Shell Script Debugging and Gotchas</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch37_01.htm#sect1">Tips for Debugging Shell Scripts</a><br />
+<a href="ch37_02.htm">Bourne Shell Debugger Shows a Shell Variable</a><br />
+<a href="ch37_03.htm">Stop Syntax Errors in Numeric Tests</a><br />
+<a href="ch37_04.htm">Stop Syntax Errors in String Tests</a><br />
+<a href="ch37_05.htm">Quoting and Command-Line Parameters</a><br />
+<a href="ch37_06.htm">How Unix Keeps Time</a><br />
+<a href="ch37_07.htm">Copy What You Do with script</a><br />
+<a href="ch37_08.htm">Cleaning script Files</a><br />
+<a href="ch37_09.htm">Making an Arbitrary-Size File for Testing</a><br /></p></div><div class="sect1"><a name="upt3-CHP-37-SECT-1" />
+<h2 class="sect1"><a name="sect1" />37.1. Tips for Debugging Shell Scripts</h2>
+
+<p><a name="upt3-IDXTERM-6056" /> <a name="upt3-IDXTERM-6057" />
+<a name="upt3-IDXTERM-6058" /><a name="IXT-37-3062" /><a name="IXT-37-3063" />Depending on the Bourne shell
+version you have, the error messages it gives can be downright
+useless. For instance, it might say just <tt class="literal">End</tt>
+<tt class="literal">of</tt> <tt class="literal">file</tt>
+<tt class="literal">unexpected</tt>. Here are a few tricks to use to get a
+little more information about what's going on.
+Remember, it's probably best for you to use one of
+shells derived from the Bourne shell, rather than the C shell, for
+scripting.
+</p>
+
+<a name="upt3-CHP-37-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">37.1.1. Use -xv</h3>
+
+<p>Start your script like this:</p>
+
+<blockquote><pre class="code">#!/bin/sh -xv</pre></blockquote>
+
+<p><a name="IXT-37-3064" />(If your Unix can't
+handle <tt class="literal">#!</tt>, use the command <b class="emphasis-bold">set -xv</b> (<a href="ch35_25.htm#upt3-CHP-35-SECT-25">Section 35.25</a>)). The
+<tt class="literal">-xv</tt> shows you what's happening as
+the shell reads your script. The lines of the script will be shown as
+the shell reads them. The shell shows each command it executes with a
+plus sign (<tt class="literal">+</tt>) before the command.
+</p>
+
+<p>Note that the shell reads an entire loop (<i class="command">for</i>,
+<i class="command">while</i>, etc.) before it executes any commands in
+the loop.
+</p>
+
+<p><a name="IXT-37-3065" />If you want to run a script with
+debugging but you don't want to edit the script
+file, you can also start the shell explicitly from the command line
+and give the options there:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sh -xv </b></tt><em class="replaceable"><tt>scrfile</tt></em></pre></blockquote>
+
+<p><a name="IXT-37-3066" /><a name="IXT-37-3067" />Debugging output is usually pretty long,
+more than a screenful, so I pipe it to a pager like
+<i class="command">less</i>. But the shell sends its debugging output to
+<em class="emphasis">stderr</em>, so I <b class="emphasis-bold">pipe both
+stdout and stderr</b> (<a href="ch43_04.htm#upt3-CHP-43-SECT-4">Section 43.4</a>) to the
+pager.<a name="IXT-37-3068" /><a name="IXT-37-3069" /><a name="IXT-37-3070" />
+</p>
+
+<blockquote><pre class="code">$ <em class="replaceable"><tt>scrfile</tt></em><tt class="userinput"><b> 2&gt;&amp;1 | less</b></tt></pre></blockquote>
+
+<p><a name="IXT-37-3071" />Do you want to save the debugging output
+in a file and see it on your screen, too? Use <b class="emphasis-bold">tee</b> (<a href="ch43_08.htm#upt3-CHP-43-SECT-8">Section 43.8</a>) to copy the
+<em class="emphasis">scrfile</em> stdout and stderr; add
+<i class="command">tee</i> to the pipeline before the pager.
+</p>
+
+<blockquote><pre class="code">$ <em class="replaceable"><tt>scrfile</em><tt class="userinput"><b> | tee </b></tt><em class="replaceable">outfile</em> <tt class="userinput"><b>2&gt;&amp;1 |</b></tt> <em class="replaceable">less</tt></em></pre></blockquote>
+
+<p><a name="IXT-37-3072" /> <a name="IXT-37-3073" />If the script is slow, you can run it in
+the background. <b class="emphasis-bold">Redirect the
+shell's output and errors</b> (<a href="ch43_05.htm#upt3-CHP-43-SECT-5">Section 43.5</a>, <a href="ch27_11.htm#upt3-CHP-27-SECT-11">Section 27.11</a>) into a
+temporary file. Use <b class="emphasis-bold">tail -f</b> (<a href="ch12_10.htm#upt3-CHP-12-SECT-10">Section 12.10</a>) to "watch"
+the log file. If you want to do something else while the script runs,
+just kill the <i class="command">tail</i> command (with CTRL-c or your
+interrupt key), do something else, then start another <i class="command">tail
+-f</i> when you want to watch again.
+</p>
+
+<p><a name="IXT-37-3074" />Finally,
+if the script normally writes something to its standard output, you
+can <b class="emphasis-bold">split the normal and debugging outputs into
+two files</b> (<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>).
+</p>
+
+</div>
+<a name="upt3-CHP-37-SECT-1.2" /><div class="sect2">
+<h3 class="sect2">37.1.2. Unmatched Operators</h3>
+
+<p><a name="IXT-37-3075" /><a name="IXT-37-3076" />If the shell says <tt class="literal">End of
+file
+unexpected</tt><a name="IXT-37-3077" />, look for a line in your script that has
+an opening quote but no closing quote. The shell is probably
+searching for but never finding the matching quote. Missing
+parentheses and braces (<tt class="literal">{}</tt>) can cause the same
+error.
+</p>
+
+</div>
+<a name="upt3-CHP-37-SECT-1.3" /><div class="sect2">
+<h3 class="sect2">37.1.3. Exit Early</h3>
+
+<p>If you're getting an <tt class="literal">End of file
+unexpected</tt><a name="IXT-37-3078" /><a name="IXT-37-3079" /> error, put these two lines near the
+middle of the script:
+</p>
+
+<blockquote><pre class="code">echo "DEBUG: quitting early..." 1&gt;&amp;2
+exit</pre></blockquote>
+
+<p>Then run your script. Those lines will print a message and stop the
+shell where you put them. If you don't get the
+<tt class="literal">End of file unexpected</tt> error anymore, you know
+that the problem is somewhere after the <tt class="literal">exit</tt> line,
+and you can move those two lines farther down and try again.
+Otherwise, move them up.
+</p>
+
+</div>
+<a name="upt3-CHP-37-SECT-1.4" /><div class="sect2">
+<h3 class="sect2">37.1.4. Missing or Extra esac, ;;, fi, etc.</h3>
+
+<p><a name="IXT-37-3080" /><a name="IXT-37-3081" /> <a name="IXT-37-3082" /><a name="IXT-37-3083" /><a name="IXT-37-3084" /><a name="IXT-37-3085" /><a name="IXT-37-3086" />A
+<a name="IXT-37-3087" />message like <tt class="literal">line 23: ;;
+unexpected</tt> means that you have an unmatched piece of code
+somewhere before line 23. You'll also see
+<tt class="literal">fi unexpected</tt>. Look at all nested
+<i class="command">if</i> and <i class="command">case</i> statements, and
+statements like them, to be sure that they end in the right places.
+</p>
+
+</div>
+<a name="upt3-CHP-37-SECT-1.5" /><div class="sect2">
+<h3 class="sect2">37.1.5. Line Numbers Reset Inside Redirected Loops</h3>
+
+<p><a name="IXT-37-3088" /><a name="IXT-37-3089" />The
+<a name="IXT-37-3090" /> <a name="IXT-37-3091" />shell may give you an error that
+mentions "line 1" or another line
+number that seems way too small, when there's no
+error close to the top of your script. Look at any loops or other
+structures with <b class="emphasis-bold">redirected inputs or
+outputs</b> (<a href="ch43_06.htm#upt3-CHP-43-SECT-6">Section 43.6</a>). Some Bourne shells
+start a separate shell to run these loops and lose track of the line
+numbers.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_27.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch37_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.27. Shell Lockfile</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">37.2. Bourne Shell Debugger Shows a Shell Variable</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

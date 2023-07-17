@@ -1,0 +1,476 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> <html data-darkreader-mode=dynamic data-darkreader-scheme=dark style><!--
+ Page saved with SingleFile 
+ url: https://tldp.org/LDP/abs/html/string-manipulation.html 
+ saved date: Tue Jul 04 2023 00:50:44 GMT-0700 (Pacific Daylight Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>.jfk-bubble.gtx-bubble,.captcheck_answer_label>input+img,span#closed_text>img[src^="https://www.gstatic.com/images/branding/googlelogo"],span[data-href^="https://www.hcaptcha.com/"]>#icon,#bit-notification-bar-iframe,::-webkit-calendar-picker-indicator{filter:invert(100%) hue-rotate(180deg) contrast(90%) sepia(5%)!important}[data-darkreader-inline-bgcolor]{background-color:var(--darkreader-inline-bgcolor)!important}[data-darkreader-inline-color]{color:var(--darkreader-inline-color)!important}:root{--darkreader-neutral-background:#131516;--darkreader-neutral-text:#dcd6cf;--darkreader-selection-background:#054da5;--darkreader-selection-text:#ece8e2}html{background-color:#191a1b!important}html{color-scheme:dark!important}html,body{background-color:#191a1b}html,body{border-color:#756c5e;color:#ece8e2}a{color:#3992f8}table{border-color:#565c5d}::placeholder{color:#b5ada1}::-webkit-scrollbar{background-color:#212324;color:#aea699}::-webkit-scrollbar-thumb{background-color:#464b4d}::-webkit-scrollbar-corner{background-color:#191a1b}*{scrollbar-color:#464b4d #212324}::selection{background-color:#054da5!important;color:#ece8e2!important}::-moz-selection{background-color:#054da5!important;color:#ece8e2!important}</style><title>Manipulating Strings</title><meta name=GENERATOR content="Modular DocBook HTML Stylesheet Version 1.7"><link rel=HOME title="Advanced Bash-Scripting Guide" href=https://tldp.org/LDP/abs/html/index.html><link rel=UP title="Manipulating Variables" href=https://tldp.org/LDP/abs/html/manipulatingvars.html><link rel=PREVIOUS title="Manipulating Variables" href=https://tldp.org/LDP/abs/html/manipulatingvars.html><link rel=NEXT title="Parameter Substitution" href=https://tldp.org/LDP/abs/html/parameter-substitution.html><meta name=darkreader content=8903c331793a42ee96cbf7eb22f4d130><style class="darkreader darkreader--override" media=screen>::placeholder{opacity:0.5!important}</style><link type=image/x-icon rel="shortcut icon" href="data:image/x-icon;base64,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"><link rel=canonical href=https://tldp.org/LDP/abs/html/string-manipulation.html><meta http-equiv=content-security-policy content="default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;"><style>img[src="data:,"],source[src="data:,"]{display:none!important}</style><body class=SECT1 style=--darkreader-inline-bgcolor:#191a1b data-darkreader-inline-bgcolor vlink=#840084 text=#000000 link=#0000FF bgcolor=#FFFFFF alink=#0000FF><div class=NAVHEADER><table summary="Header navigation table" width=100% cellspacing=0 cellpadding=0 border=0><tbody><tr><th colspan=3 align=center>Advanced Bash-Scripting Guide: <tr><td width=10% valign=bottom align=left><a href=https://tldp.org/LDP/abs/html/manipulatingvars.html accesskey=P>Prev</a><td width=80% valign=bottom align=center>Chapter 10. Manipulating Variables<td width=10% valign=bottom align=right><a href=https://tldp.org/LDP/abs/html/parameter-substitution.html accesskey=N>Next</a></table><hr width=100% align=LEFT></div><div class=SECT1><h1 class=SECT1><a name=STRING-MANIPULATION></a>10.1. Manipulating Strings</h1><p><a name=STRINGMANIP></a><p>Bash supports a surprising number of string manipulation
+ operations. Unfortunately, these tools lack
+ a unified focus. Some are a subset of <a href=https://tldp.org/LDP/abs/html/parameter-substitution.html#PARAMSUBREF>parameter substitution</a>, and
+ others fall under the functionality of the UNIX <a href=https://tldp.org/LDP/abs/html/moreadv.html#EXPRREF>expr</a> command. This results in
+ inconsistent command syntax and overlap of functionality,
+ not to mention confusion.<p><div class=VARIABLELIST><p><b>String Length</b><dl><dt>${#string}<dd><p></p><dt>expr length $string<dd><p><a name=STRLEN></a>These are the equivalent of
+ <i class=FIRSTTERM>strlen()</i> in
+ <i class=FIRSTTERM>C</i>.</p><dt>expr "$string" : '.*'<dd><p> <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+
+echo ${#stringZ}                 # 15
+echo `expr length $stringZ`      # 15
+echo `expr "$stringZ" : '.*'`    # 15</pre></font></table>
+ </p></dl></div><div class=EXAMPLE><a name=PARAGRAPHSPACE></a><p><b>Example 10-1. Inserting a blank line between paragraphs in a text file</b><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=100% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>#!/bin/bash
+# paragraph-space.sh
+# Ver. 2.1, Reldate 29Jul12 [fixup]
+
+# Inserts a blank line between paragraphs of a single-spaced text file.
+# Usage: $0 &lt;FILENAME
+
+MINLEN=60        # Change this value? It's a judgment call.
+#  Assume lines shorter than $MINLEN characters ending in a period
+#+ terminate a paragraph. See exercises below.
+
+while read line  # For as many lines as the input file has ...
+do
+  echo "$line"   # Output the line itself.
+
+  len=${#line}
+  if [[ "$len" -lt "$MINLEN" &amp;&amp; "$line" =~ [*{\.}]$ ]]
+# if [[ "$len" -lt "$MINLEN" &amp;&amp; "$line" =~ \[*\.\] ]]
+# An update to Bash broke the previous version of this script. Ouch!
+# Thank you, Halim Srama, for pointing this out and suggesting a fix.
+    then echo    #  Add a blank line immediately
+  fi             #+ after a short line terminated by a period.
+done
+
+exit
+
+# Exercises:
+# ---------
+#  1) The script usually inserts a blank line at the end
+#+    of the target file. Fix this.
+#  2) Line 17 only considers periods as sentence terminators.
+#     Modify this to include other common end-of-sentence characters,
+#+    such as ?, !, and ".</pre></font></table></div><p><div class=VARIABLELIST><p><b>Length of Matching Substring at Beginning of String</b><dl><dt><a name=EXPRMATCH></a>expr match "$string"
+ '$substring'<dd><p><tt class=REPLACEABLE><i>$substring</i></tt> is a <a href=https://tldp.org/LDP/abs/html/regexp.html#REGEXREF>regular expression</a>.</p><dt>expr "$string" : '$substring'<dd><p><tt class=REPLACEABLE><i>$substring</i></tt> is a regular
+ expression.<p>
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+#       |------|
+#       12345678
+
+echo `expr match "$stringZ" 'abc[A-Z]*.2'`   # 8
+echo `expr "$stringZ" : 'abc[A-Z]*.2'`       # 8</pre></font></table>
+ </p></dl></div><p><div class=VARIABLELIST><p><b>Index</b><dl><dt><a name=SUBSTRINGINDEX2></a>expr index $string
+ $substring<dd><p>Numerical position in $string of first character in 
+ $substring that matches.<p><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+#       123456 ...
+echo `expr index "$stringZ" C12`             # 6
+                                             # C position.
+
+echo `expr index "$stringZ" 1c`              # 3
+# 'c' (in #3 position) matches before '1'.</pre></font></table><p>This is the near equivalent of
+ <i class=FIRSTTERM>strchr()</i> in
+ <i class=FIRSTTERM>C</i>.</p></dl></div><p><div class=VARIABLELIST><p><b>Substring Extraction</b><dl><dt><a name=SUBSTREXTR01></a>${string:position}<dd><p>Extracts substring from <tt class=REPLACEABLE><i>$string</i></tt> at
+ <tt class=REPLACEABLE><i>$position</i></tt>.<p>If the <tt class=VARNAME>$string</tt> parameter is
+ <span class=QUOTE>"<span class=TOKEN>*</span>"</span>
+ or <span class=QUOTE>"<span class=TOKEN>@</span>"</span>, then this extracts the
+ <a href=https://tldp.org/LDP/abs/html/internalvariables.html#POSPARAMREF>positional parameters</a>,
+ <a name=AEN5987 href=#FTN.AEN5987><span class=footnote>[1]</span></a>
+ starting at <tt class=VARNAME>$position</tt>.</p><dt><a name=SUBSTREXTR02></a>${string:position:length}<dd><p>Extracts <tt class=REPLACEABLE><i>$length</i></tt> characters
+ of substring from <tt class=REPLACEABLE><i>$string</i></tt> at
+ <tt class=REPLACEABLE><i>$position</i></tt>.<p> <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+#       0123456789.....
+#       0-based indexing.
+
+echo ${stringZ:0}                            # abcABC123ABCabc
+echo ${stringZ:1}                            # bcABC123ABCabc
+echo ${stringZ:7}                            # 23ABCabc
+
+echo ${stringZ:7:3}                          # 23A
+                                             # Three characters of substring.
+
+
+
+# Is it possible to index from the right end of the string?
+    
+echo ${stringZ:-4}                           # abcABC123ABCabc
+# Defaults to full string, as in ${parameter:-default}.
+# However . . .
+
+echo ${stringZ:(-4)}                         # Cabc 
+echo ${stringZ: -4}                          # Cabc
+# Now, it works.
+# Parentheses or added space "escape" the position parameter.
+
+# Thank you, Dan Jacobson, for pointing this out.</pre></font></table>
+ <p>The <i class=FIRSTTERM>position</i> and
+ <i class=FIRSTTERM>length</i> arguments can be
+ <span class=QUOTE>"parameterized,"</span> that is, represented as a
+ variable, rather than as a numerical constant.<p><a name=RANDSTRING0></a><div class=EXAMPLE><a name=RANDSTRING></a><p><b>Example 10-2. Generating an 8-character <span class=QUOTE>"random"</span>
+ string</b><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>#!/bin/bash
+# rand-string.sh
+# Generating an 8-character "random" string.
+
+if [ -n "$1" ]  #  If command-line argument present,
+then            #+ then set start-string to it.
+  str0="$1"
+else            #  Else use PID of script as start-string.
+  str0="$$"
+fi
+
+POS=2  # Starting from position 2 in the string.
+LEN=8  # Extract eight characters.
+
+str1=$( echo "$str0" | md5sum | md5sum )
+#  Doubly scramble     ^^^^^^   ^^^^^^
+#+ by piping and repiping to md5sum.
+
+randstring="${str1:$POS:$LEN}"
+# Can parameterize ^^^^ ^^^^
+
+echo "$randstring"
+
+exit $?
+
+# bozo$ ./rand-string.sh my-password
+# 1bdd88c4
+
+#  No, this is is not recommended
+#+ as a method of generating hack-proof passwords.</pre></font></table></div><p><a name=SUBSTREXTRP></a><p>If the <tt class=VARNAME>$string</tt> parameter is
+ <span class=QUOTE>"<span class=TOKEN>*</span>"</span> or
+ <span class=QUOTE>"<span class=TOKEN>@</span>"</span>, then this extracts a maximum
+ of <tt class=VARNAME>$length</tt> positional parameters, starting
+ at <tt class=VARNAME>$position</tt>.<p> <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>echo ${*:2}          # Echoes second and following positional parameters.
+echo ${@:2}          # Same as above.
+
+echo ${*:2:3}        # Echoes three positional parameters, starting at second.</pre></font></table>
+ </p><dt>expr substr $string $position $length<dd><p>Extracts <tt class=REPLACEABLE><i>$length</i></tt> characters
+ from <tt class=REPLACEABLE><i>$string</i></tt> starting at
+ <tt class=REPLACEABLE><i>$position</i></tt>.<p> <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+#       123456789......
+#       1-based indexing.
+
+echo `expr substr $stringZ 1 2`              # ab
+echo `expr substr $stringZ 4 3`              # ABC</pre></font></table>
+ <p><a name=EXPRPAREN></a></p><dt>expr match "$string" '\($substring\)'<dd><p>Extracts <tt class=REPLACEABLE><i>$substring</i></tt>
+ at beginning of <tt class=REPLACEABLE><i>$string</i></tt>,
+ where <tt class=REPLACEABLE><i>$substring</i></tt> is a <a href=https://tldp.org/LDP/abs/html/regexp.html#REGEXREF>regular expression</a>.</p><dt>expr "$string" : '\($substring\)'<dd><p>Extracts <tt class=REPLACEABLE><i>$substring</i></tt>
+ at beginning of <tt class=REPLACEABLE><i>$string</i></tt>,
+ where <tt class=REPLACEABLE><i>$substring</i></tt> is a regular
+ expression.<p> <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+#       =======	    
+
+echo `expr match "$stringZ" '\(.[b-c]*[A-Z]..[0-9]\)'`   # abcABC1
+echo `expr "$stringZ" : '\(.[b-c]*[A-Z]..[0-9]\)'`       # abcABC1
+echo `expr "$stringZ" : '\(.......\)'`                   # abcABC1
+# All of the above forms give an identical result.</pre></font></table>
+ </p><dt>expr match "$string" '.*\($substring\)'<dd><p>Extracts <tt class=REPLACEABLE><i>$substring</i></tt>
+ at <em>end</em> of
+ <tt class=REPLACEABLE><i>$string</i></tt>, where
+ <tt class=REPLACEABLE><i>$substring</i></tt> is a regular
+ expression.</p><dt>expr "$string" : '.*\($substring\)'<dd><p>Extracts <tt class=REPLACEABLE><i>$substring</i></tt>
+ at <em>end</em> of <tt class=REPLACEABLE><i>$string</i></tt>,
+ where <tt class=REPLACEABLE><i>$substring</i></tt> is a regular
+ expression.<p> <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+#                ======
+
+echo `expr match "$stringZ" '.*\([A-C][A-C][A-C][a-c]*\)'`    # ABCabc
+echo `expr "$stringZ" : '.*\(......\)'`                       # ABCabc</pre></font></table>
+ </p></dl></div><p><div class=VARIABLELIST><p><b>Substring Removal</b><dl><dt>${string#substring}<dd><p>Deletes shortest match of
+ <tt class=REPLACEABLE><i>$substring</i></tt> from
+ <em>front</em> of
+ <tt class=REPLACEABLE><i>$string</i></tt>.</p><dt>${string##substring}<dd><p>Deletes longest match of
+ <tt class=REPLACEABLE><i>$substring</i></tt> from
+ <em>front</em> of
+ <tt class=REPLACEABLE><i>$string</i></tt>.<p> 
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+#       |----|          shortest
+#       |----------|    longest
+
+echo ${stringZ#a*C}      # 123ABCabc
+# Strip out shortest match between 'a' and 'C'.
+
+echo ${stringZ##a*C}     # abc
+# Strip out longest match between 'a' and 'C'.
+
+
+
+# You can parameterize the substrings.
+
+X='a*C'
+
+echo ${stringZ#$X}      # 123ABCabc
+echo ${stringZ##$X}     # abc
+                        # As above.</pre></font></table>
+ </p><dt>${string%substring}<dd><p>Deletes shortest match of
+ <tt class=REPLACEABLE><i>$substring</i></tt> from
+ <em>back</em> of
+ <tt class=REPLACEABLE><i>$string</i></tt>.<p>For example:
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING># Rename all filenames in $PWD with "TXT" suffix to a "txt" suffix.
+# For example, "file1.TXT" becomes "file1.txt" . . .
+
+SUFF=TXT
+suff=txt
+
+for i in $(ls *.$SUFF)
+do
+  mv -f $i ${i%.$SUFF}.$suff
+  #  Leave unchanged everything *except* the shortest pattern match
+  #+ starting from the right-hand-side of the variable $i . . .
+done ### This could be condensed into a "one-liner" if desired.
+
+# Thank you, Rory Winston.</pre></font></table>
+ </p><dt>${string%%substring}<dd><p>Deletes longest match of
+ <tt class=REPLACEABLE><i>$substring</i></tt> from
+ <em>back</em> of
+ <tt class=REPLACEABLE><i>$string</i></tt>.<p> 
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+#                    ||     shortest
+#        |------------|     longest
+
+echo ${stringZ%b*c}      # abcABC123ABCa
+# Strip out shortest match between 'b' and 'c', from back of $stringZ.
+
+echo ${stringZ%%b*c}     # a
+# Strip out longest match between 'b' and 'c', from back of $stringZ.</pre></font></table>
+ <p>This operator is useful for generating filenames.<div class=EXAMPLE><a name=CVT></a><p><b>Example 10-3. Converting graphic file formats, with filename change</b><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>#!/bin/bash
+#  cvt.sh:
+#  Converts all the MacPaint image files in a directory to "pbm" format.
+
+#  Uses the "macptopbm" binary from the "netpbm" package,
+#+ which is maintained by Brian Henderson (bryanh@giraffe-data.com).
+#  Netpbm is a standard part of most Linux distros.
+
+OPERATION=macptopbm
+SUFFIX=pbm          # New filename suffix. 
+
+if [ -n "$1" ]
+then
+  directory=$1      # If directory name given as a script argument...
+else
+  directory=$PWD    # Otherwise use current working directory.
+fi  
+  
+#  Assumes all files in the target directory are MacPaint image files,
+#+ with a ".mac" filename suffix.
+
+for file in $directory/*    # Filename globbing.
+do
+  filename=${file%.*c}      #  Strip ".mac" suffix off filename
+                            #+ ('.*c' matches everything
+			    #+ between '.' and 'c', inclusive).
+  $OPERATION $file &gt; "$filename.$SUFFIX"
+                            # Redirect conversion to new filename.
+  rm -f $file               # Delete original files after converting.   
+  echo "$filename.$SUFFIX"  # Log what is happening to stdout.
+done
+
+exit 0
+
+# Exercise:
+# --------
+#  As it stands, this script converts *all* the files in the current
+#+ working directory.
+#  Modify it to work *only* on files with a ".mac" suffix.
+
+
+
+# *** And here's another way to do it. *** #
+
+#!/bin/bash
+# Batch convert into different graphic formats.
+# Assumes imagemagick installed (standard in most Linux distros).
+
+INFMT=png   # Can be tif, jpg, gif, etc.
+OUTFMT=pdf  # Can be tif, jpg, gif, pdf, etc.
+
+for pic in *"$INFMT"
+do
+  p2=$(ls "$pic" | sed -e s/\.$INFMT//)
+  # echo $p2
+    convert "$pic" $p2.$OUTFMT
+    done
+
+exit $?</pre></font></table></div><div class=EXAMPLE><a name=RA2OGG></a><p><b>Example 10-4. Converting streaming audio files to
+ <i class=FIRSTTERM>ogg</i></b><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>#!/bin/bash
+# ra2ogg.sh: Convert streaming audio files (*.ra) to ogg.
+
+# Uses the "mplayer" media player program:
+#      http://www.mplayerhq.hu/homepage
+# Uses the "ogg" library and "oggenc":
+#      http://www.xiph.org/
+#
+# This script may need appropriate codecs installed, such as sipr.so ...
+# Possibly also the compat-libstdc++ package.
+
+
+OFILEPREF=${1%%ra}      # Strip off the "ra" suffix.
+OFILESUFF=wav           # Suffix for wav file.
+OUTFILE="$OFILEPREF""$OFILESUFF"
+E_NOARGS=85
+
+if [ -z "$1" ]          # Must specify a filename to convert.
+then
+  echo "Usage: `basename $0` [filename]"
+  exit $E_NOARGS
+fi
+
+
+##########################################################################
+mplayer "$1" -ao pcm:file=$OUTFILE
+oggenc "$OUTFILE"  # Correct file extension automatically added by oggenc.
+##########################################################################
+
+rm "$OUTFILE"      # Delete intermediate *.wav file.
+                   # If you want to keep it, comment out above line.
+
+exit $?
+
+#  Note:
+#  ----
+#  On a Website, simply clicking on a *.ram streaming audio file
+#+ usually only downloads the URL of the actual *.ra audio file.
+#  You can then use "wget" or something similar
+#+ to download the *.ra file itself.
+
+
+#  Exercises:
+#  ---------
+#  As is, this script converts only *.ra filenames.
+#  Add flexibility by permitting use of *.ram and other filenames.
+#
+#  If you're really ambitious, expand the script
+#+ to do automatic downloads and conversions of streaming audio files.
+#  Given a URL, batch download streaming audio files (using "wget")
+#+ and convert them on the fly.</pre></font></table></div><p><a name=GETOPTSIMPLE1></a><p>A simple emulation of <a href=https://tldp.org/LDP/abs/html/extmisc.html#GETOPTY>getopt</a>
+ using substring-extraction constructs.<div class=EXAMPLE><a name=GETOPTSIMPLE></a><p><b>Example 10-5. Emulating <i class=FIRSTTERM>getopt</i></b><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>#!/bin/bash
+# getopt-simple.sh
+# Author: Chris Morgan
+# Used in the ABS Guide with permission.
+
+
+getopt_simple()
+{
+    echo "getopt_simple()"
+    echo "Parameters are '$*'"
+    until [ -z "$1" ]
+    do
+      echo "Processing parameter of: '$1'"
+      if [ ${1:0:1} = '/' ]
+      then
+          tmp=${1:1}               # Strip off leading '/' . . .
+          parameter=${tmp%%=*}     # Extract name.
+          value=${tmp##*=}         # Extract value.
+          echo "Parameter: '$parameter', value: '$value'"
+          eval $parameter=$value
+      fi
+      shift
+    done
+}
+
+# Pass all options to getopt_simple().
+getopt_simple $*
+
+echo "test is '$test'"
+echo "test2 is '$test2'"
+
+exit 0  # See also, UseGetOpt.sh, a modified version of this script.
+
+---
+
+sh getopt_example.sh /test=value1 /test2=value2
+
+Parameters are '/test=value1 /test2=value2'
+Processing parameter of: '/test=value1'
+Parameter: 'test', value: 'value1'
+Processing parameter of: '/test2=value2'
+Parameter: 'test2', value: 'value2'
+test is 'value1'
+test2 is 'value2'
+</pre></font></table></div></dl></div><p><div class=VARIABLELIST><p><b>Substring Replacement</b><dl><dt><a name=SUBSTRREPL00></a>${string/substring/replacement}<dd><p> Replace first <i class=FIRSTTERM>match</i> of
+ <tt class=REPLACEABLE><i>$substring</i></tt> with
+ <tt class=REPLACEABLE><i>$replacement</i></tt>.
+ <a name=AEN6164 href=#FTN.AEN6164><span class=footnote>[2]</span></a>
+ </p><dt><a name=SUBSTRREPL01></a>${string//substring/replacement}<dd><p>Replace all matches of
+ <tt class=REPLACEABLE><i>$substring</i></tt> with
+ <tt class=REPLACEABLE><i>$replacement</i></tt>.<p> 
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+
+echo ${stringZ/abc/xyz}       # xyzABC123ABCabc
+                              # Replaces first match of 'abc' with 'xyz'.
+
+echo ${stringZ//abc/xyz}      # xyzABC123ABCxyz
+                              # Replaces all matches of 'abc' with # 'xyz'.
+
+echo  ---------------
+echo "$stringZ"               # abcABC123ABCabc
+echo  ---------------
+                              # The string itself is not altered!
+
+# Can the match and replacement strings be parameterized?
+match=abc
+repl=000
+echo ${stringZ/$match/$repl}  # 000ABC123ABCabc
+#              ^      ^         ^^^
+echo ${stringZ//$match/$repl} # 000ABC123ABC000
+# Yes!          ^      ^        ^^^         ^^^
+
+echo
+
+# What happens if no $replacement string is supplied?
+echo ${stringZ/abc}           # ABC123ABCabc
+echo ${stringZ//abc}          # ABC123ABC
+# A simple deletion takes place.</pre></font></table>
+ </p><dt><a name=SUBSTRREPL02></a>${string/#substring/replacement}<dd><p>If <tt class=REPLACEABLE><i>$substring</i></tt> matches
+ <em>front</em> end of
+ <tt class=REPLACEABLE><i>$string</i></tt>, substitute
+ <tt class=REPLACEABLE><i>$replacement</i></tt> for
+ <tt class=REPLACEABLE><i>$substring</i></tt>.</p><dt><a name=SUBSTRREPL03></a>${string/%substring/replacement}<dd><p>If <tt class=REPLACEABLE><i>$substring</i></tt> matches
+ <em>back</em> end of
+ <tt class=REPLACEABLE><i>$string</i></tt>, substitute
+ <tt class=REPLACEABLE><i>$replacement</i></tt> for
+ <tt class=REPLACEABLE><i>$substring</i></tt>.<p> 
+ <table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=90% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>stringZ=abcABC123ABCabc
+
+echo ${stringZ/#abc/XYZ}          # XYZABC123ABCabc
+                                  # Replaces front-end match of 'abc' with 'XYZ'.
+
+echo ${stringZ/%abc/XYZ}          # abcABC123ABCXYZ
+                                  # Replaces back-end match of 'abc' with 'XYZ'.</pre></font></table>
+ </p></dl></div><div class=SECT2><h2 class=SECT2><a name=AWKSTRINGMANIP></a>10.1.1. Manipulating strings using awk</h2><p><a name=AWKSTRINGMANIP2></a><p>A Bash script may invoke the string manipulation facilities of
+ <a href=https://tldp.org/LDP/abs/html/awk.html#AWKREF>awk</a> as an alternative to using its
+ built-in operations.<div class=EXAMPLE><a name=SUBSTRINGEX></a><p><b>Example 10-6. Alternate ways of extracting and locating substrings</b><table style=--darkreader-inline-bgcolor:#2b2d2f data-darkreader-inline-bgcolor width=100% border=0 bgcolor=#E0E0E0><tbody><tr><td><font style=--darkreader-inline-color:#ece8e2 data-darkreader-inline-color color=#000000><pre class=PROGRAMLISTING>#!/bin/bash
+# substring-extraction.sh
+
+String=23skidoo1
+#      012345678    Bash
+#      123456789    awk
+# Note different string indexing system:
+# Bash numbers first character of string as 0.
+# Awk  numbers first character of string as 1.
+
+echo ${String:2:4} # position 3 (0-1-2), 4 characters long
+                                         # skid
+
+# The awk equivalent of ${string:pos:length} is substr(string,pos,length).
+echo | awk '
+{ print substr("'"${String}"'",3,4)      # skid
+}
+'
+#  Piping an empty "echo" to awk gives it dummy input,
+#+ and thus makes it unnecessary to supply a filename.
+
+echo "----"
+
+# And likewise:
+
+echo | awk '
+{ print index("'"${String}"'", "skid")      # 3
+}                                           # (skid starts at position 3)
+'   # The awk equivalent of "expr index" ...
+
+exit 0</pre></font></table></div></div><div class=SECT2><h2 class=SECT2><a name=STRFDISC></a>10.1.2. Further Reference</h2><p>For more on string manipulation in scripts, refer to <a href=https://tldp.org/LDP/abs/html/parameter-substitution.html>Section 10.2</a> and the
+ <a href=https://tldp.org/LDP/abs/html/moreadv.html#EXPEXTRSUB>relevant section</a> of the <a href=https://tldp.org/LDP/abs/html/moreadv.html#EXPRREF>expr</a> command listing.<p>Script examples:
+ <p><ol type=1><li><p><a href=https://tldp.org/LDP/abs/html/moreadv.html#EX45>Example 16-9</a></p><li><p><a href=https://tldp.org/LDP/abs/html/parameter-substitution.html#LENGTH>Example 10-9</a></p><li><p><a href=https://tldp.org/LDP/abs/html/parameter-substitution.html#PATTMATCHING>Example 10-10</a></p><li><p><a href=https://tldp.org/LDP/abs/html/parameter-substitution.html#RFE>Example 10-11</a></p><li><p><a href=https://tldp.org/LDP/abs/html/parameter-substitution.html#VARMATCH>Example 10-13</a></p><li><p><a href=https://tldp.org/LDP/abs/html/contributed-scripts.html#INSERTIONSORT>Example A-36</a></p><li><p><a href=https://tldp.org/LDP/abs/html/contributed-scripts.html#QKY>Example A-41</a></p></ol>
+ <p></p></div></div><h3 class=FOOTNOTES>Notes</h3><table class=FOOTNOTES width=100% border=0><tbody><tr><td width=5% valign=TOP align=LEFT><a name=FTN.AEN5987 href=#AEN5987><span class=footnote>[1]</span></a><td width=95% valign=TOP align=LEFT><p>This applies to either command-line
+ arguments or parameters passed to a <a href=https://tldp.org/LDP/abs/html/functions.html#FUNCTIONREF>function</a>.</p><tr><td width=5% valign=TOP align=LEFT><a name=FTN.AEN6164 href=#AEN6164><span class=footnote>[2]</span></a><td width=95% valign=TOP align=LEFT><p>Note that
+ <tt class=REPLACEABLE><i>$substring</i></tt> and
+ <tt class=REPLACEABLE><i>$replacement</i></tt> may refer to
+ either <i class=FIRSTTERM>literal strings</i> or
+ <i class=FIRSTTERM>variables</i>, depending on
+ context. See the first usage example.</p></table><div class=NAVFOOTER><hr width=100% align=LEFT><table summary="Footer navigation table" width=100% cellspacing=0 cellpadding=0 border=0><tbody><tr><td width=33% valign=top align=left><a href=https://tldp.org/LDP/abs/html/manipulatingvars.html accesskey=P>Prev</a><td width=34% valign=top align=center><a href=https://tldp.org/LDP/abs/html/index.html accesskey=H>Home</a><td width=33% valign=top align=right><a href=https://tldp.org/LDP/abs/html/parameter-substitution.html accesskey=N>Next</a><tr><td width=33% valign=top align=left>Manipulating Variables<td width=34% valign=top align=center><a href=https://tldp.org/LDP/abs/html/manipulatingvars.html accesskey=U>Up</a><td width=33% valign=top align=right>Parameter Substitution</table></div>

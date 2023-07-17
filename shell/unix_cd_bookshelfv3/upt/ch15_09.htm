@@ -1,0 +1,111 @@
+<html><head><title>Compressing a Directory Tree: Fine-Tuning (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch15_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">15.9. Compressing a Directory Tree: Fine-Tuning</h2>
+
+<p><a name="IXT-15-6182" /><a name="IXT-15-6183" /><a name="IXT-15-6184" /><a name="IXT-15-6185" />Here's
+a quick little command that will <b class="emphasis-bold">compress</b> (<a href="ch15_06.htm#upt3-CHP-15-SECT-6">Section 15.6</a>) files
+in the current directory and below. It uses <b class="emphasis-bold">find</b> (<a name="IXT-15-6186" /><a href="ch09_02.htm#upt3-CHP-9-SECT-2">Section 9.2</a>) to
+find the files recursively and pick the files it should compress:
+</p>
+
+<p><tt class="literal">-size</tt><a href="ch09_14.htm#upt3-CHP-9-SECT-14">Section
+9.14</a>, <tt class="literal">xargs</tt> <a href="ch28_17.htm#upt3-CHP-28-SECT-17">Section 28.17</a> 
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . ! -perm -0100 -size +1 -type f -print | xargs gzip -v</b></tt></pre></blockquote>
+
+<p>This command finds all files that are the following:</p>
+
+<ul><li>
+<p>Not executable (<tt class="literal">!</tt> <tt class="literal">-perm</tt>
+<tt class="literal">-0100</tt>), so we don't compress
+shell scripts and other program files.
+</p>
+</li><li>
+<p>Bigger than one block, since it won't save any disk
+space to compress a file that takes one disk block or less. But,
+depending on your filesystem, the <tt class="literal">-size +1</tt> may not
+really match files that are one block long. You may need to use
+<tt class="literal">-size +2</tt>, <tt class="literal">-size +1024c</tt>, or
+something else.
+</p>
+</li><li>
+<p>Regular files (<tt class="literal">-type</tt> <tt class="literal">f</tt>) and not
+directories, named pipes, etc.
+</p>
+</li></ul>
+<p>The <span class="option">-v</span> switch to <i class="command">gzip</i> tells you
+the names of the files and how much they're being
+compressed. If your system doesn't have
+<i class="command">xargs</i>, use the following:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . ! -perm -0100 -size +1 -type f -exec gzip -v {} \;</b></tt></pre></blockquote>
+
+<p>Tune the <i class="command">find</i> expressions to do what you want.
+Here are some ideas -- for more, read your
+system's <i class="command">find</i> manual page:
+</p>
+
+<dl>
+<dt><tt class="literal">! -name \*.gz</tt></dt>
+<dd>
+Skip any file that's already
+<i class="command">gzip</i>ped (filename ends with
+<em class="emphasis">.gz</em></tt> ).
+</p>
+</dd>
+
+
+<dt><tt class="literal">-links 1</tt></dt>
+<dd>
+Only compress files that have no other (hard) links.</p>
+</dd>
+
+
+<dt><tt class="literal">-user</tt> <tt><em class="replaceable">yourname</em></tt></dt>
+<dd>
+Only compress files that belong to you.</p>
+</dd>
+
+
+<dt><tt class="literal">-atime +60</tt></dt>
+<dd>
+Only compress files that haven't been accessed
+(read, edited, etc.) for more than 60 days.
+</p>
+</dd>
+
+</dl>
+
+<p>You might want to put this in a job that's run every
+month or so by <b class="emphasis-bold">at</b> (<a href="ch25_05.htm#upt3-CHP-25-SECT-5">Section 25.5</a>) or <b class="emphasis-bold">cron</b>
+(<a href="ch25_02.htm#upt3-CHP-25-SECT-2">Section 25.2</a>).
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch15_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">15.8. How Much Disk Space?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">15.10. Save Space in Executable Files with strip</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

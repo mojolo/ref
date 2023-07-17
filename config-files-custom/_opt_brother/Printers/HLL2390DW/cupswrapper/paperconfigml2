@@ -1,0 +1,340 @@
+#! /usr/bin/perl
+#
+# Custom paper utility          Ver2.01
+#   Copyright 2014-2017 Copyright Brother Industries,Ltd 2006-2017
+#   All Rights Reserved.
+
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+$cmax = '3';
+
+my %unitchk = (
+    "mm"      => "mm" ,
+    "MM"      => "mm" ,
+    "M"       => "mm" ,
+    "inch"    => "in" ,
+    "in"      => "in" ,
+    "Inch"    => "in" ,
+    "INCH"    => "in" ,
+    "inches"  => "in" ,
+    "Inches"  => "in" ,
+    "INCHES"  => "in" 
+    );
+
+if ( @ARGV == 0 ){
+	usage($cmax);
+	exit 0;
+}
+
+
+$PPD="/etc/cups/ppd/".$ARGV[0].".ppd";
+
+if ( ! -f $PPD ) {
+	print ("ERROR $ARGV[0] is not installed. ($PPD)\n");
+	usage($cmax);
+	exit 0;
+}
+
+$PRINTER='';
+$cmax = `cat $PPD | grep "^*PaperDimension CUSTOM[1-9]" | wc -l`;
+chomp ($cmax);
+
+if ( @ARGV == 1){
+	list ($PPD , 1);
+	exit 0;
+}
+
+
+if ( @ARGV < 5 ){
+	print ("ERROR Invalid argument . (1000) @ARGV\n");
+	usage($cmax);
+	exit 0;
+}
+
+my $num   = @ARGV;
+$PRINTER  = $ARGV[0];
+my $index = $ARGV[1];
+my $width = $ARGV[2];
+my $height= $ARGV[3];
+my $unit  = "Unknown";
+if ( exists $unitchk{$ARGV[4]} ){
+    $unit  = $unitchk{$ARGV[4]};
+}
+my $name  = $ARGV[5];
+
+
+
+my @ppdline = `cat $PPD`;
+
+check_arg ( $num , $PRINTER , $index , 
+	$unit , $width , $height , \@ppdline , $name , $cmax);
+
+(my $p_width , $p_height) = &check_size($unit , $width , $height );
+
+set_ppd( \@ppdline , $PPD , $p_width , $p_height , 
+	 $index , $name , $unit);
+
+
+exit 0;
+
+
+
+sub usage {
+ (my $cmax) = @_;
+ my $MODEL=$PRINTER;
+ if ($MODEL eq '' ){
+   $MODEL="\$PRINTER";
+ }
+ print("usage :\n");
+ print("   paperconfigml2 $MODEL index width height inch/mm [name]\n");
+ print("       index  :  CUSTOM1 - CUSTOM${cmax}\n");
+ print("       width  :  3.0- 8.5in / 76.2-215.9mm\n");
+ print("       length :  5.0-14.0in / 127.0-355.6mm\n");
+ print("   ex. : paperconfigml2 $MODEL CUSTOM1 146.0  241.3 mm\n");
+ print("   ex. : paperconfigml2 $MODEL CUSTOM2 5.8    9.5   inch Paper1\n");
+ print("\n");
+ #print("   paperconfigml2 \$MODEL\n");
+ #print("\n");
+}
+
+
+sub list {
+	(my $PPD , my $flag) = @_;
+
+	my @custompaper = `cat $PPD | grep "^*PaperDimension CUSTOM[1-9]"`;
+
+
+
+	@CPAPER = (
+	 (label => "" , name=>'' , size_x=>'', size_y=>''),   #1
+	 (label => "" , name=>'' , size_x=>'', size_y=>''),   #2
+	 (label => "" , name=>'' , size_x=>'', size_y=>''),   #3
+	 (label => "" , name=>'' , size_x=>'', size_y=>''),   #4
+	 (label => "" , name=>'' , size_x=>'', size_y=>''),   #5
+	 (label => "" , name=>'' , size_x=>'', size_y=>''),   #6
+	 (label => "" , name=>'' , size_x=>'', size_y=>''),   #7
+	 (label => "" , name=>'' , size_x=>'', size_y=>''),   #8
+	 (label => "" , name=>'' , size_x=>'', size_y=>'')    #9
+	);
+
+	my $maxindex = 0;
+	foreach (@custompaper) {
+		chomp ($_);
+		my $label = $_;
+		my $curname  = $_;
+		my $value = $_;
+		$label  =~ s/\*PaperDimension //;
+		$label  =~ s/\/.*$//;
+	
+		$curname  =~ s/\*PaperDimension CUSTOM[1-9]\///;
+		$curname  =~ s/:.*$//;
+
+		$value =~ s/\*PaperDimension.*: "//;
+		$value =~ s/"//;
+		my ($x , $y )= split ( / / , $value); 
+
+		$CPAPER[$maxindex]{label}  = $label;
+		$CPAPER[$maxindex]{name}   = $curname;
+		$CPAPER[$maxindex]{size_x} = $x;
+		$CPAPER[$maxindex]{size_y} = $y;
+
+		$maxindex = $maxindex + 1;
+	}
+	
+	if ( $flag == 1){
+		my $i = 0;
+		for ( $i = 0; $i < $maxindex ; $i++){
+			my $x = $CPAPER[$i]{size_x};
+			my $y = $CPAPER[$i]{size_y};
+
+			my $mmx  	= sprintf( "%.1f" , $x * 25.4 / 72);
+			my $mmy  	= sprintf( "%.1f" , $y * 25.4 / 72);
+			my $inchx	= sprintf( "%.2f" , $x / 72);
+			my $inchy	= sprintf( "%.2f" , $y / 72);
+
+			my $list = 	"   ".
+			$CPAPER[$i]{label}. " ".
+			"\"". $CPAPER[$i]{name}. "\" : ".
+			"${mmx}mm x ${mmy}mm (${inchx}\" x ${inchy}\")"; 
+			print "$list \n";
+		}
+
+	}
+	return $maxindex;
+}
+
+
+
+
+sub check_arg {
+  # brcustompaper PRINTER index inch/mm width height [name]
+
+  ( my $num , my $PRINTER , my $index , 
+    my $unit ,my $width ,my $height , my $r_ppdline , 
+    my $name, my $cmax) = @_;
+
+
+  my $error = 0;
+  my $maxindex = list ($PPD , 0);
+
+  if (
+	($index !~ /^[1-9]$/ ) &&
+	($index !~ /^CUSTOM[1-9]$/ ) &&
+	($index !~ /^Custom[1-9]$/ ) &&
+	($index !~ /^custom[1-9]$/ ) 
+    ){
+		$error = $error + 10;
+  }
+  
+  my $nindex = $index;
+  $nindex =~ s/[A-Z,a-z]//g;
+
+  if ( $nindex > $maxindex){
+		$error = $error + 20;
+  }
+
+  if ( $unit ne 'mm' && $unit ne 'in' ){
+      $error = $error + 100;
+  }
+  if ( $width  !~ /^[0-9,'.']+$/ ) {
+      $error = $error + 1000;
+  }
+  elsif ( $unit eq 'mm' ){
+      if ( $width > 215.9 || $width < 76.2 ){
+	  $error = $error + 2000;
+      }
+  }
+  elsif ( $unit eq 'in' ){
+      if ( $width > 8.5 || $width < 3.0 ){
+	  $error = $error + 2000;
+      }
+  }
+
+
+  if ( $height !~ /^[0-9,'.']+$/ ) {
+		$error = $error + 10000;
+  }
+  elsif ( $unit eq 'mm' ){
+      if ( $height > 355.6 || $height < 127.0 ){
+	  $error = $error + 20000;
+      }
+  }
+  elsif ( $unit eq 'in' ){
+      if ( $height > 14.0 || $height < 5.0 ){
+	  $error = $error + 20000;
+      }
+  }
+
+
+
+  @ppdline = @$r_ppdline;
+  my $find1 = 0;
+  my $find2 = 0;
+  my $find3 = 0;
+  foreach(@ppdline){
+	if ( $_ =~ /\*cupsFilter:.*_lpdwrapper_/){
+	  $find1 = 1;
+	}
+	if ( $_ =~  /\*%BrCustomPaperSize: TRUE/){
+	  $find2 = 1;
+	}
+	if (  $_ =~ /\*PageSize CUSTOM1/){
+	  $find3 = 1;
+	}
+  }
+  if ( $find1 == 0 ){
+		$error = $error + 100000;
+  }
+  if ( $find2 == 0 ){
+		$error = $error + 200000;
+  }
+  if ( $find3 == 0 ){
+		$error = $error + 400000;
+  }
+
+
+  if ( $error != 0 ){
+     print sprintf("ERROR Invalid argument . (E%08d)\n",$error);
+     usage($cmax);
+     exit 0;	
+  }
+
+
+}
+
+
+sub check_size {
+	($unit , $width , $height ) = @_;
+
+	my $p_width = 0;
+	my $p_height = 0;
+
+	if ( $unit eq 'mm' ){
+		$p_width  = int ($width  * 72 /25.4);
+		$p_height = int ($height * 72 /25.4);
+	} 
+	else {
+		$p_width  = int ($width  * 72) ;
+		$p_height = int ($height * 72) ;
+        }
+
+	return ($p_width , $p_height);
+
+}
+
+sub set_ppd{
+	( my $r_ppdline , my $PPD , my $p_width , my $p_height , 
+	  my $index , my $name , $unit) = @_;
+
+	my @ppdline = @$r_ppdline;
+
+	open (FDPPD , ">$PPD" ) or die ("ERROR: Permission denied\n");
+	
+	$index =~ s/[A-Z,a-z]//g;
+	
+	if ( $name eq '' ){
+		#$name2 =  "\[CUSTOM${index}\]User Defined Paper Size";
+		$name2 =  "\[CUSTOM${index}\]${width}x${height}${unit}";
+	}
+	else{
+		$name2 =  "\[CUSTOM${index}\]$name";
+	}
+
+	foreach ( @ppdline ){
+		if ( /^\*ImageableArea CUSTOM$index/ ){
+			my $p_width2  = $p_width  -12;
+			my $p_height2 = $p_height -12;
+			print FDPPD "*ImageableArea CUSTOM$index/$name2 :";
+			print FDPPD " \"12 12 $p_width2 $p_height2\"\n";
+		}
+		elsif ( /^\*PaperDimension CUSTOM$index/ ){
+			print FDPPD "*PaperDimension CUSTOM$index/$name2 :";
+			print FDPPD " \"$p_width $p_height\"\n";
+		}
+		elsif ( /^\*PageSize CUSTOM$index/ ){
+			print FDPPD "*PageSize CUSTOM$index/$name2 :";
+			print FDPPD " \"                      \"\n";
+		}
+		elsif ( /^\*PageRegion CUSTOM$index/ ){
+			print FDPPD "*PageRegion CUSTOM$index/$name2 :";
+			print FDPPD " \"                      \"\n";
+		}
+
+		else{
+			print FDPPD  "$_";
+		}
+	}
+}

@@ -1,0 +1,101 @@
+<html><head><title>Joining Lines with join (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.19. Joining Lines with join</h2>
+
+<p><a name="IXT-21-5779" /><a name="IXT-21-5780" /><a name="IXT-21-5781" /><a name="IXT-21-5782" />If you've
+worked with databases, you'll probably know what to
+do with the Unix <i class="command">join</i> command; see your online
+manual page. If you don't have a database (as far as
+you know!), you still probably have a use for
+<i class="command">join</i>: combining or
+"joining" two column-format files.
+<i class="command">join</i> searches certain columns in the files; when
+it finds columns that match one another, it "glues
+the lines together" at that column. This is easiest
+to show with an example.
+</p>
+
+<p>I needed to summarize the information in thousands of email messages
+under the MH mail system. MH made that easy: it has one command
+(<i class="command">scan</i>) that gave me almost all the information I
+wanted about each message and also let me specify the format I
+needed. But I also had to use <b class="emphasis-bold">wc -l</b>
+(<a href="ch16_06.htm#upt3-CHP-16-SECT-6">Section 16.6</a>) to count the number of
+lines in each message. I ended up with two files, one with
+<i class="command">scan</i> output and the other with
+<i class="command">wc</i> output. One field in both lines was the message
+number; I used <b class="emphasis-bold">sort</b> (<a href="ch22_01.htm#upt3-CHP-22-SECT-1">Section 22.1</a>) to sort the files on that field. I used
+<tt class="literal">awk '{print $1 "," $2}'</tt> to massage
+<i class="command">wc</i> output into comma-separated fields. Then I used
+<i class="command">join</i> to "glue"
+the two lines together on the message-number field. (Next I fed the
+file to a PC running dBASE, but that's another
+story.)
+</p>
+
+<p>Here's the file that I told <i class="command">scan</i>
+to output. The columns (message number, email address, comment, name,
+and date sent) are separated with commas (,):
+</p>
+
+<blockquote><pre class="code">0001,andrewe@isc.uci.edu,,Andy Ernbaum,19901219
+0002,bc3170x@cornell.bitnet,,Zoe Doan,19910104
+0003,zcode!postman@uunet.uu.net,,Head Honcho,19910105
+   ...</pre></blockquote>
+
+<p>Here's the file from <i class="command">wc</i> and
+<i class="command">awk</i> with the message number and number of lines:
+</p>
+
+<blockquote><pre class="code">0001,11
+0002,5
+0003,187
+   ...</pre></blockquote>
+
+<p>The following <i class="command">join</i> command then joined the two
+files at their first columns (<tt class="literal">-t,</tt> tells
+<i class="command">join</i> that the fields are comma-separated):
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>join -t, scanfile wcfile</b></tt></pre></blockquote>
+
+<p>The output file looked like this:</p>
+
+<blockquote><pre class="code">0001,andrewe@isc.uci.edu,,Andy Ernbaum,19901219,11
+0002,bc3170x@cornell.bitnet,,Zoe Doan,19910104,5
+0003,zcode!postman@uunet.uu.net,,Head Honcho,19910105,187
+   ...</pre></blockquote>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: join</p>
+
+<p><i class="command">join</i> can do a lot more than this simple example
+shows. See your online manual page. The <span class="acronym">GNU</span>
+version of <i class="command">join</i> is on the CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>].
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.18. Pasting Things in Columns</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.20. What Is (or Isn't) Unique?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

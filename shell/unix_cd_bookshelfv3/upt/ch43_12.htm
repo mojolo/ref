@@ -1,0 +1,113 @@
+<html><head><title>What Can You Do with an Empty File? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch43_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch44_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">43.12. What Can You Do with an Empty File?</h2>
+
+<p><a name="IXT-43-2319" /><a name="IXT-43-2320" /><a name="IXT-43-2321" />It isn't a file,
+actually, though you can use it like one.
+<em class="emphasis">/dev/null</em><a name="IXT-43-2322" /> is a Unix device.<a href="#FOOTNOTE-132">[132]</a> It's not a
+physical device. <em class="emphasis">/dev/null</em> is a special device
+that "eats" any text written to it
+and returns "end-of-file" (a file
+of length 0) when you read from it. So what the heck can you use it
+for?
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-132" /><p> [132]Well, okay. It's a <em class="emphasis">device
+file</em>.</p> </blockquote>
+
+<ul><li>
+<p>Empty another file. <a name="IXT-43-2323" /> <a name="IXT-43-2324" /><b class="emphasis-bold">Just
+copy</b> <em class="emphasis">/dev/null</em> "on
+top of" the other file (<a href="ch15_02.htm#upt3-CHP-15-SECT-2">Section 15.2</a>). 
+</p>
+</li><li>
+<p>Make another program "quiet" by
+redirecting its output there. For instance, if
+you're putting a program into the background and you
+don't want it to bother you, type:
+</p>
+<blockquote><pre class="code">% <em class="replaceable"><tt>progname</tt></em> <tt class="userinput"><b>&gt; /dev/null &amp;</b></tt></pre></blockquote>
+
+<p>That <b class="emphasis-bold">redirects</b> (<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>) standard output but leaves standard error
+hooked to your terminal, in case there is an error.
+</p>
+</li><li>
+<p>Answer a program that asks a lot of questions -- you know
+you'll just press RETURN at each prompt. In a lot of
+cases, you can redirect the program's standard input
+from <em class="emphasis">/dev/null</em>:
+</p>
+<blockquote><pre class="code">% <em class="replaceable"><tt>progname</tt></em> <tt class="userinput"><b>&lt; /dev/null</b></tt>
+Want the default setup? If yes, press RETURN:
+Enter filename or press RETURN for default:
+   ...</pre></blockquote>
+
+<p>You should test that with each program, though, before you assume
+this trick will work. (If it doesn't work, try
+<b class="emphasis-bold">yes</b> (<a href="ch14_05.htm#upt3-CHP-14-SECT-5">Section 14.5</a>).)
+</p>
+</li><li>
+<p>Where a program needs an extra filename but you
+don't want it to read or write an actual file. For
+instance, the <b class="emphasis-bold">grep</b> (<a href="ch13_01.htm#upt3-CHP-13-SECT-1">Section 13.1</a>) programs won't give the name
+of the file where they find a match unless there are at least two
+filenames on the command line. When you use a wildcard in a directory
+where maybe only one file will match, <b class="emphasis-bold">use
+/dev/null to be sure that grep will always see more than
+one</b> (<a href="ch09_21.htm#upt3-CHP-9-SECT-21">Section 9.21</a>):
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>grep "</b></tt><em class="replaceable"><tt>outputfile</tt></em><tt class="userinput"><b>" * /dev/null</b></tt></pre></blockquote>
+
+<p>You're guaranteed that <i class="command">grep</i>
+won't match its regular expression in
+<em class="emphasis">/dev/null</em>.
+</p>
+</li><li>
+<p><a href="ch15_03.htm#upt3-CHP-15-SECT-3">Section 15.3</a> shows even more uses for
+<em class="emphasis">/dev/null</em>.
+</p>
+</li></ul>
+<p><a name="IXT-43-2325" /><a name="IXT-43-2326" />Another interesting device (mostly for
+programmers) is <em class="emphasis">/dev/zero</em>. When you read it,
+you'll get
+<a name="IXT-43-2327" /> <a name="IXT-43-2328" />ASCII zeros (NUL characters) forever.
+There are no newlines either. For both of those reasons, many Unix
+commands have trouble reading it. <a name="IXT-43-2329" />If you want to play, the command below
+will give you a start (and <b class="emphasis-bold">head</b>
+(<a href="ch12_12.htm#upt3-CHP-12-SECT-12">Section 12.12</a>) will give you a stop!):<a href="#FOOTNOTE-133">[133]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-133" /><p> [133]On some Unix versions, the <i class="command">head</i> program may
+not terminate after it has printed the first 10 lines. In that case,
+use <tt class="literal">sed 10q</tt> instead of
+<tt class="literal">head</tt>.</p> </blockquote>
+
+<p><tt class="literal">od</tt> <a href="ch12_04.htm#upt3-CHP-12-SECT-4">Section 12.4</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>fold -20 /dev/zero | od -c | head</b></tt></pre></blockquote>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-2335" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch43_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch44_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">43.11. Named Pipes: FIFOs</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">44. Devices</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

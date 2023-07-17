@@ -1,0 +1,787 @@
+<html><head><title>Pattern-Matching Rules  (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.3. Pattern-Matching Rules </h2>
+
+<p>
+<a name="ch06.matching1" />
+<a name="ch06.matching2" />
+<a name="ch06.matching3" />
+<a name="ch06.matching4" />
+In making global replacements, UNIX editors such as <i class="command">vi</i> allow you to
+search not just for fixed strings of characters,
+but also for variable patterns of words, referred to as <em class="emphasis">regular
+expressions</em>.</p>
+
+<p>When you specify a literal string of characters, the search
+might turn up other occurrences that you didn't want to match.
+The problem with searching for words in a file is that a word
+can be used in different ways.
+Regular expressions
+help you conduct a search for words in context.
+Note that regular expressions can be used with the <i class="command">vi</i> search
+commands <tt class="literal">/</tt> and <tt class="literal">?</tt> as well as in the <i class="command">ex</i> <tt class="literal">:g</tt>
+and <tt class="literal">:s</tt> commands.</p>
+
+<?troff .Nd 10?><p>For the most part, the same regular
+expressions work with other UNIX programs such as <i class="command">grep</i>,
+<i class="command">sed</i>, and <i class="command">awk</i>.<a href="#FOOTNOTE-19">[19]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-19" /><p> [19]Much more information on regular expressions can be found in
+the two O'Reilly books <em class="citetitle">sed &amp; awk</em>, by
+Dale Dougherty and Arnold Robbins, and
+<em class="citetitle">Mastering Regular Expressions</em>, by
+Jeffrey E.F. Friedl.
+</p>
+
+</blockquote>
+
+<p>
+<a name="ch06.metacharacters" />
+<a name="ch06.metacharacters2" />
+<a name="IXT-6-280079" />
+Regular expressions are made up by combining normal characters with a number
+of special characters called <em class="emphasis">metacharacters</em>.<a href="#FOOTNOTE-20">[20]</a>
+The metacharacters and their uses are listed below.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-20" /><p> [20]Technically speaking, we should probably call these
+<em class="emphasis">metasequences</em>, since sometimes two characters
+together have special meaning, and not just single characters.
+Nevertheless, the term <em class="emphasis">metacharacters</em> is in
+common use in UNIX literature, so we follow that convention here.</p>
+
+</blockquote>
+
+<a name="vi6-ch-6-sect-3.1" /><div class="sect2">
+<h3 class="sect2">6.3.1. Metacharacters Used in Search Patterns </h3>
+
+<p>
+<a name="ch06.meta1" />
+<a name="ch06.meta2" />
+<a name="ch06.meta3" />
+<a name="ch06.meta4" />
+
+<a name="ch06.meta5" />
+<a name="ch06.meta6" />
+<a name="ch06.meta7" /></p>
+
+<dl>
+<dt><tt class="literal">.</tt></dt><dd>
+<a name="IXT-6-280080" />
+<a name="IXT-6-280081" />
+<a name="IXT-6-280082" />
+Matches any <em class="emphasis">single</em></tt> character except a newline.
+Remember that spaces are treated as characters.
+For example, <tt class="literal">p.p</tt> matches character strings such as
+<em class="emphasis">pep</em></tt>, <em class="emphasis">pip</em></tt>, and <em class="emphasis">pcp</em></tt>.</p></dd>
+
+
+<dt><tt class="literal">*</tt></dt><dd>
+<a name="IXT-6-280083" />
+<a name="IXT-6-280084" />
+Matches zero or more (as many as there are) of the single character
+that immediately precedes it. For example, <tt class="literal">bugs*</tt> will
+match <em class="emphasis">bugs</em> (one <em class="emphasis">s</em>) or <em class="emphasis">bug</em> (no <em class="emphasis">s</em>'s).</p>
+
+<p>The <tt class="literal">*</tt> can follow a metacharacter.
+For example, since <tt class="literal">.</tt> (dot) means any character,
+<tt class="literal">.*</tt> means "match any number of any character."</p>
+
+<p>Here's a specific
+example of this. The command <tt class="literal">:s/End.*/End/</tt> removes
+all characters after <em class="emphasis">End</em> (it replaces the remainder of the
+line with nothing).</p></dd>
+
+
+<dt><tt class="literal">^</tt></dt><dd>
+<a name="IXT-6-280085" />
+<a name="IXT-6-280086" />
+When used at the start of a regular expression,
+requires that the following regular expression be found at the beginning of
+the line; for example, <tt class="literal">^Part</tt> matches
+<em class="emphasis">Part</em></tt> when it occurs at the beginning of a line, and <tt class="literal">^...</tt>
+matches the first three characters of a line.
+When not at the beginning of a regular expression, <tt class="literal">^</tt>
+stands for itself.</p></dd>
+
+
+<dt><tt class="literal">$</tt></dt><dd>
+<a name="IXT-6-280087" />
+<a name="IXT-6-280088" />
+When used at the end of a regular expression,
+requires that the preceding regular expression be found at the end
+of the line; for example, <tt class="literal">here:$</tt>
+matches only when <tt class="literal">here:</tt> occurs at the end of a line.
+When not at the end of a regular expression, <tt class="literal">$</tt>
+stands for itself.</p></dd>
+
+
+<dt><tt class="literal">\</tt></dt><dd>
+<a name="IXT-6-280089" />
+<a name="IXT-6-280090" />
+Treats the following special character as an ordinary character.
+For example,
+<tt class="literal">\.</tt> matches an actual period instead of "any single
+character," and <tt class="literal">\*</tt> matches an actual asterisk instead of
+"any number of a character."  The \ (backslash)
+prevents the interpretation of a special character.
+This prevention is called "escaping the character."
+(Use \\ to get a literal backslash.)</p></dd>
+
+
+<dt><tt class="literal">[  ]</tt></dt><dd>
+<a name="IXT-6-280091" />
+<a name="IXT-6-280092" />
+Matches any <em class="emphasis">one</em> of the characters enclosed between the brackets.
+For example,
+<tt class="literal">[AB]</tt>
+matches either
+<em class="emphasis">A</em>
+or
+<em class="emphasis">B</em>,
+and
+<tt class="literal">p[aeiou]t</tt>
+matches
+<em class="emphasis">pat</em>, <em class="emphasis">pet</em>, <em class="emphasis">pit</em>, <em class="emphasis">pot</em>, or <em class="emphasis">put</em>.
+A range of consecutive characters can be specified by separating
+the first and last characters in the range with a hyphen.
+For example, <tt class="literal">[A-Z]</tt> will match any uppercase
+letter from <em class="emphasis">A</em> to <em class="emphasis">Z</em>, and <tt class="literal">[0-9]</tt> will match any
+digit from <em class="emphasis">0</em> to <em class="emphasis">9</em>.</p>
+
+<p>You can include more than one
+range inside brackets, and you can specify a mix of ranges and
+separate characters. For example, <tt class="literal">[:;A-Za-z()]</tt>
+will match four different punctuation marks, plus all letters.</p>
+
+<p>Most metacharacters lose their special meaning inside brackets,
+so you don't need to escape them if you want to use them as
+ordinary characters. Within brackets, the three metacharacters
+you still need to escape
+are <tt class="literal">\</tt> <tt class="literal">-</tt> <tt class="literal">]</tt>.  
+The hyphen (<tt class="literal">-</tt>)
+acquires meaning as a range specifier; to use an actual hyphen,
+you can also place it as the first character inside the
+brackets.</p>
+
+<p>
+<a name="IXT-6-280093" />
+<a name="IXT-6-280094" />
+A caret (<tt class="literal">^</tt>) has special meaning only when it is the
+first character inside the brackets, but in this case the meaning
+differs from that of the normal <tt class="literal">^</tt> metacharacter.
+As the first character within brackets, a <tt class="literal">^</tt> reverses their sense: the brackets
+will match any one character <em class="emphasis">not</em> in the list. For example,
+<tt class="literal">[^a-z]</tt> matches any character that is not a lowercase letter.</p></dd>
+
+
+<dt><tt class="literal">\(&#160;\)</tt></dt><dd>
+<a name="IXT-6-280095" />
+<a name="IXT-6-280096" />
+<a name="IXT-6-280097" />
+<a name="IXT-6-280098" />
+<a name="IXT-6-280099" />
+Saves the pattern enclosed between <tt class="literal">\(</tt> and <tt class="literal">\)</tt>
+into a special holding space or "hold buffer."
+Up to nine patterns can be saved in this way on a single line.
+For example, the pattern:</p>
+
+<blockquote><pre class="code">\(That\) or \(this\)</pre></blockquote>
+
+<p>saves <em class="emphasis">That</em></tt> in hold buffer number 1 and
+saves <em class="emphasis">this</em></tt> in hold buffer number 2.
+The patterns held can be "replayed" in substitutions by the sequences
+<tt class="literal">\1</tt> to <tt class="literal">\9</tt>.
+For example, to rephrase <em class="emphasis">That or this</em></tt> to read
+<em class="emphasis">this or That</em></tt>, you could enter:</p>
+
+<blockquote><pre class="code">:%s/\(That\) or \(this\)/\2 or \1/</pre></blockquote>
+
+<p>You can also use the <tt class="literal">\</tt><tt><em class="replaceable"><tt>n</tt></em></tt>
+notation within a search or substitute string:
+<blockquote><pre class="code">:s/\(abcd\)\1/alphabet-soup/</pre></blockquote>
+
+changes <em class="emphasis">abcdabcd</em></tt> into
+<em class="emphasis">alphabet-soup</em></tt>.<a href="#FOOTNOTE-21">[21]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-21" /><p> [21]This works with <i class="command">vi</i>, <i class="command">nvi</i>, and
+<i class="command">vim</i>, but not with <i class="command">elvis</i> 2.0,
+<i class="command">vile</i> 7.4, or <i class="command">vile</i> 8.0.</p>
+
+</blockquote></dd>
+
+
+<dt><tt class="literal">\&lt;&#160;\&gt;</tt></dt><dd>
+<a name="IXT-6-280100" />
+<a name="IXT-6-280101" />
+<a name="IXT-6-280102" />
+Matches characters at the beginning (<tt class="literal">\&lt;</tt>) or at the end
+(<tt class="literal">\&gt;</tt>) of a word.
+The end or beginning of a
+word is determined either by a punctuation mark or by a space.
+For example, the expression <tt class="literal">\&lt;ac</tt> will match only words
+that begin with <em class="emphasis">ac</em>, such as <em class="emphasis">action</em>.
+The expression <tt class="literal">ac\&gt;</tt> will match only words
+that end with <em class="emphasis">ac</em>, such as <em class="emphasis">maniac</em>.
+Neither expression will match <em class="emphasis">react</em>.
+Note that unlike <tt class="literal">\(...\)</tt>,
+these do not have to be used in matched pairs.</p></dd>
+
+
+<dt><tt class="literal">~</tt></dt><dd>
+<a name="IXT-6-280103" />
+<a name="IXT-6-280104" />
+Matches whatever regular expression was used in the <em class="emphasis">last</em></tt>
+search. For example, if you searched for <em class="emphasis">The</em></tt>, you
+could search for <em class="emphasis">Then</em></tt> with <tt class="literal">/~n</tt>.
+Note that you can use this pattern only in a regular search
+(with <tt class="literal">/</tt>).<a href="#FOOTNOTE-22">[22]</a>
+It won't work as the pattern in a substitute command. It does,
+however, have a similar
+meaning in the replacement portion of a substitute command.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-22" /><p> [22]This is a rather flaky feature of the original <i class="command">vi</i>.
+After using it, the saved search pattern is set to
+the <em class="emphasis">new</em></tt> text typed after the <tt class="literal">~</tt>,
+<em class="emphasis">not</em></tt> the combined new pattern,
+as one might expect.
+Also, none of the clones behaves this way.
+So, while this feature exists, it has little to recommend its use.</p>
+
+</blockquote></dd>
+
+</dl>
+
+<p>Several of the clones support optional, extended regular
+expression syntaxes. See <a href="ch08_04.htm#vi6-ch-8-sect-4">Section 8.4</a> for more information.</p>
+
+<a name="IXT-6-280105" />
+<a name="IXT-6-280106" />
+<a name="IXT-6-280107" />
+<a name="IXT-6-280108" />
+<a name="IXT-6-280109" />
+<a name="IXT-6-280110" />
+<a name="IXT-6-280111" />
+<a name="IXT-6-280112" />
+<a name="IXT-6-280113" />
+</div>
+
+
+
+
+<a name="vi6-ch-6-sect-3.2" /><div class="sect2">
+<h3 class="sect2">6.3.2. POSIX Bracket Expressions</h3>
+
+<a name="ch06.posix1" />
+<a name="ch06.posix2" />
+<a name="ch06.posix3" />
+<a name="ch06.posix4" />
+<a name="ch06.posix5" />
+<a name="ch06.posix6" />
+<a name="ch06.posix7" />
+<a name="ch06.posix8" />
+<a name="ch06.posix9" />
+
+<p>We have just described
+the use of brackets for matching
+any one of the enclosed characters, such as <tt class="literal">[a-z]</tt>.
+The POSIX standard introduced additional facilities for matching
+characters that are not
+in the English alphabet. For example, the French &#232; is an alphabetic
+character, but the typical character class <tt class="literal">[a-z]</tt> would not
+match it.
+Additionally,
+the standard provides for sequences of characters that should be
+treated as a single unit when matching and collating (sorting) string data.</p>
+
+<p>POSIX also formalizes the terminology. Groups of characters within
+brackets are called
+a "bracket expression" in the POSIX
+standard. Within bracket expressions, beside literal characters such as
+<em class="emphasis">a</em></tt>, <em class="emphasis">!</em></tt>,
+and so on, you can have additional components. These are:</p>
+
+<ul><li><p><em class="emphasis">Character classes</em></tt>.
+<a name="ch06.characterclass" />
+<a name="IXT-6-280114" />
+<a name="IXT-6-280115" />
+A POSIX character class consists of keywords bracketed by
+<tt class="literal">[:</tt> and <tt class="literal">:]</tt>. The
+keywords describe different classes of characters such as alphabetic
+characters, control characters, and so on (see <a href="ch06_03.htm#vi6-ch-6-tab-1">Table 6.1</a>).</p></li><li><p><em class="emphasis">Collating symbols</em></tt>.
+<a name="IXT-6-280116" />
+<a name="IXT-6-280117" />
+<a name="IXT-6-280118" />
+A collating symbol is a multi-character sequence that should be treated
+as a unit. It consists of the characters bracketed by <tt class="literal">[.</tt>
+and <tt class="literal">.]</tt>.</p></li><li><p><em class="emphasis">Equivalence classes</em></tt>.
+<a name="IXT-6-280119" />
+<a name="IXT-6-280120" />
+<a name="IXT-6-280121" />
+An equivalence class lists a set of characters that should be considered
+equivalent, such as <tt class="literal">e</tt> and
+<tt class="literal">&#232;</tt>.
+It consists of a named element from the locale,
+bracketed by <tt class="literal">[=</tt>
+and <tt class="literal">=]</tt>.</p></li></ul><p>All three of these constructs must appear inside the square
+brackets of a bracket expression.
+For example <tt class="literal">[[:alpha:]!]</tt> matches
+any single alphabetic character or the exclamation point,
+<tt class="literal">[[.ch.]]</tt>
+matches the collating element
+<em class="emphasis">ch</em></tt>, but does not match just the letter
+<em class="emphasis">c</em></tt> or the letter
+<em class="emphasis">h</em></tt>.
+In a French locale,
+<tt class="literal">[[=e=]]</tt> might match any of
+<em class="emphasis">e</em></tt>, <em class="emphasis">&#232;</em></tt>,
+or <em class="emphasis">&#233;</em></tt>. Classes and matching
+characters are shown in <a href="ch06_03.htm#vi6-ch-6-tab-1">Table 6.1</a>.</p>
+
+<a name="vi6-ch-6-tab-1" /><h4 class="objtitle">Table 6.1. POSIX Character Classes</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Class</th>
+<th>Matching Characters</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">[:alnum:]</tt></td>
+<td>Alphanumeric characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:alpha:]</tt></td>
+<td>Alphabetic characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:blank:]</tt></td>
+<td>Space and tab characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:cntrl:]</tt></td>
+<td>Control characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:digit:]</tt></td>
+<td>Numeric characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:graph:]</tt></td>
+<td>Printable and visible (non-space) characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:lower:]</tt></td>
+<td>Lowercase characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:print:]</tt></td>
+<td>Printable characters (includes whitespace)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:punct:]</tt></td>
+<td>Punctuation characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:space:]</tt></td>
+<td>Whitespace characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:upper:]</tt></td>
+<td>Uppercase characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[:xdigit:]</tt></td>
+<td>Hexadecimal digits</td>
+</tr>
+
+
+</table><p><p>
+
+<p>You will have to do some research to determine if you have this
+facility in your version of <i class="command">vi</i>. You may
+need to use a special option to enable POSIX compliance,
+have a particular environment variable set, or use a version of
+<i class="command">vi</i> that is in an unusual directory.
+<a name="IXT-6-280122" /></p>
+
+<p><em class="emphasis">vi</em></tt> on HP-UX 9.x (and newer) systems support
+POSIX bracket expressions,
+as does <em class="filename">/usr/xpg4/bin/vi</em></tt>, on Solaris
+(but not <em class="filename">/usr/bin/vi</em></tt>).
+This facility is also available in <i class="command">nvi</i>, and in
+<i class="command">elvis</i> 2.1.
+As commercial UNIX vendors become standards-compliant,
+expect to see this feature become more widespread.</p>
+
+<a name="IXT-6-280123" />
+<a name="IXT-6-280124" />
+<a name="IXT-6-280125" />
+<a name="IXT-6-280126" />
+<a name="IXT-6-280127" />
+<a name="IXT-6-280128" />
+<a name="IXT-6-280129" />
+<a name="IXT-6-280130" />
+<a name="IXT-6-280131" />
+</div>
+
+
+
+
+<a name="vi6-ch-6-sect-3.3" /><div class="sect2">
+<h3 class="sect2">6.3.3. Metacharacters Used in Replacement Strings </h3>
+
+<p>
+<a name="ch06.metastring1" />
+<a name="ch06.metastring2" />
+<a name="ch06.metastring3" />
+<a name="ch06.metastring4" />
+<a name="ch06.metastring5" />
+<a name="ch06.metastring6" />
+<a name="ch06.metastring7" />
+
+<a name="ch06.globalmeta1" />
+<a name="ch06.globalmeta2" />
+
+When you make global replacements, the regular expressions above
+carry their special meaning only within the search portion
+(the first part) of the command.</p>
+
+<?troff .Nd 10?><p>For example, when you type this:</p>
+
+<blockquote><pre class="code">:%s/1\.  Start/2.  Next, start with $100/</pre></blockquote>
+
+<p>note that the replacement string
+treats the characters <tt class="literal">.</tt> and <tt class="literal">$</tt>
+literally, without your
+having to escape them.
+By the same token, let's say you enter:</p>
+
+<blockquote><pre class="code">:%s/[ABC]/[abc]/g</pre></blockquote>
+
+<p>If you're hoping to replace <em class="emphasis">A</em></tt> with
+<em class="emphasis">a</em></tt>, <em class="emphasis">B</em></tt> with <em class="emphasis">b</em></tt>,
+and <em class="emphasis">C</em></tt> with <em class="emphasis">c</em></tt>,
+you'll be surprised. Since brackets behave like
+ordinary characters in a replacement string, this command
+will change every occurrence of <em class="emphasis">A</em></tt>,
+<em class="emphasis">B</em></tt>, or <em class="emphasis">C</em></tt> to the
+five-character string <em class="emphasis">[abc]</em></tt>.</p>
+
+<p>To solve problems like this,
+you need a way to specify variable
+replacement strings. Fortunately, there are additional metacharacters
+that have special meaning in a <em class="emphasis">replacement</em></tt> string.</p>
+
+<dl>
+<dt><tt class="literal">\</tt><tt><em class="replaceable">n</em></tt></dt><dd>
+<a name="IXT-6-280132" />
+<a name="IXT-6-280133" />
+<a name="IXT-6-280134" />
+Is replaced with text matched by the <em class="emphasis">n</em>th pattern
+previously saved by <tt class="literal">\(</tt> and
+<tt class="literal">\)</tt>, where
+<em class="emphasis">n</em> is a number from 1 to 9, and previously saved patterns
+(kept in hold buffers) are counted
+from the left on the line.
+See the explanation for
+<tt class="literal">\(</tt>
+and <tt class="literal">\)</tt> earlier in this chapter.</p></dd>
+
+
+<dt><tt class="literal">\</tt></dt><dd>
+<a name="IXT-6-280135" />
+Treats the following special character as an ordinary character.
+Backslashes are metacharacters in replacement strings
+as well as in search patterns.
+To specify a real backslash, type two in a row (\\).</p></dd>
+
+
+<dt><tt class="literal">&amp;</tt></dt><dd>
+<a name="IXT-6-280136" />
+<a name="IXT-6-280137" />
+Is replaced with the entire text matched by the search pattern when
+used in a replacement
+string. This is useful when you want to avoid retyping text:</p>
+
+<blockquote><pre class="code">:%s/Yazstremski/&amp;, Carl/</pre></blockquote>
+
+<p>The replacement will say <em class="emphasis">Yazstremski, Carl</em>.  The
+<tt class="literal">&amp;</tt> can
+also replace a variable pattern (as specified by a regular
+expression). For example, to surround each line from 1 to 10 with
+parentheses, type:</p>
+
+<blockquote><pre class="code">:1,10s/.*/(&amp;)/</pre></blockquote>
+
+<p>The search pattern matches the whole line, and the <tt class="literal">&amp;</tt>
+"replays" the line, followed by your text.</p></dd>
+
+
+<dt><tt class="literal">~</tt></dt><dd>
+<a name="IXT-6-280138" />
+<a name="IXT-6-280139" />
+Has a similar meaning as when it is used in a search pattern;
+the string found is replaced with the replacement
+text specified in the last substitute command. This is useful for
+repeating an edit. For example, you could say
+<tt class="literal">:s/thier/their/</tt> on
+one line and repeat the change on another with  
+<tt class="literal">:s/thier/~/</tt>. The search pattern
+doesn't need to be the same, though.</p></dd>
+
+
+<?troff .Nd 10?><dt></dt><dd>For example, you could say <tt class="literal">:s/his/their/</tt> on
+one line and repeat the replacement on another with
+<tt class="literal">:s/her/~/</tt>.<a href="#FOOTNOTE-23">[23]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-23" /><p> [23]Modern versions of the <i class="command">ed</i> editor use <tt class="literal">%</tt>
+as the sole character in the replacement text
+to mean "the replacement text of the last substitute command."</p>
+
+</blockquote></dd>
+
+
+<dt><tt class="literal">\u</tt>&#160;or&#xA0;<tt class="literal">\l</tt></dt><dd>
+<a name="ch06.case1" />
+<a name="ch06.case1a" />
+<a name="ch06.case1b" />
+<a name="ch06.case2" />
+<a name="ch06.case3" />
+<a name="ch06.case4" />
+<a name="ch06.case5" />
+<a name="ch06.case6" />
+<a name="ch06.case7" />
+Causes the next character in the replacement string to be changed to
+uppercase or lowercase, respectively. For example, to change
+<em class="emphasis">yes, doctor</em></tt> into <em class="emphasis">Yes, Doctor</em></tt>, you could say:</p>
+
+<blockquote><pre class="code">:%s/yes, doctor/\uyes, \udoctor/</pre></blockquote>
+
+<p>This is a pointless example, though, since it's easier
+just to type the replacement string with initial caps in the
+first place. As with any regular expression, <tt class="literal">\u</tt> and
+<tt class="literal">\l</tt> are most useful with a variable string. Take, for
+example, the command we used earlier:</p>
+
+<blockquote><pre class="code">:%s/\(That\) or \(this\)/\2 or \1/</pre></blockquote>
+
+<p>The result is <em class="emphasis">this or That</em></tt>, but we need to adjust the
+cases. We'll use <tt class="literal">\u</tt> to uppercase the first letter in
+<em class="emphasis">this</em></tt> (currently saved in hold buffer 2);
+we'll use <tt class="literal">\l</tt> to lowercase the first letter in
+<em class="emphasis">That</em></tt> (currently saved in hold buffer 1):</p>
+
+<blockquote><pre class="code">:s/\(That\) or \(this\)/\u\2 or \l\1/</pre></blockquote>
+
+<p>The result is <em class="emphasis">This or that</em></tt>.  (Don't confuse the number one
+with the lowercase <tt class="literal">l</tt>; the one comes after.)</p></dd>
+
+
+<dt><tt class="literal">\U</tt>&#160;or&#xA0;<tt class="literal">\L</tt>&#xA0;and&#xA0;<tt class="literal">\e</tt>&#xA0;or&#xA0;<tt class="literal">\E</tt></dt><dd>
+<a name="IXT-6-280140" />
+<a name="IXT-6-280141" />
+<a name="IXT-6-280142" />
+<a name="IXT-6-280143" />
+<a name="IXT-6-280144" />
+<a name="IXT-6-280145" />
+<a name="IXT-6-280146" />
+<tt class="literal">\U</tt> and <tt class="literal">\L</tt>
+are similar to <tt class="literal">\u</tt> or <tt class="literal">\l</tt>,
+but all following characters are
+converted to uppercase or lowercase until the end of the
+replacement string or until <tt class="literal">\e</tt> or <tt class="literal">\E</tt> is reached.
+If there is no <tt class="literal">\e</tt> or <tt class="literal">\E</tt>, all characters of the
+replacement text are affected by the <tt class="literal">\U</tt> or <tt class="literal">\L</tt>.
+For example, to uppercase <em class="emphasis">Fortran</em>, you could say:</p>
+
+<blockquote><pre class="code">:%s/Fortran/\UFortran/</pre></blockquote>
+
+<p>or, using the <tt class="literal">&amp;</tt> character to repeat the search string:</p>
+
+<blockquote><pre class="code">:%s/Fortran/\U&amp;/</pre></blockquote></dd>
+
+</dl>
+
+<p>
+<a name="IXT-6-280147" />
+All pattern searches are case-sensitive. That is,
+a search for <em class="emphasis">the</em> will
+not find <em class="emphasis">The</em>.  You can get around this by specifying both
+uppercase and lowercase in the pattern:</p>
+
+<blockquote><pre class="code">/[Tt]he</pre></blockquote>
+
+<p>
+<a name="IXT-6-280148" />
+You can also instruct <i class="command">vi</i> to ignore case by typing
+<tt class="literal">:set</tt> <tt class="literal">ic</tt>.
+See <a href="ch07_01.htm">Chapter 7</a>,
+for additional details.
+<a name="IXT-6-280149" />
+<a name="IXT-6-280150" />
+<a name="IXT-6-280151" />
+<a name="IXT-6-280152" />
+<a name="IXT-6-280153" />
+<a name="IXT-6-280154" />
+<a name="IXT-6-280155" />
+<a name="IXT-6-280156" />
+<a name="IXT-6-280157" /></p>
+
+<a name="IXT-6-280158" />
+<a name="IXT-6-280159" />
+<a name="IXT-6-280160" />
+<a name="IXT-6-280161" />
+<a name="IXT-6-280162" />
+<a name="IXT-6-280163" />
+<a name="IXT-6-280164" />
+<a name="IXT-6-280165" />
+<a name="IXT-6-280166" />
+</div>
+
+
+
+
+<a name="vi6-ch-6-sect-3.4" /><div class="sect2">
+<h3 class="sect2">6.3.4. More Substitution Tricks</h3>
+
+<p>
+<a name="ch06.tricks1" />
+<a name="ch06.tricks2" />
+<a name="ch06.tricks9" />
+
+<a name="ch06.tricks3" />
+<a name="ch06.tricks4" />
+<a name="ch06.tricks5" />
+<a name="ch06.tricks6" />
+
+<a name="ch06.tricks7" />
+<a name="ch06.tricks8" />
+
+You should know some additional important facts about the
+substitute command:</p>
+
+<ol><li><p>
+<a name="IXT-6-280167" />
+A simple <tt class="literal">:s</tt> is the same as <tt class="literal">:s//~/</tt>.
+In other words, repeat the last substitution.
+This can save enormous amounts of time and typing when you
+are working your way through a document making the same change
+repeatedly, but you don't want to use a global substitution.</p></li><li><p>
+<a name="IXT-6-280168" />
+<a name="IXT-6-280169" />
+If you think of the <tt class="literal">&amp;</tt> as meaning
+"the same thing"
+(as in what was just matched), this command is relatively mnemonic.
+You can follow the <tt class="literal">&amp;</tt> with a <tt class="literal">g</tt>,
+to make the substitution
+globally on the line, and even use it with a line range:</p>
+
+<blockquote><pre class="code">:%&amp;g	<i class="lineannotation">repeat the last substitution everywhere</i></pre></blockquote></li><li><p>The <span class="keycap">&amp;</span> key can be used as a <i class="command">vi</i> command
+to perform the <tt class="literal">:&amp;</tt> command, i.e., to repeat the
+last substitution. This can save even more typing than
+<tt class="literal">:s</tt><span class="keycap">RETURN</span>; one keystroke versus three.</p></li><li><p>
+<a name="IXT-6-280170" />
+<a name="IXT-6-280171" />
+The <tt class="literal">:~</tt> command is similar to the <tt class="literal">:&amp;</tt>
+command, but with a subtle difference.
+The search pattern used is the last regular
+expression used in <em class="emphasis">any</em>
+command, not necessarily the one used in the last substitute command.</p>
+
+<p>For example,<a href="#FOOTNOTE-24">[24]</a>
+in the sequence:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-24" /><p> [24]Thanks to Keith Bostic, in the <i class="command">nvi</i>
+documentation, for this example.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">:s/red/blue/
+:/green
+:~</pre></blockquote>
+
+<p>The <tt class="literal">:~</tt>
+is equivalent to
+<tt class="literal">:s/green/blue/</tt>.</p></li><li><p>Besides the <tt class="literal">/</tt> character,
+you may use any non-alphanumeric, non-whitespace
+character as your delimiter,
+except backslash, double-quote, and the vertical bar
+(<tt class="literal">\</tt>, <tt class="literal">"</tt>,
+and <tt class="literal">|</tt>).
+This is particularly handy when you have to make a change to
+a pathname.</p>
+
+<blockquote><pre class="code">:%s;/user1/tim;/home/tim;g</pre></blockquote></li><li><p>
+<a name="IXT-6-280172" />
+When the <tt class="literal">edcompatible</tt> option is
+enabled, <i class="command">vi</i> remembers the flags
+(<tt class="literal">g</tt> for global and <tt class="literal">c</tt> for
+confirmation) used on the last substitute, and applies them
+to the next one.</p>
+
+<p>This is most useful when you are moving through a file and
+you wish to make global substitutions. You can make the
+first change:</p>
+
+<blockquote><pre class="code">:s/<em class="replaceable"><tt>old</em>/<em class="replaceable">new</tt></em>/g
+:set edcompatible</pre></blockquote>
+
+<p>After that, subsequent substitute commands will be global.</p>
+
+<p>Despite the name, no known version of UNIX <i class="command">ed</i>
+actually works this way.</p></li></ol>
+<a name="IXT-6-280173" />
+<a name="IXT-6-280174" />
+<a name="IXT-6-280175" />
+<a name="IXT-6-280176" />
+<a name="IXT-6-280177" />
+<a name="IXT-6-280178" />
+<a name="IXT-6-280179" />
+<a name="IXT-6-280180" />
+<a name="IXT-6-280181" />
+</div>
+
+
+
+
+<a name="IXT-6-280182" />
+<a name="IXT-6-280183" />
+<a name="IXT-6-280184" />
+<a name="IXT-6-280185" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.2. Context-Sensitive Replacement</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.4. Pattern-Matching Examples </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

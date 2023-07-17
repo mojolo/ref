@@ -1,0 +1,156 @@
+<html><head><title>Clean Up Program Comment Blocks (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.4. Clean Up Program Comment Blocks</h2>
+
+<p><a name="IXT-21-5662" /><a name="IXT-21-5663" /><a name="IXT-21-5664" />Lines in a program's
+<a name="IXT-21-5665" />comment block
+usually start with one or more special characters, like this:
+</p>
+
+<blockquote><pre class="code"># <em class="replaceable"><tt>line 1 of the comment</tt></em>
+# <em class="replaceable"><tt>line 2 of the comment</tt></em>
+# <em class="replaceable"><tt>line 3 of the comment</tt></em>
+    ...</pre></blockquote>
+
+<p>It can be a hassle to add more text to one of the comment lines in a
+block, because the line can get too long, which requires you to fold
+that line onto the next line, which means you have to work around the
+leading comment character(s).
+</p>
+
+<p>The <b class="emphasis-bold">fmt</b> (<a href="ch21_02.htm#upt3-CHP-21-SECT-2">Section 21.2</a>) program neatens lines of a text file.
+<a name="IXT-21-5666" />But the
+standard <i class="command">fmt</i> won't help you
+"neaten" blocks of comments in a
+program: it mixes the comment characters from the starts of lines
+with the words. (If your <i class="command">fmt</i> has the
+<span class="option">-p</span> option, it handles this problem;
+there's an example below.) The
+<i class="command">recomment</i> script is <i class="command">fmt</i> for
+comment blocks. It's for people who write shell,
+<i class="command">awk</i>, C, or almost any other kind of program with
+comment blocks several lines long.
+</p>
+
+<a name="upt3-CHP-21-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">21.4.1. The recomment Script</h3>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: recomment</p>
+
+<p><i class="command">recomment</i><a name="IXT-21-5667" /> reads the lines that you feed its
+standard input. It looks at the first line and figures out what
+characters you're using to comment the line (see the
+<tt class="literal">$cchars</tt> variable for a list -- typically
+SPACEs, TABs, <tt class="literal">#</tt>, or <tt class="literal">*</tt>).
+<i class="command">recomment</i> then strips those comment characters off
+each line, feeds the remaining block of text to the
+<i class="command">fmt</i> utility, and uses <b class="emphasis-bold">sed</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) to add the
+comment characters again.
+</p>
+
+<p>I usually use <i class="command">recomment</i> from inside
+<i class="command">vi</i>, with <b class="emphasis-bold">filter-through</b> (<a href="ch17_18.htm#upt3-CHP-17-SECT-18">Section 17.18</a>)
+commands like:
+</p>
+
+<blockquote><pre class="code">!}recomment  <i class="lineannotation">reformat to the next blank line</i>
+5!!recomment <i class="lineannotation">reformat this line and the next 4</i></pre></blockquote>
+
+<p>Normally, <i class="command">recomment</i> lets <i class="command">fmt</i>
+choose the width of the comment block (72 characters, typically). To
+get another width, you can do one of the following:
+</p>
+
+<ul><li>
+<p>Give the width on the command line, like this:</p>
+<blockquote><pre class="code">recomment -50</pre></blockquote>
+</li>
+<li>
+<p>Set an environment variable named
+<em class="emphasis">CBLKWID</em><a name="IXT-21-5668" /><a name="IXT-21-5669" />. Give the maximum
+width, in characters, for the comment text. For example, in the C
+shell, use:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>setenv CBLKWID 50</b></tt></pre></blockquote>
+</li></ul>
+<p><i class="command">recomment</i> isn't perfect, but
+it's usually much better than nothing!
+Here's the part of the script that does the work.
+The first two commands get the comment character(s) and count their
+length. The next three commands strip the comment characters, clean
+up the remaining comment text, and add the same comment characters to
+the start of all reformatted lines:
+</p>
+<p><tt class="literal">-n</tt> <a href="ch34_03.htm#upt3-CHP-34-SECT-3">Section
+34.3</a>, <tt class="literal">expr</tt> <a href="ch36_22.htm#upt3-CHP-36-SECT-22">Section 36.22</a>, <tt class="literal">cut</tt> <a href="ch21_14.htm#upt3-CHP-21-SECT-14">Section 21.14</a></p>
+
+<blockquote><pre class="code"># Get comment characters used on first line; store in $comment:
+comment=`sed -n "1s/^\([$cchars]*\).*/\1/p" $temp`
+# Count number of characters in comment character string:
+cwidth=`expr "$comment" : '.*'`
+
+# Re-format the comment block.  If $widopt set, use it:
+cut -c`expr $cwidth + 1`- &lt; $temp |     # Strip off comment leader
+fmt $widopt |                           # Re-format the text, and
+sed "s/^/$comment/"                     # put back comment characters</pre></blockquote>
+
+<p>When the <i class="command">expr</i> command in <b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) is
+expanded, it makes a command like <tt class="literal">cut -c4-</tt>.
+</p>
+
+</div>
+<a name="upt3-CHP-21-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">21.4.2. fmt -p</h3>
+
+<p><a name="IXT-21-5670" />Some versions
+of <i class="command">fmt</i> (like the one on the CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>]) have a
+<span class="option">-p</span> option that does the same thing. Unlike the
+automatic system in <i class="command">recomment</i>, you have to tell
+<em class="emphasis">fmt -p</em> what the prefix characters are -- but
+then it will only reformat lines with that prefix character For
+example, here's the start of a C++ program. The
+prefix character is <tt class="literal">*</tt>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat load.cc</b></tt>
+/*
+ * This file, load.cc, reads an input
+ * data file.
+ * Each input line is added to a new node
+ * of type struct Node.
+ */
+    ...
+% <tt class="userinput"><b>fmt -p '*' load.cc</b></tt>
+/*
+ * This file, load.cc, reads an input data file.  Each input line is
+ * added to a new node of type struct Node.
+ */
+    ...</pre></blockquote>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.3. Alternatives to fmt</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.5. Remove Mail/News Headers with behead</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

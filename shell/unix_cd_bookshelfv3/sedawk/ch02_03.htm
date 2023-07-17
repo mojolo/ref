@@ -1,0 +1,344 @@
+<html><head><title>Using sed (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">2.3. Using sed</h2>
+
+<p>
+<a name="ch02.sed" />
+There are two ways to invoke sed: either you specify your editing
+instructions on the command line or you put them in a file and supply
+the name of the file.</p>
+
+<a name="sedawk-ch-2-sect-3.1" /><div class="sect2">
+<h3 class="sect2">2.3.1. Specifying Simple Instructions</h3>
+
+<p>
+<a name="IXT-2-265366" />
+<a name="IXT-2-265367" />
+<a name="IXT-2-265368" />
+You can specify simple editing commands on the command line.</p>
+
+<blockquote><pre class="code"><tt class="literal">sed</tt> [<tt class="literal">-e</tt>] '<em class="replaceable"><tt>instruction</em>' <em class="replaceable">file</tt></em></pre></blockquote><p>The <span class="option">-e</span> option is necessary only when you supply more
+than one instruction on the command line.  It tells sed to interpret
+the next argument as an instruction.  When there is a single
+instruction, sed is able to make that determination on its own.  Let's
+look at some examples.</p>
+
+<p>Using the sample input file, <em class="filename">list</em>, the following
+example uses the <b class="emphasis-bold">s</b> command for substitution to
+replace "MA" with "Massachusetts."</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed 's/MA/Massachusetts/' list</b></tt>
+John Daggett, 341 King Road, Plymouth Massachusetts
+Alice Ford, 22 East Broadway, Richmond VA
+Orville Thomas, 11345 Oak Bridge Road, Tulsa OK
+Terry Kalkas, 402 Lans Road, Beaver Falls PA
+Eric Adams, 20 Post Road, Sudbury Massachusetts
+Hubert Sims, 328A Brook Road, Roanoke VA
+Amy Wilde, 334 Bayshore Pkwy, Mountain View CA
+Sal Carpenter, 73 6th Street, Boston Massachusetts</pre></blockquote>
+
+<p>Three lines are affected by the instruction but all lines are
+displayed.</p>
+
+<p>
+<a name="IXT-2-265369" />
+<a name="IXT-2-265370" />
+<a name="IXT-2-265371" />
+Enclosing the instruction in single quotes is not required in all
+cases but you should get in the habit of always doing it.  The
+enclosing single quotes prevent the shell from interpreting special
+characters or spaces found in the editing instruction.  (The
+shell uses spaces to determine individual arguments submitted to a
+program; characters that are special to the shell are expanded before
+the command is invoked.)
+<a name="IXT-2-265372" />
+<a name="IXT-2-265373" />
+<a name="IXT-2-265374" /></p>
+
+<p>For instance, the first example could have been entered without them
+but in the next example they are required, since the substitution
+command contains spaces:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed 's/ MA/, Massachusetts/' list</b></tt>
+John Daggett, 341 King Road, Plymouth, Massachusetts
+Alice Ford, 22 East Broadway, Richmond VA
+Orville Thomas, 11345 Oak Bridge Road, Tulsa OK
+Terry Kalkas, 402 Lans Road, Beaver Falls PA
+Eric Adams, 20 Post Road, Sudbury, Massachusetts
+Hubert Sims, 328A Brook Road, Roanoke VA
+Amy Wilde, 334 Bayshore Pkwy, Mountain View CA
+Sal Carpenter, 73 6th Street, Boston, Massachusetts</pre></blockquote>
+
+<p>In order to place a comma between the city and state, the instruction
+replaced the space before the two-letter abbreviation with a comma and
+a space.</p>
+
+<p>There are three ways to specify multiple instructions on the command
+line:</p>
+
+<ol><li><p>Separate instructions with a semicolon.
+<a name="IXT-2-265375" />
+<a name="IXT-2-265376" /></p>
+
+<blockquote><pre class="code">sed 's/ MA/, Massachusetts/; s/ PA/, Pennsylvania/' list</pre></blockquote></li><li><p>Precede each instruction by <span class="option">-e</span>.</p>
+
+<blockquote><pre class="code">sed -e 's/ MA/, Massachusetts/' -e 's/ PA/, Pennsylvania/' list</pre></blockquote></li><li><p>Use the multiline entry capability of the Bourne shell.<a href="#FOOTNOTE-9">[9]</a>
+Press RETURN after entering a single quote and a
+secondary prompt (&gt;) will be displayed for multiline input.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-9" /><p> [9]These days there are many shells that are compatible with the Bourne
+shell, and work as described here: <b class="emphasis-bold">ksh</b>,
+<b class="emphasis-bold">bash</b>, <b class="emphasis-bold">pdksh</b>, and
+<b class="emphasis-bold">zsh</b>, to name a few.
+<a name="IXT-2-265377" /></p>
+
+</blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed '</b></tt> 
+&gt; <tt class="userinput"><b>s/ MA/, Massachusetts/</b></tt>
+&gt; <tt class="userinput"><b>s/ PA/, Pennsylvania/</b></tt>
+&gt; <tt class="userinput"><b>s/ CA/, California/' list </b></tt>
+John Daggett, 341 King Road, Plymouth, Massachusetts
+Alice Ford, 22 East Broadway, Richmond VA
+Orville Thomas, 11345 Oak Bridge Road, Tulsa OK
+Terry Kalkas, 402 Lans Road, Beaver Falls, Pennsylvania
+Eric Adams, 20 Post Road, Sudbury, Massachusetts
+Hubert Sims, 328A Brook Road, Roanoke VA
+Amy Wilde, 334 Bayshore Pkwy, Mountain View, California
+Sal Carpenter, 73 6th Street, Boston, Massachusetts</pre></blockquote>
+
+<p>
+<a name="IXT-2-265378" />
+This technique will not work in the C shell.  Instead, use semicolons
+at the end of each instruction, and you can enter commands over
+multiple lines by ending each line with a backslash.  (Or, you could
+temporarily go into the Bourne shell by entering <b class="emphasis-bold">sh</b>
+and then type the command.)</p></li></ol><p>In the example above, changes were made to five lines and, of course,
+all lines were displayed.  Remember that nothing has changed in the
+input file.</p>
+
+<a name="sedawk-ch-2-sect-3.1.1" /><div class="sect3">
+<h3 class="sect3">2.3.1.1. Command garbled</h3>
+
+<p>
+<a name="IXT-2-265379" />
+<a name="IXT-2-265380" />
+<a name="IXT-2-265381" />
+<a name="IXT-2-265382" />
+The syntax of a sed command can be detailed, and it's easy to make a
+mistake or omit a required element.  Notice what happens when
+incomplete syntax is entered:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -e 's/MA/Massachusetts' list</b></tt>
+sed: command garbled: s/MA/Massachusetts</pre></blockquote>
+
+<p>Sed will usually display any line that it cannot
+execute, but it does not tell you what is wrong with
+the command.<a href="#FOOTNOTE-10">[10]</a>
+In this instance, a slash, which marks the search and replacement
+portions of the command, is missing at the end of the substitute
+command.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-10" /><p> [10]
+<a name="IXT-2-265383" />
+Some vendors seem to have improved things. For instance, on SunOS 4.1.x,
+sed reports
+"sed: Ending delimiter missing on substitution: s/MA/Massachusetts".</p>
+
+</blockquote>
+
+<p>GNU sed is more helpful:
+<a name="IXT-2-265384" /></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gsed -e 's/MA/Massachusetts' list</b></tt>
+gsed: Unterminated 's' command</pre></blockquote>
+</div>
+</div>
+
+
+
+
+<a name="sedawk-ch-2-sect-3.2" /><div class="sect2">
+<h3 class="sect2">2.3.2. Script Files</h3>
+
+<p>
+<a name="IXT-2-265385" />
+<a name="IXT-2-265386" />
+It is not practical to enter longer editing scripts on the command
+line.  That is why it is usually best to create a script file that
+contains the editing instructions.  The editing script is simply a
+list of sed commands that are executed in the order in which they
+appear.  This form, using the <span class="option">-f</span> option, requires
+that you specify the name of the script file on the command line.
+<a name="IXT-2-265387" /></p>
+
+<blockquote><pre class="code"><tt class="literal">sed</tt> <tt class="literal">-f</tt> <em class="replaceable"><tt>scriptfile file</tt></em></pre></blockquote><p>All the editing commands that we want executed are placed in a file.
+We follow a convention of creating temporary script files named
+<em class="emphasis">sedscr</em>.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat sedscr</b></tt>
+s/ MA/, Massachusetts/
+s/ PA/, Pennsylvania/
+s/ CA/, California/
+s/ VA/, Virginia/
+s/ OK/, Oklahoma/</pre></blockquote>
+
+<p>The following command reads all of the substitution commands in
+<em class="emphasis">sedscr</em> and applies them to each line in the input
+file <em class="emphasis">list</em>:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sedscr list</b></tt>
+John Daggett, 341 King Road, Plymouth, Massachusetts
+Alice Ford, 22 East Broadway, Richmond, Virginia
+Orville Thomas, 11345 Oak Bridge Road, Tulsa, Oklahoma
+Terry Kalkas, 402 Lans Road, Beaver Falls, Pennsylvania
+Eric Adams, 20 Post Road, Sudbury, Massachusetts
+Hubert Sims, 328A Brook Road, Roanoke, Virginia
+Amy Wilde, 334 Bayshore Pkwy, Mountain View, California
+Sal Carpenter, 73 6th Street, Boston, Massachusetts</pre></blockquote>
+
+<p>Once again, the result is ephemeral, displayed on the screen.  No
+change is made to the input file.</p>
+
+<p>If a sed script can be used again, you should rename the script and
+save it.  Scripts of proven value can be maintained in a personal or
+system-wide library.</p>
+
+<a name="sedawk-ch-2-sect-3.2.1" /><div class="sect3">
+<h3 class="sect3">2.3.2.1. Saving output</h3>
+
+<p>
+<a name="IXT-2-265388" />
+<a name="IXT-2-265389" />
+<a name="IXT-2-265390" />
+<a name="IXT-2-265391" />
+<a name="IXT-2-265392" />
+<a name="IXT-2-265393" />
+<a name="IXT-2-265394" />
+Unless you are redirecting the output of sed to another program, you
+will want to capture the output in a file.  This is done by specifying
+one of the shell's I/O redirection symbols followed by the name of a
+file:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sedscr list &gt; newlist</b></tt></pre></blockquote>
+
+<p>Do not redirect the output to the file you are editing or you will
+clobber it.  (The "&gt;" redirection operator truncates the file
+before the shell does anything else.)  If you want the output file to
+replace the input file, you can do that as a separate step, using the
+<b class="emphasis-bold">mv</b> command.  But first make very sure your editing
+script has worked properly!</p>
+
+<p>In <a href="ch04_01.htm">Chapter 4, "Writing sed Scripts"</a>, we will look at a shell script named
+<b class="emphasis-bold">runsed</b> that automates the process of creating a
+temporary file and using <b class="emphasis-bold">mv</b> to overwrite the
+original file.</p>
+</div>
+
+
+<a name="sedawk-ch-2-sect-3.2.2" /><div class="sect3">
+<h3 class="sect3">2.3.2.2. Suppressing automatic display of input lines</h3>
+
+<p>
+<a name="IXT-2-265395" />
+<a name="IXT-2-265396" />
+<a name="IXT-2-265397" />
+The default operation of sed is to output every input line.  The
+<span class="option">-n</span> option suppresses the automatic output.  When
+specifying this option, each instruction intended to produce output
+must contain a print command, <b class="emphasis-bold">p</b>.  Look at the
+following example.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -n -e 's/MA/Massachusetts/p' list</b></tt>
+John Daggett, 341 King Road, Plymouth Massachusetts
+Eric Adams, 20 Post Road, Sudbury Massachusetts
+Sal Carpenter, 73 6th Street, Boston Massachusetts</pre></blockquote>
+
+<p>Compare this output to the first example in this section.  Here, only
+the lines that were affected by the command were printed.</p>
+</div>
+
+
+<a name="sedawk-ch-2-sect-3.2.3" /><div class="sect3">
+<h3 class="sect3">2.3.2.3. Mixing options (POSIX)</h3>
+
+<p>
+<a name="IXT-2-265398" />
+<a name="IXT-2-265399" />
+<a name="IXT-2-265400" />
+<a name="IXT-2-265401" />
+You can build up a script by combining both the <span class="option">-e</span>
+and <span class="option">-f</span> options on the command line. The script is the
+combination of all the commands in the order given.  This appears to
+be supported in UNIX versions of sed, but this feature is not clearly
+documented in the manpage.  The POSIX standard explicitly mandates
+this behavior.</p>
+</div>
+
+
+<a name="sedawk-ch-2-sect-3.2.4" /><div class="sect3">
+<h3 class="sect3">2.3.2.4. Summary of options</h3>
+
+<p>
+<a name="IXT-2-265402" />
+<a name="IXT-2-265403" />
+<a href="ch02_03.htm#sedawk-ch-2-tab-1">Table 2.1</a> summarizes the sed command-line options.</p>
+
+<a name="sedawk-ch-2-tab-1" /><h4 class="objtitle">Table 2.1. Command-Line Options for sed</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><span class="option">-e</span></td>
+<td><p>Editing instruction follows.</p></td>
+</tr>
+
+<tr>
+<td><span class="option">-f</span></td>
+<td><p>Filename of script follows.</p></td>
+</tr>
+
+<tr>
+<td><span class="option">-n</span></td>
+<td><p>Suppress automatic output of input lines.</p></td>
+</tr>
+
+
+</table><p>
+</div>
+</div>
+
+
+
+
+<a name="IXT-2-265404" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2.2. Command-Line Syntax</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.4. Using awk</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

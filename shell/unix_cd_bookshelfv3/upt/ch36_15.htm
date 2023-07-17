@@ -1,0 +1,147 @@
+<html><head><title>Overview: Open Files and File Descriptors (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">36.15. Overview: Open Files and File Descriptors</h2>
+
+<p><a name="IXT-36-3278" /> <a name="IXT-36-3279" /> <a name="IXT-36-3280" />This introduction is general and
+simplified. If you're a technical person who needs a
+complete and exact description, read a book on Unix programming.
+</p>
+
+<p><a name="IXT-36-3281" /><a name="IXT-36-3282" /><a name="IXT-36-3283" />Unix shells let you redirect the
+input and output of programs with operators such as
+<tt class="literal">&gt;</tt> and <tt class="literal">|</tt>. How does that work?
+How can you use it better? Here's an overview.
+</p>
+
+<p><a name="IXT-36-3284" /><a name="IXT-36-3285" />When the Unix kernel
+starts any <b class="emphasis-bold">process</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>) -- for example, <i class="command">grep</i>,
+<i class="command">ls</i>, or a shell -- it sets up several places for
+that process to read from and write to, as shown in <a href="ch36_15.htm#upt3-CHP-36-FIG-1">Figure 36-1</a>. 
+</p>
+
+<a name="upt3-CHP-36-FIG-1" /><div class="figure"><img src="figs/upt3_3601.gif" alt="Figure 36-1" width="425" /></div><h4 class="objtitle">Figure 36-1. Open standard I/O files with no command-line redirection</h4>
+
+<p>These places are called <em class="emphasis">open files</em>. The kernel
+gives each file a number called a <em class="emphasis">file
+descriptor</em>. But people usually use names for these places
+instead of the numbers:
+</p>
+
+<ul><li>
+<p><a name="IXT-36-3287" /><a name="IXT-36-3288" />The <em class="emphasis">standard
+input</em><a name="IXT-36-3289" /> or <em class="emphasis">stdin</em> (File
+Descriptor (F.D.) number 0) is the place where the process can read
+text. This might be text from other programs (through a pipe, on the
+command line) or from your keyboard.
+</p>
+</li><li>
+<p><a name="IXT-36-3290" /><a name="IXT-36-3291" />The <em class="emphasis">standard
+output</em><a name="IXT-36-3292" /> or <em class="emphasis">stdout</em> (F.D. 1)
+is a place for the process to write its results.
+</p>
+</li><li>
+<p><a name="IXT-36-3293" /><a name="IXT-36-3294" />The <em class="emphasis">standard
+error</em><a name="IXT-36-3295" /> or <em class="emphasis">stderr</em> (F.D. 2)
+is where the process can send error messages.
+</p>
+</li></ul>
+<p>By default, as <a href="ch36_15.htm#upt3-CHP-36-FIG-1">Figure 36-1</a> shows, the file
+that's opened for <em class="emphasis">stdin</em>,
+<em class="emphasis">stdout</em>, and <em class="emphasis">stderr</em> is
+<em class="filename">/dev/tty</em><a name="IXT-36-3296" /><a name="IXT-36-3297" /> -- a name for your terminal. This
+makes life easier for users -- and programmers, too. The user
+doesn't have to tell a program where to read or
+write because the default is your terminal. A programmer
+doesn't have to open files to read or write from (in
+many cases); the programs can just read from
+<em class="emphasis">stdin</em>, write to <em class="emphasis">stdout</em>, and
+send errors to <em class="emphasis">stderr</em>.
+</p>
+
+<p><a name="IXT-36-3298" />It gets better. When the shell starts a
+process (when you type a command at a prompt), you can tell the shell
+what file to "connect to" any of
+those file descriptors. For example, <a href="ch36_15.htm#upt3-CHP-36-FIG-2">Figure 36-2</a>
+shows what happens when you run <i class="command">grep</i> and make the
+shell redirect <i class="command">grep</i>'s standard
+output away from the terminal to a file named
+<em class="emphasis">grepout</em>.
+</p>
+
+<a name="upt3-CHP-36-FIG-2" /><div class="figure"><img src="figs/upt3_3602.gif" alt="Figure 36-2" width="427" /></div><h4 class="objtitle">Figure 36-2. Standard output redirected to a file</h4>
+
+<p><a name="IXT-36-3300" />Programs can read
+and write files besides the ones on <em class="emphasis">stdin</em>,
+<em class="emphasis">stdout</em>, and <em class="emphasis">stderr</em>. For
+instance, in <a href="ch36_15.htm#upt3-CHP-36-FIG-2">Figure 36-2</a>, <i class="command">grep</i>
+opened the file <em class="emphasis">somefile</em> itself -- it
+didn't use any of the standard file descriptors for
+<em class="emphasis">somefile</em>. A Unix convention is that if you
+don't name any files on the command line, a program
+will read from its standard input. Programs that work that way are
+called <em class="emphasis">filters</em>.
+</p>
+
+<p><a name="IXT-36-3301" /><a name="IXT-36-3302" />All
+shells can do basic redirection with <em class="emphasis">stdin</em>,
+<em class="emphasis">stdout</em>, and <em class="emphasis">stderr</em>. But as
+you'll see in <a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a>,
+the Bourne shell also handles file descriptors 3 through 9 (and
+<i class="command">bash</i> and the other newer shells can handle
+arbitrary numbers of <a name="IXT-36-3303" />file descriptiors, up to whatever
+<tt class="literal">ulimit</tt> <tt class="literal">-n</tt> happens to be set).
+That's useful sometimes:
+</p>
+
+<ul><li>
+<p>Maybe you have a few data files that you want to keep reading from or
+writing to. Instead of giving their names, you can use the file
+descriptor numbers.
+</p>
+</li><li>
+<p>Once you open a file, the kernel remembers what place in the file you
+last read from or wrote to. Each time you use that file descriptor
+number while the file is open, you'll be at the same
+place in the file. That's especially nice when you
+want to read from or write to the same file with more than one
+program. For example, the
+<i class="command">line</i><a name="IXT-36-3304" /> command on some Unix systems reads one
+line from a file -- you can call <i class="command">line</i> over and
+over, whenever you want to read the next line from a file. Once the
+file has been opened, you can remove its link (name) from the
+directory; the process can access the file through its descriptor
+without using the name.
+</p>
+</li><li>
+<p><a name="IXT-36-3305" /><a name="IXT-36-3306" />When Unix starts a new <b class="emphasis-bold">subprocess</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>), the
+open file descriptors are given to that process. A subprocess can
+read or write from file descriptors opened by its parent process. A
+redirected-I/O loop, as discussed in <a href="ch43_06.htm#upt3-CHP-43-SECT-6">Section 43.6</a>, takes advantage of this.
+</p>
+</li></ul>
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.14. A while Loop with Several Loop Control Commands</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.16. n&gt;&amp;m: Swap Standard Output and Standard Error</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

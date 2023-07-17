@@ -1,0 +1,268 @@
+#! /usr/bin/perl
+#
+# LPD/LPRng filter                                  ver 2.01
+#
+#   Copyright 2014-2017 Copyright Brother Industries,Ltd 2006-2017
+#   All Rights Reserved.
+
+use Cwd 'realpath';
+use File::Copy;
+
+my $FLAG="";
+my $offset="";
+
+my %PAPERTBL=(
+    A4       => {  width=>4961  ,  height=>7016  } ,
+    Letter   => {  width=>5100  ,  height=>6600  } ,
+    Legal    => {  width=>5100  ,  height=>8400  } ,
+    FOLIO    => {  width=>5100  ,  height=>7800  } ,
+    Exective => {  width=>4350  ,  height=>6300  } ,
+    A5       => {  width=>3505  ,  height=>4960  } ,
+    A6       => {  width=>2480  ,  height=>3496  } ,
+    B5       => {  width=>4157  ,  height=>5900  } ,
+    JISB5    => {  width=>4299  ,  height=>6071  } ,
+    B6       => {  width=>2953  ,  height=>4157  } ,
+    JISB6    => {  width=>3024  ,  height=>4299  } ,
+    A4L      => {  width=>4961  ,  height=>7016  } ,
+    C5       => {  width=>3835  ,  height=>5410  } ,
+    DL       => {  width=>2599  ,  height=>5197  } ,
+    "Com-10" => {  width=>2475  ,  height=>5700  } ,
+    Monarch  => {  width=>2325  ,  height=>4500  } ,
+    Postcard => {  width=>2362  ,  height=>3496  } ,
+    PC4x6    => {  width=>2409  ,  height=>3591  } ,
+    DHagaki  => {  width=>4724  ,  height=>3496  } ,
+    EnvYou4  => {  width=>2480  ,  height=>5551  } ,
+    EnvChou3 => {  width=>2835  ,  height=>5551  } ,
+    EnvChou4 => {  width=>2126  ,  height=>4843  } ,
+    "3x5"    => {  width=>1800  ,  height=>3000  } ,
+    "195x270mm" => {  width=>4606  ,  height=>6378  } ,
+    "184x260mm" => {  width=>4346  ,  height=>6141  } ,
+    "197x273mm" => {  width=>4654  ,  height=>6449  } ,
+    UDEF     => {  width=>0     ,  height=>0     } 
+);
+my $HWMARGINS="no";
+my $basedir = Cwd::realpath ($0);
+if ( $basedir eq '' ){
+  $basedir = `readlink $0`;
+  if ( $basedir eq '' ){
+      $basedir = `realpath $0`;
+  }
+}
+chomp($basedir);
+$basedir =~ s/\/lpd\/.*$//g;
+
+my $PRINTER=$basedir;
+$PRINTER =~ s/^\/opt\/.*\/Printers\///g;
+$PRINTER =~ s/\/lpd\/.*$//g;
+$PRINTER =~ s/\///g;
+
+my $INPUT_TEMP='';
+my $FILE_TYPE="PostScript";
+my $LOGFILE = "/tmp/br_lpdfilter_ml2.log";
+
+$LOG_FIRSTTIME = 1;
+$LOGLEVEL = 7;
+$DEBUG = $ENV{LPD_DEBUG};
+
+sub logprint  {
+    ($level , $data) =  @_;
+    if ($DEBUG != 0 ){
+	if ($LOG_FIRSTTIME == 1){
+	    open (LOG , '>'.$LOGFILE) or return 0;
+	    $LOG_FIRSTTIME = 0;
+	}
+	else{
+	    open (LOG , '>>'.$LOGFILE) or return 0;
+	}
+	if ( $level < $LOGLEVEL){
+	    print LOG $data."\n";
+	}
+	close (LOG);
+    }
+}
+
+
+
+my $BR_PRT_PATH = $basedir;
+
+my $RCFILE=$ENV{BRPRINTERRCFILE};
+if ( $RCFILE eq '' ){
+ $RCFILE=sprintf ("$BR_PRT_PATH/inf/br%src",$PRINTER);  
+}
+$FUNCFILE=sprintf ("$BR_PRT_PATH/inf/br%sfunc",$PRINTER);  
+$FLAG = `grep 'flags1='  $FUNCFILE | sed s/'flags1='//g`;
+chomp($FLAG);
+if ( $FLAG eq '' ){
+    $FLAG="0000000000000002";
+}
+
+$offset = `grep 'offset='  $FUNCFILE | sed s/'offset='//g`;
+chomp($offset);
+
+my $BRCONV="$BR_PRT_PATH/lpd/rawtobr3";
+my $BRCONV_OP="-rc $RCFILE -flags $FLAG -offset $offset";
+
+
+if ( $DEBUG eq '' ){
+    $DEBUG = '0';
+}
+
+
+if ( $ENV{PS} ne '1' ){
+    $INPUT_TEMP=`mktemp /tmp/br_input.XXXXXX`;
+    chomp($INPUT_TEMP);
+    `cat > $INPUT_TEMP`;
+    $FILE_TYPE=`file $INPUT_TEMP`;
+    $FILE_TYPE=~ s/^.*:[ ]*//;
+    $FILE_TYPE=~ s/[ ].*//;
+    if ( $DEBUG ne '0' ){
+	copy "$INPUT_TEMP"      ,   "/tmp/br_lpdfilter_ml2_input.ps";
+    }
+}
+else{
+    $INPUT_TEMP='';
+    $FILE_TYPE="PostScript";
+
+    if ( $DEBUG ne '0' ){
+
+	$INPUT_TEMP=`mktemp /tmp/br_input.XXXXXX`;
+	chomp($INPUT_TEMP);
+	`cat > $INPUT_TEMP`;
+	copy "$INPUT_TEMP"     ,    "/tmp/br_lpdfilter_ml2_input.ps";
+    }
+
+}
+
+
+
+
+logprint (1,  "PRINTER=$PRINTER");
+logprint (1,  "\$ENV{PS} =  $ENV{PS}" );
+logprint (1,  "\$ENV{BRPRINTERRCFILE} = $ENV{BRPRINTERRCFILE}");
+
+
+my $paper = "A4";
+my $resolution = "600";
+
+open (FPRCFILE , $RCFILE); 
+
+my $rcline ;
+while ($rcline = <FPRCFILE>){
+    if ( $rcline =~ /Resolution/){
+	$resolution = $rcline;
+	$resolution =~ s/Resolution=//;
+	chomp($resolution);
+    }
+    elsif ( $rcline =~ /PaperType/){
+	$papertype =  $rcline;
+	$papertype =~ s/PaperType=//;
+	chomp($papertype);
+    }
+}
+close(FPRCFILE);
+
+$width =  $ENV{BRPAPERWIDTH};
+$height = $ENV{BRPAPERHEIGHT};
+
+logprint(1, "\$ENV{BRPAPERWIDTH} = $ENV{BRPAPERWIDTH}");
+logprint(1, "\$ENV{BRPAPERHEIGHT} = $ENV{BRPAPERHEIGHT}");
+my $size_br = '';
+
+if ( $width eq '' || $height eq '' || 
+     $width == 0  || $height == 0  ||
+     $width == -1 || $height == -1  ){
+  my $paperref = $PAPERTBL{$papertype};
+  $width  = $paperref->{width};
+  $height = $paperref->{height};
+  logprint(1, " TYPE=$papertype  w=$width h=$height size_br=$size_br \n");
+}
+
+$size_br = " -ps ${width}x${height}";
+$BRCONV_OP .= $size_br;
+
+
+
+my $size_gs = "unknown";
+if ( $resolution eq "600" ){
+    $size_gs = sprintf( "%dx%d", $width , $height);
+}
+elsif ( $resolution eq "300" ){
+    $size_gs = sprintf( "%dx%d", $width/2 , $height/2);
+}
+elsif( ($resolution eq "1200")    ||
+       ($resolution eq "1200A")   ||
+       ($resolution eq "1200B")   ||
+       ($resolution eq "HQ1200B")   ){
+    $size_gs = sprintf( "%dx%d", $width*2 , $height*2);
+    $resolution = 1200;
+}
+elsif( $resolution eq "600x300" ){
+    $size_gs = sprintf( "%dx%d", $width , $height/2);
+}
+else{
+    $size_gs = sprintf( "%dx%d", $width , $height);
+}
+
+logprint(1, "size_gs = $size_gs ,size_br = $size_br \n");
+
+my $GHOST_SCRIPT=`which gs`;
+chomp($GHOST_SCRIPT);
+
+my $OUTPUT_TYPE="bit";
+my $GHOST_OPT="-q -dNOPROMPT -dNOPAUSE -dSAFER -sDEVICE=$OUTPUT_TYPE -sstdout=%stderr -sOutputFile=- - -c quit";
+
+
+ 
+my $gscommand = "";
+if ( $HWMARGINS eq "yes" ){
+  $gscommand = 
+      "(echo  '<</.HWMargins[12. 12. 12. 12.]>>setpagedevice';".
+      "cat $INPUT_TEMP)" .
+      " | $GHOST_SCRIPT -r$resolution -g$size_gs $GHOST_OPT ";
+}
+else{
+  $gscommand = 
+    "cat $INPUT_TEMP | $GHOST_SCRIPT -r$resolution -g$size_gs $GHOST_OPT";
+}
+
+my $brcommand="$BRCONV $BRCONV_OP";
+
+if ( $DEBUG eq '1' ){
+    system("$gscommand | $brcommand");
+    logprint( 0, "$gscommand | $brcommand") ;
+}
+elsif ( $DEBUG eq '2' ){
+    `$gscommand     > /tmp/br_lpdfilter_ml2_gsout.dat`;
+    `cat /tmp/br_lpdfilter_ml2_gsout.dat | $brcommand >/tmp/br_lpdfilter_ml2_out.prn`;
+    system("cat /tmp/br_lpdfilter_ml2_out.prn");
+
+
+    `cp  $RCFILE /tmp/br_lpdfilter_ml2.rc`;
+    $brcommand="$BRCONV -rc /tmp/br_lpdfilter_ml2.rc -flags $FLAG -offset $offset $size_br";
+
+    logprint(1, "$gscommand ".
+	        "> /tmp/br_lpdfilter_ml2_gsout.dat");
+    logprint(1, "cat /tmp/br_lpdfilter_ml2_gsout.dat | $brcommand".
+                ">/tmp/br_lpdfilter_ml2_out.prn\n");
+    logprint(1, "cat /tmp/br_lpdfilter_ml2_out.prn ");
+
+
+}
+else{
+    system("$gscommand | $brcommand");
+}
+
+if ( $INPUT_TEMP ne '' ){
+    unlink $INPUT_TEMP;
+}
+
+
+exit 0;
+
+
+
+
+
+
+
+

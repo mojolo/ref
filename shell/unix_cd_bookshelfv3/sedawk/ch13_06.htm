@@ -1,0 +1,343 @@
+<html><head><title>readsource--Format Program Source Files for troff (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.6. readsource--Format Program Source Files for troff</h2>
+
+<p><em class="emphasis">Contributed by Martin Weitzel</em></p>
+
+<p>
+<a name="ch13.c" />
+I am often preparing technical documents, especially
+for courses and training.  In these documents, I often
+need to print source files of different kinds (C programs,
+<b class="emphasis-bold">awk</b> programs, shell scripts, makefiles).  The problem is that the 
+sources often change with time and I want
+the most recent version when I print. 
+I also want to avoid typos in print.</p>
+
+<p>As I'm using <b class="emphasis-bold">troff</b> for text processing, 
+it should be easy to include
+the original sources into the text.  But
+there are some characters (especially "" and "."
+and "," at the beginning of a line) that I must escape 
+to prevent interpretation by <b class="emphasis-bold">troff</b>.</p>
+
+<p>I often want excerpts from sources 
+rather than a complete file.  I also need a mechanism for
+setting page breaks. 
+Well, perhaps I'm being a perfectionist, but
+I don't want to see a C function printed nearly complete
+on one page, but only the two last lines appear on the
+next.  As I frequently change the documents, I cannot
+hunt for "nice" page breaks--this must be done
+automatically.</p>
+
+<p>To solve these set of problems, I wrote a filter that
+preprocesses any source for inclusion
+as text in <b class="emphasis-bold">troff</b>.  This
+is the <b class="emphasis-bold">awk</b> program I send with this letter.  [He didn't offer
+a name for it so it is here named <b class="emphasis-bold">readsource</b>.]</p>
+
+<p>The
+whole process can be further automated through 
+<em class="emphasis">makefiles</em>.  I include a preprocessed version of
+the sources into my <b class="emphasis-bold">troff</b> documents, and I make the formatting
+dependent on these preprocessed files.  These files
+again are dependent on their originals, so if I "make"
+the document to print it, the
+preprocessed sources will be checked to see if 
+they are still current; otherwise
+they will be generated new from their originals.</p>
+
+<p>My program contains a complete description in the form of
+comments.  But as the description is more for me than
+for others, I'll give you some more hints.  Basically,
+the program simply guards some characters, e.g., "\" is
+turned into "\e" and "\&amp;" is written before every line.
+Tabs may be expanded to spaces (there's a switch for
+it), and you may even generate line numbers in front
+of every line (switch selectable).  The format of these
+line numbers can be set through an environmental variable.</p>
+
+<p>If you want only <em class="emphasis">parts</em> of a file to be processed, you
+can select these parts with two regular expressions (with
+another switch).  You must specify the first line to 
+be included and the first line not to be.  I've
+found that this is often practical:  If you want to show
+only a certain function of a C program, you can give the
+first line of the function definition and the first line
+of the next function definition.  If the source is
+changed such that new functions are inserted between the two
+or the order is changed, the pattern matching will not 
+work correctly.  But this will accommodate the
+more frequently made, smaller changes in a program.</p>
+
+<p>The final feature, getting the page breaks right, 
+is a bit tricky.  Here a technique has evolved that
+I call "here-you-may-break."  Those points are marked by
+a special kind of line (I use "/*!" in C programs and
+"#!" in awk, shell, makefiles, etc.).  How the points are
+marked doesn't matter too much, you may have your own
+conventions, but it must be possible to give a regular
+expression that matches exactly this kind of line and
+no others (e.g., if your sources are written so that a page
+break is acceptable wherever you have an empty line, you
+can specify this very easily, as all you need is the regular
+expression for empty lines).</p>
+
+<p>Before all the marked lines, a special sequence will be inserted
+which again is given by an environmental variable.  With <b class="emphasis-bold">troff</b>,
+I use the technique of opening a "display" (.DS) before
+I include such preprocessed text, and inserting a close (.DE) and
+new open (.DS) display wherever I would accept a page break.
+After this, <b class="emphasis-bold">troff</b> does the work of gathering as many lines
+as fit onto the current page.  I suppose that suitable techniques
+for other text processors exist.</p>
+
+
+<blockquote><pre class="code">#! /bin/sh
+# Copyright 1990 by EDV-Beratung Martin Weitzel, D-6100 Darmstadt
+# ==================================================================
+# PROJECT:	Printing Tools
+# SH-SCRIPT:	Source to Troff Pre-Formatter
+# ==================================================================
+
+#!
+# ------------------------------------------------------------------
+# This programm is a tool to preformat source files, so that they
+# can be included (.so) within nroff/troff-input. Problems when
+# including arbitrary files within nroff/troff-input occur on lines,
+# starting with dot (.) or an apostrophe ('), or with the respective
+# chars, if these are changed, furthermore from embedded backslashes.
+# While changing the source so that none of the above will cause
+# any problems, some other useful things can be done, including
+# line numbering and selecting interesting parts.
+# ------------------------------------------------------------------
+#!
+  USAGE="$0 [-x d] [-n] [-b pat] [-e pat] [-p pat] [file ...]"
+#
+# SYNOPSIS:
+# The following options are supported:
+#	-x d	expand tabs to "d" spaces
+#	-n 	number source lines (see also: NFMT)
+#	-b pat	start output on a line containing "pat",
+#		including this line (Default: from beginning)
+#	-e pat	end output on a line containing "pat"
+#		excluding this line (Default: upto end)
+#	-p pat	before lines containing "pat", page breaks
+#		may occur (Default: no page breaks)
+# "pat" may be an "extended regular expression" as supported by awk.
+# The following variables from the environment are used:
+#	NFMT	specify format for line numbers (Default: see below)
+#	PBRK	string, to mark page breaks. (Default: see below)
+#!
+# PREREQUISITES:
+# Common UNIX-Environment, including awk.
+#
+# CAVEATS:
+# "pat"s are not checked before they are used (processing may have
+# started, before problems are detected).
+# "NFMT" must contain exactly one %d-format specifier, if -n
+# option is used.
+# In "NFMT" and "PBRK", embedded double quotes must be guarded with
+# a leading backslash.
+# In "pat"s, "NFMT" and "PBRK" embedded TABs and NLs must be written
+# as \t and \n. Backslashes that should "go thru" to the output as
+# such, should be doubled. (The latter is only *required* in a few
+# special cases, but it does no harm the other cases).
+# 
+#!
+# BUGS:
+# Slow - but may serve as prototype for a faster implementation.
+# (Hint: Guarding backslashes the way it is done by now is very
+# expensive and could also be done using sed 's/\\/\\e/g', but tab
+# expansion would be much harder then, because I can't imagine how
+# to do it with sed. If you have no need for tab expansion, you may
+# change the program. Another option would be to use gsub(), which
+# would limit the program to environments with nawk.)
+# 
+# Others bugs may be, please mail me.
+#!
+# AUTHOR:	Martin Weitzel, D-6100 DA (martin@mwtech.UUCP)
+#
+# RELEASED: 	25. Nov 1989, Version 1.00
+# ------------------------------------------------------------------
+
+#! CSOPT
+# ------------------------------------------------------------------
+# 	check/set options
+# ------------------------------------------------------------------
+
+xtabs=0 nfmt= bpat= epat= ppat=
+for p
+do
+case $sk in
+1) shift; sk=0; continue
+esac
+case $p in
+-x)	shift;
+	case $1 in
+	[1-9]|1[0-9]) xtabs=$1; sk=1;;
+	*) { &gt;&amp;2 echo "$0: bad value for option -x: $1"; exit 1; }
+	esac
+	;;
+-n)	nfmt="${NFMT:-&lt;%03d&gt;\&#x95;}"; shift ;;
+-b)	shift; bpat=$1; sk=1 ;;
+-e)	shift; epat=$1; sk=1 ;;
+-p)	shift; ppat=$1; sk=1 ;;
+--)	shift; break ;;
+*)	break
+esac
+done
+
+#! MPROC
+# ------------------------------------------------------------------
+# 	now the "real work"
+# ------------------------------------------------------------------
+
+awk '
+#. prepare for tab-expansion, page-breaks and selection
+BEGIN {
+	if (xt = '$xtabs') while (length(sp) &lt; xt) sp = sp " ";
+	PBRK = "'"${PBRK-'.DE\n.DS\n'}"'"
+	'${bpat:+' skip = 1; '}'
+} #! limit selection range
+{
+	'${epat:+' if (!skip &amp;&amp; $0 ~ /'"$epat"'/) skip = 1; '}'
+	'${bpat:+' if (skip &amp;&amp; $0 ~ /'"$bpat"'/) skip = 0; '}'
+	if (skip) next;
+}
+#! process one line of input as required
+{
+	line = ""; ll = 0;
+	for (i = 1; i &lt;= length; i++) {
+		c = substr($0, i, 1);
+		if (xt &amp;&amp; c == "\t") {
+			# expand tabs
+			nsp = 8 - ll % xt;
+			line = line substr(sp, 1, nsp);
+			ll += nsp;
+		}
+		else {
+			if (c == "\\") c = "\\e";
+			line = line c;
+			ll++;
+		}
+	}
+}
+#! finally print this line
+{
+	'${ppat:+' if ($0 ~ /'"$ppat"'/) printf("%s", PBRK); '}'
+	'${nfmt:+' printf("'"$nfmt"'", NR) '}'
+	printf("\\&amp;%s\n", line);
+}
+' $*</pre></blockquote>
+
+<p>For an example of how it works, we ran <b class="emphasis-bold">readsource</b> to extract
+a part of its own program.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>readsource -x 3 -b "process one line" -e "finally print" readsource</b></tt>
+\&amp;#! process one line of input as required
+\&amp;{
+\&amp;   line = ""; ll = 0;
+\&amp;   for (i = 1; i &lt;= length; i++) {
+\&amp;      c = substr($0, i, 1);
+\&amp;      if (xt &amp;&amp; c == "\\et") {
+\&amp;         # expand tabs
+\&amp;         nsp = 8 - ll % xt;
+\&amp;         line = line substr(sp, 1, nsp);
+\&amp;         ll += nsp;
+\&amp;      }
+\&amp;      else {
+\&amp;         if (c == "\\e\\e") c = "\\e\\ee";
+\&amp;         line = line c;
+\&amp;         ll++;
+\&amp;      }
+\&amp;   }
+\&amp;}</pre></blockquote>
+
+<a name="sedawk-ch-13-sect-0.0.0.6" /><div class="sect2">
+<h3 class="sect2">13.6.1. Program Notes for readsource</h3>
+
+<p>This program is, first of all, quite useful, as it helped us prepare
+the listings in this book.  The author does really stretch (old) awk to
+its limits, using shell variables to pass information into the script.
+It gets the job done, but it is quite obscure.</p>
+
+<p>The program does run slowly. We followed up on the author's suggestion
+and changed the way the program replaced tabs and backslashes.
+The original program uses an expensive character-by-character
+comparison, obtaining the character using the <b class="emphasis-bold">substr()</b> function.
+(It is the procedure that is extracted in the example above.) 
+Its performance points out how costly it is in awk to read a line
+one character at a time, something that is very simple in C.</p>
+
+<p>Running <b class="emphasis-bold">readsource</b> on itself produced the following
+times:</p>
+
+<blockquote><pre class="code">$ timex readsource -x 3 readsource &gt; /dev/null
+real        1.56
+user        1.22
+sys         0.20</pre></blockquote>
+
+<p>The procedure that changes the way tabs and 
+backslashes are handled can be re-written in nawk
+to use the <b class="emphasis-bold">gsub()</b> function:</p>
+
+<blockquote><pre class="code">#! process one line of input as required
+{
+        if ( xt &amp;&amp; $0 ~ "\t" )
+                gsub(/\t/, sp)
+        if ($0 ~ "\\")
+                gsub(/\\/, "\\e")
+}</pre></blockquote>
+
+<p>The last procedure needs a small change, replacing the variable
+<b class="emphasis-bold">line</b> with "$0".  (We don't use the temporary variable 
+<b class="emphasis-bold">line</b>.)  The nawk version produces:</p>
+
+<blockquote><pre class="code">$<tt class="userinput"><b> timex readsource.2 -x 3 readsource &gt; /dev/null</b></tt>
+real        0.44
+user        0.10
+sys         0.22</pre></blockquote>
+
+<p>The difference is pretty remarkable.</p>
+
+<p>One final speedup might be to use <b class="emphasis-bold">index()</b> to look for backslashes:</p>
+
+<blockquote><pre class="code">#! process one line of input as required
+{
+        if ( xt &amp;&amp; index($0, "\t") &gt; 0 )
+                gsub(/\t/, sp)
+        if (index($0, "\\") &gt; 0)
+                gsub(/\\/, "\\e")
+}</pre></blockquote>
+</div>
+
+
+
+
+<a name="IXT-13-266392" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.5. adj--Adjust Lines for Text Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.7. gent--Get a termcap Entry</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

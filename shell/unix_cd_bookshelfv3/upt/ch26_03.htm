@@ -1,0 +1,146 @@
+<html><head><title>What Commands Are Running and How Long Do They Take? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch26_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch26_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">26.3. What Commands Are Running and How Long Do They Take?</h2>
+
+<p>When <a name="IXT-26-5008" /><a name="IXT-26-5009" />your system is sluggish, you will
+want to see what users are on the system along with the processes
+they're running. To get a brief snapshot of this
+information, the tersely named <i class="command">w</i> can show you who
+is logged in, from where, how long they've been
+idle, and what programs they're running. For
+instance, when I run <i class="command">w</i> on my Red Hat box at home,
+I get this result:
+</p>
+
+<blockquote><pre class="code">  3:58pm  up 38 days,  4:37,  6 users,  load average: 0.00, 0.07, 0.07
+USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU  WHAT
+jjohn    tty2     -                13Feb02  7:03m  1.32s  0.02s  /bin/sh /usr/X
+jjohn    pts/1    :0                8:55am  7:02m  0.06s  0.06s  bash
+jjohn    pts/3    :0                8:55am  0.00s 51.01s  0.05s  w
+jjohn    pts/0    :0                8:55am  7:02m  0.06s  0.06s  bash
+jjohn    pts/4    :0                8:55am  2:25m  2:01   0.12s  bash
+jjohn    pts/2    mp3.daisypark.ne Tue 4pm  3:41m  0.23s  0.23s  -bash</pre></blockquote>
+
+<p>Originally, I logged in at the console and started X. Most of the
+sessions are xterminals except for the last, which is an
+<i class="command">ssh</i> session. The <tt class="literal">JCPU</tt> field
+accounts for the CPU time used by all the processes at that TTY. The
+<tt class="literal">PCPU</tt> simply accounts for the process named in the
+<tt class="literal">WHAT</tt> field. This is a quick and simple command to
+show you the state of your system, and it relies on no special
+process accounting from the kernel.
+</p>
+
+<p>When you're debugging a problem with a program,
+trying to figure out why your CPU usage bill is so high [in the days
+when CPU cycles were rented  <em class="emphasis">-- JJ</em>], or
+curious what commands someone (including yourself) is running, the
+<a name="IXT-26-5010" /><i class="command">lastcomm</i> command on
+Berkeley-like Unixes can help (if your computer has its process
+accounting system running, that is). Here's an
+example that lists the user <em class="emphasis">lesleys</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>date</b></tt>
+Mon Sep  4 16:38:13 EDT 2001
+% <tt class="userinput"><b>lastcomm lesleys</b></tt>
+emacs          lesleys  ttyp1      1.41 secs Wed Sep  4 16:28
+cat          X lesleys  ttyp1      0.06 secs Wed Sep  4 16:37
+stty           lesleys  ttypa      0.02 secs Wed Sep  4 16:36
+tset           lesleys  ttypa      0.12 secs Wed Sep  4 16:36
+sed            lesleys  ttypa      0.02 secs Wed Sep  4 16:36
+hostname       lesleys  ttypa      0.00 secs Wed Sep  4 16:36
+quota          lesleys  ttypa      0.16 secs Wed Sep  4 16:35
+   ...</pre></blockquote>
+
+<p>The processes are listed in the order completed, most recent first.
+The <tt class="literal">emacs</tt> process on the <b class="emphasis-bold">tty</b> (<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>) ttyp1
+started 10 minutes ago and took 1.41 seconds of CPU time. Sometime
+while <i class="command">emacs</i> was on ttyp1,
+<em class="emphasis">lesleys</em> ran <i class="command">cat</i> and killed it
+(the <tt class="literal">X</tt> shows that). Because
+<i class="command">emacs</i> ran on the same terminal as
+<i class="command">cat</i> but finished later, Lesley might have
+<i class="command">emacs</i> (with CTRL-z)<b class="emphasis-bold">
+stopped</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>) to run
+<i class="command">cat</i>. The processes on <tt class="literal">ttypa</tt> are
+the ones run from her <em class="emphasis">.cshrc</em> and
+<em class="emphasis">.login</em> files (though you can't
+tell that from <i class="command">lastcomm</i>). You
+don't see the login shell for
+<tt class="literal">ttypa</tt> (<i class="command">csh</i>) here because it
+hasn't terminated yet; it will be listed after
+Lesley logs out of ttypa.
+</p>
+
+<p><i class="command">lastcomm</i> can do more. See its manual page.</p>
+
+<p>Here's a hint: on a busy system with lots of users
+and commands being logged,
+<i class="command">lastcomm</i><a name="IXT-26-5011" /> is pretty slow. If you pipe the output
+or redirect it into a file, like this:
+</p>
+<p><tt class="literal">tee</tt> <a href="ch43_08.htm#upt3-CHP-43-SECT-8">Section 43.8</a></p>
+<blockquote><pre class="code">% <tt class="userinput"><b>lastcomm lesleys &gt; lesley.cmds &amp;</b></tt>
+% <tt class="userinput"><b>cat lesley.cmds</b></tt>
+   <i class="lineannotation">...nothing...</i>
+% <tt class="userinput"><b>lastcomm lesleys | tee lesley.cmds</b></tt>
+   <i class="lineannotation">...nothing...</i></pre></blockquote>
+
+<p>the <i class="command">lastcomm</i> output may be written to the file or
+pipe in big chunks instead of line-by-line. That can make it look as
+if nothing's happening. If you can tie up a terminal
+while <i class="command">lastcomm</i> runs, there are two workarounds. If
+you're using a window system or terminal emulator
+with a "log to file" command, use
+it while <i class="command">lastcomm</i> runs. Otherwise, to copy the
+output to a file, start <b class="emphasis-bold">script</b>
+(<a href="ch37_07.htm#upt3-CHP-37-SECT-7">Section 37.7</a>) and then run
+<i class="command">lastcomm</i>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>script lesley.cmds</b></tt>
+Script started, file is lesley.cmds
+% <tt class="userinput"><b>lastcomm lesleys</b></tt>
+emacs          lesleys  ttyp1      1.41 secs Wed Sep  4 16:28
+cat          X lesleys  ttyp1      0.06 secs Wed Sep  4 16:37
+   ...
+
+% <tt class="userinput"><b>exit</b></tt>
+Script done, file is lesley.cmds
+%</pre></blockquote>
+
+<p>A final word: <i class="command">lastcomm</i> can't give
+information on commands that are <b class="emphasis-bold">built into the
+shell</b> (<a href="ch01_09.htm#upt3-CHP-1-SECT-9">Section 1.9</a>). Those commands are
+counted as part of the shell's execution time;
+they'll be in an entry for <i class="command">csh</i>,
+<i class="command">sh</i>, etc. after the shell terminates.
+</p>
+
+<p><em class="emphasis">--JP and JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch26_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch26_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">26.2. Timing Programs</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">26.4. Checking System Load: uptime</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

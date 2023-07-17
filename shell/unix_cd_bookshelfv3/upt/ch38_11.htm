@@ -1,0 +1,101 @@
+<html><head><title>Avoid Absolute Paths with tar (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch38_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">38.11. Avoid Absolute Paths with tar</h2>
+
+<p><a name="IXT-38-3028" /> <a name="IXT-38-3029" /><a name="IXT-38-3030" /><a name="IXT-38-3031" />One
+<a name="IXT-38-3032" />problem with most versions of
+<i class="command">tar</i>: they can't change a
+file's pathname when restoring.
+Let's say that you put your home directory in an
+archive (tape or otherwise) with a command like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar c /home/mike</b></tt></pre></blockquote>
+
+<p>What will these files be named when you restore them, either on your
+own system or on some other system? They will have
+<em class="emphasis">exactly</em> the same pathnames they had originally.
+So if <em class="emphasis">/home/mike</em> already exists, it will be
+destroyed. There's no way to tell
+<i class="command">tar</i> that it should be careful about overwriting
+files; there's no way to tell <i class="command">tar</i>
+to put the files in some other directory when it takes them off the
+tape, etc. If you use <b class="emphasis-bold">absolute
+pathnames</b> (<a href="ch31_02.htm#upt3-CHP-31-SECT-2">Section 31.2</a>) when you create a
+tape, you're stuck. If you use <b class="emphasis-bold">relative paths</b> (<a href="ch31_02.htm#upt3-CHP-31-SECT-2">Section 31.2</a>)
+(for example, <tt class="literal">tar c</tt> .), you can restore the files
+in any directory you want.
+</p>
+
+<p>This means that you should:</p>
+
+<ul><li>
+<p>Avoid using absolute paths when you create an archive (see below).</p>
+</li><li>
+<p>Use <em class="emphasis">tar t</em> to see what files are on the tape
+before restoring the archive.
+</p>
+</li><li>
+<p>Use <a name="IXT-38-3033" />GNU <i class="command">tar</i>. It strips
+the leading <tt class="literal">/</tt> by default when creating archives.
+(You can give it the <span class="option">-P</span> option to make it store
+absolute pathnames.)
+</p>
+</li></ul>
+<p>Rather than giving a command like <tt class="literal">tar c
+/home/mike</tt>, do something like:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd /</b></tt>
+% <tt class="userinput"><b>tar c home/mike</b></tt></pre></blockquote>
+
+<p>Or, even more elegant, use <span class="option">-C</span> on the
+<i class="command">tar</i> command line:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar c -C /home/mike .</b></tt></pre></blockquote>
+
+<p>This command tells <i class="command">tar</i> to <i class="command">cd</i> to
+the directory <em class="emphasis">/home/mike</em> before creating an
+archive of . (the current directory). If you want to archive several
+directories, you can use several <span class="option">-C</span> options:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar c -C /home/mike ./docs  -C /home/susan ./test</b></tt></pre></blockquote>
+
+<p>This command archives <em class="emphasis">mike</em>'s
+<em class="emphasis">docs</em> directory and
+<em class="emphasis">susan</em>'s
+<em class="emphasis">test</em> directory. [Note that it uses the
+subdirectory names, as we did in the second-previous example. When
+the files are extracted, they'll be restored to
+separate subdirectories, instead of all being mixed into the same .
+(current) directory.  -- <em class="emphasis">JP</em>]
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch38_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">38.10. Using Wildcards with tar</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">38.12. Getting tar's Arguments in the Right Order</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

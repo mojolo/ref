@@ -1,0 +1,189 @@
+<html><head><title>Be an Expert on find Search Operators (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.6. Be an Expert on find Search Operators</h2>
+
+<p><em class="filename">find</em><a name="upt3-IDXTERM-1508" /> <a name="upt3-IDXTERM-1509" /> is <a name="upt3-IDXTERM-1510" />admittedly tricky. Once you get a
+handle on its abilities, you'll learn to appreciate
+its power. But before thinking about anything remotely tricky,
+let's look at a simple <em class="filename">find</em>
+command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -name "*.c" -print</b></tt></pre></blockquote>
+
+<p><a name="IXT-9-26" />The . tells <em class="filename">find</em>
+to start its search in the current directory (.) and to search all
+subdirectories of the current directory. The <tt class="literal">-name
+"*.c"</tt> tells <em class="filename">find</em> to find files whose
+names end in <tt class="literal">.c</tt>. The <tt class="literal">-print</tt>
+operator tells <em class="filename">find</em> how to handle what it finds,
+i.e., print the names on standard output.
+</p>
+
+<p>All <em class="filename">find</em> commands, no matter how complicated,
+are really just variations on this one. You can specify many
+different names, look for old files, and so on; no matter how
+complex, you're really only specifying a starting
+point, some search parameters, and what to do with the files (or
+directories or links or . . . ) you find.
+</p>
+
+<p>The key to using <em class="filename">find</em> in a more sophisticated
+way is realizing that search parameters are really
+"logical expressions" that
+<em class="filename">find</em> evaluates. That is,
+<em class="filename">find</em>:
+</p>
+
+<ul><li>
+<p>Looks at every file, one at a time.</p>
+</li><li>
+<p>Uses the information in the file's inode to evaluate
+an expression given by the command-line operators.
+</p>
+</li><li>
+<p>Takes the specified action (e.g., printing the
+file's name) if the expression's
+value is "true."
+</p>
+</li></ul>
+<p>So, <tt class="literal">-name "*.c"</tt> is really a logical expression
+that evaluates to true if the file's name ends in
+<tt class="literal">.c</tt>.
+</p>
+
+<p>Once you've gotten used to thinking this way,
+it's easy to use the <a name="IXT-9-27" /> <a name="IXT-9-28" /> <a name="IXT-9-29" /> <a name="IXT-9-30" />AND, OR, NOT, and grouping operators. So
+let's think about a more complicated
+<em class="filename">find</em> command. Let's look for
+files that end in <tt class="literal">.o</tt> or <tt class="literal">.tmp</tt>
+AND that are more than five days old, AND let's
+print their pathnames. We want an expression that evaluates true for
+files whose names match either <tt class="literal">*.o</tt> OR
+<tt class="literal">*.tmp</tt>:
+</p>
+
+<blockquote><pre class="code">-name "*.o" -o -name "*.tmp"</pre></blockquote>
+
+<p>If either condition is true, we want to check the
+<a name="IXT-9-31" />access time. So we put the
+previous expression within parentheses (quoted with backslashes so
+the shell doesn't treat the parentheses as subshell
+operators). We also add a <em class="filename">-atime</em> operator:
+</p>
+
+<blockquote><pre class="code">-atime +5 \( -name "*.o" -o -name "*.tmp" \)</pre></blockquote>
+
+<p>The parentheses force <em class="filename">find</em> to evaluate
+what's inside as a unit. The expression is true if
+"the access time is more than five days ago and \(
+either the name ends with <tt class="literal">.o</tt> or the name ends with
+<tt class="literal">.tmp</tt> \)." If you
+didn't use parentheses, the expression would mean
+something different:
+</p>
+
+<blockquote><pre class="code">-atime +5 -name "*.o" -o -name "*.tmp"                 <em class="replaceable"><tt>Wrong!</tt></em></pre></blockquote>
+
+<p>When <em class="filename">find</em> sees two operators next to each other
+with no <tt class="literal">-o</tt> between, that means AND. So the
+"wrong" expression is true if
+"either \( the access time is more than five days
+ago and the name ends with <tt class="literal">.o</tt> \) or the name ends
+with <tt class="literal">.tmp</tt>." This incorrect
+expression would be true for any name ending with
+<tt class="literal">.tmp</tt>, no matter how recently the file was
+accessed -- the <tt class="literal">-atime</tt> doesn't
+apply. (There's nothing really
+"wrong" or illegal in this second
+expression -- except that it's not what we want.
+<em class="filename">find</em> will accept the expression and do what we
+asked -- it just won't do what we want.)
+</p>
+
+<p>The following command, which is what we want, lists files in the
+current directory and subdirectories that match our criteria:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -atime +5 \( -name "*.o" -o -name "*.tmp" \) -print</b></tt></pre></blockquote>
+
+<p>What if we wanted to list all files that do <em class="emphasis">not</em>
+match these criteria? All we want is the logical inverse of this
+expression. The NOT operator is an exclamation point
+(<tt class="literal">!</tt>). Like the parentheses, in most shells we need
+to escape <tt class="literal">!</tt> with a backslash to keep the shell
+from interpreting it before <i class="command">find</i> can get to it.
+The <tt class="literal">!</tt> operator applies to the expression on its
+right. Since we want it to apply to the entire expression, and not
+just the <em class="filename">-atime</em> operator, we'll
+have to group everything from <tt class="literal">-atime</tt> to
+<tt class="literal">"*.tmp"</tt> within another set of parentheses:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . \! \( -atime +5 \( -name "*.o" -o -name "*.tmp" \) \) -print</b></tt></pre></blockquote>
+
+<p>For that matter, even <em class="filename">-print</em> is an expression;
+it always evaluates to true. So are <em class="filename">-exec</em> and
+<em class="filename">-ok</em>; they evaluate to true when the command they
+execute returns a zero status. (There are a few situations in which
+this can be used to good effect.)
+</p>
+
+<p>But before you try anything too complicated, you need to realize one
+thing. <em class="filename">find</em> isn't as
+sophisticated as you might like it to be. You can't
+squeeze all the spaces out of expressions, as if it were a real
+programming language. You need spaces before and after operators like
+<tt class="literal">!</tt>, <tt class="literal">(</tt>, <tt class="literal">)</tt>, and
+<tt class="literal">{}</tt>, in addition to spaces before and after every
+other operator. Therefore, a command line like the following
+won't work:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . \!\(-atime +5 \(-name "*.o" -o -name "*.tmp"\)\) -print</b></tt></pre></blockquote>
+
+<p>A true power user will realize that <em class="filename">find</em> is
+relying on the shell to separate the command line into meaningful
+chunks, or <em class="filename">tokens</em>. And the shell, in turn, is
+assuming that tokens are separated by spaces. When the shell gives
+<em class="filename">find</em> a chunk of characters like
+<tt class="literal">*.tmp))</tt> (without the double quotes or
+backslashes -- the shell took them away),
+<em class="filename">find</em> gets confused; it thinks
+you're talking about a weird filename pattern that
+includes a couple of parentheses.
+</p>
+
+<p>Once you start thinking about expressions,
+<em class="filename">find</em>'s syntax ceases to be
+obscure -- in some ways, it's even elegant. It
+certainly allows you to say what you need to say with reasonable
+<a name="IXTR3-192" />efficiency.<a name="IXTR3-193" /> <a name="IXTR3-194" />
+</p>
+
+<p><em class="emphasis">--ML and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.5. Searching for Old Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.7. The Times That find Finds</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

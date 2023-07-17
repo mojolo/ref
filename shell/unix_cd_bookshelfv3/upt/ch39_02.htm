@@ -1,0 +1,414 @@
+<html><head><title>Using tar to Create and Unpack Archives (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch39_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch39_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">39.2. Using tar to Create and Unpack Archives</h2>
+
+<p><b class="emphasis-bold">tar</b> (<a href="ch38_02.htm#upt3-CHP-38-SECT-2">Section 38.2</a>)<a name="upt3-IDXTERM-6317" /> is a
+<a name="IXT-39-2837" />general-purpose
+archiving utility capable of packing many files into a single archive
+file, retaining information such as file permissions and ownership.
+The name <i class="command">tar</i> stands for <em class="emphasis">tape
+archive</em>, because the tool was originally used to archive
+files as backups on tape. However, use of <i class="command">tar</i> is
+not at all restricted to making tape backups, as
+we'll see.
+</p>
+
+<p>The format of the <i class="command">tar</i><a name="IXT-39-2838" /> command
+is:
+</p>
+
+<blockquote><pre class="code">tar <em class="replaceable"><tt>functionoptions</em> <em class="replaceable">files...</tt></em></pre></blockquote>
+
+<p><a name="IXT-39-2839" />where
+<em class="replaceable"><tt>function</tt></em> is a single letter indicating the
+operation to perform, <em class="replaceable"><tt>options</tt></em> is a list of
+(single-letter) options to that function, and
+<em class="replaceable"><tt>files</tt></em> is the list of files to pack or
+unpack in an archive. (Note that <em class="replaceable"><tt>function</tt></em>
+is not separated from <em class="replaceable"><tt>options</tt></em> by any
+space.)
+</p>
+
+<p><em class="replaceable"><tt>function</tt></em> can be one of:</p>
+
+<dl>
+<dt><i><em class="emphasis">c</em></tt></i></dt>
+<dd>
+Create a new archive.</p>
+</dd>
+
+
+<dt><i><em class="emphasis">x</em></tt></i></dt>
+<dd>
+Extract files from an archive.</p>
+</dd>
+
+
+<dt><i><em class="emphasis">t</em></tt></i></dt>
+<dd>
+List the contents of an archive.</p>
+</dd>
+
+
+<dt><i><em class="emphasis">r</em></tt></i></dt>
+<dd>
+Append files to the end of an archive.</p>
+</dd>
+
+
+<dt><i><em class="emphasis">u</em></tt></i></dt>
+<dd>
+Update files that are newer than those in the archive.</p>
+</dd>
+
+
+<dt><i><em class="emphasis">d</em></tt></i></dt>
+<dd>
+Compare files in the archive to those in the filesystem.</p>
+</dd>
+
+</dl>
+
+<p>The most commonly used functions are
+<em class="emphasis">c</em><a name="IXT-39-2840" /> <a name="IXT-39-2841" /> <a name="IXT-39-2842" />reate, e<em class="emphasis">x</em>tract,
+and <em class="emphasis">t</em>able-of-contents.
+</p>
+
+<p>The most common <em class="emphasis">options</em> are:</p>
+
+<dl>
+<dt><i><em class="emphasis">v</em></tt></i></dt>
+<dd>
+Prints verbose information when packing or unpacking archives. This
+makes <i class="command">tar</i> show the files it is archiving or
+restoring. It is good practice to use this option so that you can see
+what actually happens, though if you're using
+<i class="command">tar</i> in a shell script you might skip it so as to
+avoid spamming the user of your script.
+</p>
+</dd>
+
+
+<dt><i><em class="emphasis">k</em></tt></i></dt>
+<dd>
+Keeps any existing files when extracting -- that is, prevents
+overwriting any existing files contained within the tar file.
+</p>
+</dd>
+
+
+<dt><i><em class="emphasis">f</em></tt> <tt><em class="replaceable"><tt>filename</tt></em></tt></i></dt>
+<dd>
+Specifies that the tar file to be read or written is
+<em class="filename">filename</em></tt>.
+</p>
+</dd>
+
+
+<dt><i><em class="emphasis">z</em></tt></i></dt>
+<dd>
+Specifies that the data to be written to the tar file should be
+compressed or that the data in the tar file is compressed with
+<i class="command">gzip</i>. (Not available on all
+<i class="command">tar</i>s.)
+</p>
+</dd>
+
+</dl>
+
+<p>There are other options, which we cover in <a href="ch38_05.htm#upt3-CHP-38-SECT-5">Section 38.5</a>. <a href="ch38_12.htm#upt3-CHP-38-SECT-12">Section 38.12</a> has more
+information about the order of <i class="command">tar</i> options, and
+<a href="ch39_03.htm#upt3-CHP-39-SECT-3">Section 39.3</a> has a lot more about GNU
+<i class="command">tar</i>.
+</p>
+
+<p>Although the <em class="filename">tar</em> syntax might appear complex at
+first, in practice it's quite simple. For example,
+say we have a directory named <em class="filename">mt</em>, containing
+these files:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>ls -l mt</b></tt>
+total 37
+-rw-r--r--   1 root     root           24 Sep 21  1993 Makefile
+-rw-r--r--   1 root     root          847 Sep 21  1993 README
+-rwxr-xr-x   1 root     root         9220 Nov 16 19:03 mt
+-rw-r--r--   1 root     root         2775 Aug  7  1993 mt.1
+-rw-r--r--   1 root     root         6421 Aug  7  1993 mt.c
+-rw-r--r--   1 root     root         3948 Nov 16 19:02 mt.o
+-rw-r--r--   1 root     root        11204 Sep  5  1993 st_info.txt</pre></blockquote>
+
+<p><a name="IXT-39-2843" />We wish to pack the contents of this
+directory into a single <em class="filename">tar</em> archive. To do this,
+we use the following command:
+</p>
+
+<blockquote><pre class="code">tar cf mt.tar mt</pre></blockquote>
+
+<p>The first argument to <em class="filename">tar</em> is the function (here,
+<tt class="literal">c</tt>, for create) followed by any options. Here, we
+use the one option <span class="option">f</span> <em class="emphasis">mt.tar</em>, to
+specify that the resulting tar archive be named
+<em class="filename">mt.tar</em>. The last argument is the name of the
+file or files to archive; in this case, we give the name of a
+directory, so <i class="command">tar</i> packs all files in that
+directory into the archive.
+</p>
+
+<p>Note that the first argument to <i class="command">tar</i> must be a
+function letter followed by a list of options. Because of this,
+there's no reason to use a hyphen
+(<tt class="literal">-</tt>) to precede the options as many Unix commands
+require. <i class="command">tar</i> allows you to use a hyphen, as in:
+</p>
+
+<blockquote><pre class="code">tar -cf mt.tar mt</pre></blockquote>
+
+<p>but it's really not necessary. In some versions of
+<i class="command">tar</i>, the first letter must be the function, as in
+<span class="option">c</span>, <span class="option">t</span>, or <span class="option">x</span>. In
+other versions, the order of letters does not matter as long as there
+is one and only one function given.
+</p>
+
+<p>The function letters as described here follow the so-called
+"old option style." There is also a
+newer "short option style," in
+which you precede the function options with a hyphen. On some
+versions of <i class="command">tar</i>, a "long option
+style" is available, in which you use long option
+names with two hyphens. See the <i class="command">manpage</i> or
+<b class="emphasis-bold">info page</b> (<a href="ch02_09.htm#upt3-CHP-2-SECT-9">Section 2.9</a>) for <i class="command">tar</i> for more details
+if you are interested.
+</p>
+
+<p>It is often a good idea to use the <span class="option">v</span> option with
+<i class="command">tar</i> to list each file as it is archived. For
+example:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>tar cvf mt.tar mt</b></tt>
+mt/
+mt/st_info.txt
+mt/README
+mt/mt.1
+mt/Makefile
+mt/mt.c
+mt/mt.o
+mt/mt</pre></blockquote>
+
+<p>On some <i class="command">tar</i>s, if you use <span class="option">v</span>
+multiple times, additional information will be printed, as in:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>tar cvvf mt.tar mt</b></tt>
+drwxr-xr-x root/root         0 Nov 16 19:03 1994 mt/
+-rw-r--r-- root/root     11204 Sep  5 13:10 1993 mt/st_info.txt
+-rw-r--r-- root/root       847 Sep 21 16:37 1993 mt/README
+-rw-r--r-- root/root      2775 Aug  7 09:50 1993 mt/mt.1
+-rw-r--r-- root/root        24 Sep 21 16:03 1993 mt/Makefile
+-rw-r--r-- root/root      6421 Aug  7 09:50 1993 mt/mt.c
+-rw-r--r-- root/root      3948 Nov 16 19:02 1994 mt/mt.o
+-rwxr-xr-x root/root      9220 Nov 16 19:03 1994 mt/mt</pre></blockquote>
+
+<p>This is especially useful as it lets you verify that
+<i class="command">tar</i> is doing the right thing.
+</p>
+
+<p>In some versions of <i class="command">tar</i>, <span class="option">f</span> must
+be the last letter in the list of options. This is because
+<i class="command">tar</i> expects the <span class="option">f</span> option to be
+followed by a filename -- the name of the tar file to read from or
+write to. If you don't specify <span class="option">f</span>
+<em class="replaceable"><tt>filename</tt></em> at all, <i class="command">tar</i>
+uses a default tape device (some versions of <i class="command">tar</i>
+use <em class="filename">/dev/rmt0</em> for historical reasons regardless
+of the OS; some have a slightly more specific default). <a href="ch38_05.htm#upt3-CHP-38-SECT-5">Section 38.5</a> talks about using <i class="command">tar</i> in
+conjunction with a tape drive to make backups.
+</p>
+
+<p>Now we can give the file <em class="filename">mt.tar</em> to other people,
+and they can extract it on their own system. To do this, they would
+use the command:
+</p>
+
+<blockquote><pre class="code">tar xvf mt.tar</pre></blockquote>
+
+<p>This creates the subdirectory <em class="filename">mt</em> and places all
+the original files into it, with the same permissions as found on the
+original system. The new files will be owned by the user running
+<tt class="literal">tar xvf</tt> (you) unless you are running as
+<em class="emphasis">root</em>, in which case the original owner is
+generally preserved. Some versions require the <span class="option">o</span>
+option to set ownership. The <span class="option">x</span> option stands for
+"extract." The <span class="option">v</span>
+option is used again here to list each file as it is extracted. This
+produces:
+</p>
+
+<blockquote><pre class="code">courgette% <tt class="userinput"><b>tar xvf mt.tar</b></tt>
+mt/
+mt/st_info.txt
+mt/README
+mt/mt.1
+mt/Makefile
+mt/mt.c
+mt/mt.o
+mt/mt</pre></blockquote>
+
+<p>We can see that <i class="command">tar</i> saves the pathname of each
+file relative to the location where the tar file was originally
+created. That is, when we created the archive using
+<tt class="literal">tar</tt> <tt class="literal">cf mt.tar mt</tt>, the only
+input filename we specified was <em class="filename">mt</em>, the name of
+the directory containing the files. Therefore, <i class="command">tar</i>
+stores the directory itself and all of the files below that directory
+in the tar file. When we extract the tar file, the directory
+<em class="filename">mt</em> is created and the files are placed into it,
+which is the exact inverse of what was done to create the archive.
+</p>
+
+<p>If you were to pack up the contents of your <em class="filename">/bin</em>
+directory with the command:
+</p>
+
+<blockquote><pre class="code">tar cvf bin.tar /bin</pre></blockquote>
+
+<p>you can cause terrible mistakes when extracting the tar file.
+Extracting a tar file packed as <em class="filename">/bin</em> could trash
+the contents of your <em class="filename">/bin</em> directory when you
+extract it. If you want to archive <em class="filename">/bin</em>, you
+should create the archive from the root directory,
+<em class="filename">/</em>, using the <b class="emphasis-bold">relative
+pathname</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>)
+<em class="emphasis">bin</em> (with no leading slash) -- and if you
+really want to overwrite <em class="filename">/bin</em>, extract the tar
+file by <i class="command">cd</i>ing to <em class="filename">/</em> first.
+<a href="ch38_11.htm#upt3-CHP-38-SECT-11">Section 38.11</a> explains and lists workarounds.
+</p>
+
+<p>Another way to create the tar file <em class="filename">mt.tar</em> would
+be to <i class="command">cd</i> into the <em class="filename">mt</em>
+directory itself, and use a command such as:
+</p>
+
+<blockquote><pre class="code">tar cvf mt.tar *</pre></blockquote>
+
+<p>This way the <em class="filename">mt</em> subdirectory would not be stored
+in the tar file; when extracted, the files would be placed directly
+in your current working directory. One fine point of
+<i class="command">tar</i> etiquette is always to pack tar files so that
+they contain a subdirectory, as we did in the first example with
+<tt class="literal">tar cvf mt.tar mt</tt>. Therefore, when the archive is
+extracted, the subdirectory is also created and any files placed
+there. This way you can ensure that the files won't
+be placed directly in your current working directory; they will be
+tucked out of the way and prevent confusion. This also saves the
+person doing the extraction the trouble of having to create a
+separate directory (should they wish to do so) to unpack the tar
+file. Of course, there are plenty of situations where you
+wouldn't want to do this. So much for etiquette.
+</p>
+
+<p>When creating archives, you can, of course, give
+<i class="command">tar</i> a list of files or directories to pack into
+the archive. In the first example, we have given
+<i class="command">tar</i> the single directory <em class="filename">mt</em>,
+but in the previous paragraph we used the wildcard
+<tt class="literal">*</tt>, which the shell expands into the list of
+filenames in the current directory.
+</p>
+
+<p>Before extracting a tar file, it's usually a good
+idea to take a look at its table of contents to determine how it was
+packed. This way you can determine whether you do need to create a
+subdirectory yourself where you can unpack the archive. A command
+such as:
+</p>
+
+<blockquote><pre class="code">tar tvf <em class="replaceable"><tt>tarfile</tt></em></pre></blockquote>
+
+<p>lists the <a name="IXT-39-2844" />table of contents for the named
+<em class="replaceable"><tt>tarfile</tt></em>. Note that when using the
+<span class="option">t</span> function, only one <span class="option">v</span> is required
+to get the long file listing, as in this example:
+</p>
+
+<blockquote><pre class="code">courgette% <tt class="userinput"><b>tar tvf mt.tar</b></tt>
+drwxr-xr-x root/root         0 Nov 16 19:03 1994 mt/
+-rw-r--r-- root/root     11204 Sep  5 13:10 1993 mt/st_info.txt
+-rw-r--r-- root/root       847 Sep 21 16:37 1993 mt/README
+-rw-r--r-- root/root      2775 Aug  7 09:50 1993 mt/mt.1
+-rw-r--r-- root/root        24 Sep 21 16:03 1993 mt/Makefile
+-rw-r--r-- root/root      6421 Aug  7 09:50 1993 mt/mt.c
+-rw-r--r-- root/root      3948 Nov 16 19:02 1994 mt/mt.o
+-rwxr-xr-x root/root      9220 Nov 16 19:03 1994 mt/mt</pre></blockquote>
+
+<p>No extraction is being done here; we're just
+displaying the archive's table of contents. We can
+see from the filenames that this file was packed with all files in
+the subdirectory <em class="filename">mt</em>, so that when we extract the
+tar file, the directory <em class="filename">mt</em> will be created, and
+the files placed there.
+</p>
+
+<p>You can also extract individual files from a tar archive. To do this,
+use the command:
+</p>
+
+<blockquote><pre class="code">tar xvf <em class="replaceable"><tt>tarfile</em> <em class="replaceable">files</tt></em></pre></blockquote>
+
+<p>where <em class="replaceable"><tt>files</tt></em> is the list of files to
+extract. As we've seen, if you
+don't specify any files, <i class="command">tar</i>
+extracts the entire archive.
+</p>
+
+<p>When specifying individual files to extract, you must give the full
+pathname as it is stored in the tar file. For example, if we wanted
+to grab just the file <em class="filename">mt.c</em> from the previous
+archive <em class="filename">mt.tar</em>, we'd use the
+command:
+</p>
+
+<blockquote><pre class="code">tar xvf mt.tar mt/mt.c</pre></blockquote>
+
+<p>This would create the subdirectory <em class="filename">mt</em> and place
+the file <em class="filename">mt.c</em> within it.
+</p>
+
+<p><i class="command">tar</i> has many more options than those mentioned
+here. These are the features that you're likely to
+use most of the time, but <span class="acronym">GNU</span>
+<i class="command">tar</i>, in particular, has extensions that make it
+ideal for creating backups and the like. See the
+<i class="command">tar</i> <i class="command">manpage</i> or <b class="emphasis-bold">info page</b> (<a href="ch02_09.htm#upt3-CHP-2-SECT-9">Section 2.9</a>) and
+the following chapter for more information.<a name="IXTR3-2923" />
+</p>
+
+<p><em class="emphasis">MW, MKD, and LK</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch39_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch39_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">39. Creating and Reading Archives</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">39.3. GNU tar Sampler</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,121 @@
+<html><head><title>eval: When You Need Another Chance (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch27_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">27.8. eval: When You Need Another Chance</h2>
+
+<p><a name="IXT-27-4849" /><a name="IXT-27-4850" />If
+<a name="IXT-27-4851" />you read the <b class="emphasis-bold">previous article</b> (<a href="ch27_07.htm#upt3-CHP-27-SECT-7">Section 27.7</a>), you saw that, most of the time, the shell
+evaluates the command line "in the right
+order." But what about when it
+doesn't? Here's a situation that
+the shell can't handle. It's
+admittedly contrived, but it's not too different
+from what you might find in a <b class="emphasis-bold">shell
+program</b> (<a href="ch01_08.htm#upt3-CHP-1-SECT-8">Section 1.8</a>):
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>set b=\$a</b></tt>
+% <tt class="userinput"><b>set a=foo</b></tt>
+% <tt class="userinput"><b>echo $b</b></tt>
+$a</pre></blockquote>
+
+<p>When we use the variable <tt class="literal">$b</tt>, we'd
+like to get the variable <tt class="literal">$a</tt>, read it, and use its
+value. But that doesn't happen. Variable
+substitution happens once, and it isn't recursive.
+The value of <tt class="literal">$b</tt> is <tt class="literal">$a</tt>, and
+that's it. You don't go any
+further.
+</p>
+
+<p>But there's a loophole. The <i class="command">eval</i>
+command says, in essence, "Give me another chance.
+Re-evaluate this line and execute it."
+Here's what happens if we stick
+<i class="command">eval</i> before the <i class="command">echo</i>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>eval echo $b</b></tt>
+foo</pre></blockquote>
+
+<p>The shell converts <tt class="literal">$b</tt> into <tt class="literal">$a</tt>;
+then <i class="command">eval</i> runs through the command-line evaluation
+process again, converting <tt class="literal">echo</tt>
+<tt class="literal">$a</tt> into <tt class="literal">echo</tt>
+<tt class="literal">foo</tt> -- which is what we wanted in the first
+place!
+</p>
+
+<p>Here's a more realistic example; you see code like
+this fairly often in Bourne shell scripts:
+</p>
+
+<blockquote><pre class="code">...
+command='grep $grepopts $searchstring $file'
+for opt
+do
+   case "$opt" in
+      file) output=' &gt; $ofile' ;;
+      read) output=' | more'   ;;
+      sort) postproc=' | sort $sortopts';;
+   esac
+done
+...
+eval $command $postproc $output</pre></blockquote>
+
+<p>Do you see what's happening? We're
+constructing a command that will look something like:
+</p>
+
+<blockquote><pre class="code">grep $grepopts $searchstring $file | sort $sortopts &gt; $ofile</pre></blockquote>
+
+<p>But the entire command is "hidden"
+in shell variables, including the I/O redirectors and various
+options. If the <i class="command">eval</i> isn't there,
+this command will blow up in all sorts of bizarre ways.
+You'll see messages like <tt class="literal">| not
+found</tt>, because variable expansion occurs after output
+redirection. The "nested" variables
+(like <tt class="literal">$ofile</tt>, which is used inside
+<tt class="literal">$output</tt>) won't be expanded
+either, so you'll also see <tt class="literal">$ofile not
+found</tt>. Putting an <i class="command">eval</i> in front of the
+command forces the shell to process the line again, guaranteeing that
+the variables will be expanded properly and that I/O redirection will
+take place.
+</p>
+
+<p><i class="command">eval</i> is incredibly useful if you have shell
+variables that include other shell variables, aliases, I/O
+redirectors, or all sorts of perversities. It's
+commonly used within shell scripts to
+"evaluate" commands that are built
+during execution. There are more examples of <i class="command">eval</i>
+in <a href="ch05_03.htm#upt3-CHP-5-SECT-3">Section 5.3</a> and others.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch27_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">27.7. Wildcards Inside Aliases</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">27.9. Which One Will bash Use?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

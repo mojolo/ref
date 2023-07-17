@@ -1,0 +1,113 @@
+<html><head><title>Spell Checking, Word Counting, and Textual Analysis (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="part4.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch16_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 16. Spell Checking, Word Counting, and Textual Analysis</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch16_01.htm#sect1">The Unix spell Command</a><br />
+<a href="ch16_02.htm">Check Spelling Interactively with ispell</a><br />
+<a href="ch16_03.htm">How Do I Spell That Word?</a><br />
+<a href="ch16_04.htm">Inside spell</a><br />
+<a href="ch16_05.htm">Adding Words to ispell's Dictionary</a><br />
+<a href="ch16_06.htm">Counting Lines, Words, and Characters: wc</a><br />
+<a href="ch16_07.htm">Find a a Doubled Word</a><br />
+<a href="ch16_08.htm">Looking for Closure</a><br />
+<a href="ch16_09.htm">Just the Words, Please</a><br /></p></div><div class="sect1"><a name="upt3-CHP-16-SECT-1" />
+<h2 class="sect1"><a name="sect1" />16.1. The Unix spell Command</h2>
+
+<p><a name="upt3-IDXTERM-2314" />On some Unix systems, the
+<i class="command">spell</i><a name="IXT-16-1581" />
+command reads one or more files and prints a list of words that may
+be misspelled. <a name="IXT-16-1582" />You can
+redirect the output to a file, use <b class="emphasis-bold">grep</b> (<a href="ch13_01.htm#upt3-CHP-13-SECT-1">Section 13.1</a>) to locate
+each of the words, and then use <i class="command">vi</i> or
+<i class="command">ex</i> to make the edits. It's also
+possible to hack up a shell and <i class="command">sed</i> script that
+interactively displays the misspellings and fixes them on command,
+but realistically, this is too tedious for most users. (The <b class="emphasis-bold">ispell</b> (<a href="ch16_02.htm#upt3-CHP-16-SECT-2">Section 16.2</a>) program
+solves many -- though not all -- of these problems.)
+</p>
+
+<p>When you run <i class="command">spell</i> on a file, the list of words it
+produces usually includes a number of legitimate words or terms that
+the program does not recognize. <i class="command">spell</i> is case
+sensitive; it's happy with
+<em class="emphasis">Aaron</em> but complains about
+<em class="emphasis">aaron</em>. You must cull out the proper nouns and
+other words <i class="command">spell</i> doesn't know
+about to arrive at a list of true misspellings. For instance, look at
+the results on this sample sentence:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat sample</b></tt>
+Alcuin uses TranScript to convert ditroff into
+PostScript output for the LaserWriter printerr.
+$ <tt class="userinput"><b>spell sample</b></tt>
+Alcuin
+ditroff
+printerr
+LaserWriter
+PostScript
+TranScript</pre></blockquote>
+
+<p>Only one word in this list is actually misspelled.</p>
+
+<p><a name="IXT-16-1583" /> <a name="IXT-16-1584" /><a name="IXT-16-1585" />On many Unix systems, you can supply a
+local dictionary file so that <i class="command">spell</i> recognizes
+special words and terms specific to your site or application. After
+you have run <i class="command">spell</i> and looked through the word
+list, you can create a file containing the words that were not actual
+misspellings. The <i class="command">spell</i> command will check this
+list after it has gone through its own dictionary. On certain
+systems, your word-list file must be <b class="emphasis-bold">sorted</b> (<a href="ch22_01.htm#upt3-CHP-22-SECT-1">Section 22.1</a>).
+</p>
+
+<p>If you added the special terms in a file named
+<em class="emphasis">dict</em>, you could specify that file on the command
+line using the <tt class="literal">+</tt> option:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>spell +dict sample</b></tt>
+printerr</pre></blockquote>
+
+<p>The output is reduced to the single misspelling.</p>
+
+<p>The <i class="command">spell</i> command will make some errors based on
+incorrect derivation of spellings from the root words contained in
+its dictionary. If you understand <b class="emphasis-bold">how
+spell</b> <b class="emphasis-bold">works</b> (<a href="ch15_04.htm#upt3-CHP-15-SECT-4">Section 15.4</a>), you may be less surprised by some of these
+errors.
+</p>
+
+<p>As stated at the beginning, <i class="command">spell</i>
+isn't on all Unix systems, e.g., Darwin and FreeBSD.
+In these other environments, check for the existence of alternative
+spell checking, such as <b class="emphasis-bold">ispell</b>
+(<a href="ch16_02.htm#upt3-CHP-16-SECT-2">Section 16.2</a>). Or you can download and install the
+<a name="IXT-16-1586" />GNU version of <i class="command">spell</i> at
+<a href="http://www.gnu.org/directory/spell.html">http://www.gnu.org/directory/spell.html</a>.
+</p>
+
+<p>--<em class="emphasis">DD and SP</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="part4.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch16_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">IV. Basic Editing</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">16.2. Check Spelling Interactively with ispell</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

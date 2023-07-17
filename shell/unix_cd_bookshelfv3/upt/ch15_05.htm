@@ -1,0 +1,139 @@
+<html><head><title>Limiting File Sizes (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch15_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">15.5. Limiting File Sizes</h2>
+
+<p><a name="IXT-15-6120" /><a name="IXT-15-6121" /> <a name="IXT-15-6122" />Here are techniques to keep you from
+creating large files (which can happen by accident, such as with
+runaway programs). Your shell may be able to set process limits. If
+you're writing a program in C or another language
+that has access to kernel system calls, you can set these limits
+yourself. And there's one more trick you can use.
+</p>
+
+<p>These limits are passed to child processes. So, if your shell sets a
+limit, all programs you start from that shell will inherit the limit
+from their parent process.
+</p>
+
+<a name="upt3-CHP-15-SECT-5.1" /><div class="sect2">
+<h3 class="sect2">15.5.1. limit and ulimit</h3>
+
+<p>Many shells have a built-in command that uses
+<a name="IXT-15-6123" /><a name="IXT-15-6124" />system calls to set resource limits. This
+is usually done from a <b class="emphasis-bold">shell setup
+file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>), but can also be done
+from the command line at a shell prompt. To set a
+<a name="IXT-15-6125" />maximum file size in
+<a name="IXT-15-6126" /> <a name="IXT-15-6127" />C-type shells and
+<i class="command">zsh</i><a name="IXT-15-6128" /><a name="IXT-15-6129" /> <a name="IXT-15-6130" /><a name="IXT-15-6131" /> <a name="IXT-15-6132" />, use the command <tt class="literal">limit filesize</tt>
+<em class="replaceable"><tt>max-size</tt></em>.
+<a name="IXT-15-6133" />In the
+Korn shell and <i class="command">bash</i>, use <tt class="literal">ulimit -f</tt>
+<em class="replaceable"><tt>max-size</tt></em>. For example, the
+following <i class="command">csh</i> and <i class="command">ksh</i> commands
+keep you from creating any files larger than 2 MB:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>limit filesize 2m</b></tt>
+$ <tt class="userinput"><b>ulimit -f 2000</b></tt></pre></blockquote>
+
+<p>Similarly, on many systems, you can use <i class="command">limit</i> and
+<i class="command">ulimit</i> to restrict the size of
+<a name="IXT-15-6134" />core dump files. Core dumps are generally
+large files, and if you are not actively developing or debugging,
+they are often not interesting or useful. To set a maximum size for
+core dumps, execute one of these commands:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>limit coredumpsize </b></tt><em class="replaceable"><tt>max-size</tt></em>
+$ <tt class="userinput"><b>ulimit -c </b></tt><em class="replaceable"><tt>max-size</tt></em></pre></blockquote>
+
+<p>To eliminate <a name="IXT-15-6135" />core dumps entirely, use
+<tt class="literal">0</tt> (zero) for <em class="replaceable"><tt>max-size</tt></em>.
+Because core dumps are essential for effective debugging, any users
+who actively <a name="IXT-15-6136" /><a name="IXT-15-6137" />debug programs should know the commands
+<tt class="literal">unlimit coredumpsize</tt> (which removes this
+restriction in <i class="command">csh</i><a name="IXT-15-6138" /> <a name="IXT-15-6139" /> <a name="IXT-15-6140" />) and <tt class="literal">ulimit -c
+unlimited</tt> for <i class="command">bash</i> and
+<i class="command">ksh</i>.
+</p>
+
+</div>
+<a name="upt3-CHP-15-SECT-5.2" /><div class="sect2">
+<h3 class="sect2">15.5.2. Other Ideas</h3>
+
+<p>File size limits only apply to processes that are invoked from a
+shell where the limit is set. For instance,
+<i class="command">at</i><a name="IXT-15-6141" /> <a name="IXT-15-6142" />
+and <i class="command">cron</i> jobs might not read the <b class="emphasis-bold">shell setup file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) that sets your limit. One way to fix this is
+to set the limit explicitly before you start the job. For instance,
+to keep your <i class="command">cron</i> job named
+<i class="command">cruncher</i> from core-dumping, make the
+<em class="filename">crontab</em> entry similar to one of these:
+</p>
+
+<p><tt class="literal">;</tt> <a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a></p>
+
+<blockquote><pre class="code">47 2 * * *   ulimit -c 0; cruncher
+47 2 * * *   bash -c 'ulimit -c 0; exec cruncher'</pre></blockquote>
+
+<p>If you've written a <b class="emphasis-bold">daemon</b> (<a href="ch01_10.htm#upt3-CHP-1-SECT-10">Section 1.10</a>) in C
+that starts as your workstation boots up (so no shell is involved),
+have your program invoke a system call like
+<em class="emphasis">ulimit</em>(3) or <em class="emphasis">setrlimit</em>(2).
+</p>
+
+<p><a name="IXT-15-6143" />If the unwanted
+files are created in a directory where you can deny write permission
+to the directory itself -- and the files are not created by a
+process running as <em class="emphasis">root</em> (filesystem permissions
+don't apply to
+<em class="emphasis">root</em>) -- simply make the directory
+unwritable. (If the process needs to write temporary files, have it
+use <em class="filename">/tmp</em>. An environment variable such as
+<em class="emphasis">TMP</em> or <em class="emphasis">TMPDIR</em> may control
+this.)
+</p>
+
+<p>You can prevent the files from being created by putting a zero-size
+unwritable file in the directory where the files are being created.
+Because the file is zero-length, it doesn't take any
+disk space to store:
+</p>
+
+
+
+<p><tt class="literal">chmod</tt> <a href="ch50_05.htm#upt3-CHP-50-SECT-5">Section 50.5</a></p>
+<blockquote><pre class="code">% <tt class="userinput"><b>touch core</b></tt>
+% <tt class="userinput"><b>chmod 000 core</b></tt></pre></blockquote>
+
+<p>If all else fails, try making a symbolic link to <b class="emphasis-bold">/dev/null</b> (<a href="ch43_12.htm#upt3-CHP-43-SECT-12">Section 43.12</a>).
+</p>
+
+<p><em class="emphasis">--ML and JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch15_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">15.4. Save Space with a Link</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">15.6. Compressing Files to Save Space</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

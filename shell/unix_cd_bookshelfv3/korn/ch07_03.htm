@@ -1,0 +1,1882 @@
+<html><head><title>Command-Line Processing (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.3. Command-Line Processing</h2>
+
+<p>
+<a name="IXT-7-287946" />
+<a name="korn2-IDXTERM-1504" />
+
+We've seen how the shell processes input lines: it deals with single
+quotes (<tt class="literal">' '</tt>), double quotes (<tt class="literal">" "</tt>),
+and backslashes (<tt class="literal">\</tt>),
+and it separates parameter, command and arithmetic expansions
+into words, according to delimiters in the variable
+<tt class="literal">IFS</tt>.  This is a subset of the things the shell does
+when processing <em class="emphasis">command lines</em>.
+</p>
+
+<p>
+This section completes the discussion, in sometimes excruciating detail.
+We first examine two additional kinds of substitutions or expansions that the shell
+performs that may not be universally available.
+Then we present the full story of the order that the shell processes the command line.
+Covered next is the use of <em class="emphasis">quoting</em>, which prevents many or
+all of the substitution steps from occurring.
+Finally, we cover the <em class="emphasis">eval</em> command, which can be used
+for additional programmatic control of command line evaluations.
+</p>
+
+<a name="korn2-CHP-7-SECT-3.1" /><div class="sect2">
+<h3 class="sect2">7.3.1. Brace Expansion and Process Substitution</h3>
+
+<p>
+<em class="emphasis">Brace expansion</em> is a feature borrowed from the Berkeley <em class="emphasis">csh</em>
+command interpreter and also available in the popular <em class="emphasis">bash</em> shell.
+Brace expansion is a way of saving typing when you have strings that are prefixes
+or suffixes of each other.  For example, suppose you have the following files:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>ls</b></tt>
+cpp-args.c  cpp-lex.c  cpp-out.c  cpp-parse.c
+</pre></blockquote>
+
+<p>
+You could type
+<tt class="literal">vi cpp-{args,lex,parse}.c</tt>
+if you wished to edit three out of the four C files,
+and the shell would
+expand this into <tt class="literal">vi cpp-args.c cpp-lex.c cpp-parse.c</tt>.
+Furthermore, brace substitutions may be nested.  For example:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print cpp-{args,l{e,o}x,parse}.c</b></tt>
+cpp-args.c cpp-lex.c cpp-lox.c cpp-parse.c
+</pre></blockquote>
+
+<p>
+This is a handy feature.  We haven't covered it up until now because it's
+possible that your version of <em class="emphasis">ksh</em> may not have it.
+It is an optional feature that is enabled when <em class="emphasis">ksh</em>
+is compiled.  However, it is enabled
+by default when <em class="emphasis">ksh93</em> is compiled from source code.
+</p>
+
+<p>
+<em class="emphasis">Process substitution</em> allows you to open multiple
+process streams and feed them into a single program for processing.
+For example:
+</p>
+
+<blockquote><pre class="code">
+awk '...' &lt;(<em class="replaceable"><tt>generate_data</em>) &lt;(<em class="replaceable">generate_more_data</tt></em>)
+</pre></blockquote>
+
+<p>
+(Note that the parentheses are part of the syntax; you type them literally.)
+Here, <em class="emphasis">generate_data</em> and
+<em class="emphasis">generate_more_data</em> represent arbitrary
+commands, including pipelines, that produce streams of data.
+The <em class="emphasis">awk</em> program processes each stream in
+turn, not realizing that the data is coming from multiple sources.
+This is shown graphically in
+<a href="ch07_03.htm#korn2-CHP-7-FIG-1">Figure 7-1</a>.a.
+</p>
+
+<a name="korn2-CHP-7-FIG-1" /><div class="figure"><img src="figs/ksh2.0701.gif" alt="Figure 7-1" width="407" /></div><h4 class="objtitle">Figure 7-1. Process substitution for both input and output data streams</h4>
+
+
+<p>
+Process substitution may also be used
+for output, particularly when combined with the
+<em class="emphasis">tee</em>(1) program, which sends its input to multiple
+output files and to standard output. For example:
+</p>
+
+<blockquote><pre class="code">
+<em class="replaceable"><tt>generate_data</tt></em> | tee &gt;(sort | uniq &gt; sorted_data) \
+                    &gt;(mail -s 'raw data' joe) &gt; raw_data
+</pre></blockquote>
+
+<p>
+This command uses <em class="emphasis">tee</em> to (1) send the data to a pipeline that sorts and saves the
+data, (2) send the data to the <em class="emphasis">mail</em> program to user joe, and (3) redirect
+the original data into a file.
+This is represented graphically in
+<a href="ch07_03.htm#korn2-CHP-7-FIG-1">Figure 7-1</a>.b.
+Process substitution, combined with <em class="emphasis">tee</em>, allows you to create
+nonlinear data graphs, freeing you from the straight "one input, one output"
+paradigm of traditional Unix pipes.
+</p>
+
+<p>
+Process substitution
+is only available on Unix
+systems that support the <em class="emphasis">/dev/fd/N</em> special files
+for named access to already open file descriptors.
+(This is different from the use of <em class="emphasis">/dev/fd/N</em>
+described earlier in this chapter, where the shell itself interprets the
+pathname.  Here, because external commands must be able to open files in <em class="emphasis">/dev/fd</em>,
+the feature must be directly supported by the operating system.)
+Most modern Unix systems, including GNU/Linux, support this feature.
+Like brace substitution, it must be enabled at compile time, and may
+not be available in your version of <em class="emphasis">ksh</em>.
+As with brace expansion, it is enabled
+by default when <em class="emphasis">ksh93</em> is compiled from source code.
+</p>
+
+</div>
+
+<a name="korn2-CHP-7-SECT-3.2" /><div class="sect2">
+<h3 class="sect2">7.3.2. Substitution Order</h3>
+<p>
+We've touched upon command-line processing
+(see <a href="ch07_03.htm#korn2-CHP-7-FIG-2">Figure 7-2</a>) throughout this book; now is a good
+time to make the whole thing explicit.<a href="#FOOTNOTE-101">[101]</a>
+
+
+<a name="IXT-7-287947" />
+<a name="IXT-7-287948" />
+Each line that the shell
+reads from the standard input or a script is called a <em class="emphasis">pipeline</em>;
+it contains one or more commands separated by zero or more pipe
+characters (<tt class="literal">|</tt>). For each pipeline it reads, the shell
+breaks it up into commands, sets up the I/O for the
+pipeline, and then does the following for each command:
+
+<a name="IXT-7-287949" />
+
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-101" /><p> [101]
+Even this explanation is slightly simplified to elide the most petty details,
+e.g., "middles" and "ends" of compound commands, special characters
+within <tt class="literal">[[</tt>...<tt class="literal">]]</tt>
+and <tt class="literal">((</tt>...<tt class="literal">))</tt> constructs, etc.
+The last word on this subject is the reference book
+<em class="emphasis">The New KornShell Command and Programming Language</em>
+by Morris Bolsky and David Korn, published by Prentice-Hall.
+</p>
+</blockquote>
+<a name="korn2-CHP-7-FIG-2" /><div class="figure"><img src="figs/ksh2.0702.gif" alt="Figure 7-2" width="384" /></div><h4 class="objtitle">Figure 7-2. Steps in command-line processing</h4>
+
+<ol>
+
+<li><p>
+<a name="IXT-7-287950" />
+
+<a name="IXT-7-287951" />
+<a name="IXT-7-287952" />
+Splits the command into tokens that are separated by
+the fixed set of metacharacters: space, TAB, newline, <tt class="literal">;</tt>,
+<tt class="literal">(</tt>, <tt class="literal">)</tt>,
+<tt class="literal">&lt;</tt>, <tt class="literal">&gt;</tt>, <tt class="literal">|</tt>,
+and <tt class="literal">&amp;</tt>.
+Types of tokens include words, keywords,
+I/O redirectors, and semicolons.
+</p></li>
+
+
+<li><p>
+<a name="IXT-7-287953" />
+
+Checks the first token of each command to see if it is a <em class="emphasis">keyword</em>
+with no quotes or backslashes. If it's an opening
+keyword (<tt class="literal">if</tt> and other control-structure openers,
+<tt class="literal">function</tt>,
+<tt class="literal">{</tt>, <tt class="literal">(</tt>, <tt class="literal">((</tt>, or <tt class="literal">[[</tt>),
+the command is actually
+a <em class="emphasis">compound command</em>. The shell sets things up internally
+for the compound command, reads the next command, and starts
+the process again. If the keyword isn't a compound command opener
+(e.g., is a control-structure "middle" like <tt class="literal">then</tt>, <tt class="literal">else</tt>,
+or <tt class="literal">do</tt>,
+an "end" like <tt class="literal">fi</tt> or <tt class="literal">done</tt>, or a logical operator), the shell
+signals<?troff .ne 10?> a syntax error.
+</p></li>
+
+
+<li><p>
+
+<a name="IXT-7-287954" />
+Checks the first word of each command against the list of <em class="emphasis">aliases</em>.
+If a match is found, it substitutes the alias's definition and
+goes back to Step 1;
+otherwise, it goes on to Step 4.
+This scheme allows recursive aliases; see <a href="ch03_01.htm">Chapter 3</a>.
+It also allows aliases for keywords to be defined, e.g.,
+<tt class="literal">alias aslongas=while</tt> or <tt class="literal">alias procedure=function</tt>.
+</p></li>
+
+<li><p>
+<a name="IXT-7-287955" />
+
+
+Substitutes the user's home directory (<tt class="literal">$HOME</tt>) for the tilde
+character (<tt class="literal">~</tt>) if
+it is at the beginning of a word.  Substitutes <em class="emphasis">user</em>'s home
+directory for <tt class="literal">~</tt><em class="replaceable"><tt>user</tt></em>.<a href="#FOOTNOTE-102">[102]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-102" /><p> [102]
+<a name="IXT-7-287956" />
+
+Two obscure variations on this: the shell substitutes the current directory (<tt class="literal">$PWD</tt>)
+for <tt class="literal">~+</tt> and the previous directory
+(<tt class="literal">$OLDPWD</tt>) for <tt class="literal">~-</tt>.
+</p>
+</blockquote>
+<p>
+Tilde substitution occurs at the following places:
+</p>
+
+<ul>
+
+<li><p>
+As the first unquoted character of a word on the command line
+</p></li>
+
+<li><p>
+After the <tt class="literal">=</tt> in a variable assignment and after
+any <tt class="literal">:</tt> in the value of a variable assignment
+</p></li>
+
+<li><p>
+For the <em class="emphasis">word</em> part of
+variable substitutions of the form
+<tt class="literal">${</tt><em class="replaceable"><tt>variable</tt></em>
+<em class="replaceable"><tt>op</tt></em>
+<em class="replaceable"><tt>word</tt></em><tt class="literal">}</tt>
+(see <a href="ch04_01.htm">Chapter 4</a>)
+</p></li>
+
+</ul>
+
+</li>
+
+<li><p>
+<a name="IXT-7-287957" />
+Performs parameter (variable) substitution for any expression
+that starts with a dollar sign (<tt class="literal">$</tt>).
+</p></li>
+
+<li><p>
+<a name="IXT-7-287958" />
+Does command substitution for any expression of the form
+<tt class="literal">$(</tt><em class="replaceable"><tt>string</tt></em><tt class="literal">)</tt>
+or <tt class="literal">`</tt><em class="replaceable"><tt>string</tt></em><tt class="literal">`</tt>.
+</p></li>
+
+<li><p>
+<a name="IXT-7-287959" />
+Evaluates arithmetic expressions of the
+form <tt class="literal">$((</tt><em class="replaceable"><tt>string</tt></em><tt class="literal">))</tt>.
+</p></li>
+
+<li><p>
+<a name="IXT-7-287960" />
+Performs process substitution, if that feature is compiled into
+the shell and your system supports <em class="emphasis">/dev/fd</em>.
+</p></li>
+
+<li><p>
+<a name="IXT-7-287961" />
+Performs brace expansion, if that feature is compiled into
+the shell.
+</p></li>
+
+<li><p>
+<a name="IXT-7-287962" />
+Takes the parts of the line that resulted from parameter, command,
+and arithmetic substitution and splits them
+into words again. This time it uses the
+characters in <tt class="literal">$IFS</tt> as delimiters instead
+of the set of metacharacters in Step 1.
+</p>
+
+<p>
+Normally, successive multiple input occurrences of characters in <tt class="literal">IFS</tt>
+act as a single delimiter, which is what you would expect.
+This is true only for whitespace characters, such as space and TAB.
+For non-whitespace characters, this is not true.
+For example, when reading the colon-separated fields of <em class="emphasis">/etc/passwd</em>,
+two successive colons delimit an empty field.  For example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+IFS=:
+while read name passwd uid gid fullname homedir shell
+do
+</pre></blockquote></p><p><blockquote><pre class="code">
+     ...
+done &lt; /etc/passwd
+</pre></blockquote>
+</p>
+
+<p>
+To get this behavior with whitespace-delimited fields (for example, where
+TAB characters delimit each field), put <em class="emphasis">two</em> successive
+instances of the delimiter character into <tt class="literal">IFS</tt>.
+</p>
+
+<p>
+<em class="emphasis">ksh</em> ignores any inherited (environment) value of <tt class="literal">IFS</tt>.
+Upon startup, it sets the value of <tt class="literal">IFS</tt> to the default of
+space, TAB, and newline.
+</p></li>
+
+
+<li>
+<p>
+
+<a name="IXT-7-287963" />
+<a name="IXT-7-287964" />
+
+
+Performs filename generation, a.k.a.
+wildcard expansion,
+for any occurrences of <tt class="literal">*</tt>, <tt class="literal">?</tt>,
+and <tt class="literal">[ ]</tt> pairs.
+<a name="IXT-7-287965" />
+It also processes the regular
+expression operators that we saw in <a href="ch04_01.htm">Chapter 4</a>.
+</p>
+
+
+</li>
+
+
+<li><p>
+<a name="IXT-7-287966" />
+<a name="IXT-7-287967" />
+<a name="IXT-7-287968" />
+<a name="IXT-7-287969" />
+
+Uses the first word as a command by looking up its location according
+to the rest of the list in <a href="ch04_01.htm">Chapter 4</a>,
+i.e., as a special built-in command,
+then as a function, then
+as a regular built-in command, and finally
+as a file in any of the directories in <tt class="literal">$PATH</tt>.
+</p></li>
+
+
+<li><p>
+<a name="IXT-7-287970" />
+Runs the command after setting up I/O redirection and other such things.
+</p></li>
+</ol>
+
+<p>
+That's a lot of steps -- and it's not even the whole story!
+But before we go on, an example should make this process clearer.
+<a name="IXT-7-287971" />
+Assume that the following command has been run:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias ll="ls -l"
+</pre></blockquote>
+</p>
+
+<p>
+Further assume that a file exists called <em class="emphasis">.hist537</em>
+in user <tt class="literal">fred</tt>'s home directory, which is <em class="emphasis">/home/fred</em>,
+and that there is a double-dollar-sign variable <tt class="literal">$$</tt>
+whose value is <tt class="literal">2537</tt> (we'll see what this special variable is in the next chapter).
+</p>
+
+<p>
+Now let's see how the shell processes the following command:
+</p>
+
+<p>
+<blockquote><pre class="code">
+ll $(whence cc) ~fred/.*$(($$%1000))
+</pre></blockquote>
+</p>
+
+<p>
+Here is what happens to this line:
+</p>
+
+<ol>
+
+<li><p>
+<tt class="literal">ll $(whence cc) ~fred/.*$(($$%1000))</tt>
+</p>
+
+<p>
+Splitting the input into words.
+</p></li>
+
+
+<li><p>
+<tt class="literal">ll</tt> is not a keyword, so step 2 does nothing.
+</p></li>
+
+
+<li><p>
+<tt class="literal">ls -l $(whence cc) ~fred/.*$(($$%1000))</tt>
+</p>
+
+<p>
+Substituting <tt class="literal">ls -l</tt> for its alias "ll".  The shell then repeats steps
+1 through 3; step 2 splits the <tt class="literal">ls -l</tt> into two words.
+</p></li>
+
+<li><p>
+<tt class="literal">ls -l $(whence cc) /home/fred/.*$(($$%1000))</tt>
+</p>
+
+<p>
+Expanding <tt class="literal">~fred</tt> into <em class="emphasis">/home/fred</em>.
+</p></li>
+
+
+<li><p>
+<tt class="literal">ls -l $(whence cc) /home/fred/.*$((2537%1000))</tt>
+</p>
+
+<p>
+Substituting <tt class="literal">2537</tt> for <tt class="literal">$$</tt>.
+</p></li>
+
+
+<li><p>
+<tt class="literal">ls -l /usr/bin/cc /home/fred/.*$((2537%1000))</tt>
+</p>
+
+<p>
+Doing command substitution on "whence cc."
+</p></li>
+
+
+<li><p>
+<tt class="literal">ls -l /usr/bin/cc /home/fred/.*537</tt>
+</p>
+
+<p>
+Evaluating the arithmetic expression <tt class="literal">2537%1000</tt>.
+</p></li>
+
+
+<li><p>
+<tt class="literal">ls -l /usr/bin/cc /home/fred/.*537</tt>
+</p>
+
+<p>
+This step does nothing. (No process substitution.)
+</p></li>
+
+<li><p>
+<tt class="literal">ls -l /usr/bin/cc /home/fred/.*537</tt>
+</p>
+
+<p>
+This step does nothing. (No braces to expand.)
+</p></li>
+
+<li>
+<p>
+<tt class="literal">ls -l /usr/bin/cc /home/fred/.*537</tt>
+</p>
+
+<p>
+This step does nothing. (No expanded text to split.)
+</p>
+</li>
+
+<li><p>
+<tt class="literal">ls -l /usr/bin/cc /home/fred/.hist537</tt>
+</p>
+
+<p>
+Substituting the filename for the wildcard expression <tt class="literal">.*537</tt>.
+</p></li>
+
+
+<li><p>
+The command <em class="emphasis">ls</em> is found in <em class="emphasis">/usr/bin</em>.
+</p></li>
+
+
+<li><p>
+<em class="emphasis">/usr/bin/ls</em> is run with the option <em class="emphasis">-l</em> and the two arguments.
+</p></li>
+</ol>
+
+<p>
+<a name="IXT-7-287972" />
+<a name="IXT-7-287973" />
+<a name="IXT-7-287974" />
+<a name="IXT-7-287975" />
+<a name="IXT-7-287976" />
+
+Although this list of steps is fairly straightforward, it is not the
+whole story. There are still two ways to subvert the process:
+by quoting, and by using the advanced command <em class="emphasis">eval</em>.
+</p>
+</div>
+
+<a name="korn2-CHP-7-SECT-3.3" /><div class="sect2">
+<h3 class="sect2">7.3.3. Quoting</h3>
+
+<p>
+<a name="IXT-7-287977" />
+<a name="IXT-7-287978" />
+
+You can think of quoting as a way of getting the shell to skip
+some of the 13 steps above. In particular:
+</p>
+
+<ul>
+
+<li><p>
+<b class="emphasis-bold">Single quotes</b> (<tt class="literal">'</tt>...<tt class="literal">'</tt>)
+bypass <em class="emphasis">everything</em> through
+Step 11, including aliasing.
+All characters inside a pair of single quotes are untouched.
+You can't have single quotes inside single quotes, even
+if you precede them with backslashes.<a href="#FOOTNOTE-103">[103]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-103" /><p> [103]
+However, as we saw in <a href="ch01_01.htm">Chapter 1</a>, <tt class="literal">'\''</tt>
+(i.e., single quote, backslash, single quote, single quote)
+acts pretty much like a single quote in the middle of a
+single-quoted string; e.g.,
+<tt class="literal">'abc'\''def'</tt> evaluates
+to <tt class="literal">abc'def</tt>.
+</p>
+</blockquote></li>
+
+
+<li><p>
+<b class="emphasis-bold">Double quotes</b> (<tt class="literal">"</tt>...<tt class="literal">"</tt>)
+bypass steps 1 through 4, plus steps 8 through 11. That is, they
+ignore pipe characters, aliases, tilde substitution, wildcard expansion,
+process substitution, brace expansion,
+and splitting into words via delimiters (e.g., spaces)
+inside the double quotes. Single quotes inside double quotes have
+no effect. But double quotes do allow parameter substitution,
+command substitution, and arithmetic
+expression evaluation. You can include a double quote inside a
+double-quoted string by preceding it with a backslash
+(<tt class="literal">\</tt>). You must
+also backslash-escape <tt class="literal">$</tt>, <tt class="literal">`</tt> (the archaic
+command substitution delimiter), and <tt class="literal">\</tt> itself.
+</p></li>
+
+</ul>
+
+<p>
+<a href="ch07_03.htm#korn2-CHP-7-TABLE-8">Table 7-8</a>
+contains some simple examples that show how these work;
+they assume the statement <tt class="literal">dave=bob</tt> was run and user <tt class="literal">fred</tt>'s home directory is <em class="emphasis">/home/fred</em>.
+</p>
+
+<p>
+If you are wondering whether to use single or double quotes in
+a particular shell programming situation, it is safest to use single
+quotes unless you specifically need parameter, command,
+or arithmetic substitution.
+</p>
+
+<a name="korn2-CHP-7-TABLE-8" /><h4 class="objtitle">Table 7-8. Examples of quoting rules</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Expression</th>
+<th>Value</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">$dave</tt></td>
+<td><tt class="literal">bob</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">"$dave"</tt></td>
+<td><tt class="literal">bob</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\$dave</tt></td>
+<td><tt class="literal">$dave</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">'$dave'</tt></td>
+<td><tt class="literal">$dave</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\'$dave\'</tt></td>
+<td><tt class="literal">'bob'</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">"'$dave'"</tt></td>
+<td><tt class="literal">'bob'</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">~fred</tt></td>
+<td><tt class="literal">/home/fred</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">"~fred"</tt></td>
+<td><tt class="literal">~fred</tt></td>
+</tr>
+
+<tr>
+<td><tt class="literal">'~fred'</tt></td>
+<td><tt class="literal">~fred</tt></td>
+</tr>
+
+
+</table><p>
+
+<p>
+Using double quotes on variable values is increasingly important
+when dealing with the results of wildcard expansion.
+Today, it is not unusual to have files and directories available
+on Unix systems that actually physically exist on Microsoft Windows and Apple Macintosh
+systems.  On those systems, spaces and other unusual characters,
+such as apostrophes and back-quotes, are common in filenames.
+Thus, to pass the full pathname into your application,
+be sure you quote things properly.
+</p>
+
+<p>
+<a href="ch07_03.htm#korn2-CHP-7-SIDEBAR-5">Task 7-5</a>
+is a more advanced example of command-line processing
+that should give you deeper insight into the overall process.
+<a name="korn2-IDXTERM-1537" />
+</p>
+
+<a name="korn2-CHP-7-SIDEBAR-5" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 7-5</h4>
+
+<p>
+<a name="IXT-7-287979" />
+
+Customize your primary prompt string so that it contains
+the current directory with tilde (<tt class="literal">~</tt>) notation.
+</p>
+</td></tr></table><p></blockquote>
+
+<p>
+<a name="korn2-IDXTERM-1539" />
+
+Recall from <a href="ch04_01.htm">Chapter 4</a> that we found a simple way to set up
+the prompt string <tt class="literal">PS1</tt> so that it always contains the
+current directory: <tt class="literal">PS1='($PWD)-&gt; '</tt>.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1540" />
+One problem with this setup is that the resulting prompt strings
+can get very long. One way to shorten them is to substitute tilde
+notation for users' home directories.
+This cannot be done with a simple string expression analogous
+to the above. The solution is somewhat complicated and takes
+advantage of the command-line processing rules.
+</p>
+
+<p>
+The basic idea is to create a "wrapper" around the <em class="emphasis">cd</em>
+command, as we did in <a href="ch05_01.htm">Chapter 5</a>,
+that installs the current directory with tilde notation
+as the prompt string.
+We will see how to make this wrapper function shortly.
+The code we need to insert tilde notation is complicated
+in its own right; we develop it first.
+</p>
+
+<p>
+We start with a function that, given a pathname
+as argument, prints its equivalent in tilde notation if possible.
+In order to write this function,
+we assume that we already have an associative array named
+<tt class="literal">tilde_ids</tt>, in which the subscripts are home directories and the values are user names.
+Thus, <tt class="literal">print ${tilde_ids[/home/arnold]}</tt> would print
+the value <tt class="literal">arnold</tt>.  Here's the function, named
+<em class="emphasis">tildize</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function tildize {
+    # subdir of our home directory
+    if [[ $1 == $HOME* ]]; then
+        print "\~${1#$HOME}"
+        return 0
+    fi
+
+    # loop over homedirs trying to match current dir
+    typeset homedir
+    for homedir in ${!tilde_ids[*]}; do
+        if [[ $1 == ${homedir}?(/*) ]]; then
+            print "\~${tilde_ids[$homedir]}${1#$homedir}"
+            return 0
+        fi
+    done
+    print "$1"
+    return 1
+}
+</pre></blockquote>
+</p>
+
+<p>
+
+The first <tt class="literal">if</tt> clause checks if the given pathname is under
+the user's home directory. If so, it substitutes tilde (<tt class="literal">~</tt>) for
+the home directory in the pathname and returns.
+</p>
+
+<p>
+If not, we loop over all the subscripts in
+<tt class="literal">tilde_ids</tt>, comparing each one to our current directory.
+The test matches home directories by themselves or
+with some other directory appended (the <tt class="literal">?(/*)</tt> part.)
+If a user's home directory is found, <tt class="literal">~</tt><em class="replaceable"><tt>user</tt></em> is substituted for the
+full home directory in the
+given pathname, the result is printed, and the function exits.
+</p>
+
+<p>
+Finally, if the <tt class="literal">for</tt> loop exhausts all users without finding
+a home directory that is a prefix of the given pathname, <em class="emphasis">tildize</em> simply echoes back its input.
+</p>
+
+<p>
+Now, how do we create the <tt class="literal">tilde_ids</tt> array?
+We use the function <em class="emphasis">init_tilde_db</em>.
+It should be called once, from the <em class="emphasis">.profile</em>
+file when we log in.  The <tt class="literal">tilde_ids</tt> array
+must be explicitly declared as an associative array using
+<tt class="literal">typeset -A</tt>:
+</p>
+
+<blockquote><pre class="code">
+# tilde_ids[] is global associative array
+# mapping directories to user names
+typeset -A tilde_ids
+
+function init_tilde_db {
+    typeset user homedir    # local vars
+    awk -F: '{ print $1, $6 }' /etc/passwd |
+        while read user homedir; do
+            if [[ $homedir != / ]]; then
+                tilde_ids[$homedir]=$user
+            fi
+        done
+}
+</pre></blockquote>
+
+
+
+<p>
+<a name="IXT-7-287980" />
+<a name="IXT-7-287981" />
+<a name="IXT-7-287982" />
+
+We use the <em class="emphasis">awk</em> utility to extract the
+first and sixth fields of the file <em class="emphasis">/etc/passwd</em>, which contain
+user IDs and home directories, respectively.<a href="#FOOTNOTE-104">[104]</a>
+In this case,
+<em class="emphasis">awk</em> acts like <em class="emphasis">cut</em>.
+The <tt class="literal">-F:</tt> is analogous to
+<tt class="literal">-d:</tt>, which we saw in <a href="ch04_01.htm">Chapter 4</a>, except that
+<em class="emphasis">awk</em> prints the
+values on each line separated by spaces, not colons (<tt class="literal">:</tt>).
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-104" /><p> [104]
+In large multi-machine environments, you may need to use something like
+<tt class="literal">ypcat passwd | awk</tt> ... or
+<tt class="literal">niscat passwd.org_dir | awk</tt> ... to get
+the same information.  Check with your system administrator.
+</p>
+</blockquote>
+
+<p>
+
+<em class="emphasis">awk</em>'s output is fed into a <tt class="literal">while</tt> loop that checks
+the pathname given as argument to see if it contains some user's
+home directory. (The conditional expression
+eliminates "users" like <tt class="literal">daemon</tt> and <tt class="literal">root</tt>, whose
+home directories are root and therefore are contained in every
+full pathname.)
+<a name="IXTR3-318" />
+<a name="IXTR3-319" />
+</p>
+
+<p>
+Now that we have the <em class="emphasis">tildize</em> function,
+you might think we could use
+it in a command substitution expression like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS1='$(tildize $PWD)&gt; '
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-7-287983" />
+<a name="IXT-7-287984" />
+
+In fact, you'd be right.<a href="#FOOTNOTE-105">[105]</a>
+But there's a hidden cost here.  The function is run <em class="emphasis">every</em>
+time that the shell prints the prompt.  Even if all you do is hit ENTER,
+the shell runs the <em class="emphasis">tildize</em> function.  If there are
+lots of users on your system, the shell loops through all of the home directories,
+each time.
+To avoid this, we write a <em class="emphasis">cd</em> function
+that only updates the prompt when we actually change directories.
+The following code should go
+into your <em class="emphasis">.profile</em> or environment file, along with the
+definition of <tt class="literal">tilde_ids</tt> and <em class="emphasis">tildize</em>:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-105" /><p> [105]
+This doesn't work in <em class="emphasis">ksh88</em>, though.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+init_tilde_db  # set up array once, upon login
+
+function cd {
+    command cd "$@"  # run real cd
+    typeset es=$?    # save exit status in a local var
+    PS1="$(tildize $PWD)&gt; "
+    return $es
+}
+
+cd $PWD        # set prompt
+</pre></blockquote>
+</p>
+
+<p>
+As we saw in <a href="ch05_01.htm">Chapter 5</a>,
+writing a function with the same name as a built-in command looks pretty
+strange at first glance.
+But, following the POSIX standard, the Korn shell distinguishes between
+"special" built-in commands and regular built-in commands.
+When the shell looks for commands to execute, it finds functions
+before it finds regular built-in commands.  <em class="emphasis">cd</em>
+is a regular built-in command, so this works.
+Within the function, we use the the cleverly named
+<em class="emphasis">command</em> command
+to actually get at the real <em class="emphasis">cd</em> command.<a href="#FOOTNOTE-106">[106]</a>
+The statement <tt class="literal">command cd "$@"</tt> passes the function's
+arguments on to the real <em class="emphasis">cd</em> in order to change the directory.
+(As a side note, the shell defines an alias <tt class="literal">command='command '</tt>,
+which allows you to use <em class="emphasis">command</em> with aliases.)
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-106" /><p> [106]
+As mentioned earlier, <em class="emphasis">command</em> is <em class="emphasis">not</em> a special built-in.
+Woe be to the shell programmer who writes a function named <em class="emphasis">command</em>!
+</p>
+</blockquote>
+
+<p>
+When you log in, this code sets <tt class="literal">PS1</tt> to the initial
+current directory (presumably your home directory).
+Then, whenever you enter a <em class="emphasis">cd</em> command, the function
+runs to change the directory and reset the prompt.
+<a name="IXTR3-320" />
+
+</p>
+<a name="IXT-7-287985" />
+<a name="IXT-7-287986" />
+<a name="IXT-7-287987" />
+<a name="IXT-7-287988" />
+<a name="IXT-7-287989" />
+<p>
+Of course, the function <em class="emphasis">tildize</em> can be any code that
+formats the directory string. See the exercises at the end
+of this chapter for a couple of suggestions.
+<a name="IXTR3-321" />
+</p>
+
+<a name="korn2-CHP-7-SECT-3.3.1" /><div class="sect3">
+<h3 class="sect3">7.3.3.1. Extended quoting</h3>
+
+<p>
+<a name="IXT-7-287990" />
+
+Single and double quoting have been in the Bourne shell and
+its derivatives from the beginning (although the original Bourne shell
+doesn't do arithmetic or <tt class="literal">$(</tt>...<tt class="literal">)</tt>
+substitution).  The Korn shell offers variant versions of both single-
+and double-quoted strings, as follows.
+</p>
+
+<dl>
+
+<dt><tt class="literal">$"</tt>...<tt class="literal">"</tt></dt>
+<dd>
+This version is the simplest.  It is just like a regular double-quoted string.
+However, these strings are subject to <em class="emphasis">locale translation</em></tt>
+at runtime. This is described further, below.
+</p></dd>
+
+
+<dt><tt class="literal">$'</tt>...<tt class="literal">'</tt></dt>
+<dd>
+This string is similar to a regular single-quoted string in that none of the shell's substitutions
+or expansions are performed on the contents.  However, the contents are processed for
+escape sequences, similar to those used by the <em class="emphasis">print</em> command.
+<em class="emphasis">ksh</em> documentation refers to these as <em class="emphasis">ANSI C strings</em>.
+</p></dd>
+
+
+</dl>
+
+<p>
+The Korn shell's internationalization features are beyond the
+scope of this book, but
+briefly, it works like this.
+When <em class="emphasis">ksh</em> is invoked on a script with the <em class="emphasis">-D</em>
+option, it prints a list of all
+<tt class="literal">$"</tt>...<tt class="literal">"</tt>
+strings to standard output.
+This list can then be saved and used to produce translations that are used
+at runtime when the script is actually executed.
+Thus, in a French locale, if a translation is available for this program:
+
+</p>
+
+<blockquote><pre class="code">
+print $"hello, world"  <i class="lineannotation">A well-known greeting among computer scientists</i>
+</pre></blockquote>
+
+<p>
+<em class="emphasis">ksh</em> would print <tt class="literal">bonjour, monde</tt> when the program runs.
+</p>
+
+<p>
+The <em class="emphasis">print</em> command makes it possible to use C-style escape sequences
+for output.  And most of the time, this is all you need.  But occasionally, it's useful
+to use the same notation in arguments to other programs.  This is the purpose of the
+<tt class="literal">$'</tt>...<tt class="literal">'</tt> string.  The contents are not processed for variable,
+command, or arithmetic substitution.  But they are processed for escape sequences,
+as shown in <a href="ch07_03.htm#korn2-CHP-7-TABLE-9">Table 7-9</a>.
+</p>
+
+<a name="korn2-CHP-7-TABLE-9" /><h4 class="objtitle">Table 7-9. String escape sequences</h4><table border="1" cellpadding="3">
+
+
+
+
+
+
+<tr>
+<th>Sequence</th>
+<th>Meaning</th>
+<th>Sequence</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">\a</tt></td>
+<td>Alert, ASCII bell</td>
+<td><tt class="literal">\t</tt></td>
+<td>TAB</td>
+</tr>
+
+<tr>
+<td><tt class="literal">\b</tt></td>
+<td>Backspace</td>
+<td><tt class="literal">\v</tt></td>
+<td>Vertical tab</td>
+</tr>
+
+<tr>
+<td><tt class="literal">\c</tt><em class="replaceable"><tt>X</tt></em></td>
+<td><p>
+CTRL-<em class="emphasis">X</em>
+<a href="#FOOTNOTE-107">[107]</a>
+<a href="#FOOTNOTE-108">[108]</a>
+</p></td>
+<td><tt class="literal">\x</tt><em class="replaceable"><tt>HH</tt></em></td>
+<td><p>
+Character with value of hexadecimal digits <em class="emphasis">HH</em>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\C[.</tt><em class="replaceable"><tt>ce</tt></em><tt class="literal">.]</tt></td>
+<td><p>
+The collating element
+<em class="emphasis">ce</em>.<a href="#FOOTNOTE-107">[107]</a><a href="#FOOTNOTE-108">[108]</a>
+(A collating element is two or more characters that are treated as one unit for
+sorting purposes.)
+</p></td>
+<td><tt class="literal">\x{</tt><em class="replaceable"><tt>digs</tt></em><tt class="literal">}</tt></td>
+<td><p>
+Hexadecimal value of <em class="emphasis">digs</em>.
+Use the braces when following characters are hexadecimal digits that should
+not be interpreted.<a href="#FOOTNOTE-107">[107]</a><a href="#FOOTNOTE-108">[108]</a>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\e</tt></td>
+<td><p>
+ASCII Escape character<a href="#FOOTNOTE-107">[107]</a><a href="#FOOTNOTE-108">[108]</a>
+</p></td>
+<td><tt class="literal">\0</tt></td>
+<td><p>
+Rest of string ignored after this<a href="#FOOTNOTE-108">[108]</a>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\E</tt></td>
+<td><p>
+ASCII Escape character<a href="#FOOTNOTE-107">[107]</a>
+</p></td>
+<td><tt class="literal">\</tt><em class="replaceable"><tt>ddd</tt></em></td>
+<td><p>
+Character with value of octal digits <em class="emphasis">ddd</em>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">\f</tt></td>
+<td>Form feed</td>
+<td><tt class="literal">\'</tt></td>
+<td>Single quote</td>
+</tr>
+
+<tr>
+<td><tt class="literal">\n</tt></td>
+<td>Newline</td>
+<td><tt class="literal">\"</tt></td>
+<td>Double quote</td>
+</tr>
+
+<tr>
+<td><tt class="literal">\r</tt></td>
+<td>Carriage return</td>
+<td><tt class="literal">\\</tt></td>
+<td>Literal backslash</td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-107" /><p> [107]
+Not in the C language.
+</p>
+</blockquote><blockquote class="footnote">
+<a name="FOOTNOTE-108" /><p> [108]
+New, starting with <em class="emphasis">ksh93l</em>.
+</p>
+</blockquote>
+
+<p>
+Of primary value is the fact that you can easily get single and double quotes
+inside the <tt class="literal">$'</tt>...<tt class="literal">'</tt> kind of string:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print $'A string with \'single quotes\' and \"double quotes\" in it'</b></tt>     
+A string with 'single quotes' and "double quotes" in it
+</pre></blockquote>
+
+<p>
+Of interest is the fact that the double quote doesn't really need to be escaped,
+but that doing so doesn't hurt anything, either.
+</p>
+
+</div>
+</div>
+
+
+<a name="korn2-CHP-7-SECT-3.4" /><div class="sect2">
+<h3 class="sect2">7.3.4. eval</h3>
+
+<p>
+<a name="korn2-IDXTERM-1556" />
+<a name="IXT-7-287991" />
+We have seen that quoting lets you skip steps in command-line processing.
+Then there's the <em class="emphasis">eval</em> command, which lets you go through the process again.
+Performing command-line processing twice may seem strange, but it's actually very powerful:
+it lets you write scripts that create command strings
+on the fly and then pass them to the shell for execution.
+This means that you can give scripts "intelligence" to modify their
+own behavior as they are running.
+</p>
+
+<p>
+The <em class="emphasis">eval</em> statement tells the shell to
+take <em class="emphasis">eval</em>'s arguments
+and run them through the command-line processing steps all over again.
+To help you understand the implications of <em class="emphasis">eval</em>,
+we'll start with a trivial example and work our way up to a situation
+in which we're constructing and running commands on the fly.
+</p>
+
+<p>
+<tt class="literal">eval ls</tt> passes the string <tt class="literal">ls</tt> to the shell to execute;
+the shell prints a list of files in the current directory.
+Very simple; there is nothing about the string <tt class="literal">ls</tt> that needs to be
+sent through the command-processing steps twice. But consider this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+listpage="ls | more"
+$listpage
+</pre></blockquote>
+</p>
+
+<p>
+Instead of producing a paginated file listing, the shell treats
+<tt class="literal">|</tt> and <tt class="literal">more</tt> as arguments to
+<em class="emphasis">ls</em>, and <em class="emphasis">ls</em> complains that no
+files of those names exist. Why? Because the pipe character "appears" in
+step 5 when the shell evaluates the variable, <em class="emphasis">after</em>
+it has actually looked for pipe characters (in step 2). The variable's
+expansion isn't even parsed until step 10. As a result, the shell
+treats <tt class="literal">|</tt> and <tt class="literal">more</tt> as arguments
+to <em class="emphasis">ls</em>, so that <em class="emphasis">ls</em> tries to
+find files called <em class="emphasis">|</em> and <em class="emphasis">more</em>
+in the current directory!
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1558" />
+Now consider <tt class="literal">eval $listpage</tt> instead of just <tt class="literal">$listpage</tt>.
+When the shell gets to the last step, it runs the command
+<em class="emphasis">eval</em> with arguments <tt class="literal">ls</tt>, <tt class="literal">|</tt>, and <tt class="literal">more</tt>.
+This causes the
+shell to go back to Step 1 with a line that consists of these arguments.
+It finds <tt class="literal">|</tt> in Step 2
+and splits the line into two commands,
+<em class="emphasis">ls</em> and <em class="emphasis">more</em>. Each command is processed in the normal
+(and in both cases trivial) way. The result is a paginated list
+of the files in your current directory.
+</p>
+
+<p>
+Now you may start to see how powerful <em class="emphasis">eval</em> can be.
+It is an advanced feature that requires considerable programming
+cleverness to be used most effectively. It even has a bit of the
+flavor of artificial intelligence, in that it enables you to
+write programs that can "write" and execute other programs.<a href="#FOOTNOTE-109">[109]</a>
+You probably won't use <em class="emphasis">eval</em> for everyday shell programming,
+but it's worth taking the time to understand what it can do.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-109" /><p> [109]
+<a name="IXT-7-287992" />
+You could actually do this without
+<em class="emphasis">eval</em>, by <em class="emphasis">print</em>ing commands to a temporary file and then
+"sourcing" that file with <tt class="literal">.</tt> <em class="replaceable"><tt>filename</tt></em>.
+But that is <em class="emphasis">much</em> less efficient.
+</p>
+
+</blockquote>
+
+<p>
+As a more interesting example, we'll revisit <a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-1">Task 4-1</a>, the very first
+task in the book. In it, we constructed a simple pipeline that sorts a file
+and prints out the first <em class="emphasis">N</em> lines, where <em class="emphasis">N</em> defaults to
+10. The resulting pipeline was:
+</p>
+
+<p>
+<blockquote><pre class="code">
+sort -nr $1 | head -${2:-10}
+</pre></blockquote>
+</p>
+
+<p>
+The first argument specifies the file to sort; <tt class="literal">$2</tt> is the number
+of lines to print.
+</p>
+
+<p>
+Now suppose we change the task just a bit so that the default is to print
+the <em class="emphasis">entire file</em> instead of 10 lines.
+This means that we don't
+want to use <em class="emphasis">head</em> at all in the default case. We could do this
+in the following way:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ -n $2 ]]; then
+    sort -nr $1 | head -$2
+else
+    sort -nr $1
+fi
+</pre></blockquote>
+</p>
+
+<p>
+In other words, we decide which pipeline to run according to whether
+or not <tt class="literal">$2</tt> is null. But here is a more compact solution:
+</p>
+
+<p>
+<blockquote><pre class="code">
+eval sort -nr \$1 ${2:+"| head -\$2"}
+</pre></blockquote>
+</p>
+
+<p>
+The last expression in this line evaluates to the string <tt class="literal">| head -\$2</tt> if
+<tt class="literal">$2</tt> exists (is not null); if <tt class="literal">$2</tt> is null, then the expression
+is null too.
+We backslash-escape dollar signs (<tt class="literal">\$</tt>) before variable names to
+prevent unpredictable results if the variables' values contain
+special characters like <tt class="literal">&gt;</tt> or <tt class="literal">|</tt>. The backslash
+effectively puts off the variables' evaluation until the <em class="emphasis">eval</em> command
+itself runs.
+So the entire line is either:
+</p>
+
+<p>
+<blockquote><pre class="code">
+eval sort -nr \$1 | head -\$2
+</pre></blockquote>
+</p>
+
+<p>
+if <tt class="literal">$2</tt> is given or:
+</p>
+
+<p>
+<blockquote><pre class="code">
+eval sort -nr \$1
+</pre></blockquote>
+</p>
+
+<p>
+if <tt class="literal">$2</tt> is null.
+Once again, we can't just run this command without
+<em class="emphasis">eval</em> because the pipe is "uncovered" after the shell tries to
+break the line up into commands. <em class="emphasis">eval</em> causes the shell to
+run the correct pipeline when <tt class="literal">$2</tt> is given.
+<a name="IXTR3-322" />
+</p>
+
+<p>
+Next, we'll revisit <a href="ch07_01.htm#korn2-CHP-7-SIDEBAR-3">Task 7-3</a> from earlier in this chapter,
+the <em class="emphasis">start</em> function that lets you start a command in the background and
+save its standard output and standard
+error in a logfile. Recall that the one-line solution
+to this task had the restriction that the command could not contain
+output redirectors or pipes. Although the former doesn't make sense
+when you think about it, you certainly would want the ability to
+start a pipeline in this way.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+<em class="emphasis">eval</em> is the obvious way to solve this problem:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function start {
+    eval "$@" &gt; logfile 2&gt;&amp;1 &amp;
+}
+</pre></blockquote>
+</p>
+
+<p>
+The only restriction that this imposes on the user is that pipes
+and other such special characters must be quoted (surrounded by quotes
+or preceded by backslashes).
+</p>
+
+<p>
+<a href="ch07_03.htm#korn2-CHP-7-SIDEBAR-6">Task 7-6</a>
+is a way to apply <em class="emphasis">eval</em> in conjunction
+with various other interesting shell programming concepts.
+<a name="korn2-IDXTERM-1561" />
+
+</p>
+
+<a name="korn2-CHP-7-SIDEBAR-6" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 7-6</h4>
+
+<p>
+<a name="IXT-7-287993" />
+
+Implement the guts of the <em class="emphasis">make</em>(1) utility as a
+shell script.
+</p>
+</td></tr></table><p></blockquote>
+
+<p>
+<em class="emphasis">make</em> is known primarily as a programmer's tool,
+but it seems as though someone finds a new use for it
+every day. Without going into too much extraneous detail,
+<em class="emphasis">make</em> keeps track of multiple files in a particular
+project, some of which depend on others (e.g., a document
+depends on its word processor input file(s)).
+It makes sure that when you change a file, all of
+the other files that depend on it are processed.
+</p>
+
+<p>
+For example, assume you're writing a book in DocBook XML.
+You have files for the book's chapters
+called <em class="emphasis">ch01.xml</em>, <em class="emphasis">ch02.xml</em>, and so on.
+The generated PostScript
+output for these files are <em class="emphasis">ch01.ps</em>, <em class="emphasis">ch02.ps</em>, etc.
+The tool to convert DocBook XML into PostScript is called (for some strange reason) <em class="emphasis">gmat</em>.
+You run commands like
+<tt class="literal">gmat ch</tt><em class="replaceable"><tt>N</tt></em><tt class="literal">.xml</tt>
+to do the processing.
+(<em class="emphasis">gmat</em> knows to create <em class="emphasis">ch01.ps</em> from <em class="emphasis">ch01.xml</em>;
+you don't need to use shell redirection.)
+While you're working on the book,
+you tend to make changes to several files at a time.
+</p>
+
+<p>
+In this situation, you can use <em class="emphasis">make</em> to keep track of which files need
+to be reprocessed, so that all you need to do is type <tt class="literal">make</tt>,
+and it figures out what needs to be done. You don't need
+to remember to reprocess the files that have changed.
+</p>
+
+<p>
+How does <em class="emphasis">make</em> do this?
+<a name="IXT-7-287994" />
+Simple: it compares the
+modification times of the input and output files
+(called <em class="emphasis">sources</em> and <em class="emphasis">targets</em> in <em class="emphasis">make</em> terminology),
+and if the input file is newer, <em class="emphasis">make</em> reprocesses it.
+</p>
+
+<p>
+You tell <em class="emphasis">make</em> which files to check by building a file called
+<em class="emphasis">makefile</em> that has constructs like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+<em class="replaceable"><tt>target</em> : <em class="replaceable">source1 source2 ...</tt></em>
+        <em class="replaceable"><tt>commands to make target</tt></em>
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+This essentially says, "For <em class="emphasis">target</em> to be up to date, it must be
+newer than all of the <em class="emphasis">source</em>s. If it's not, run
+the <em class="emphasis">commands</em> to bring it up to date."
+The <em class="emphasis">commands</em> are on one or more lines that must start
+with TABs: e.g., to make <em class="emphasis">ch07.ps</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+ch07.ps : ch07.xml
+        gmat ch07.xml
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-323" />
+Now suppose that we write a shell function called
+<em class="emphasis">makecmd</em> that reads and executes a single construct
+of this form. Assume that the <em class="emphasis">makefile</em> is read
+from standard input. The function would look like the following code.
+</p>
+
+<p>
+<blockquote><pre class="code">
+function makecmd {
+    read target colon sources
+    for src in $sources; do
+        if [[ $src -nt $target ]]; then
+            while read cmd &amp;&amp; [[ $cmd == \t* ]]; do
+                print "$cmd"
+                eval $cmd
+            done
+            break
+        fi
+    done
+}
+</pre></blockquote>
+</p>
+
+<p>
+This function reads the line with the target and sources;
+the variable <tt class="literal">colon</tt> is just a placeholder for the <tt class="literal">:</tt>.
+<a name="IXT-7-287995" />
+<a name="IXT-7-287996" />
+
+
+Then it checks each source to see if it's newer than the target,
+using the <em class="emphasis">-nt</em> file attribute test operator that we saw
+in <a href="ch05_01.htm">Chapter 5</a>.
+If the source is newer, it reads, prints, and executes the commands until
+it finds a line that doesn't start with a TAB or it reaches end-of-file.
+(The real <em class="emphasis">make</em> does more than this; see the exercises
+at the end of this chapter.)
+After running the commands,
+it breaks out of the <tt class="literal">for</tt> loop, so that it doesn't run the
+commands more than once.
+(It isn't necessary to
+strip the initial
+TAB from the command.  The shell discards the leading whitespace automatically.)
+</p>
+
+<a name="korn2-CHP-7-SECT-3.4.1" /><div class="sect3">
+<h3 class="sect3">7.3.4.1. The C compiler as pipeline</h3>
+
+<p>
+<a name="korn2-IDXTERM-1567" />
+As a final example of <em class="emphasis">eval</em>, we'll revisit our old friend <em class="emphasis">occ</em>,
+the C compiler front-end from the previous three chapters. Recall that the compiler front-end
+does its work by calling separate programs to do the actual
+compile from C to object code (the ccom program),
+optimization of object code (<em class="emphasis">optimize</em>),
+assembly of assembler code files (<em class="emphasis">as</em>),
+and final linking of object code files into an executable program
+(<em class="emphasis">ld</em>). These separate programs use temporary files to store
+their outputs.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1568" />
+Now we'll assume that these components (except the linker)
+pass information in a pipeline to the final object code output.
+In other words, each component takes standard input and produces
+standard output instead of taking filename <?troff .hw arguments?>arguments.
+We'll also change an earlier assumption:
+instead of compiling a C source<?troff .ne 10?> file directly
+to object code, <em class="emphasis">occ</em> compiles C to assembler code, which the
+assembler then assembles to object code.<a href="#FOOTNOTE-110">[110]</a>
+This lets us suppose that <em class="emphasis">occ</em> works like this:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-110" /><p> [110]
+For what it's worth, many Unix compilers generate assembly code, optimize the
+assembly code, and then generate object code.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+ccom &lt; filename.c | as | optimize &gt; filename.o
+</pre></blockquote>
+</p>
+
+<p>
+Or, if you prefer:
+</p>
+
+<p>
+<blockquote><pre class="code">
+cat filename.c | ccom | as | optimize &gt; filename.o
+</pre></blockquote>
+</p>
+
+<p>
+To get this in the proper framework for <em class="emphasis">eval</em>,
+let's assume that the variables
+<tt class="literal">srcname</tt> and <tt class="literal">objname</tt> contain the names of the source
+and object files, respectively. Then our pipeline becomes:
+</p>
+
+<p>
+<blockquote><pre class="code">
+cat $srcname | ccom | as | optimize &gt; $objname
+</pre></blockquote>
+</p>
+
+<p>
+As we've already seen, this is equivalent to:
+</p>
+
+<p>
+<blockquote><pre class="code">
+eval cat \$srcname \| ccom \| as \| optimize \&gt; \$objname
+</pre></blockquote>
+</p>
+
+<p>
+Knowing what we do about <em class="emphasis">eval</em>, we can transform this into:
+</p>
+
+<p>
+<blockquote><pre class="code">
+eval cat \$srcname " | ccom" " | as" " | optimize" \&gt; \$objname
+</pre></blockquote>
+</p>
+
+<p>
+and from that into:
+</p>
+
+<p>
+<blockquote><pre class="code">
+compile=" | ccom"
+assemble=" | as"
+optimize=" | optimize"
+
+eval cat \$srcname $compile $assemble $optimize \&gt; \$objname
+</pre></blockquote>
+</p>
+
+<p>
+Now, consider what happens if you don't want
+to invoke the optimizer -- which is the default case anyway.
+(Recall that the <em class="emphasis">-O</em> option invokes the optimizer.)
+We can do this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+optimize=""
+if -O given then
+    optimize=" | optimize"
+fi
+</pre></blockquote>
+</p>
+
+<p>
+In the default case, <tt class="literal">$optimize</tt> evaluates to the empty string,
+causing the final pipeline to "collapse" into:
+</p>
+
+<p>
+<blockquote><pre class="code">
+eval cat $srcname \| ccom \| as \&gt; $objname
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+Similarly, if you pass <em class="emphasis">occ</em> a file of assembler code
+(<em class="emphasis">filename.s</em>), you can collapse the compile step:<a href="#FOOTNOTE-111">[111]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-111" /><p> [111]
+Astute readers will notice that, according to this rationale,
+we would handle object-code input files (<em class="emphasis">filename.o</em>)
+with the pipeline <tt class="literal">eval cat $srcname &gt; $objname</tt>, where the
+two names are the same. This will cause the shell to destroy
+<em class="emphasis">filename.o</em> by truncating it to zero length.
+We won't worry about this here.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+assemble="| as"
+if $srcname ends in .s then
+    compile=""
+fi
+</pre></blockquote>
+</p>
+
+<p>
+That results in this pipeline:
+</p>
+
+<blockquote><pre class="code">
+eval cat \$srcname \| as \&gt; \$objname
+</pre></blockquote>
+
+<p>
+Now we're ready to show the full "pipeline" version of <em class="emphasis">occ</em>.
+It's similar to the previous version, except that for each
+input file, it constructs and runs a pipeline as above. It processes
+the <em class="emphasis">-g</em> (debug) option and the link step in the same way as
+before. Here is the code:
+</p>
+
+<p>
+<blockquote><pre class="code">
+# initialize option-related variables
+do_link=true
+debug=""
+link_libs=""
+clib="-lc"
+exefile=""
+
+# initialize pipeline components
+compile=" | ccom"
+assemble=" | as"
+optimize=""
+
+# process command-line options
+while getopts "cgl:[lib]o:[outfile]O files ..." opt; do
+    case $opt in
+        c )    do_link=false ;;
+        g )    debug="-g" ;;
+        l )    link_libs+=" -l $OPTARG" ;;
+        o )    exefile="-o $OPTARG" ;;
+        O )    optimize=" | optimize" ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+# process the input files
+for filename in "$@"; do
+    case $filename in
+        *.c )
+            objname=${filename%.c}.o ;;
+        *.s )
+            objname=${filename%.s}.o
+            compile="" ;;
+        *.o )
+            objname=$filename  # just link it directly with the rest
+            compile=""
+            assemble="" ;;
+        *   )
+        print "error: $filename is not a source or object file."
+        exit 1 ;;
+    esac
+
+    # run a pipeline for each input file
+    eval cat \$filename $compile $assemble $optimize \&gt; \$objname
+    objfiles+=" $objname"
+    compile=" | ccom"
+    assemble=" | as"
+done
+
+if [[ $do_link == true ]]; then
+    ld $exefile $objfiles $link_libs $clib
+fi
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-324" />
+<a name="IXTR3-325" />
+<a name="IXTR3-326" />
+<a name="IXTR3-327" />
+We could go on forever with increasingly complex examples of <em class="emphasis">eval</em>,
+but we'll settle for concluding the chapter with a few exercises.
+
+</p>
+
+<ol>
+
+<li><p>
+Here are a couple of ways to enhance <em class="emphasis">occ</em>, our C compiler:
+</p>
+
+<ol>
+
+<li><p>
+Real-world C compilers accept the option <em class="emphasis">-S</em>,
+which tells the compiler to suppress the assembly step and leave
+the output in files of assembler code whose names end in <tt class="literal">.s</tt>.
+Modify <em class="emphasis">occ</em> so that it recognizes this option.
+</p></li>
+
+
+<li><p>
+<a name="IXT-7-287997" />
+The language C++ is an evolutionary successor to C; it includes
+advanced features like operator overloading, mandatory function argument
+type checking, class definitions, templates, and many more. (Don't worry
+if you don't know what these are.) Some C++ compilers use C
+as an "assembly language", i.e., they compile C++ source files
+to C code and then pass them to a C compiler for further processing.
+Assume that C++ source files have names ending in <em class="emphasis">.cc</em>,
+and that <em class="emphasis">/lib/cfront</em> is the C++ compiler "front-end" that produces
+C code on its standard output. Modify <em class="emphasis">occ</em> so that
+it accepts C++ as well as C, assembler, and object code files.
+</p></li>
+</ol>
+
+</li>
+
+
+<li><p>
+The possibilities for customizing your prompt string are practically endless.
+Here are two enhancements to the customization schemes that we've seen already:
+</p>
+
+<ol>
+
+<li><p>
+Enhance the current-directory-in-the-prompt scheme by
+limiting the prompt string's length to a number of characters
+that the user can define with an environment variable.
+</p></li>
+
+<li><p>
+Read the man page for <em class="emphasis">date</em>(1) and read about the
+<tt class="literal">SECONDS</tt> variable in the <em class="emphasis">ksh</em>(1)
+man page.  Arrange things so that the shell prints the current time
+of day in the prompt.  (Hint: remember that the shell does variable, command,
+and arithmetic substitution on the value of <tt class="literal">PS1</tt> before
+printing it out.)
+</p></li>
+
+</ol>
+
+</li>
+
+
+<li><p>
+The function <em class="emphasis">makecmd</em> in the solution to <a href="ch07_03.htm#korn2-CHP-7-SIDEBAR-6">Task 7-6</a>
+represents an oversimplification of the real <em class="emphasis">make</em>'s functionality.
+<em class="emphasis">make</em> actually checks file dependencies <em class="emphasis">recursively</em>,
+meaning that a source on one line in a <em class="emphasis">makefile</em> can be a
+target on another line. For example, the book chapters in
+the example
+could themselves depend on figures in separate files
+that were made with a graphics package.
+</p>
+
+<ol>
+
+<li><p>
+Write a function called <em class="emphasis">readtargets</em> that goes through the
+<em class="emphasis">makefile</em> and stores all of the targets in a variable or temp file.
+</p></li>
+
+
+<li><p>
+Instead of reading the <em class="emphasis">makefile</em> from standard input, read it into
+an array variable called <tt class="literal">lines</tt>. Use the variable <tt class="literal">curline</tt>
+as the "current line" index. Modify <em class="emphasis">makecmd</em> so that it reads lines
+from the array starting with the current line.
+</p></li>
+
+
+<li><p>
+<em class="emphasis">makecmd</em> merely checks to see if any of the sources
+are newer than the given target. It should really be a recursive
+routine that looks like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function makecmd {
+    target=$1
+    get sources for $target
+    for each source src; do
+        if $src is also a target in this makefile then
+            makecmd $src
+        fi
+        if [[ $src -nt $target ]]; then
+            run commands to make target
+            return
+        fi
+    done
+}
+</pre></blockquote>
+</p>
+
+<p>
+Implement this.
+Remember to use <em class="emphasis">typeset</em> to create local variables,
+and think about how associative arrays might be helpful in tracking
+targets, sources, and commands to execute.
+</p></li>
+
+
+<li><p>
+Write the "driver" script that turns the <em class="emphasis">makecmd</em> function into a full
+<em class="emphasis">make</em> program. This should make the target given as argument,
+or if none is given, the first target listed in the makefile.
+</p></li>
+
+</ol>
+
+</li>
+
+
+<li><p>
+Finally, here are some problems that really test your knowledge of
+<em class="emphasis">eval</em> and the shell's command-line processing rules. Solve these and
+you're a true Korn shell wizard!
+</p>
+
+
+<ol>
+
+<li><p>
+Advanced shell programmers sometimes use a little trick that includes
+<em class="emphasis">eval</em>: using the value of a variable
+as the name of another variable. In other words, you can give
+a shell script control over the names of variables to which it
+assigns values. How would you do this?
+(Hint: if <tt class="literal">$fred</tt> equals `'dave'', and <tt class="literal">$dave</tt> is
+`'bob'', you might think that you could type <tt class="literal">print $$fred</tt>
+and get the response <tt class="literal">bob</tt>. This
+doesn't actually work, but it's on the right track.
+This exercise is actually easy to solve using namerefs. But it's worth
+doing it without them to test your understanding of <em class="emphasis">eval</em>
+and the shell's quoting rules.)
+</p></li>
+
+
+<li><p>
+You could use the above technique together with other <em class="emphasis">eval</em> tricks
+to implement new control structures for the shell.
+
+For example, see if you can write a script (or function) that emulates the behavior
+of the C shell's <em class="emphasis">repeat</em> command:
+</p>
+
+<blockquote><pre class="code">
+repeat <em class="replaceable"><tt>count command</tt></em>
+</pre></blockquote>
+
+<p>
+This works in the obvious way: the <em class="emphasis">command</em> is
+executed <em class="emphasis">count</em> times.
+</p></li>
+</ol>
+
+</li>
+</ol>
+
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.2. String I/O</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8. Process Handling</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

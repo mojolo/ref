@@ -1,0 +1,1379 @@
+<html><head><title>Quick Reference: awk (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch20_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">20.10. Quick Reference: awk</h2>
+
+<p><a name="upt3-IDXTERM-2855" />
+<a name="upt3-IDXTERM-2856" />Up to this point, we've
+shown you tools to do basic batch editing of text files. These tools,
+although powerful, have limitations. Although you can script
+<i class="command">ex</i> commands, the range of text manipulation is
+quite limited. If you need more powerful and flexible batch editing
+tools, you need to look at programming languages that are designed
+for text manipulation. One of the earliest Unix languages to do this
+is <i class="command">awk</i>, created by Al Aho, Peter Weinberger, and
+Brian Kernighan. Even if you've never programmed
+before, there are some simple but powerful ways that you can use
+<i class="command">awk</i>. Whenever you have a text file
+that's arranged in columns from which you need to
+extract data, <i class="command">awk</i> should come to mind.
+</p>
+
+<p>For example, every Red Hat Linux system stores its version number in
+<em class="filename">/etc/redhat-release</em>. On my system, it looks like
+this:
+</p>
+
+<blockquote><pre class="code">Red Hat Linux release 7.1 (Seawolf)</pre></blockquote>
+
+<p>When applying new RPM files to your system, it is often helpful to
+know which Red Hat version you're using. On the
+command line, you can retrieve just that number with:
+</p>
+
+<blockquote><pre class="code">awk '{print $5}' /etc/redhat-release</pre></blockquote>
+
+<p>What's going on here? By default,
+<i class="command">awk</i> splits each line read from standard input on
+whitespace, as is explained below. In effect, it's
+like you are looking at one row of a spreadsheet. In spreadsheets,
+columns are usually named with letters. In <i class="command">awk</i>,
+columns are numbered and you only can see one row (that is, one line
+of input) at a time. The Red Hat version number is in the fifth
+column. Similar to the way shells use <tt class="literal">$</tt> for
+variable interpolation, the values of columns in
+<i class="command">awk</i> are retrieved using variables that start with
+<tt class="literal">$</tt> and are followed by an integer.
+</p>
+
+<p>As you can guess, this is a fairly simple demostration of
+<i class="command">awk</i>, which includes support for regular
+expressions, branching and looping, and subroutines. For a more
+complete reference on using <i class="command">awk</i>, see
+<em class="emphasis">Effective awk Programming</em> or <em class="emphasis">sed &amp;
+awk Pocket Reference</em>, both published by
+O'Reilly.
+</p>
+
+<p><a name="IXT-20-264" /><a name="IXT-20-265" />Since there are many flavor of
+<i class="command">awk</i>, such as <b class="emphasis-bold">nawk and
+gawk</b> (<a href="ch18_11.htm#upt3-CHP-18-SECT-11">Section 18.11</a>), this article tries to
+provide a usable reference for the most common elements of the
+language. Dialect differences, when they occur, are noted. With the
+exception of array subscripts, values in
+<tt class="literal">[</tt> brackets<tt class="literal">]</tt> are optional;
+don't type the <tt class="literal">[</tt> or
+<tt class="literal">]</tt>.
+</p>
+
+<a name="upt3-CHP-20-SECT-10.1" /><div class="sect2">
+<h3 class="sect2">20.10.1. Command-Line Syntax</h3>
+
+<p><i class="command">awk</i><a name="IXT-20-266" /> <a name="IXT-20-267" /> <a name="IXT-20-268" /> can be invoked
+in one of two ways:
+</p>
+
+<blockquote><pre class="code">awk [<em class="replaceable"><tt>options</em>] '<em class="replaceable">script</em>' [<em class="replaceable">var</em>=<em class="replaceable">value</em>] [<em class="replaceable">file(s)</tt></em>]
+awk [<em class="replaceable"><tt>options</em>] -f <em class="replaceable">scriptfile </em>[<em class="replaceable">var</em>=<em class="replaceable">value</em>] [<em class="replaceable">file(s)</tt></em>]</pre></blockquote>
+
+<p>You can specify a <em class="replaceable"><tt>script</tt></em> directly on the
+command line, or you can store a script in a
+<em class="replaceable"><tt>scriptfile</tt></em> and specify it with
+<span class="option">-f</span>. In most versions, the <span class="option">-f</span> option
+can be used multiple times. The variable
+<em class="replaceable"><tt>var</tt></em> can be assigned a value on the command
+line. The value can be a literal, a shell variable
+(<tt class="literal">$</tt><em class="replaceable"><tt>name</tt></em>), or a command
+substitution
+(<tt class="literal">'</tt><em class="replaceable"><tt>cmd</tt></em><tt class="literal">'</tt>),
+but the value is available only after a line of input is read (i.e.,
+after the BEGIN statement). <i class="command">awk</i> operates on one or
+more <em class="replaceable"><tt>file(s)</tt></em>. If none are specified (or if
+<tt class="literal">-</tt> is specified), <i class="command">awk</i> reads from
+the <b class="emphasis-bold">standard input</b> (<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>). 
+</p>
+
+<p>The other recognized <em class="replaceable"><tt>options</tt></em> are:</p>
+
+<dl>
+<dt><tt class="literal">-F</tt><tt><em class="replaceable">c</em></tt></dt>
+<dd>
+Set the field separator to character <tt><em class="replaceable"><tt>c</tt></em></tt>.
+This is the same as setting the system variable
+<em class="emphasis">FS</em></tt>. <i class="command">nawk</i> allows
+<tt><em class="replaceable"><tt>c</tt></em></tt> to be a <b class="emphasis-bold">regular
+expression</b> (<a href="ch32_04.htm#upt3-CHP-32-SECT-4">Section 32.4</a>). Each record (by
+default, one input line) is divided into fields by whitespace (blanks
+or tabs) or by some other user-definable field separator. Fields are
+referred to by the variables <tt class="literal">$1</tt>,
+<tt class="literal">$2</tt>, . . .
+<tt class="literal">$</tt><tt><em class="replaceable"><tt>n</tt></em></tt>.
+<tt class="literal">$0</tt> refers to the entire record. For example, to
+print the first three (colon-separated) fields on separate lines:
+</p>
+</dd>
+
+</dl>
+
+<blockquote><pre class="code">    % <tt class="userinput"><b>awk -F: '{print $1; print $2; print $3}' /etc/passwd</b></tt></pre></blockquote>
+
+<dl>
+<dt><tt class="literal">-v</tt> <tt><em class="replaceable">var</em></tt><tt class="literal">=</tt><tt><em class="replaceable">value</em></tt></dt>
+<dd>
+Assign a <em class="replaceable"><tt>value</tt></em> to variable
+<em class="replaceable"><tt>var</tt></em>. This allows assignment before the
+script begins execution. (Available in <i class="command">nawk</i> only.)
+</p>
+</dd>
+
+</dl>
+
+</div>
+<a name="upt3-CHP-20-SECT-10.2" /><div class="sect2">
+<h3 class="sect2">20.10.2. Patterns and Procedures</h3>
+
+<p><a name="IXT-20-269" /><a name="IXT-20-270" /><i class="command">awk</i>
+<a name="IXT-20-271" />scripts consist of patterns and
+procedures:
+</p>
+
+
+<p><em class="replaceable"><tt>pattern</tt></em>
+<tt class="literal">{</tt><em class="replaceable"><tt>procedure</tt></em><tt class="literal">}</tt>
+</p>
+
+
+<p>Both are optional. If <em class="replaceable"><tt>pattern</tt></em> is missing,
+<tt class="literal">{</tt><em class="replaceable"><tt>procedure</tt></em><tt class="literal">}</tt>
+is applied to all records. If
+<tt class="literal">{</tt><em class="replaceable"><tt>procedure</tt></em><tt class="literal">}</tt>
+is missing, the matched record is written to the standard output.
+</p>
+
+<a name="upt3-CHP-20-SECT-10.2.1" /><div class="sect3">
+<h3 class="sect3">20.10.2.1. Patterns</h3>
+
+<p><em class="replaceable"><tt>pattern</tt></em><a name="IXT-20-272" />
+can be any of the following:
+</p>
+
+<blockquote><pre class="code">/<em class="replaceable"><tt>regular expression</tt></em>/
+<em class="replaceable"><tt>relational expression</tt></em>
+<em class="replaceable"><tt>pattern-matching expression</tt></em>
+BEGIN
+END</pre></blockquote>
+
+<ul><li>
+<p>Expressions can be composed of quoted strings, numbers, operators,
+functions, defined variables, and any of the predefined variables
+described later in <a href="ch20_10.htm#upt3-CHP-20-SECT-10.3">Section 20.10.3</a>.
+</p>
+</li><li>
+<p>Regular expressions use the extended set of metacharacters, as
+described in <a href="ch32_15.htm#upt3-CHP-32-SECT-15">Section 32.15</a>. In addition,
+<b class="emphasis-bold">^ and $</b> (<a href="ch32_05.htm#upt3-CHP-32-SECT-5">Section 32.5</a>) can be used to refer to the beginning and end
+of a field, respectively, rather than the beginning and end of a
+record (line).
+</p>
+</li><li>
+<p>Relational expressions use the relational operators listed in  <a href="ch20_10.htm#upt3-CHP-20-SECT-10.4">Section 20.10.4</a> later in this
+article. Comparisons can be either string or numeric. For example,
+<tt class="literal">$2</tt> <tt class="literal">&gt;</tt> <tt class="literal">$1</tt>
+selects records for which the second field is greater than the first.
+</p>
+</li><li>
+<p>Pattern-matching expressions use the operators <tt class="literal">~</tt>
+(match) and <tt class="literal">!~</tt> (don't match). See
+<a href="ch20_10.htm#upt3-CHP-20-SECT-10.4">Section 20.10.4</a> later in
+this article.
+</p>
+</li><li>
+<p>The <a name="IXT-20-273" /> <a name="IXT-20-274" />BEGIN pattern lets you specify procedures
+that will take place <em class="emphasis">before</em> the first input
+record is processed. (Generally, you set global variables here.)
+</p>
+</li><li>
+<p>The END pattern lets you specify procedures that will take place
+<em class="emphasis">after</em> the last input record is read.
+</p>
+</li></ul>
+<p>Except for BEGIN and END, patterns can be combined with the
+<a name="IXT-20-275" /> <a name="IXT-20-276" /> <a name="IXT-20-277" /> <a name="IXT-20-278" />Boolean operators
+<tt class="literal">||</tt> (<a name="IXT-20-279" /> <a name="IXT-20-280" /> <a name="IXT-20-281" /><a name="IXT-20-282" /> <a name="IXT-20-283" /><a name="IXT-20-284" />OR), <tt class="literal">&amp;&amp;</tt>
+(AND), and <tt class="literal">!</tt> (NOT). A range of lines can also be
+specified using comma-separated patterns:
+</p>
+
+
+<p><em class="replaceable"><tt>pattern</em>,<em class="replaceable">pattern</tt></em></p>
+
+
+</div>
+
+<a name="upt3-CHP-20-SECT-10.2.2" /><div class="sect3">
+<h3 class="sect3">20.10.2.2. Procedures</h3>
+
+<p><a name="IXT-20-285" /><a name="IXT-20-286" /><em class="replaceable"><tt>procedure</tt></em>
+can consist of one or more commands, functions, or variable
+assignments, separated by newlines or semicolons
+(<tt class="literal">;</tt>), and contained within curly braces
+(<tt class="literal">{}</tt>).
+<a name="IXT-20-287" />Commands fall into four groups:
+</p>
+
+<ul><li>
+<p>Variable or array assignments</p>
+</li><li>
+<p>Printing commands</p>
+</li><li>
+<p>Built-in functions</p>
+</li><li>
+<p>Control-flow commands</p>
+</li></ul>
+</div>
+
+<a name="upt3-CHP-20-SECT-10.2.3" /><div class="sect3">
+<h3 class="sect3">20.10.2.3. Simple pattern-procedure examples</h3>
+
+<ul><li>
+<p>Print the first field of each line:</p>
+<blockquote><pre class="code">{ print $1 }</pre></blockquote>
+</li>
+<li>
+<p>Print all lines that contain <tt class="literal">pattern</tt>:</p>
+<blockquote><pre class="code">/pattern/</pre></blockquote>
+</li>
+<li>
+<p>Print first field of lines that contain <tt class="literal">pattern</tt>:</p>
+<blockquote><pre class="code">/pattern/{ print $1 }</pre></blockquote>
+</li>
+<li>
+<p>Print records containing more than two fields:</p>
+<blockquote><pre class="code">NF &gt; 2</pre></blockquote>
+</li>
+<li>
+<p>Interpret input records as a group of lines up to a blank line:</p>
+<blockquote><pre class="code">BEGIN { FS = "\n"; RS = "" }
+{ <i class="lineannotation">...process records...</i> }</pre></blockquote>
+</li>
+<li>
+<p>Print fields 2 and 3 in switched order, but only on lines whose first
+field matches the string <tt class="literal">URGENT</tt>:
+</p>
+<blockquote><pre class="code">$1 ~ /URGENT/ { print $3, $2 }</pre></blockquote>
+</li>
+<li>
+<p>Count and print the number of <tt class="literal">pattern</tt> found:</p>
+<blockquote><pre class="code">/pattern/ { ++x }
+END { print x }</pre></blockquote>
+</li>
+<li>
+<p>Add numbers in second column and print total:</p>
+<blockquote><pre class="code">{total += $2 };
+END { print "column total is", total}</pre></blockquote>
+</li>
+<li>
+<p>Print lines that contain fewer than 20 characters:</p>
+<blockquote><pre class="code">length($0) &lt; 20</pre></blockquote>
+</li>
+<li>
+<p>Print each line that begins with <tt class="literal">Name</tt>: and that
+contains exactly seven fields:
+</p>
+<blockquote><pre class="code">NF == 7 &amp;&amp; /^Name:/</pre></blockquote>
+</li></ul>
+</div>
+</div>
+<a name="upt3-CHP-20-SECT-10.3" /><div class="sect2">
+<h3 class="sect2">20.10.3. awk System Variables</h3>
+
+<p><a name="IXT-20-288" /><a name="IXT-20-289" /><a name="IXT-20-290" /> <a name="IXT-20-291" /><i class="command">nawk</i> supports all
+<i class="command">awk</i><a name="IXT-20-292" /> <a name="IXT-20-293" />
+variables. <i class="command">gawk</i> supports both
+<i class="command">nawk</i> and <i class="command">awk</i>.
+</p>
+
+<a name="ch20-3-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Version</p>
+</th>
+<th>
+<p>Variable</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>awk</p>
+</td>
+<td>
+<p><em class="emphasis">FILENAME</em></p>
+</td>
+<td>
+<p>Current filename</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">FS</em></p>
+</td>
+<td>
+<p>Field separator (default is whitespace)</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">NF</em></p>
+</td>
+<td>
+<p>Number of fields in current record</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">NR</em></p>
+</td>
+<td>
+<p>Number of the current record</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">OFMT</em></p>
+</td>
+<td>
+<p>Output format for numbers (default is <tt class="literal">%.6g</tt>)</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">OFS</em></p>
+</td>
+<td>
+<p>Output field separator (default is a blank)</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">ORS</em></p>
+</td>
+<td>
+<p>Output record separator (default is a newline)</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">RS</em></p>
+</td>
+<td>
+<p>Record separator (default is a newline) </p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><tt class="literal">$0</tt></p>
+</td>
+<td>
+<p>Entire input record </p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><tt class="literal">$n</tt></p>
+</td>
+<td>
+<p><em class="replaceable"><tt>n</tt></em>th field in current record; fields are
+separated by <em class="emphasis">FS</em>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>nawk</p>
+</td>
+<td>
+<p><em class="emphasis">ARGC</em></p>
+</td>
+<td>
+<p>Number of arguments on command line </p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">ARGV</em></p>
+</td>
+<td>
+<p>An array containing the command-line arguments </p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">ENVIRON</em></p>
+</td>
+<td>
+<p>An associative array of environment variables </p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">FNR</em></p>
+</td>
+<td>
+<p>Like <em class="emphasis">NR</em>, but relative to the current file </p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">RSTART</em></p>
+</td>
+<td>
+<p>First position in the string matched by <em class="emphasis">match</em>
+function
+</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">RLENGTH</em></p>
+</td>
+<td>
+<p>Length of the string matched by <em class="emphasis">match</em> function </p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">SUBSEP</em></p>
+</td>
+<td>
+<p>Separator character for array subscripts (default is
+<tt class="literal">\034</tt>) 
+</p>
+</td>
+</tr>
+
+</table><p>
+
+</div>
+<a name="upt3-CHP-20-SECT-10.4" /><div class="sect2">
+<h3 class="sect2">20.10.4. Operators</h3>
+
+<p><a name="IXT-20-294" /> <a name="IXT-20-295" /><a name="IXT-20-296" /><a name="IXT-20-297" /><a name="IXT-20-298" /> <a name="IXT-20-299" />This
+table lists the operators, in increasing precedence, that are
+available in <i class="command">awk</i>.
+</p>
+
+<a name="ch20-4-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Symbol</p>
+</th>
+<th>
+<p>Meaning</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<blockquote><pre class="code">= += -= *= /= %= ^=</pre></blockquote>
+</td>
+<td>
+<p>Assignment (<tt class="literal">^=</tt> only in <em class="emphasis">nawk</em>
+and <em class="emphasis">gawk</em>)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">?:</pre></blockquote>
+</td>
+<td>
+<p>C conditional expression (<em class="emphasis">nawk</em> and
+<em class="emphasis">gawk</em>)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">||</pre></blockquote>
+</td>
+<td>
+<p>Logical OR</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&amp;&amp;</pre></blockquote>
+</td>
+<td>
+<p>Logical AND</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">~ !~</pre></blockquote>
+</td>
+<td>
+<p>Match regular expression and negation</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&lt; &lt;= &gt; &gt;= != ==</pre></blockquote>
+</td>
+<td>
+<p>Relational operators</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>(blank)</p>
+</td>
+<td>
+<p>Concatenation</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">+ -</pre></blockquote>
+</td>
+<td>
+<p>Addition, subtraction</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">* / %</pre></blockquote>
+</td>
+<td>
+<p>Multiplication, division, and modulus</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">+ - !</pre></blockquote>
+</td>
+<td>
+<p>Unary plus and minus, and logical negation</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">^</pre></blockquote>
+</td>
+<td>
+<p>Exponentiation (<em class="emphasis">nawk</em> and
+<em class="emphasis">gawk</em>)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">++ --</pre></blockquote>
+</td>
+<td>
+<p>Increment and decrement, either prefix or postfix</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$</pre></blockquote>
+</td>
+<td>
+<p>Field reference</p>
+</td>
+</tr>
+
+</table><p>
+
+</div>
+<a name="upt3-CHP-20-SECT-10.5" /><div class="sect2">
+<h3 class="sect2">20.10.5. Variables and Array Assignments</h3>
+
+<p><a name="IXT-20-300" /><a name="IXT-20-301" /><a name="IXT-20-302" />Variables can be assigned a value
+with an equal sign (<tt class="literal">=</tt>). For example:
+</p>
+
+<blockquote><pre class="code">FS = ","</pre></blockquote>
+
+<p>Expressions using the operators <tt class="literal">+</tt>,
+<tt class="literal">-</tt>, <tt class="literal">*</tt>, <tt class="literal">/</tt>, and
+<tt class="literal">%</tt> (modulus) can be assigned to variables.
+</p>
+
+<p>Arrays can be created with the
+<em class="emphasis">split</em><a name="IXT-20-303" /> function (see below), or they can
+simply be named in an assignment statement. Array elements can be
+subscripted with numbers
+(<em class="replaceable"><tt>array</tt></em><tt class="literal">[1]</tt>, . . .
+,<em class="replaceable"><tt>array</em><tt class="literal">[</tt><em class="replaceable">n</tt></em><tt class="literal">]</tt>)
+or with names (as <a name="IXT-20-304" />associative arrays). For example, to
+count the number of occurrences of a pattern, you could use the
+following script:
+</p>
+
+<blockquote><pre class="code">/<em class="replaceable"><tt>pattern</em>/ { <em class="replaceable">array</em>["<em class="replaceable">pattern</tt></em>"]++ }
+END { print <em class="replaceable"><tt>array</em>["<em class="replaceable">pattern</tt></em>"] }</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-20-SECT-10.6" /><div class="sect2">
+<h3 class="sect2">20.10.6. Group Listing of awk Commands</h3>
+
+<p><i class="command">awk</i> commands may be classified as follows: </p>
+
+<a name="ch20-5-fm2xml" /><table border="1" cellpadding="3">
+
+<table border="1" cellpadding="3">
+<tr>
+<th>
+<p>Arithmetic functions</p>
+</th>
+<th>
+<p>String functions</p>
+</th>
+<th>
+<p>Control flow statements</p>
+</th>
+<th>
+<p>Input/Output processing</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><em class="emphasis">atan2</em><a href="#FOOTNOTE-57">[57]</a>
+</td>
+<td>
+<p><em class="emphasis">gsub</em><a href="#FOOTNOTE-57">[57]</a></p>
+</td>
+<td>
+<p><em class="emphasis">break</em></p>
+</td>
+<td>
+<p><em class="emphasis">close</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">cos</em><a href="#FOOTNOTE-57">[57]</a></p>
+</td>
+<td>
+<p><em class="emphasis">index</em></p>
+</td>
+<td>
+<p><em class="emphasis">continue</em></p>
+</td>
+<td>
+<p><em class="emphasis">delete</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">exp</em></p>
+</td>
+<td>
+<p><em class="emphasis">length</em></p>
+</td>
+<td>
+<p><em class="emphasis">do/while</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+<p><em class="emphasis">getline</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">int</em></p>
+</td>
+<td>
+<p><em class="emphasis">match</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+<p><em class="emphasis">exit</em></p>
+</td>
+<td>
+<p><em class="emphasis">next</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">log</em></p>
+</td>
+<td>
+<p><em class="emphasis">split</em></p>
+</td>
+<td>
+<p><em class="emphasis">for</em></p>
+</td>
+<td>
+<p><em class="emphasis">print</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">rand</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+<p><em class="emphasis">sub</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+<p><em class="emphasis">if</em></p>
+</td>
+<td>
+<p><em class="emphasis">printf</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">sin</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+<p><em class="emphasis">substr</em></p>
+</td>
+<td>
+<p><em class="emphasis">return</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+<p><em class="emphasis">sprintf</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">sqrt</em></p>
+</td>
+<td>
+<p><em class="emphasis">tolower</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+<p><em class="emphasis">while</em></p>
+</td>
+<td>
+<p><em class="emphasis">system</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">srand</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+<p><em class="emphasis">toupper</em><a href="#FOOTNOTE-57">[57]</a>
+</p>
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+<a name="FOOTNOTE-57">[57] Not in original awk.</a></p></blockquote>
+
+</div>
+<a name="upt3-CHP-20-SECT-10.7" /><div class="sect2">
+<h3 class="sect2">20.10.7. Alphabetical Summary of Commands</h3>
+
+<p>The following alphabetical list of statements and functions includes
+all that are available in <i class="command">awk</i>,
+<i class="command">nawk</i>, or <i class="command">gawk</i>. Unless otherwise
+mentioned, the statement or function is found in all versions. New
+statements and functions introduced with <i class="command">nawk</i> are
+also found in <i class="command">gawk</i>.
+</p>
+
+<dl>
+<dt><i><em class="emphasis">atan2</em></tt></i></dt>
+<dd>
+<tt class="literal">atan2(</tt><tt><em class="replaceable"><tt>y</em></tt>,<tt><em class="replaceable">x</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p><a name="IXT-20-305" />Returns
+the arctangent of
+<tt><em class="replaceable"><tt>y</em></tt>/<tt><em class="replaceable">x</tt></em></tt> in radians.
+(<i class="command">nawk</i>)
+</p>
+</dd><dt><i><em class="emphasis">break</em></tt></i></dt>
+<dd>
+Exit from a <em class="emphasis">while</em>, <em class="emphasis">for</em>, or
+<em class="emphasis">do</em> loop. <a name="IXT-20-306" />
+</p>
+</dd>
+
+
+<dt><i><em class="emphasis">close</em></tt></i></dt>
+<dd>
+<tt class="literal">close(</tt><tt><em class="replaceable"><tt>filename-expr</tt></em></tt><tt class="literal">)</tt>
+<tt class="literal">close(</tt><tt><em class="replaceable"><tt>command-expr</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p>In some implementations of <i class="command">awk</i>, you can have only
+ten files open <a name="IXT-20-307" />simultaneously and one pipe; modern
+versions allow more than one pipe open. Therefore,
+<i class="command">nawk</i> provides a <em class="emphasis">close</em></tt>
+statement that allows you to close a file or a pipe.
+<em class="emphasis">close</em></tt> takes as an argument the same expression
+that opened the pipe or file. (<i class="command">nawk</i>)
+</p>
+</dd><dt><i><em class="emphasis">continue</em></tt></i></dt>
+<dd>
+Begin next iteration of <em class="emphasis">while</em>,
+<em class="emphasis">for</em>, or <em class="emphasis">do</em> loop
+immediately. <a name="IXT-20-308" />
+</p>
+</dd>
+
+
+<dt><i><em class="emphasis">cos</em></tt></i></dt>
+<dd>
+<tt class="literal">cos(</tt><tt><em class="replaceable"><tt>x</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p>Return cosine of <tt><em class="replaceable"><tt>x</tt></em></tt> (in radians).
+<a name="IXT-20-309" />(<i class="command">nawk</i>)
+</p>
+</dd><dt><i><em class="emphasis">delete</em></tt></i></dt>
+<dd>
+<tt class="literal">delete</tt>
+<em class="replaceable"><tt>array</em>[<em class="replaceable">element</tt></em>]
+</p>
+
+<p>Delete <em class="replaceable"><tt>element</tt></em> of
+<em class="replaceable"><tt>array</tt></em>. (<i class="command">nawk</i>)
+<a name="IXT-20-310" />
+</p>
+</dd><dt><i><em class="emphasis">do</em></tt></i></dt>
+<dd>
+<tt class="literal">do</tt> <tt><em class="replaceable"><tt>body</tt></em></tt> <tt class="literal">while
+(</tt><tt><em class="replaceable"><tt>expr</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p>Looping statement. <a name="IXT-20-311" />Execute statements in
+<tt><em class="replaceable"><tt>body</tt></em></tt>, then evaluate
+<tt><em class="replaceable"><tt>expr</em></tt>. If <tt><em class="replaceable">expr</tt></em></tt>
+is true, execute <tt><em class="replaceable"><tt>body</tt></em></tt> again. More than one
+<tt><em class="replaceable"><tt>command</tt></em></tt> must be put inside braces
+(<tt class="literal">{}</tt>). (<i class="command">nawk</i>)
+</p>
+</dd><dt><i><em class="emphasis">exit</em></tt></i></dt>
+<dd>
+<tt class="literal">exit</tt>[<em class="replaceable"><tt>expr</tt></em>]</p>
+
+<p>Do not execute remaining instructions and do not read new input.
+<a name="IXT-20-312" />END procedure, if any, will be
+executed. The <em class="replaceable"><tt>expr</tt></em>, if any, becomes
+<i class="command">awk</i>'s <b class="emphasis-bold">exit
+status</b> (<a href="ch34_12.htm#upt3-CHP-34-SECT-12">Section 34.12</a>).
+</p>
+</dd><dt><i><em class="emphasis">exp</em></tt></i></dt>
+<dd>
+<tt class="literal">exp(</tt><tt><em class="replaceable"><tt>arg</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p>Return the natural exponent of <tt><em class="replaceable"><tt>arg</tt></em></tt>.
+<a name="IXT-20-313" />
+</p>
+</dd><dt><i><em class="emphasis">for</em></tt></i></dt>
+<dd>
+<tt class="literal">for
+(</tt>[<em class="replaceable"><tt>init-expr</tt></em>]<tt class="literal">;</tt>
+[<em class="replaceable"><tt>test-expr</tt></em>]<tt class="literal">;</tt>
+[<em class="replaceable"><tt>incr-expr</tt></em>]<tt class="literal">)</tt>
+<em class="replaceable"><tt>command</tt></em>
+</p>
+
+<p>C-language-style looping construct. <a name="IXT-20-314" />Typically,
+<em class="replaceable"><tt>init-expr</tt></em> assigns the initial value of a
+counter variable. <em class="replaceable"><tt>test-expr</tt></em> is a
+relational expression that is evaluated each time before executing
+the <em class="replaceable"><tt>command</tt></em>. When
+<em class="replaceable"><tt>test-expr</tt></em> is false, the loop is exited.
+<em class="replaceable"><tt>incr-expr</tt></em> is used to increment the counter
+variable after each pass. A series of
+<em class="replaceable"><tt>command</tt></em>s must be put within braces
+(<tt class="literal">{}</tt>). For example:
+</p>
+
+<blockquote><pre class="code">for (i = 1; i &lt;= 10; i++)
+     printf "Element %d is %s.\n", i, array[i]</pre></blockquote>
+</dd><dt><i><em class="emphasis">for</em></tt></i></dt>
+<dd>
+<tt class="literal">for (</tt><a name="IXT-20-315" /><tt><em class="replaceable"><tt>item</tt></em></tt>
+<tt class="literal">in</tt>
+<tt><em class="replaceable"><tt>array</tt></em></tt><tt class="literal">)</tt>
+<tt><em class="replaceable"><tt>command</tt></em></tt>
+</p>
+
+<p>For each <tt><em class="replaceable"><tt>item</tt></em></tt> in an associative
+<tt><em class="replaceable"><tt>array</tt></em></tt>, do
+<tt><em class="replaceable"><tt>command</tt></em></tt>. More than one
+<tt><em class="replaceable"><tt>command</tt></em></tt> must be put inside braces
+(<tt class="literal">{}</tt>). Refer to each element of the array as
+<tt><em class="replaceable"><tt>array</em></tt><tt class="literal">[</tt><tt><em class="replaceable">item</tt></em></tt><tt class="literal">]</tt>.
+</p>
+</dd><a name="IXT-20-316" /><dt><i><em class="emphasis">getline</em></tt></i></dt>
+<dd>
+<tt class="literal">getline</tt>
+[<em class="replaceable"><tt>var</em>][<tt class="literal">&lt;</tt><em class="replaceable">file</tt></em>]
+or <em class="replaceable"><tt>command</tt></em> <tt class="literal">| getline</tt>
+[<em class="replaceable"><tt>var</tt></em>]
+</p>
+
+<p>Read next line of input. Original <i class="command">awk</i> does not
+support the syntax to open multiple input streams. The first form
+reads input from <em class="replaceable"><tt>file</tt></em>, and the second form
+reads the standard output of a Unix
+<em class="replaceable"><tt>command</tt></em>. Both forms read one line at a
+time, and each time the statement is executed, it gets the next line
+of input. The line of input is assigned to <tt class="literal">$0</tt>, and
+it is parsed into fields, setting <em class="emphasis">NF</em>,
+<em class="emphasis">NR</em>, and <em class="emphasis">FNR</em>. If
+<em class="replaceable"><tt>var</tt></em> is specified, the result is assigned
+to <em class="replaceable"><tt>var</tt></em> and the <tt class="literal">$0</tt> is
+not changed. Thus, if the result is assigned to a variable, the
+current line does not change. <em class="emphasis">getline</em> is
+actually a function, and it returns 1 if it reads a record
+successfully, 0 if end-of-file is encountered, and -1 if for some
+reason it is otherwise unsuccessful. (<i class="command">nawk</i>)
+</p>
+</dd><dt><i><em class="emphasis">gsub</em></tt></i></dt>
+<dd>
+<tt class="literal">gsub(</tt><tt><em class="replaceable"><tt>r</em></tt>,<tt><em class="replaceable">s</em></tt>[,<tt><em class="replaceable">t</tt></em></tt>]<tt class="literal">)</tt>
+</p>
+
+<p>Globally substitute <tt><em class="replaceable"><tt>s</tt></em></tt> for each match of
+the <a name="IXT-20-317" /><a name="IXT-20-318" /> <a name="IXT-20-319" />regular expression
+<tt><em class="replaceable"><tt>r</tt></em></tt> in the string
+<tt><em class="replaceable"><tt>t</tt></em></tt>. Return the number of substitutions. If
+<tt><em class="replaceable"><tt>t</tt></em></tt> is not supplied, defaults to
+<tt class="literal">$0</tt>. (<i class="command">nawk</i>)
+</p>
+</dd><dt><i><em class="emphasis">if</em></tt></i></dt>
+<dd>
+<tt class="literal">if
+(</tt><em class="replaceable"><tt>condition</tt></em><tt class="literal">)</tt>
+<em class="replaceable"><tt>command</tt></em> <tt class="literal">[else</tt>
+<em class="replaceable"><tt>command</tt></em><tt class="literal">]</tt>
+</p>
+
+<p>If <em class="replaceable"><tt>condition</tt></em> is true, do
+<em class="replaceable"><tt>command(s)</tt></em>, otherwise do
+<a name="IXT-20-320" /><em class="replaceable"><tt>command(s)</tt></em> in
+<em class="emphasis">else</em> clause (if any).
+<em class="replaceable"><tt>condition</tt></em> can be an expression that uses
+any of the <a name="IXT-20-321" /><a name="IXT-20-322" /> <a name="IXT-20-323" /><a name="IXT-20-324" />relational operators
+<tt class="literal">&lt;</tt>, <tt class="literal">&lt;=</tt>,
+<tt class="literal">==</tt>, <tt class="literal">!=</tt><a name="IXT-20-325" /> <a name="IXT-20-326" />,
+<tt class="literal">&gt;=</tt>, or <tt class="literal">&gt;</tt>, as well as the
+<a name="IXT-20-327" /> <a name="IXT-20-328" /><a name="IXT-20-329" /> <a name="IXT-20-330" />pattern-matching operators
+<tt class="literal">~</tt> or <tt class="literal">!~</tt> (e.g., <tt class="literal">if ($1
+~ /[Aa].*[Zz]/)</tt>). A series of
+<em class="replaceable"><tt>command</tt></em>s must be put within braces
+(<tt class="literal">{}</tt>).
+</p>
+</dd><dt><i><em class="emphasis">index</em></tt></i></dt>
+<dd>
+<tt class="literal">index(</tt><tt><em class="replaceable"><tt>str</em></tt>,<tt><em class="replaceable">substr</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p>Return position of first substring <tt><em class="replaceable"><tt>substr</tt></em></tt>
+in string <tt><em class="replaceable"><tt>str</tt></em></tt> <a name="IXT-20-331" />or 0 if not found.
+</p>
+</dd><dt><i><em class="emphasis">int</em></tt></i></dt>
+<dd>
+<tt class="literal">int(</tt><em class="replaceable"><tt>arg</tt></em><tt class="literal">)</tt>
+</p>
+
+<p>Return integer value of <em class="replaceable"><tt>arg</tt></em>.
+<a name="IXT-20-332" />
+</p>
+</dd>
+
+<dt><i><em class="emphasis">length</em></tt></i></dt>
+<dd>
+<tt class="literal">length(</tt><tt><em class="replaceable"><tt>arg</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p>Return the length of <tt><em class="replaceable"><tt>arg</tt></em></tt>.
+<a name="IXT-20-333" />
+</p>
+</dd><dt><i><em class="emphasis">log</em></tt></i></dt>
+<dd>
+<tt class="literal">log(</tt><em class="replaceable"><tt>arg</tt></em><tt class="literal">)</tt>
+</p>
+
+<p>Return the natural logarithm of <em class="replaceable"><tt>arg</tt></em>.
+<a name="IXT-20-334" />
+</p>
+</dd>
+
+<dt><i><em class="emphasis">match</em></tt></i></dt>
+<dd>
+<tt class="literal">match(</tt><tt><em class="replaceable"><tt>s</em></tt>,<tt><em class="replaceable">r</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p>Function that matches the pattern, specified by the regular
+expression <a name="IXT-20-335" /><tt><em class="replaceable"><tt>r</tt></em></tt>, in the
+string <tt><em class="replaceable"><tt>s</tt></em></tt> and returns either the position
+in <tt><em class="replaceable"><tt>s</tt></em></tt> where the match begins or 0 if no
+occurrences are found. Sets the values of <em class="emphasis">RSTART</em></tt>
+and <em class="emphasis">RLENGTH</em></tt>. (<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i><em class="emphasis">next</em></tt></i></dt>
+<dd>
+Read next input line and start new cycle through pattern/procedures
+statements. <a name="IXT-20-336" />
+</p>
+</dd>
+
+
+<dt><i><em class="emphasis">print</em></tt></i></dt>
+<dd>
+<tt class="literal">print</tt> [<tt><em class="replaceable"><tt>args</tt></em></tt>]
+[<tt><em class="replaceable"><tt>destination</tt></em></tt>]
+</p>
+
+<p>Print <tt><em class="replaceable"><tt>args</tt></em></tt> on output, followed by a
+newline. <a name="IXT-20-337" /><tt><em class="replaceable"><tt>args</tt></em></tt> is usually
+one or more fields, but it may also be one or more of the predefined
+variables -- or arbitrary expressions. If no
+<tt><em class="replaceable"><tt>args</tt></em></tt> are given, prints
+<tt class="literal">$0</tt> (the current input record). Literal strings
+must be quoted. Fields are printed in the order they are listed. If
+separated by commas (,) in the argument list, they are separated in
+the output by the <em class="emphasis">OFS</em></tt> character. If separated by
+spaces, they are concatenated in the output.
+<tt><em class="replaceable"><tt>destination</tt></em></tt> is a Unix redirection or pipe
+expression (e.g., <tt class="literal">&gt;</tt>
+<tt><em class="replaceable"><tt>file</tt></em></tt>) that redirects the default
+standard output.
+</p>
+</dd>
+
+<dt><i><em class="emphasis">printf</em></tt></i></dt>
+<dd>
+<tt class="literal">printf</tt><em class="replaceable"><tt> format</tt></em> [,
+<em class="replaceable"><tt>expression(s)</tt></em>]
+[<em class="replaceable"><tt>destination</tt></em>]
+</p>
+
+<p>Formatted print statement. <a name="IXT-20-338" />Fields or variables can be formatted
+according to instructions in the <em class="replaceable"><tt>format</tt></em>
+argument. The number of <em class="replaceable"><tt>expression</tt></em>s must
+correspond to the number specified in the format sections.
+<em class="replaceable"><tt>format</tt></em> follows the conventions of the
+C-language <em class="emphasis">printf</em> statement. Here are a few of
+the most common formats:
+</p>
+</dd>
+
+<dt><tt class="literal">%s</tt></dt>
+<dd>
+A string.</p>
+</dd>
+
+
+<dt><tt class="literal">%d</tt></dt>
+<dd>
+A decimal number.</p>
+</dd>
+
+
+<dt><tt class="literal">%</tt><tt><em class="replaceable">n</em></tt>.<tt><em class="replaceable">m</em></tt><tt class="literal">f</tt></dt>
+<dd>
+A floating-point number, where <tt><em class="replaceable"><tt>n</tt></em></tt> is the
+total number of digits and <tt><em class="replaceable"><tt>m</tt></em></tt> is the number
+of digits after the decimal point.
+</p>
+</dd>
+
+
+<dt><tt class="literal">%</tt>[<tt class="literal">-</tt>]<tt><em class="replaceable">nc</em></tt></dt>
+<dd>
+<em class="replaceable"><tt>n</tt></em> specifies minimum field length for
+format type <em class="replaceable"><tt>c</tt></em>, while <tt class="literal">-</tt>
+left-justifies value in field; otherwise value is right-justified.
+</p>
+
+<p><em class="replaceable"><tt>format</tt></em> can also contain embedded escape
+sequences: <tt class="literal">\n</tt> (newline) or <tt class="literal">\t</tt>
+(tab) are the most common. <em class="replaceable"><tt>destination</tt></em> is
+a Unix redirection or pipe expression (e.g., <tt class="literal">&gt;</tt>
+<em class="replaceable"><tt>file</tt></em>) that redirects the default
+standard output.
+</p>
+
+<p>For example, using the following script:</p>
+
+<blockquote><pre class="code">{printf "The sum on line %s is %d.\n", NR, $1+$2}</pre></blockquote>
+
+<p>and the following input line:</p>
+
+<blockquote><pre class="code">5   5</pre></blockquote>
+
+<p>produces this output, followed by a newline:</p>
+
+<blockquote><pre class="code">The sum on line 1 is 10.</pre></blockquote>
+</dd>
+
+
+<dt><i><em class="emphasis">rand</em></tt></i></dt>
+<dd>
+<tt class="literal">rand( )</tt></p>
+
+<p>Generate a random number between 0 and 1. <a name="IXT-20-339" />This function returns the same
+series of numbers each time the script is executed, unless the random
+number generator is seeded using the <em class="emphasis">srand( )</em></tt>
+function. (<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i><em class="emphasis">return</em></tt></i></dt>
+<dd>
+<tt class="literal">return</tt> [<em class="replaceable"><tt>expr</tt></em>]</p>
+
+<p>Used at end of user-defined functions to exit the function,
+<a name="IXT-20-340" />returning value of expression
+<em class="replaceable"><tt>expr</tt></em>, if any. (<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i>sin</i></dt>
+<dd>
+<tt class="literal">sin(</tt><tt><em class="replaceable"><tt>x</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p><a name="IXT-20-341" />Return
+sine of <tt><em class="replaceable"><tt>x</tt></em></tt> (in radians).
+(<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i><em class="emphasis">split</em></tt></i></dt>
+<dd>
+<tt class="literal">split(</tt><em class="replaceable"><tt>string</em>,<em class="replaceable">array</em>[,<em class="replaceable">sep</tt></em>]<tt class="literal">)</tt>
+</p>
+
+<p>Split <em class="replaceable"><tt>string</tt></em> into elements of
+<em class="replaceable"><tt>array</tt></em> <a name="IXT-20-342" /><tt class="literal">array[1]</tt>,
+. . .
+,<tt class="literal">array[</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">]</tt>.
+<em class="replaceable"><tt>string</tt></em> is split at each occurrence of
+separator <em class="replaceable"><tt>sep</tt></em>. (In
+<i class="command">nawk</i>, the separator may be a regular expression.)
+If <em class="replaceable"><tt>sep</tt></em> is not specified,
+<em class="emphasis">FS</em> is used. The number of array elements created
+is returned.
+</p>
+</dd>
+
+<dt><i><em class="emphasis">sprintf</em></tt></i></dt>
+<dd>
+<tt class="literal">sprintf (</tt><tt><em class="replaceable"><tt>format</tt></em></tt> [,
+<tt><em class="replaceable"><tt>expression(s)</tt></em></tt>]<tt class="literal">)</tt>
+</p>
+
+<p>Return the value of <tt><em class="replaceable"><tt>expression(s)</tt></em></tt>, using
+the specified <tt><em class="replaceable"><tt>format</tt></em></tt>
+<a name="IXT-20-343" />(see
+<em class="emphasis">printf</em></tt>). Data is formatted but not printed.
+</p>
+</dd>
+
+<dt><i><em class="emphasis">sqrt</em></tt></i></dt>
+<dd>
+<tt class="literal">sqrt(</tt><em class="replaceable"><tt>arg</tt></em><tt class="literal">)</tt>
+</p>
+
+<p>Return square root of <em class="replaceable"><tt>arg</tt></em>.
+<a name="IXT-20-344" />
+</p>
+</dd>
+
+<dt><i><em class="emphasis">srand</em></tt></i></dt>
+<dd>
+<tt class="literal">srand(</tt><tt><em class="replaceable"><tt>expr</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p><a name="IXT-20-345" /><a name="IXT-20-346" />Use <tt><em class="replaceable"><tt>expr</tt></em></tt> to
+set a new seed for random number generator. Default is time of day.
+Returns the old seed. (<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i><em class="emphasis">sub</em></tt></i></dt>
+<dd>
+<tt class="literal">sub(</tt><em class="replaceable"><tt>r</em>,<em class="replaceable">s</em>[,<em class="replaceable">t</tt></em>]<tt class="literal">)</tt>
+</p>
+
+<p>Substitute <em class="replaceable"><tt>s</tt></em> for first match of the
+<a name="IXT-20-347" /><a name="IXT-20-348" /> <a name="IXT-20-349" />regular expression
+<em class="replaceable"><tt>r</tt></em> in the string
+<em class="replaceable"><tt>t</tt></em>. Return 1 if successful; 0 otherwise. If
+<em class="replaceable"><tt>t</tt></em> is not supplied, defaults to
+<tt class="literal">$0</tt>. (<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i><em class="emphasis">substr</em></tt></i></dt>
+<dd>
+<tt class="literal">substr(</tt><tt><em class="replaceable"><tt>string</em></tt>,<tt><em class="replaceable">m</em></tt>[,<tt><em class="replaceable">n</tt></em></tt>]<tt class="literal">)</tt>
+</p>
+
+<p>Return substring of <tt><em class="replaceable"><tt>string</tt></em></tt>, beginning at
+character position <a name="IXT-20-350" /><a name="IXT-20-351" /><tt><em class="replaceable"><tt>m</tt></em></tt> and
+consisting of the next <tt><em class="replaceable"><tt>n</tt></em></tt> characters. If
+<tt><em class="replaceable"><tt>n</tt></em></tt> is omitted, include all characters to
+the end of string.
+</p>
+</dd>
+
+<dt><i><em class="emphasis">system</em></tt></i></dt>
+<dd>
+<tt class="literal">system(</tt><em class="replaceable"><tt>command</tt></em><tt class="literal">)</tt>
+</p>
+
+<p>Function that executes the specified Unix
+<em class="replaceable"><tt>command</tt></em> and returns its
+<a name="IXT-20-352" /><a name="IXT-20-353" /><b class="emphasis-bold">status</b>
+(<a href="ch34_12.htm#upt3-CHP-34-SECT-12">Section 34.12</a>). The status of the command that is
+executed typically indicates its success (0) or failure (nonzero).
+The output of the command is not available for processing within the
+<i class="command">nawk</i> script. Use
+<em class="replaceable"><tt>command</tt></em> <tt class="literal">|</tt>
+<tt class="literal">getline</tt> to read the output of the command into the
+script. (<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i><em class="emphasis">tolower</em></tt></i></dt>
+<dd>
+<tt class="literal">tolower(</tt><tt><em class="replaceable"><tt>str</tt></em></tt><tt class="literal">)</tt>
+</p>
+
+<p>Translate all uppercase characters <a name="IXT-20-354" /><a name="IXT-20-355" />in <tt><em class="replaceable"><tt>str</tt></em></tt> to
+lowercase and return the new string. (<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i><em class="emphasis">toupper</em></tt></i></dt>
+<dd>
+<tt class="literal">toupper(</tt><em class="replaceable"><tt>str</tt></em><tt class="literal">)</tt>
+</p>
+
+<p>Translate all lowercase characters <a name="IXT-20-356" />in <em class="replaceable"><tt>str</tt></em>
+to uppercase and return the new string. (<i class="command">nawk</i>)
+</p>
+</dd>
+
+<dt><i> <em class="emphasis">while</em></tt> </i></dt>
+<dd>
+<tt class="literal">while</tt> (<tt><em class="replaceable"><tt>condition</tt></em></tt>)
+<tt><em class="replaceable"><tt>command</tt></em></tt>
+</p>
+
+<p>Do <tt><em class="replaceable"><tt>command</tt></em></tt> while
+<tt><em class="replaceable"><tt>condition</tt></em></tt> is true (see
+<em class="emphasis">if</em></tt> for a <a name="IXT-20-357" />description of allowable conditions). A
+series of commands must be put within braces
+(<tt class="literal">{}</tt>).
+</p>
+</dd></dl>
+
+<p> <em class="emphasis">-- DG</em></tt></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch20_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">20.9. patch: Generalized Updating of Files That Differ</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">20.11. Versions of awk</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

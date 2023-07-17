@@ -1,0 +1,161 @@
+<html><head><title>sed Addressing Basics (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.5. sed Addressing Basics</h2>
+
+<p><a name="upt3-IDXTERM-5218" />
+<a name="upt3-IDXTERM-5219" />A <i class="command">sed</i> command can
+specify zero, one, or two addresses. An address can be a line number,
+a line addressing symbol, or a <b class="emphasis-bold">regular
+expression</b> (<a name="IXT-34-714" /><a href="ch32_04.htm#upt3-CHP-32-SECT-4">Section 32.4</a>) that describes a pattern.
+</p>
+
+<ul><li>
+<p>If no address is specified, the command is applied to each line.</p>
+</li><li>
+<p>If there is only one address, the command is applied to any line
+matching the address.
+</p>
+</li><li>
+<p>If two comma-separated addresses are specified, the command is
+performed on the first matching line and all succeeding lines up to
+and including a line matching the second address. This range may
+match multiple times throughout the input.
+</p>
+</li><li>
+<p>If an address is followed by an <a name="IXT-34-715" />exclamation mark (<tt class="literal">!</tt>),
+the command is applied to all lines that do <em class="emphasis">not</em>
+match the address.
+</p>
+</li></ul>
+<p>To illustrate how addressing works, let's look at
+examples using the <a name="IXT-34-716" /><a name="IXT-34-717" />delete command, <em class="emphasis">d</em>.
+A script consisting of simply the <em class="emphasis">d</em> command and
+no address:
+</p>
+
+<blockquote><pre class="code">d</pre></blockquote>
+
+<p>produces no output since it deletes <em class="emphasis">all</em> lines.</p>
+
+<p>When a <a name="IXT-34-718" />line number is
+supplied as an address, the command affects only that line. For
+instance, the following example deletes only the first line:
+</p>
+
+<blockquote><pre class="code">1d</pre></blockquote>
+
+<p>The line number refers to an internal line count maintained by
+<i class="command">sed</i>. This counter is not reset for multiple input
+files. Thus, no matter how many files were specified as input, there
+is only one line 1 in the input stream.
+</p>
+
+<p>Similarly, the input stream has only one last line. It can be
+specified using the addressing symbol,<a name="IXT-34-719" /> <tt class="literal">$</tt>. The following
+example deletes the last line of input:
+</p>
+
+<blockquote><pre class="code">$d</pre></blockquote>
+
+<p>The <tt class="literal">$</tt> symbol should not be confused with the
+<tt class="literal">$</tt> used in regular expressions, where it means the
+end of the line.
+</p>
+
+<p>When a <a name="IXT-34-720" />regular
+expression is supplied as an address, the command affects only the
+lines matching that pattern. The regular expression must be enclosed
+by slashes (<tt class="literal">/</tt>). The following delete command:
+</p>
+
+<blockquote><pre class="code">/^$/d</pre></blockquote>
+
+<p>deletes only blank lines. All other lines are passed through
+untouched.
+</p>
+
+<p>If you supply two addresses, you specify a range of lines over which
+the command is executed. The following example shows how to delete
+all lines surrounded by a pair of XHTML tags, in this case,
+<tt class="literal">&lt;ul&gt;</tt> and <tt class="literal">&lt;/ul&gt;</tt>,
+that mark the start and end of an unordered list:
+</p>
+
+<blockquote><pre class="code">/^&lt;ul&gt;/,/^&lt;\/ul&gt;/d</pre></blockquote>
+
+<p>It deletes all lines beginning with the line matched by the first
+pattern up to and including the line matched by the second pattern.
+Lines outside this range are not affected. If there is more than one
+list (another pair of <tt class="literal">&lt;ul&gt;</tt> and
+<tt class="literal">&lt;/ul&gt;</tt> after the first), those lists will
+also be deleted.
+</p>
+
+<p>The following command deletes from line 50 to the last line in the
+file:
+</p>
+
+<blockquote><pre class="code">50,$d</pre></blockquote>
+
+<p>You can mix a line address and a pattern address:</p>
+
+<blockquote><pre class="code">1,/^$/d</pre></blockquote>
+
+<p>This example deletes from the first line up to the first blank line,
+which, for instance, will delete the header from an email message.
+</p>
+
+<p>You can think of the first address as enabling the action and the
+second address as disabling it. <i class="command">sed</i> has no way of
+looking ahead to determine if the second match will be made. The
+action will be applied to lines once the first match is made. The
+command will be applied to <em class="emphasis">all</em> subsequent lines
+until the second match is made. In the previous example, if the file
+did not contain a blank line, then all lines would be deleted.
+</p>
+
+<p>An exclamation mark following an address reverses the sense of the
+match. For instance, the following script deletes all lines
+<em class="emphasis">except</em> those inside XHTML unordered lists:
+</p>
+
+<blockquote><pre class="code">/^&lt;ul&gt;/,/^&lt;\/ul&gt;/!d</pre></blockquote>
+
+<p>Curly braces (<tt class="literal">{}</tt>) let you give more than one
+command with an address. For example, to search every line of a list,
+capitalize the word <tt class="literal">Caution</tt> on any of those lines,
+and delete any line with <tt class="literal">&lt;br /&gt;</tt>:
+</p>
+
+<blockquote><pre class="code">/^&lt;ul&gt;/,/^&lt;\/ul&gt;/{
+    s/Caution/CAUTION/g
+    /&lt;br \/&gt;/d
+}</pre></blockquote>
+
+<p> <em class="emphasis">-- DD<a name="IXTR3-815" /> <a name="IXTR3-816" /></em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.4. Testing and Using a sed Script: checksed, runsed</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.6. Order of Commands in a Script</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

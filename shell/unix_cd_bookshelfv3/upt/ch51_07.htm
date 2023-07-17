@@ -1,0 +1,644 @@
+<html><head><title>Server and Client Problems (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch51_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="gloss.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">51.7. Server and Client Problems</h2>
+
+<p><b class="emphasis-bold">Q:</b> <a name="upt3-IDXTERM-8032" /> <a name="upt3-IDXTERM-8033" /> <a name="upt3-IDXTERM-8034" />How do I get
+<a name="IXT-51-674" /><a name="IXT-51-675" />sshd to recognize a new configuration
+file?
+</p>
+
+<p><b class="emphasis-bold">A:</b> You can terminate and restart <em class="emphasis">sshd</em>, but
+there's quicker way: send the
+"hangup" signal (SIGHUP) to
+<em class="emphasis">sshd</em> with <em class="emphasis">kill -HUP</em>.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> I changed the sshd config file and sent SIGHUP to the server. But it
+didn't seem to make any difference.
+</p>
+
+<p><b class="emphasis-bold">A:</b> <em class="emphasis">sshd</em> may have been invoked with a command-line
+option that overrides that keyword. Command-line options remain in
+force and take precedence over configuration file keywords. Try
+terminating and restarting <em class="emphasis">sshd</em>.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> A feature of ssh or scp isn't working, but
+I'm sure I'm using it correctly.
+</p>
+
+<p><b class="emphasis-bold">A:</b> The feature might have been disabled by a system administrator,
+either when the SSH software was compiled (<a href="ch04_01.htm">Chapter 4</a>) or during serverwide configuration (<a href="ch05_01.htm">Chapter 5</a>). Compile-time flags cannot be checked easily,
+but serverwide configurations are found in the files
+<em class="emphasis">/etc/sshd_config</em> (SSH1, OpenSSH) or
+<em class="emphasis">/etc/ssh2/sshd2_config</em> (SSH2). Ask your system
+administrator for assistance.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh or scp is behaving unexpectedly, using features I
+didn't request.
+</p>
+
+<p><b class="emphasis-bold">A:</b> The program might be responding to keywords specified in your
+<b class="emphasis-bold">client configuration file</b> (<a href="ch07_01.htm#upt3-CHP-7-SECT-1">Section 7.1</a>). Remember that multiple sections of the
+<em class="emphasis">config</em> file apply if multiple
+<tt class="literal">Host</tt> lines match the remote machine name you
+specified on the command line.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> My SSH1 .ssh/config file doesn't seem to work right.</p>
+
+<p><b class="emphasis-bold">A:</b> Remember that after the first use of a
+"Host" directive in the
+<em class="emphasis">config</em> file, all statements are inside some
+<tt class="literal">Host</tt> block, because a <tt class="literal">Host</tt>
+block is only terminated by the start of another
+<tt class="literal">Host</tt> block. The <em class="emphasis">ssh1</em> manpage
+suggests that you put defaults at the end of the
+<em class="emphasis">config</em> file, which is correct; when looking up a
+directive in the <em class="emphasis">config</em> file,
+<em class="emphasis">ssh1</em> uses the first match it finds, so defaults
+should go after any <tt class="literal">Host</tt> blocks. But
+don't let your own indentation or whitespace fool
+you. The end of your file might look like:
+</p>
+
+<blockquote><pre class="code"># last Host block
+Host server.example.com
+ User linda
+# defaults
+User smith</pre></blockquote>
+
+<p>You intend that the username for logging into
+<em class="emphasis">server.example.com</em> is
+"linda", and the default username
+for hosts not explicitly listed earlier is
+"smith". However, the line
+"User smith" is still inside the
+"Host server.example.com" block.
+And since there's an earlier <tt class="literal">User</tt>
+statement for <em class="emphasis">server.example.com</em>,
+"User smith"
+doesn't ever match anything, and
+<em class="emphasis">ssh</em> appears to ignore it. The right thing to do
+is this:
+</p>
+
+<blockquote><pre class="code"># last Host block
+Host server.example.com
+ User linda
+# defaults
+Host *
+ User smith</pre></blockquote>
+
+<p><b class="emphasis-bold">Q:</b> My .ssh2/ssh2_config file doesn't seem to work right.</p>
+
+<p><b class="emphasis-bold">A:</b> See our answer to the previous question for SSH1. However, SSH2 has
+the opposite precedence rule: if multiple configurations match your
+target, the <em class="emphasis">last</em>, not the first, prevails.
+Therefore your defaults go at the beginning of the file.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> I want to suspend ssh with the escape sequence, but I am running more
+than two levels of ssh (machine to machine to machine). How do I
+suspend an intermediate ssh?
+</p>
+
+<p><b class="emphasis-bold">A:</b> One method is to start each <em class="emphasis">ssh</em> with a different
+escape character; otherwise, the earliest <em class="emphasis">ssh</em>
+client in the chain interprets the escape character and suspends.
+</p>
+
+<p>Or you can be clever. Remember that if you type the escape character
+twice, that's the meta-escape: it allows you to send
+the escape character itself, circumventing its usual special
+function. So, if you have several chained <em class="emphasis">ssh</em>
+sessions, all using the default escape character ~, you can suspend
+the <em class="emphasis">n</em>th one by pressing the Return key, then
+<em class="emphasis">n</em> tildes, then Control-Z.</p>
+
+<p><b class="emphasis-bold">Q:</b> I ran an ssh command in the background on the command line, and it
+suspended itself, not running unless I
+"fg" it.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Use the <em class="emphasis">-n</em> command-line option, which instructs
+<em class="emphasis">ssh</em> not to read from stdin (actually, it reopens
+stdin on <em class="emphasis">/dev/null</em> instead of your terminal).
+Otherwise, the shell's job-control facility suspends
+the program if it reads from stdin while in the background.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh prints "Compression level must be from 1 (fast)
+to 9 (slow, best)" and exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Your <tt class="literal">CompressionLevel</tt> is set to an illegal value
+for this host, probably in your <em class="emphasis">~/.ssh/config</em>
+file. It must be an integer between 1 and 9, inclusive.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh prints "rsh not available" and
+exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Your SSH connection attempt failed, and your client was configured to
+fall back to an <em class="emphasis">rsh</em> connection. However, the
+server was compiled without <em class="emphasis">rsh</em> fallback support
+or with an invalid path to the <em class="emphasis">rsh</em> executable.
+</p>
+
+<p>If you didn't expect your SSH connection to fail,
+run the client in debug mode and look for the reason. Otherwise, the
+SSH server is just not set up to receive <em class="emphasis">rsh</em>
+connections.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh1 prints "Too many identity files specified (max
+100)" and exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> SSH1 has a hardcoded limit of 100 identity files (private key files)
+per session. Either you ran an <em class="emphasis">ssh1</em> command line
+with over 100 <em class="emphasis">-i</em> options, or your configuration
+file <em class="emphasis">~/.ssh/config</em> has an entry with over 100
+<tt class="literal">IdentityFile</tt> keywords. You should never see this
+message unless your SSH command lines and/or configuration files are
+being generated automatically by another application, and something
+in that application has run amok. (Or else you're
+doing something <em class="emphasis">really</em> funky.)
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh1 prints "Cannot fork into background without a
+command to execute" and exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> You used the <em class="emphasis">-f</em> flag of
+<em class="emphasis">ssh1</em>, didn't you? This tells
+the client to put itself into the background as soon as
+authentication completes, and then execute whatever remote command
+you requested. But, you didn't provide a remote
+command. You typed something like:
+</p>
+
+<blockquote><pre class="code"># This is wrong
+$ <tt class="userinput"><b>ssh1 -f server.example.com</b></tt></pre></blockquote>
+
+<p>The <em class="emphasis">-f</em> flag makes sense only when you give
+<em class="emphasis">ssh1</em> a command to run after it goes into the
+background:
+</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>ssh1 -f server.example.com /bin/who</b></tt></pre></blockquote>
+
+<p>If you just want the SSH session for port-forwarding purposes, you
+may not want to give a command. You have to give one anyway; the SSH1
+protocol requires it. Use <em class="emphasis">sleep 100000</em>.
+Don't use an infinite loop like the shell command
+<em class="emphasis">while true; do false; done</em>. This gives you the
+same effect, but your remote shell will eat all the spare CPU time on
+the remote machine, annoying the sysadmin and shortening your
+account's life expectancy.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh1 prints "Hostname or username is longer than 255
+characters" and exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> <em class="emphasis">ssh1</em> has a static limit of 255 characters for
+the name of a remote host or a remote account (username). You
+instructed <em class="emphasis">ssh1</em>, either on the command line or
+in your configuration file, to use a hostname or username
+that's longer than this limit.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh1 prints "No host key is known for &lt;server
+name&gt; and you have requested strict checking (or
+`cannot confirm operation when running in batch
+mode')," and exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> The client can't find the server's
+host key in its known-hosts list, and it is configured not to add it
+automatically (or is running in batch mode and so
+can't prompt you about adding it). You must add it
+manually to your per-account or systemwide known-hosts files.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh1 prints "Selected cipher type . . . not
+supported by server" and exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> You requested that <em class="emphasis">ssh1</em> use a particular
+encryption cipher, but the SSH1 server doesn't
+support it. Normally, the SSH1 client and server negotiate to
+determine which cipher to use, so you probably forced a particular
+cipher by providing the <em class="emphasis">-c</em> flag on the
+<em class="emphasis">ssh1</em> command line or by using the
+<tt class="literal">Cipher</tt> keyword in the configuration file. Either
+don't specify a cipher and let the client and server
+work it out, or select a different cipher.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> ssh1 prints "channel_request_remote_forwarding: too
+many forwards" and exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> <em class="emphasis">ssh1</em> has a static limit of 100 forwardings per
+session, and you've requested more.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> <a name="IXT-51-676" />scp printed an error message:
+"Write failed flushing stdout buffer. write stdout:
+Broken pipe" or "packet too
+long".
+</p>
+
+<p><b class="emphasis-bold">A:</b> Your shell startup file (e.g., <em class="emphasis">~/.cshrc</em>,
+<em class="emphasis">~/.bashrc</em>), which is run when
+<em class="emphasis">scp</em> connects, might be writing a message on
+standard output. These interfere with the communication between the
+two <em class="emphasis">scp1</em> programs (or <em class="emphasis">scp2</em>
+and <em class="emphasis">sftp-server)</em>. If you don't
+see any obvious output commands, look for <em class="emphasis">stty</em>
+or <em class="emphasis">tset</em> commands that might be printing
+something.
+</p>
+
+<p>Either remove the offending statement from the startup file or
+suppress it for noninteractive sessions:
+</p>
+
+<blockquote><pre class="code">if ($?prompt) then
+  echo 'Here is the message that screws up scp.'
+endif</pre></blockquote>
+
+<p>The latest versions of SSH2 have a new server configuration
+statement, <tt class="literal">AllowCshrcSourcingWithSubsystems</tt>, which
+should be set to <tt class="literal">no</tt> to prevent this problem.
+</p>
+<p><b class="emphasis-bold">Q:</b> scp printed an error message, "Not a regular
+file."
+</p>
+
+<p><b class="emphasis-bold">A:</b> Are you trying to copy a directory? Use the <em class="emphasis">-r</em>
+option for a recursive copy. Otherwise, you may be trying to copy a
+special file that it doesn't make sense to copy,
+such as a device node, socket, or named pipe. If you do an
+<em class="emphasis">ls -l</em> of the file in question and the first
+character in the file description is something other than
+<tt class="literal">-</tt> (for a regular file) or <tt class="literal">d</tt>
+(for a directory), this is probably what's
+happening. You didn't really want to copy that file,
+did you?
+</p>
+
+<p><b class="emphasis-bold">Q:</b> Why don't wildcards or shell variables work on the
+scp command line?
+</p>
+
+<p><b class="emphasis-bold">A:</b> Remember that wildcards and variables are expanded by the
+<em class="emphasis">local</em> shell first, not on the remote machine.
+This happens even before <em class="emphasis">scp</em> runs. So if you
+type:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>scp server.example.com:a* .</b></tt></pre></blockquote>
+
+<p>the local shell attempts to find local files matching the pattern
+<tt class="literal">server.example.com:a*</tt>. This is probably not what
+you intended. You probably wanted files matching
+<tt class="literal">a*</tt> on <em class="emphasis">server.example.com</em> to
+be copied to the local machine.
+</p>
+
+<p>Some shells, notably C shell and its derivatives, simply report
+"No match" and exit. Bourne shell
+and its derivatives (<em class="emphasis">sh</em>,
+<em class="emphasis">ksh</em>, <em class="emphasis">bash</em>), finding no
+match, will actually pass the string
+<tt class="literal">server.example.com:a*</tt> to the server as
+you'd hoped.
+</p>
+
+<p>Similarly, if you want to copy your remote mail file to the local
+machine, the command:
+</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>scp server.example.com:$MAIL .</b></tt></pre></blockquote>
+
+<p>might not do what you intend. <tt class="literal">$MAIL</tt> is expanded
+locally before <em class="emphasis">scp</em> executes. Unless (by
+coincidence) <tt class="literal">$MAIL</tt> is the same on the local and
+remote machines, the command won't behave as
+expected.
+</p>
+
+<p>Don't rely on shell quirks and coincidences to get
+your work done. Instead, escape your wildcards and variables so the
+local shell won't attempt to expand them:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>scp server.example.com:a\* .</b></tt>
+$ <tt class="userinput"><b>scp 'server.example.com:$MAIL' .</b></tt></pre></blockquote>
+
+<p><b class="emphasis-bold">Q:</b> I used scp to copy a file from the local machine to a remote machine.
+It ran without errors. But when I logged into the remote machine, the
+file wasn't there!
+</p>
+
+<p><b class="emphasis-bold">A:</b> By any chance, did you omit a colon? Suppose you want to copy the
+file <em class="emphasis">myfile</em> from the local machine to
+<em class="emphasis">server.example.com</em>. A correct command is:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>scp myfile server.example.com</b></tt>:</pre></blockquote>
+
+<p>but if you forget the final colon:</p>
+
+<blockquote><pre class="code"># This is wrong!
+$ <tt class="userinput"><b>scp myfile server.example.com</b></tt></pre></blockquote>
+
+<p><em class="emphasis">myfile</em> gets copied locally to a file called
+<em class="filename">server.example.com</em>. Check for such a file on the
+local machine.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> How can I give somebody access to my account by scp to copy files but
+not give full login permissions?
+</p>
+
+<p><b class="emphasis-bold">A:</b> Bad idea. Even if you can limit the access to
+<em class="emphasis">scp</em>, this doesn't protect your
+account. Your friend could run:
+</p>
+
+<blockquote><pre class="code"><em class="replaceable"><tt>$ </tt></em><tt class="userinput"><b>scp evil_authorized_keys you@your.host:.ssh/authorized_keys</b></tt></pre></blockquote>
+
+<p>Oops, your friend has just replaced your
+<em class="emphasis">authorized_keys</em> file, giving himself full login
+permissions. Maybe you can accomplish what you want with a clever
+forced command, limiting the set of programs your friend may run in
+your account.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> <a name="IXT-51-677" />scp -p preserves file
+timestamps and modes. Can it preserve file ownership?
+</p>
+
+<p><b class="emphasis-bold">A:</b> No. Ownership of remote files is determined by SSH authentication.
+Suppose user smith has accounts on local computer
+<em class="emphasis">L</em> and remote computer <em class="emphasis">R</em>. If
+the local smith copies a file by <em class="emphasis">scp</em> to the
+remote smith account, authenticating by SSH, the remote file is owned
+by the <em class="emphasis">remote</em> smith. If you want the file to be
+owned by a different remote user, <em class="emphasis">scp</em> must
+authenticate as that different user. <em class="emphasis">scp</em> has no
+other knowledge of users and uids, and besides, only root can change
+file ownership (on most modern Unix variants, anyway).
+</p>
+
+<p><b class="emphasis-bold">Q:</b> Okay, scp -p doesn't preserve file ownership
+information. But I am the superuser, and I'm trying
+to copy a directory hierarchy between machines (scp -r) and the files
+have a variety of owners. How can I preserve the ownership
+information in the copies?
+</p>
+
+<p><b class="emphasis-bold">A:</b> Don't use <em class="emphasis">scp</em> for this purpose.
+Use <em class="emphasis">tar</em> and pipe it through
+<em class="emphasis">ssh</em>. From the local machine, type:
+</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>tar cpf - local_dir | (ssh remote_machine "cd remote_dir; tar xpf -")</b></tt></pre></blockquote>
+
+<p><b class="emphasis-bold">Q:</b> sftp2 reports "Cipher &lt;name&gt; is not supported.
+Connection lost."
+</p>
+
+<p><b class="emphasis-bold">A:</b> Internally, <em class="emphasis">sftp2</em> invokes an
+<em class="emphasis">ssh2</em> command to contact
+<em class="emphasis">sftp-server</em>. It searches the
+user's PATH to locate the <em class="emphasis">ssh2</em>
+executable rather than a hardcoded location. If you have more than
+one version of SSH2 installed on your system,
+<em class="emphasis">sftp2</em> might invoke the wrong
+<em class="emphasis">ssh2</em> program. This can produce the error message
+shown.
+</p>
+
+<p>For example, suppose you have both SSH2 and F-Secure SSH2 installed.
+SSH2 is installed in the usual place, under
+<em class="emphasis">/usr/local</em>, whereas F-Secure is installed under
+<em class="emphasis">/usr/local/f-secure</em>. You ordinarily use SSH2, so
+<em class="emphasis">/usr/local/bin</em> is in your PATH, but
+<em class="emphasis">/usr/local/f-secure</em> isn't. You
+decide to use the F-Secure version of <em class="emphasis">scp2</em>
+because you want the CAST-128 cipher, which SSH2
+doesn't include. First, you confirm that the SSH
+server in question supports CAST-128:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>/usr/local/f-secure/bin/ssh2 -v -c cast server</b></tt>
+  ...
+debug: c_to_s: cipher cast128-cbc, mac hmac-sha1, compression none
+debug: s_to_c: cipher cast128-cbc, mac hmac-sha1, compression none</pre></blockquote>
+
+<p>Satisfied, you try <em class="emphasis">scp2</em> and get this:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>/usr/local/f-secure/bin/scp2 -c cast foo server:bar</b></tt>
+FATAL: ssh2: Cipher cast is not supported.
+Connection lost.</pre></blockquote>
+
+<p><em class="emphasis">scp2</em> is running the wrong copy of
+<em class="emphasis">ssh2</em> from
+<em class="emphasis">/usr/local/bin/ssh2</em>, rather than
+<em class="emphasis">/usr/local/f-secure/bin/ssh2</em>. To fix this,
+simply put <em class="emphasis">/usr/local/f-secure/bin</em> earlier in
+your PATH than <em class="emphasis">/usr/local/bin</em>, or specify the
+alternative location of <em class="emphasis">ssh2</em> with <em class="emphasis">scp2
+-S</em>.
+</p>
+
+<p>The same problem can occur in other situations where SSH programs run
+other programs. We have run afoul of it using host-based
+authentication with both 2.1.0 and 2.2.0 installed. The later
+<em class="emphasis">ssh2</em> ran the earlier
+<em class="emphasis">ssh-signer2</em> program, and the client/signer
+protocol had changed, causing it to hang.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> sftp2 reports "ssh_packet_wrapper_input: invalid
+packet received."
+</p>
+
+<p><b class="emphasis-bold">A:</b> Although this error appears mysterious, its cause is mundane. A
+command in the remote account's shell startup file
+is printing something to standard output, even though stdout
+isn't a terminal in this case, and
+<em class="emphasis">sftp2</em> is trying to interpret this unexpected
+output as part of the SFTP packet protocol. It fails and dies.
+</p>
+
+<p>You see, <em class="emphasis">sshd</em> uses the shell to start the
+<em class="emphasis">sftp-server</em> subsystem. The
+user's shell startup file prints something, which
+the SFTP client tries to interpret as an SFTP protocol packet. This
+fails, and the client exits with the error message; the first field
+in a packet is the length field, which is why it's
+always that message.
+</p>
+
+<p>To fix this problem, be sure your shell startup file
+doesn't print anything unless it's
+running interactively. <em class="emphasis">tcsh</em>, for example, sets
+the variable <tt class="literal">$interactive</tt> if stdin is a terminal.
+This problem has been addressed in SSH 2.2.0 with the
+<tt class="literal">AllowCshrcSourcingWithSubsystems</tt> flag, which
+defaults to <tt class="literal">no</tt>, instructing the shell not to run
+the user's startup file.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> <a name="IXT-51-678" />I'm trying to
+do port forwarding, but ssh complains: "bind:
+Address already in use."
+</p>
+
+<p><b class="emphasis-bold">A:</b> The port you're trying to forward is already being
+used by another program on the listening side (the local host if
+it's a <em class="emphasis">-L</em> forwarding or the
+remote host if it's a <em class="emphasis">-R</em> ). Try
+using the <em class="emphasis">netstat -a</em> command, available on most
+Unix implementations and some Windows platforms. If you see an entry
+for your port in the LISTEN state, you know that something else is
+using that port. Check to see whether you've
+inadvertently left another <em class="emphasis">ssh</em> command running
+that's forwarding the same port. Otherwise, just
+choose another, unused port to forward.
+</p>
+
+<p>This problem can occur when there doesn't appear to
+be any other program using your port, especially if
+you've been experimenting with the forwarding
+feature and have repeatedly used the same <em class="emphasis">ssh</em> to
+forward the same port. If the last one of these died unexpectedly
+(you interrupted it, or it crashed, or the connection was forcibly
+closed from the other side, etc.), the local TCP socket may have been
+left in the TIME_WAIT state (you may see this if you used the
+<em class="emphasis">netstat</em> program as described earlier). When this
+happens, you have to wait a few minutes for the socket to time out of
+this state and become free for use again. Of course, you can just
+choose another port number if you're impatient.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> How do I secure <a name="IXT-51-679" />FTP with port forwarding?
+</p>
+
+<p><b class="emphasis-bold">A:</b> This is a complex topic. FTP has two types of TCP connections,
+control and data. The control connection carries your login name,
+password, and FTP commands; it is on TCP port 21 and can be forwarded
+by the standard method. In two windows, run:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ssh -L2001:name.of.server.com:21 name.of.server.com</b></tt>
+$ <tt class="userinput"><b>ftp localhost 2001</b></tt></pre></blockquote>
+
+<p>Your FTP client probably needs to run in passive mode (execute the
+<tt class="literal">passive</tt> command). FTP data connections carry the
+files being transferred. These connections occur on randomly selected
+TCP ports and can't be forwarded in general, unless
+you enjoy pain. If firewalls or NAT (network address translation) are
+involved, you may need additional steps (or it may not be possible).
+</p>
+
+<p><b class="emphasis-bold">Q:</b> <a name="IXT-51-680" />X forwarding
+isn't working.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Use <em class="emphasis">ssh -v</em>, and see if the output points out an
+obvious problem. If not, check the following.
+</p>
+
+<p>Make sure you have X working before using SSH. Try running a simple X
+client such as <em class="emphasis">xlogo</em> or
+<em class="emphasis">xterm</em> first. Your local
+<em class="emphasis">DISPLAY</em> variable must be set, or SSH
+doesn't attempt X forwarding.
+</p>
+
+<p>X forwarding must be turned on in the client and server, and not
+disallowed by the target account (that is, with
+<tt class="literal">no-X11-forwarding</tt> in the
+<em class="emphasis">authorized_keys</em> file).
+</p>
+
+<p><em class="emphasis">sshd</em> must be able to find the
+<em class="emphasis">xauth</em> program to run it on the remote side. If
+it can't, this should show up when running
+<em class="emphasis">ssh -v</em>. You can fix this on the server side with
+the <tt class="literal">XAuthLocation</tt> directive (SSH1, OpenSSH), or by
+setting a PATH (that contains <em class="emphasis">xauth</em>) in your
+remote shell startup file.
+</p>
+
+<p>Don't set the <em class="emphasis">DISPLAY</em> variable
+yourself on the remote side. <em class="emphasis">sshd</em> automatically
+sets this value correctly for the forwarding session. If you have
+commands in your login or shell startup files that unconditionally
+set <em class="emphasis">DISPLAY</em>, change the code to set it only if X
+forwarding isn't in use.
+</p>
+
+<p>OpenSSH sets the remote <em class="emphasis">XAUTHORITY</em> variable as
+well, placing the <em class="emphasis">xauth</em> credentials file under
+<em class="emphasis">/tmp</em>. Make sure you haven't
+overridden this setting, which should look like:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo $XAUTHORITY</b></tt>
+/tmp/ssh-maPK4047/cookies</pre></blockquote>
+
+<p>Some flavors of Unix actually have code in the standard shell startup
+files (e.g., <em class="emphasis">/etc/bashrc, /etc/csh.login</em>) that
+unconditionally sets <em class="emphasis">XAUTHORITY</em> to
+<em class="emphasis">~/.Xauthority</em>. If that's the
+problem, you must ask the sysadmin to fix it; the startup file should
+set <em class="emphasis">XAUTHORITY</em> only if the variable is unset.
+</p>
+
+<p>If you are using an SSH startup file (<em class="emphasis">/etc/sshrc</em>
+or <em class="emphasis">~/.ssh/rc</em>), <em class="emphasis">sshd</em>
+doesn't run <em class="emphasis">xauth</em> for you on
+the remote side to add the proxy key; one of these startup files must
+do it, receiving the proxy key type and data on standard input
+<a name="IXTR3-686" />
+<a name="IXTR3-687" />
+<a name="IXTR3-688" />from
+<em class="emphasis">sshd</em><a name="IXTR3-689" /> 
+</p>
+
+<p> <em class="emphasis">-- SP<a name="IXTR3-690" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch51_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="gloss.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">51.6. Key and Agent Problems</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">Glossary</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

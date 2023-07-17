@@ -1,0 +1,193 @@
+<html><head><title>Append, Insert, and Change (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.5. Append, Insert, and Change</h2>
+
+<p>
+<a name="ch05.app1" />
+<a name="ch05.app2" />
+<a name="ch05.app3" />
+<a name="IXT-5-265707" />
+<a name="IXT-5-265708" />
+<a name="IXT-5-265709" />
+The append (<b class="emphasis-bold">a</b>), insert (<b class="emphasis-bold">i</b>), and
+change (<b class="emphasis-bold">c</b>) commands provide editing functions that
+are commonly performed with an interactive editor, such as
+<b class="emphasis-bold">vi</b>.  You may find it strange to use these same
+commands to "enter" text using a noninteractive editor.  The syntax
+of these commands is unusual for sed because they must be specified
+over multiple lines.  The syntax follows:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">append</b>	[<em class="replaceable"><tt>line-address</tt></em>]<b class="emphasis-bold">a</b>\
+	<em class="replaceable"><tt>text</tt></em>
+<b class="emphasis-bold">insert</b>	[<em class="replaceable"><tt>line-address</tt></em>]<b class="emphasis-bold">i</b>\
+	<em class="replaceable"><tt>text</tt></em>
+<b class="emphasis-bold">change</b>	[<em class="replaceable"><tt>address</tt></em>]<b class="emphasis-bold">c</b>\
+	<em class="replaceable"><tt>text</tt></em></pre></blockquote><p>The insert command places the supplied text before the current line in
+the pattern space.  The append command places it after the current
+line.  The change command replaces the contents of the pattern space
+with the supplied text.</p>
+
+<p>Each of these commands requires a backslash following it to escape the
+first end-of-line.  The <em class="replaceable"><tt>text</tt></em> must begin on the
+next line.  To input multiple lines of text, each successive line must
+end with a backslash, with the exception of the very last line.  For
+example, the following insert command inserts two lines of text at a
+line matching "&lt;Larry's Address&gt;":</p>
+
+<blockquote><pre class="code">/&lt;Larry's Address&gt;/i\
+4700 Cross Court\
+French Lick, IN</pre></blockquote>
+
+<p>Also, if the text contains a literal backslash, add an extra backslash
+to escape it.<a href="#FOOTNOTE-31">[31]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-31" /><p> [31]The original UNIX documentation says that any
+leading tabs or spaces in the
+supplied text will disappear on output.  This is
+the case on older versions, such as SunOS 4.1.x and
+<em class="filename">/usr/ucb/sed</em> on Solaris.
+System V and GNU sed do not delete the leading whitespace.
+If they disappear on your system, the solution is to put a backslash at
+the beginning of the line, preceding the first tab or space.  The
+backslash is not output.</p>
+
+</blockquote>
+
+<p>The append and insert commands can be applied only to a single line
+address, not a range of lines.  The change command, however, can
+address a range of lines.  In this case, it replaces
+<em class="emphasis">all</em> addressed lines with a single copy of the
+text.  In other words, it deletes each line in the range but the
+supplied text is output only once.  For example, the following script,
+when run on a file containing a mail message:</p>
+
+<blockquote><pre class="code">/^From /,/^$/c\
+&lt;Mail Header Removed&gt;</pre></blockquote>
+
+<p>removes the entire mail-message header and replaces it with the line
+"&lt;Mail Header Removed&gt;."  Note that you will see the opposite
+behavior when the change command is one of a group of commands,
+enclosed in braces, that act on a range of lines.  For instance, the
+following script:</p>
+
+<blockquote><pre class="code">/^From /,/^$/{
+	s/^From //p
+	c\
+&lt;Mail Header Removed&gt;
+}</pre></blockquote>
+
+<p>will output "&lt;Mail Header Removed&gt;" for each line in the range.
+So, while the former example outputs the text once, this example
+will output it 10 times if there are 10 lines in the range.</p>
+
+<p>The change command clears the pattern space, having the same effect on
+the pattern space as the delete command.  No command following the
+change command in the script is applied.</p>
+
+<p>
+<a name="IXT-5-265710" />
+The insert and append commands do not affect the contents of the
+pattern space.  The supplied text will not match any address in
+subsequent commands in the script, nor can those commands affect the
+text.  No matter what changes occur to alter the pattern space, the
+supplied text will still be output appropriately.  This is also true
+when the default output is suppressed--the supplied text will be
+output even if the pattern space is not.  Also, the supplied text does
+not affect sed's internal line counter.</p>
+
+<p>Let's look at an example of the insert command.  Suppose we wanted to
+source a local file of macros in all the files of a particular
+document.  In addition, we'd like to define a page header string that
+identifies the document as a draft.  The following script inserts two
+new lines of text before the first line of a file:</p>
+
+<blockquote><pre class="code">1i\
+.so macros\
+.ds CH First Draft</pre></blockquote>
+
+<p>After sed executes this command, the pattern space remains unchanged.
+The new text is output before the current line.  A subsequent command
+could not successfully match "macros" or "First Draft."</p>
+
+<p>A variation of the previous example shows the append command adding a
+line to the end of a file:</p>
+
+<blockquote><pre class="code">$a\
+End of file</pre></blockquote>
+
+<p>The <b class="emphasis-bold">$</b> is a line-addressing symbol that matches the
+last line of a file.  The supplied text will be output after the
+current line, so it becomes the last line in the output.  Note that
+even though only one line is output, the supplied text must start on a
+line by itself and cannot be on the same line as the append command.</p>
+
+<p>The next example shows the insert and append commands used in the same
+script.  The task here is to add a few <b class="emphasis-bold">troff</b>
+requests before the macro that initializes a list, and several after
+the macro that closes the list.</p>
+
+<blockquote><pre class="code">/^\.Ls/i\
+.in 5n\
+.sp .3
+/^\.Le/a\
+.in 0\
+.sp .3</pre></blockquote>
+
+<p>The insert command puts two lines before the .Ls macro and the append
+command puts two lines after the .Le macro.</p>
+
+<p>The insert command can be used to put a blank line before the current
+line, or the append command to put one after, by leaving the line
+following it blank.</p>
+
+<p>The change command replaces the contents of the pattern space with the
+text you provide.  In effect, it deletes the current line and puts the
+supplied text in its place.  It can be used when you want to match a
+line and replace it entirely.  Let's say for instance that a file
+contains a lot of explicit <b class="emphasis-bold">troff</b> spacing requests
+with different amounts of spacing.  Look at the following series:</p>
+
+<blockquote><pre class="code">.sp 1.5
+.sp
+.sp 1
+.sp 1.5v
+.sp .3v
+.sp 3</pre></blockquote>
+
+<p>If you wanted to change all the arguments to ".5", it is probably
+easier to use the change command than try to match all the individual
+arguments and make the proper substitution.</p>
+
+<blockquote><pre class="code">/^\.sp/c\
+.sp .5</pre></blockquote>
+
+<p>This command allows us to ignore the arguments and replace them
+regardless of what they are.</p>
+
+<a name="IXT-5-265711" />
+<a name="IXT-5-265712" />
+<a name="IXT-5-265713" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.4. Delete</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.6. List</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

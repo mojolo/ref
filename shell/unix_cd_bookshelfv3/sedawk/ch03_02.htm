@@ -1,0 +1,1885 @@
+<html><head><title>A Line-Up of Characters (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.2. A Line-Up of Characters</h2>
+
+<p>We have seen two basic elements in an expression: 
+
+</p>
+
+<ol><li><p>A value expressed as a literal or a variable.</p></li>
+<li><p>An operator.</p></li></ol><p>A regular expression is made up of these same elements. 
+Any character, except the metacharacters 
+in <a href="ch03_02.htm#sedawk-ch-3-tab-1">Table 3.1</a>, is interpreted as a literal
+that matches only itself.</p>
+
+<a name="sedawk-ch-3-tab-1" /><h4 class="objtitle">Table 3.1. Summary of Metacharacters</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Special Characters</th>
+<th>Usage</th>
+</tr>
+
+
+
+
+<tr>
+<td>.</td>
+<td><p>Matches any <em class="emphasis">single</em> character except newline.
+In awk, dot can match <em class="emphasis">newline</em> also.
+<a name="IXT-3-265446" /></p></td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><p>Matches any number (including zero) of the single character 
+(including a character specified by a regular expression) 
+that immediately precedes it.</p></td>
+</tr>
+
+<tr>
+<td>[...]</td>
+<td><p>Matches any <em class="emphasis">one</em> of the class of characters enclosed between 
+the brackets.  A circumflex (^) as first character inside 
+brackets reverses the match to all characters except newline and 
+those listed in the class. In awk, newline will also match.
+A hyphen (-) is used to indicate 
+a range of characters.  The close bracket (]) as the first 
+character in class is a member of the class.  All other metacharacters 
+lose their meaning when specified as members of a class.
+<a name="IXT-3-265447" />
+<a name="IXT-3-265448" />
+<a name="IXT-3-265449" />
+<a name="IXT-3-265450" />
+<a name="IXT-3-265451" />
+<a name="IXT-3-265452" /></p></td>
+</tr>
+
+<tr>
+<td>^</td>
+<td><p>First character of regular expression, matches the beginning of the line.
+Matches the beginning of a string in awk, even if the string contains
+embedded newlines.
+<a name="IXT-3-265453" />
+<a name="IXT-3-265454" />
+<a name="IXT-3-265455" /></p></td>
+</tr>
+
+<tr>
+<td>$</td>
+<td><p>
+<a name="IXT-3-265456" />
+<a name="IXT-3-265457" />
+<a name="IXT-3-265458" />
+<a name="IXT-3-265459" />
+As last character of regular expression, matches the end of the line.
+Matches the end of a string in awk, even if the string contains
+embedded newlines.</p></td>
+</tr>
+
+<tr>
+<td>\{<em class="emphasis">n,m</em>\}</td>
+<td><p>
+<a name="IXT-3-265460" />
+<a name="IXT-3-265461" />
+<a name="IXT-3-265462" />
+<a name="IXT-3-265463" />
+<a name="IXT-3-265464" />
+<a name="IXT-3-265465" />
+<a name="IXT-3-265466" />
+Matches a range of occurrences of the single character (including a 
+character specified by a regular expression) that immediately precedes it.
+\{<em class="emphasis">n</em>\} will match exactly <em class="emphasis">n</em> occurrences,
+\{<em class="emphasis">n</em>,\} will match at least <em class="emphasis">n</em> occurrences, and 
+\{<em class="emphasis">n</em>,<em class="emphasis">m</em>\} will match any number of occurrences between 
+<em class="emphasis">n</em> and <em class="emphasis">m</em>.  (sed and <b class="emphasis-bold">grep</b> only, may not be in
+some very old versions.)</p></td>
+</tr>
+
+<tr>
+<td>\</td>
+<td><p>Escapes the special character that follows. 
+<a name="IXT-3-265467" />
+<a name="IXT-3-265468" />
+<a name="IXT-3-265469" /></p></td>
+</tr>
+
+
+</table><p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<th>Extended Metacharacters  (<b class="emphasis-bold">egrep</b> and <b class="emphasis-bold">awk</b>)</th>
+</tr>
+
+<tr>
+<th>Special Characters</th>
+<th>Usage</th>
+</tr>
+
+
+
+
+<tr>
+<td>+</td>
+<td><p>Matches one or more occurrences of the preceding regular expression.
+<a name="IXT-3-265470" />
+<a name="IXT-3-265471" />
+<a name="IXT-3-265472" /></p></td>
+</tr>
+
+<tr>
+<td>?</td>
+<td><p>Matches zero or one occurrences of the preceding regular expression.
+<a name="IXT-3-265473" />
+<a name="IXT-3-265474" />
+<a name="IXT-3-265475" /></p></td>
+</tr>
+
+<tr>
+<td>|</td>
+<td><p>Specifies that either the preceding or following regular expression 
+can be matched (alternation).
+<a name="IXT-3-265476" />
+<a name="IXT-3-265477" />
+<a name="IXT-3-265478" />
+<a name="IXT-3-265479" />
+<a name="IXT-3-265480" /></p></td>
+</tr>
+
+<tr>
+<td>()</td>
+<td>Groups regular expressions.
+<a name="IXT-3-265481" />
+<a name="IXT-3-265482" /></td>
+</tr>
+
+<tr>
+<td>{<em class="emphasis">n,m</em>}</td>
+<td><p>Matches a range of occurrences of the single character (including a 
+character specified by a regular expression) that immediately precedes it.
+{<em class="emphasis">n</em>} will match exactly <em class="emphasis">n</em> occurrences,
+{<em class="emphasis">n</em>,} will match at least <em class="emphasis">n</em> occurrences, and 
+{<em class="emphasis">n</em>,<em class="emphasis">m</em>} will match any number of occurrences between 
+<em class="emphasis">n</em> and <em class="emphasis">m</em>.  (POSIX <b class="emphasis-bold">egrep</b> and POSIX awk,
+not in traditional <b class="emphasis-bold">egrep</b> or awk.)<a href="#FOOTNOTE-12">[12]</a></p>
+
+
+</td>
+</tr>
+
+
+</table><p>
+
+<a name="FOOTNOTE-12" /><p> [12]Most awk implementations do not yet support this notation.</p>
+
+</blockquote><p>Metacharacters have a special meaning in regular expressions,
+much the same way as <tt class="literal">+</tt> and <tt class="literal">*</tt> have special meaning in
+arithmetic expressions.
+Several of the metacharacters (+ ? () |) 
+are available only as part of the extended
+set used by programs such as <b class="emphasis-bold">egrep</b> and awk.  
+We will look at what each metacharacter does
+in upcoming sections, beginning with the backslash.</p>
+
+<a name="sedawk-ch-3-sect-2.1" /><div class="sect2">
+<h3 class="sect2">3.2.1. The Ubiquitous Backslash</h3>
+
+<p>
+<a name="IXT-3-265483" />
+<a name="IXT-3-265484" />
+<a name="IXT-3-265485" />
+<a name="IXT-3-265486" />
+The backslash (\) metacharacter 
+transforms metacharacters into ordinary characters
+(and ordinary characters into metacharacters).
+It forces the literal interpretation of
+any metacharacter such that it will match itself.
+For instance, the dot (.) is a metacharacter that needs to be 
+escaped with a backslash if you want to match a period.
+This regular expression matches a period followed by three spaces.</p>
+
+<blockquote><pre class="code">\.<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>The backslash is typically used to match <b class="emphasis-bold">troff</b>
+requests or macros that begin with a dot.</p>
+
+<blockquote><pre class="code">\.nf</pre></blockquote>
+
+<p>You can also use the backslash to escape the backslash.  For instance,
+the font change request in <b class="emphasis-bold">troff</b> is "\f". To search
+for lines containing this request, you'd use the following regular
+expression:</p>
+
+<blockquote><pre class="code">\\f</pre></blockquote>
+
+<p>In addition, sed uses the backslash to cause a group of ordinary
+characters to be interpreted as metacharacters,
+as shown in <a href="ch03_02.htm#sedawk-ch-3-fig-2">Figure 3.2</a>.</p>
+
+<a name="sedawk-ch-3-fig-2" /><div class="figure"><img src="figs/sed_0302.gif" alt="Figure 3.2" width="503" /></div><h4 class="objtitle">Figure 3.2. Escaped metacharacters in sed</h4><p>The <em class="emphasis">n</em> in the "\<em class="emphasis">n</em>" construct
+represents a digit from 1 to 9; its use will be explained in <a href="ch05_01.htm">Chapter 5, "Basic sed Commands"</a>.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.2" /><div class="sect2">
+<h3 class="sect2">3.2.2. A Wildcard</h3>
+
+<p>
+<a name="IXT-3-265487" />
+<a name="IXT-3-265488" />
+<a name="IXT-3-265489" />
+The <em class="emphasis">wildcard</em> metacharacter, or dot (.), might be considered 
+equivalent to a variable.  A variable represents
+any value in an arithmetic expression.  In a regular expression, a dot
+(.) is a wildcard that represents any character except the newline. 
+<a name="IXT-3-265490" />
+(In awk, dot can even match an embedded newline character.)</p>
+
+<p>Given that we are describing a sequence of characters, the wildcard
+metacharacter allows you to specify a position that any character can
+fill.</p>
+
+<p>For instance, if we were searching a file containing
+a discussion of the Intel family of microprocessors, the following
+regular expression:</p>
+
+<blockquote><pre class="code">80.86</pre></blockquote>
+
+<p>would match lines containing references to "80286," "80386,"
+or "80486."<a href="#FOOTNOTE-13">[13]</a>
+To match a decimal point or a period, you must escape the dot
+with a backslash.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-13" /><p> [13]The Pentium family of microprocessors breaks our simple pattern-matching
+experiment, spoiling the fun.  Not to mention the original 8086.</p>
+
+</blockquote>
+
+<p>It is seldom useful to match just any character at the beginning or end
+of a pattern.  Therefore, the wildcard character 
+is usually preceded and followed by a literal character 
+or other metacharacter.   
+For example, the following regular expression 
+might be written to search for references to chapters:</p>
+
+<blockquote><pre class="code">Chapter.</pre></blockquote>
+
+<p>It searches for "the string `Chapter' followed by any character."
+In a search, this expression 
+would turn up virtually the same matches as the fixed string
+pattern "Chapter".  Look at the following example:</p>
+
+<blockquote><pre class="code">$ <b class="emphasis-bold">grep 'Chapter.' sample</b>
+you will find several examples in Chapter 9.
+"Quote me 'Chapter and Verse'," she said. 
+Chapter Ten</pre></blockquote>
+
+<p>Searching for the string 
+"Chapter" as opposed to "Chapter." would have matched all of the
+same lines.  
+However, there is one case that would be different--if "Chapter" appeared at the end of a line.  The wildcard does
+not match the newline, so "Chapter." would not match 
+that line, while the fixed-string pattern would match the line.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.3" /><div class="sect2">
+<h3 class="sect2">3.2.3. Writing Regular Expressions</h3>
+
+<p>
+<a name="ch03.writ1" />
+<a name="ch03.writ2" />
+For all practical purposes, you can rely on a program to produce
+the correct result.
+However, that doesn't mean the program
+always works correctly as far as you are concerned.  
+Most of the time, you can bet that if a program does not produce
+the output that you expected, 
+the real problem (putting aside input or syntax errors)
+is how you described what you wanted.</p>
+
+<p>In other words, the place to look to correct the problem is the
+expression where you described the result you wanted.  Either the
+expression is incomplete or it is improperly formulated.  For
+instance, if a program evaluates this expression:</p>
+
+<blockquote><pre class="code">PAY = WEEKLY_SALARY * 52</pre></blockquote>
+
+<p>and knows the values of these variables, it will calculate
+the correct result.
+But someone might object
+that the formula did not account for salespeople, who
+also receive a commission.  
+To describe this instance, the expression would need to be
+reformulated as:</p>
+
+<blockquote><pre class="code">PAY = WEEKLY_SALARY * 52 + COMMISSION</pre></blockquote>
+
+<p>You could say that whoever wrote the first
+expression did not fully understand the scope of
+the problem and thus did not describe it well.
+It is important to know just how detailed a description
+must be.  If you ask someone to bring you a book, and there are
+multiple books in view, you need to describe more specifically 
+the book that you want (or be content
+with an indeterminate selection process).</p>
+
+<p>The same is true with regular expressions.  A program such as
+<b class="emphasis-bold">grep</b> is simple and easy to use.  Understanding the
+elements of regular expressions is not so hard, either.  Regular
+expressions allow you to write simple or complex descriptions of
+patterns.  However, what makes writing regular expressions difficult
+(and interesting) is the complexity of the application: the variety of
+occurrences or contexts in which a pattern appears.  This complexity
+is inherent in language itself, just as you can't always understand an
+expression by looking up each word in the dictionary.</p>
+
+<p>The process of writing a regular expression involves
+three steps:
+
+</p>
+
+<ol><li><p>Knowing what it is you want to match and how it might appear in the text.</p></li>
+<li><p>Writing a pattern to describe what you want to match.</p></li>
+<li><p>Testing the pattern to see what it matches.</p></li></ol><p>This process is virtually the same kind of process that a programmer
+follows to develop a program.  Step 1 might be considered the specification,
+which should reflect an understanding of the problem to be solved as well
+as how to solve it.  Step 2 is analogous to the actual coding of the program,
+and Step 3 involves running the program and testing it against the 
+specification.
+Steps 2 and 3 form a loop that is repeated until the program
+works satisfactorily.</p>
+
+<p>Testing your description of what you want to match 
+ensures that the description
+works as expected.  It usually uncovers a few surprises.
+Carefully examining the results of a test, comparing the output
+against the input, will greatly improve your
+understanding of regular expressions.
+You might consider evaluating the
+results of a pattern matching-operation as follows:</p>
+
+<dl>
+<dt><em class="emphasis">Hits</em></tt></i></dt><dd>The lines that I wanted to match.</p></dd>
+
+
+<dt><em class="emphasis">Misses</em></tt></i></dt><dd>The lines that I didn't want to match.</p></dd>
+
+
+<dt><em class="emphasis">Omissions</em></tt></i></dt><dd>The lines that I didn't match but wanted to match.</p></dd>
+
+
+<dt><em class="emphasis">False alarms</em></tt></i></dt><dd>The lines that I matched but didn't want to match.</p></dd>
+
+</dl>
+
+<p>Trying to perfect your description of a pattern is something that you
+work at from opposite ends: you try to eliminate the false alarms by
+limiting the possible matches and you try to capture the omissions by
+expanding the possible matches.</p>
+
+<p>
+<a name="IXT-3-265491" />
+<a name="IXT-3-265492" />
+<a name="IXT-3-265493" />
+The difficulty is especially apparent when you must 
+describe patterns using fixed strings. 
+Each character you 
+remove from the fixed-string pattern increases the number of possible matches.  
+For instance, while searching for the string "what,"
+you determine that you'd like to match "What" as well.
+The only fixed-string pattern that will 
+match "What" and "what" is "hat," 
+the longest string common to both. 
+It is obvious, though, that searching for "hat" will
+produce unwanted matches.
+Each character you add to a fixed-string pattern decreases
+the number of possible matches.  
+The string "them" will usually produce fewer matches than the string "the."</p>
+
+<p>Using metacharacters in patterns provides 
+greater flexibility in extending or narrowing the range of matches.
+Metacharacters, used in combination with literals
+or other metacharacters, 
+can be used to expand the range of matches
+while still eliminating the matches that you do not want.</p>
+
+<a name="IXT-3-265494" />
+<a name="IXT-3-265495" />
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.4" /><div class="sect2">
+<h3 class="sect2">3.2.4. Character Classes</h3>
+
+<p>
+<a name="ch03.char1" />
+<a name="ch03.char2" />
+<a name="ch03.char3" />
+<a name="ch03.char4" />
+<a name="ch03.char5" />
+A character class is a refinement of the wildcard concept. 
+Instead of matching <em class="emphasis">any</em> character at a specific position, we can list
+the characters to be matched.
+The square bracket metacharacters ([]) enclose the list of
+characters, any of which can occupy a single position.</p>
+
+<p>
+<a name="IXT-3-265496" />
+Character classes are useful for dealing with uppercase and lowercase
+letters, for instance.
+If "what" might appear with either an initial
+capital letter or a lowercase letter, you can specify:</p>
+
+<blockquote><pre class="code">[Ww]hat</pre></blockquote>
+
+<p>This regular expression can match "what" or "What."
+It will match any line
+that contains this four-character string, the first character of which
+is either "W" or "w."  Therefore, it
+could match "Whatever" or "somewhat."</p>
+
+<p>If a file contained structured heading macros, such
+as .H1, .H2, .H3, etc.,
+you could extract any of these lines with the regular expression:</p>
+
+<blockquote><pre class="code">\.H[12345]</pre></blockquote>
+
+<p>This pattern matches a three-character string, where the last character
+is any number from 1 to 5.</p>
+
+<p>The same syntax is used by the UNIX shell. 
+Thus, you can use character classes to
+specify filenames in UNIX commands.  For example, to extract headings from
+a group of chapter files, you might enter:</p>
+
+<blockquote><pre class="code">$ <b class="emphasis-bold">grep '\.H[123]' ch0[12]</b>
+ch01:.H1 "Contents of Distribution Tape"
+ch01:.H1 "Installing the Software"
+ch01:.H1 "Configuring the System"
+ch01:.H2 "Specifying Input Devices"
+ch01:.H3 "Using the Touch Screen"
+ch01:.H3 "Using the Mouse"
+ch01:.H2 "Specifying Printers"
+ch02:.H1 "Getting Started"
+ch02:.H2 "A Quick Tour"
+.
+.
+.</pre></blockquote>
+
+<p>Note that you have to quote the pattern so that it is passed on to 
+<b class="emphasis-bold">grep</b>
+rather than interpreted by the shell.  The output produced by
+<b class="emphasis-bold">grep</b> identifies the name of the file 
+for each line printed. As another example of a character class, assume you want to specify the 
+different punctuation marks that end a sentence:</p>
+
+<blockquote><pre class="code">.[!?;:,".]<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />.</pre></blockquote>
+
+<p>This expression matches "any character followed by an exclamation mark
+or question mark or 
+semicolon or colon or comma
+or quotation mark or period and then followed by two spaces and
+any character."  It could be used to find places where two spaces had
+been left between the end of a sentence and the beginning of the next
+sentence, when this occurs on one line.  Notice that there are three
+dots in this expression.  The first and last dots are wildcard
+metacharacters, but the second dot is interpreted literally.
+<a name="IXT-3-265497" />
+Inside square brackets, the standard metacharacters lose their
+meaning.  Thus, the dot inside the square brackets indicates a period.
+<a href="ch03_02.htm#sedawk-ch-3-tab-2">Table 3.2</a> lists the characters that have a
+special meaning inside square brackets.</p>
+
+<a name="sedawk-ch-3-tab-2" /><h4 class="objtitle">Table 3.2. Special Characters in Character Classes</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Character</th>
+<th>Function</th>
+</tr>
+
+
+
+
+<tr>
+<td>\</td>
+<td>Escapes any special character (<b class="emphasis-bold">awk</b> only)</td>
+</tr>
+
+<tr>
+<td>-</td>
+<td>Indicates a range when not in the first or last position.</td>
+</tr>
+
+<tr>
+<td>^</td>
+<td>Indicates a reverse match only when in the first position.</td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXT-3-265498" />
+<a name="IXT-3-265499" />
+The backslash is special only in awk, making it possible to write
+"[a\]1]" for a character class that will match an <b class="emphasis-bold">a</b>, a right bracket,
+or a <b class="emphasis-bold">1</b>.</p>
+
+<a name="sedawk-ch-3-sect-2.4.1" /><div class="sect3">
+<h3 class="sect3">3.2.4.1. A range of characters</h3>
+
+<p>
+<a name="IXT-3-265500" />
+<a name="IXT-3-265501" />
+<a name="ch03.hyp1" />
+<a name="ch03.hyp2" />
+The hyphen character (-) allows you to specify
+a range of characters.
+For instance, the range of all uppercase English letters<a href="#FOOTNOTE-14">[14]</a>
+can be specified as:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-14" /><p> [14]This can actually be very messy when working in non-ASCII character
+sets and/or languages other than English. The POSIX standard addresses
+this issue; the new POSIX features are presented below.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">[A-Z]</pre></blockquote>
+
+<p>A range of single-digit numbers can be specified as:</p>
+
+<blockquote><pre class="code">[0-9]</pre></blockquote>
+
+<p>This character class helps solve an earlier problem of matching 
+chapter references.  Look at the following regular expression:</p>
+
+<blockquote><pre class="code">[cC]hapter [1-9]</pre></blockquote>
+
+<p>It matches the string "chapter" or "Chapter" followed by a space
+and then followed by any single-digit number from 1 to 9.
+Each of the following lines match the pattern:</p>
+
+<blockquote><pre class="code">you will find the information in chapter 9
+and chapter 12.
+Chapter 4 contains a summary at the end.</pre></blockquote>
+
+<p>Depending upon the task, the second line in this example might be
+considered a false alarm.  You might add a space
+following "[1-9]" to avoid matching two-digit numbers.  You could also
+specify a class of characters not to be matched at that position, as
+we'll see in the next section.
+<a name="IXT-3-265502" />
+Multiple ranges can be specified as well as intermixed with literal
+characters:</p>
+
+<blockquote><pre class="code">[0-9a-z?,.;:'"]</pre></blockquote>
+
+<p>This expression will match "any single character that is numeric, lowercase
+alphabetic, or a question mark, comma, period, semicolon, colon, single quote, 
+or quotation mark."
+Remember that each character class matches a single character.
+If you specify multiple classes, you are describing multiple consecutive
+characters such as:</p>
+
+<blockquote><pre class="code">[a-zA-Z][.?!]</pre></blockquote>
+
+<p>This expression will match "any lowercase or uppercase letter followed by
+either a period, a question mark, or an exclamation mark."</p>
+
+<p>The close bracket (]) is interpreted as a member of the
+class if it occurs as the first character in the class
+(or as the first character after a circumflex; see the next section).
+The hyphen loses its special meaning within a class 
+if it is the first or last character.
+
+Therefore, to match arithmetic operators, we put the hyphen (-)
+first in the following example:</p>
+
+<blockquote><pre class="code">[-+*/]</pre></blockquote>
+
+<p>In awk, you could also use the backslash to escape the hyphen or
+close bracket wherever either one
+occurs in the range, but the syntax is messier.</p>
+
+<p>Trying to match dates with a regular expression is 
+an interesting problem.
+Here are two possible formats:</p>
+
+<blockquote><pre class="code">MM-DD-YY
+MM/DD/YY</pre></blockquote>
+
+<p>The following regular expression indicates the possible range of values
+for each character position:</p>
+
+<blockquote><pre class="code">[0-1][0-9][-/][0-3][0-9][-/][0-9][0-9]</pre></blockquote>
+
+<p>Either "-" or "/" could be the delimiter.
+Putting the hyphen in the first position ensures that it will be interpreted
+in a character class literally, as a hyphen, and not as indicating a range.<a href="#FOOTNOTE-15">[15]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-15" /><p> [15]Note that the expression matches dates that mix their delimiters,
+as well as impossible dates like "15/32/78."</p>
+
+</blockquote>
+
+<a name="IXT-3-265503" />
+<a name="IXT-3-265504" />
+</div>
+
+
+<a name="sedawk-ch-3-sect-2.4.2" /><div class="sect3">
+<h3 class="sect3">3.2.4.2. Excluding a class of characters</h3>
+
+<p>
+<a name="IXT-3-265505" />
+<a name="IXT-3-265506" />
+<a name="IXT-3-265507" />
+Normally, a character class includes all the characters that
+you want to match at that position.
+The circumflex (^) as the first character in the class excludes 
+all of the characters in the class
+from being matched.  Instead any character
+except newline<a href="#FOOTNOTE-16">[16]</a>
+that is not listed in the square brackets will be matched.
+The following pattern will match any non-numeric character:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-16" /><p> [16]In awk, newline can also be matched.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">[^0-9]</pre></blockquote>
+
+<p>It matches all uppercase and lowercase letters of the alphabet
+and all special characters such as punctuation marks.</p>
+
+<p>Excluding specific characters is sometimes more convenient
+than explicitly listing all the characters you want to match.
+For instance, if you wanted to match any consonant,
+you could simply exclude vowels:</p>
+
+<blockquote><pre class="code">[^aeiou]</pre></blockquote>
+
+<p>This expression would match any consonant,
+any vowel in uppercase, and any punctuation mark or special
+character.</p>
+
+<p>Look at the following regular expression:</p>
+
+<blockquote><pre class="code">\.DS "[^1]"</pre></blockquote>
+
+<p>This expression matches the string ".DS" followed by a space, a quote
+followed by any character other than the number "1," followed by
+a quote.<a href="#FOOTNOTE-17">[17]</a>
+It is designed to avoid matching the following line:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-17" /><p> [17]When typing this pattern at the command line, be sure to enclose it in
+single quotes. The <b class="emphasis-bold">^</b> is special to the
+original Bourne shell.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">.DS "1"</pre></blockquote>
+
+<p>while matching lines such as:</p>
+
+<blockquote><pre class="code">.DS "I" 
+.DS "2"</pre></blockquote>
+
+<p>This syntax can also be used to limit the extent of a match, as we'll
+see up ahead.
+<a name="IXT-3-265508" /></p>
+</div>
+
+
+<a name="sedawk-ch-3-sect-2.4.3" /><div class="sect3">
+<h3 class="sect3">3.2.4.3. POSIX character class additions</h3>
+
+<p>
+<a name="ch03.posix1" />
+<a name="ch03.posix2" />
+<a name="IXT-3-265509" />
+<a name="IXT-3-265510" />
+The POSIX standard formalizes the meaning of regular expression
+characters and operators.  The standard defines two classes of regular
+expressions: Basic Regular Expressions (BREs), which are the kind used
+by <b class="emphasis-bold">grep</b> and sed, and Extended Regular Expressions, which are the kind used
+by <b class="emphasis-bold">egrep</b> and awk.
+<a name="IXT-3-265511" />
+<a name="IXT-3-265512" /></p>
+
+<p>
+<a name="IXT-3-265513" />
+In order to accommodate non-English environments, the POSIX standard
+enhanced the ability of character classes to match characters not
+in the English alphabet.  For example, the French &#232; is an alphabetic
+character, but the typical character class <b class="emphasis-bold">[a-z]</b> would not
+match it.
+Additionally,
+the standard provides for sequences of characters that should be
+treated as a single unit when matching and collating (sorting) string data.</p>
+
+<p>POSIX also changed what had been common terminology. What we've been
+calling a "character class" is called a "bracket expression" in the POSIX
+standard. Within bracket expressions, beside literal characters such as
+<b class="emphasis-bold">a</b>, <b class="emphasis-bold">!</b>, 
+and so on, you can have additional components. These are:</p>
+
+<ul><li><p> <em class="emphasis">Character classes</em>.
+<a name="ch03.poschar2" />
+<a name="IXT-3-265514" />
+<a name="IXT-3-265515" />
+A POSIX character class consists of keywords bracketed by <b class="emphasis-bold">[:</b> and <b class="emphasis-bold">:]</b>. The
+keywords describe different classes of characters such as alphabetic
+characters, control characters, and so on (see <a href="ch03_02.htm#sedawk-ch-3-tab-3">Table 3.3</a>).</p></li><li><p><em class="emphasis">Collating symbols</em>.
+<a name="IXT-3-265516" />
+<a name="IXT-3-265517" />
+<a name="IXT-3-265518" />
+A collating symbol is a multicharacter sequence that should be treated
+as a unit. It consists of the characters bracketed by <b class="emphasis-bold">[.</b> and <b class="emphasis-bold">.]</b>.</p></li><li><p><em class="emphasis">Equivalence classes</em>.
+<a name="IXT-3-265519" />
+<a name="IXT-3-265520" />
+<a name="IXT-3-265521" />
+An equivalence class lists a set of characters that should be considered
+equivalent, such as <b class="emphasis-bold">e</b> and
+<b class="emphasis-bold">&#232;</b>.
+It consists of a named element from the locale,
+bracketed by <b class="emphasis-bold">[=</b>
+and <b class="emphasis-bold">=]</b>.</p></li></ul><p>All three of these constructs must appear inside the square
+brackets of a bracket expression.  For example <b class="emphasis-bold">[[:alpha:]!]</b> matches
+any single alphabetic character or the exclamation point, <b class="emphasis-bold">[[.ch.]]</b>
+matches the collating element <b class="emphasis-bold">ch</b>, but does not match just the letter
+<b class="emphasis-bold">c</b> or the letter <b class="emphasis-bold">h</b>. In a French locale,
+<b class="emphasis-bold">[[=e=]]</b> might match any of
+<b class="emphasis-bold">e</b>, <b class="emphasis-bold">&#232;</b>, 
+or <b class="emphasis-bold">&#233;</b>. Classes and matching
+characters are shown in <a href="ch03_02.htm#sedawk-ch-3-tab-3">Table 3.3</a>.</p>
+
+<a name="sedawk-ch-3-tab-3" /><h4 class="objtitle">Table 3.3. POSIX Character Classes</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Class</th>
+<th>Matching Characters</th>
+</tr>
+
+
+
+
+<tr>
+<td>[:alnum:]</td>
+<td>Printable characters (includes whitespace)</td>
+</tr>
+
+<tr>
+<td>[:alpha:]</td>
+<td>Alphabetic characters</td>
+</tr>
+
+<tr>
+<td>[:blank:]</td>
+<td>Space and tab characters</td>
+</tr>
+
+<tr>
+<td>[:cntrl:]</td>
+<td>Control characters</td>
+</tr>
+
+<tr>
+<td>[:digit:]</td>
+<td>Numeric characters</td>
+</tr>
+
+<tr>
+<td>[:graph:]</td>
+<td>Printable and visible (non-space) characters</td>
+</tr>
+
+<tr>
+<td>[:lower:]</td>
+<td>Lowercase characters</td>
+</tr>
+
+<tr>
+<td>[:print:]</td>
+<td>Printable characters (includes whitespace)</td>
+</tr>
+
+<tr>
+<td>[:punct:]</td>
+<td>Punctuation characters</td>
+</tr>
+
+<tr>
+<td>[:space:]</td>
+<td>Whitespace characters</td>
+</tr>
+
+<tr>
+<td>[:upper:]</td>
+<td>Uppercase characters</td>
+</tr>
+
+<tr>
+<td>[:xdigit:]</td>
+<td>Hexadecimal digits</td>
+</tr>
+
+
+</table><p>
+
+<p>These features are slowly making their way into commercial versions of
+sed and awk, as vendors fully implement the POSIX standard.  GNU awk
+and GNU sed support the character class notation, but not the other
+two bracket notations.  Check your local system documentation to see
+if they are available to you.
+<a name="IXT-3-265522" /></p>
+
+<p>Because these features are not widely available yet, the scripts in this
+book will not rely on them, and we will continue to use the term
+"character class" to refer to  lists of characters in square brackets.</p>
+
+<a name="IXT-3-265523" />
+<a name="IXT-3-265524" />
+</div>
+
+
+<a name="IXT-3-265525" />
+<a name="IXT-3-265526" />
+<a name="IXT-3-265527" />
+<a name="IXT-3-265528" />
+<a name="IXT-3-265529" />
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.5" /><div class="sect2">
+<h3 class="sect2">3.2.5. Repeated Occurrences of a Character</h3>
+
+<p>
+<a name="ch03.ast1" />
+<a name="ch03.ast2" />
+<a name="ch03.ast3" />
+The asterisk (*) metacharacter indicates that the preceding regular
+expression may occur zero or more times.  That is, if it modifies a
+single character, the character may be there or not, and if it is,
+there may be more than one of them.
+You could use the asterisk metacharacter to match a word that might appear
+in quotes.</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " />"*hypertext"*<img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>The word "hypertext" will be matched regardless of whether it appears
+in quotes or not.</p>
+
+<p>Also, if the literal character modified by the asterisk does exist, there could be more than one occurrence.  
+For instance, let's examine a series of numbers:</p>
+
+<blockquote><pre class="code">1
+5
+10
+50
+100
+500
+1000
+5000</pre></blockquote>
+
+<p>The regular expression</p>
+
+<blockquote><pre class="code">[15]0*</pre></blockquote>
+
+<p>would match all lines, whereas the regular expression</p>
+
+<blockquote><pre class="code">[15]00*</pre></blockquote>
+
+<p>would match all but the first two lines.  The first zero is a literal,
+but the second is modified by the asterisk, meaning it might or might
+not be present.  A similar technique
+is used to match consecutive spaces because you usually want
+to match one or more, not zero or more, spaces.  You can use the following
+to do that:</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />*</pre></blockquote>
+
+<p>
+<a name="IXT-3-265530" />
+<a name="IXT-3-265531" />
+<a name="IXT-3-265532" />
+When preceded by a dot metacharacter, the asterisk metacharacter
+matches any number of characters.  It can be used to identify a span
+of characters between two fixed strings.  
+If you wanted to match any string inside of quotation marks, you
+could specify:</p>
+
+<blockquote><pre class="code">".*"</pre></blockquote>
+
+<p>This would match all characters between the first and last quotation
+marks on the line plus the quotation marks. The span matched by ".*"
+is always the longest possible. This may not seem important now but
+it will be once you learn about replacing the string that was matched.</p>
+
+<p>As another example, a pair
+of angle brackets is a common notation for enclosing
+formatting instructions used
+in markup languages, such as SGML, HTML, and Ventura Publisher.</p>
+
+<p>You could print all lines with these marks by specifying:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep '&lt;.*&gt;' sample</b></tt></pre></blockquote>
+
+<p>When used to modify a character class, the asterisk can match any number of
+a character in that class.
+For instance, look at the following five-line sample file:</p>
+
+<blockquote><pre class="code">I can do it
+I cannot do it
+I can not do it
+I can't do it
+I cant do it</pre></blockquote>
+
+<p>If we wanted to match each form of the negative statement, but not the positive
+statement, the following regular expression would do it:</p>
+
+<blockquote><pre class="code">can[<img src="figs/squ.gif" alt="Figure " />no']*t</pre></blockquote>
+
+<p>The asterisk causes 
+any of the characters in the class to be matched in any order
+and for any number of occurrences.  Here it is:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep "can[<img src="figs/squ.gif" alt="Figure " />no']*t" sample</b></tt>
+I cannot do it
+I can not do it
+I can't do it
+I cant do it</pre></blockquote>
+
+<p>There are four hits and one miss, the positive statement.
+Notice that had the regular expression tried to match any number
+of characters between the string "can" and "t," as in the following
+example:</p>
+
+<blockquote><pre class="code">can.*t</pre></blockquote>
+
+<p>it would have matched all lines.</p>
+
+<p>
+<a name="IXT-3-265533" />
+<a name="IXT-3-265534" />
+The ability to match "zero or more" of something is known by the
+technical term "closure."
+The extended set of metacharacters used by <b class="emphasis-bold">egrep</b>
+and awk provides
+several variations of closure that
+<a name="IXT-3-265535" />
+<a name="IXT-3-265536" />
+<a name="IXT-3-265537" />
+can be quite useful.  The plus sign (+) matches one or more occurrences
+of the preceding regular expression.  Our earlier example
+of matching one or more spaces can be simplified as such:</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " />+</pre></blockquote>
+
+<p>The plus sign metacharacter can be thought of as "at least one" of the
+preceding character.  In fact, it better corresponds to how many people
+think <tt class="literal">*</tt> works.</p>
+
+<p>
+<a name="IXT-3-265538" />
+<a name="IXT-3-265539" />
+<a name="IXT-3-265540" />
+The question mark
+(<tt class="literal">?</tt>) matches zero or one occurrences.
+For instance, in a previous example, we used a regular
+expression to match "80286," "80386," and "80486."
+If we wanted to also match the string "8086,"
+we could write a regular expression that could be
+used with <b class="emphasis-bold">egrep</b> or awk:</p>
+
+<blockquote><pre class="code">80[234]?86</pre></blockquote>
+
+<p>It matches the string "80" followed by a "2," a "3," a "4," or no
+character followed by the string "86."
+Don't confuse the <tt class="literal">?</tt> in a regular expression with the <tt class="literal">?</tt> wildcard in the
+shell.  The shell's <tt class="literal">?</tt> represents a single character, equivalent to <tt class="literal">.</tt> in a
+regular expression.</p>
+
+<a name="IXT-3-265541" />
+<a name="IXT-3-265542" />
+<a name="IXT-3-265543" />
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.6" /><div class="sect2">
+<h3 class="sect2">3.2.6. What's the Word? Part I</h3>
+
+<p>As you have probably figured out, it is sometimes difficult to match
+a complete word.  For instance, if we wanted to match the pattern "book,"
+our search would hit lines containing the word "book" and "books" but
+also the words "bookish," "handbook," and "booky."  
+The obvious thing to do to limit the matching is to surround "book" with
+spaces.</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " />book<img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>However, this expression would only match the word "book";
+it would miss the plural "books".   
+To match either the singular or plural word, you could use the 
+asterisk metacharacter:</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " />books*<img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>This will match "book" or "books".
+However, it will not match "book" if it is followed by a period,
+a comma, a question mark, or a quotation mark.</p>
+
+<p>When you combine the asterisk with the wildcard metacharacter
+(.),
+you can match zero or more occurrences of any character.
+In the previous example, we might write a fuller regular expression 
+as:</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " />book.*<img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>This expression matches the string "book" 
+followed by "any number of characters or none followed by a space."
+Here are a few lines that would match:</p>
+
+<blockquote><pre class="code">Here are the books that you requested
+Yes, it is a good book for children
+It is amazing to think that it was called a "harmful book" when 
+once you get to the end of the book, you can't believe</pre></blockquote>
+
+<p>(Note that only the second line would be matched by the fixed
+string "<img src="figs/squ.gif" alt="Figure " />book<img src="figs/squ.gif" alt="Figure " />".) 
+The expression "<img src="figs/squ.gif" alt="Figure " />book.*<img src="figs/squ.gif" alt="Figure " />" matches lines containing
+words such as "booky," "bookworm," and "bookish."    
+We could eliminate two of these matches by using a different
+modifier.  The question mark (<b class="emphasis-bold">?</b>), 
+which is part of the extended set of metacharacters, matches 0 or 1
+occurrences of the preceding character.
+Thus, the expression:</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " />book.?<img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>would match "book," "books," and "booky" but not
+"bookish" and "bookworm."  To eliminate a word like "booky," we would
+have to use character classes to specify all the characters in that
+position that we want to match.  Furthermore, since the 
+question mark metacharacter
+is not available with sed, we would have to resort 
+to character classes anyway, as you'll see later on.</p>
+
+<p>Trying to be all-inclusive is not always practical with a regular
+expression, especially when using <b class="emphasis-bold">grep</b>.  Sometimes it is best to keep
+the expression simple and allow for the misses.  
+However, as you use regular expressions in sed for making replacements,
+you will need to be more careful that your regular expression
+is complete.  We will look at a more comprehensive
+regular expression for searching for words in Part II of "What's the Word?"
+later in this chapter.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.7" /><div class="sect2">
+<h3 class="sect2">3.2.7. Positional Metacharacters</h3>
+
+<p>
+<a name="IXT-3-265544" />
+<a name="IXT-3-265545" />
+<a name="IXT-3-265546" />
+<a name="IXT-3-265547" />
+<a name="IXT-3-265548" />
+<a name="IXT-3-265549" />
+<a name="IXT-3-265550" />
+<a name="IXT-3-265551" />
+<a name="IXT-3-265552" />
+There are two metacharacters that allow you to specify
+the context in which a string appears, either at the beginning
+of a line or at the end of a line.  The circumflex (<b class="emphasis-bold">^</b>) metacharacter 
+is a single-character regular expression indicating the beginning of a
+line.
+The dollar sign (<b class="emphasis-bold">$</b>) metacharacter 
+is a single-character regular expression indicating the end of a line.
+These are often referred to as "anchors," since they anchor, or restrict,
+the match to a specific position. You could print lines that begin with a tab:</p>
+
+<blockquote><pre class="code">^&#x95;</pre></blockquote>
+
+<p>(The &#x95; represents a literal tab character, which is normally
+invisible.)
+Without the ^ metacharacter, this expression would print any line
+containing a tab.</p>
+
+<p>Normally, using <b class="emphasis-bold">vi</b> to input text to be processed by
+<b class="emphasis-bold">troff</b>, you do not want spaces appearing at
+the end of lines. If you want to find (and remove) them, this
+regular expression will match lines with one or more spaces at the end
+of a line:</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />*$</pre></blockquote>
+
+<p><b class="emphasis-bold">troff</b> requests and macros must be 
+input at the beginning of a line.
+They are two-character strings, preceded by a dot.
+If a request or macro has an argument, it is usually followed by a space.
+The regular expression used to search for such requests is:</p>
+
+<blockquote><pre class="code">^\...<img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>This expression matches "a dot at the beginning of a line followed by any 
+two-character string, and then followed by a space."</p>
+
+<p>You can use both positional metacharacters together to match blank lines:</p>
+
+<blockquote><pre class="code">^$</pre></blockquote>
+
+<p>You might use this pattern to count the number of blank lines in a file using the count option, <span class="option">-c</span>, to <b class="emphasis-bold">grep</b>:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep -c '^$' ch04</b></tt> 
+5</pre></blockquote>
+
+<p>This regular expression is useful if you want to delete blank
+lines using sed.  
+The following regular expression can be used to match a blank
+line even if it contains spaces:</p>
+
+<blockquote><pre class="code">^<img src="figs/squ.gif" alt="Figure " />*$</pre></blockquote>
+
+<p>Similarly, you can match the entire line:</p>
+
+<blockquote><pre class="code">^.*$</pre></blockquote>
+
+<p>which is something you might possibly want to do with sed.</p>
+
+<p>In sed (and <b class="emphasis-bold">grep</b>), "^" and "$" are only special when they occur at
+the beginning
+or end of a regular expression, respectively.  Thus "^abc" means
+"match the letters a, b, and c only at the beginning of the line,"
+while "ab^c" means "match a, b, a literal ^, and then c, anywhere on the line."
+The same is true for the "$."</p>
+
+<p>In awk, it's different; "^" and "$" are always special, even though
+it then becomes possible to write regular expressions that don't match
+anything.  Suffice it to say that in awk, when you want to match either
+a literal "^" or "$," you should always escape it with a backslash,
+no matter what its position in the regular expression.</p>
+
+<a name="sedawk-ch-3-sect-2.7.1" /><div class="sect3">
+<h3 class="sect3">3.2.7.1. Phrases</h3>
+
+<p>
+<a name="IXT-3-265553" />
+<a name="IXT-3-265554" />
+<a name="IXT-3-265555" />
+<a name="IXT-3-265556" />
+<a name="IXT-3-265557" />
+<a name="IXT-3-265558" />
+A pattern-matching program such as <b class="emphasis-bold">grep</b> does not match a string if it
+extends over two lines.  For all practical purposes, 
+it is difficult to match phrases with
+assurance.  Remember that text files are basically unstructured
+and line breaks are quite random.  If you are looking for any sequence
+of words, it is possible that they might appear on one
+line but they may be split up over two.</p>
+
+<p>You can write a series of regular expression to capture a phrase:</p>
+
+<blockquote><pre class="code">Almond Joy
+Almond$
+^Joy</pre></blockquote>
+
+<p>This is not perfect, as the second regular expression will match "Almond"
+at the end of a line, regardless of whether or not the next line begins
+with "Joy".  A similar problem exists with the third regular expression.</p>
+
+<p>Later, when we look at sed, you'll learn how
+to match patterns over multiple lines and you'll see
+a shell script incorporating sed that 
+makes this capability available in a general way.</p>
+</div>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.8" /><div class="sect2">
+<h3 class="sect2">3.2.8. A Span of Characters</h3>
+
+<p>
+<a name="IXT-3-265559" />
+<a name="IXT-3-265560" />
+The metacharacters 
+that allow you to specify repeated occurrences
+of a character (<b class="emphasis-bold">*+?</b>) 
+indicate a span of undetermined length. 
+Consider the following expression:</p>
+
+<blockquote><pre class="code">11*0</pre></blockquote>
+
+<p>It will match each of the following lines:</p>
+
+<blockquote><pre class="code">10
+110
+111110
+1111111111111111111111111110</pre></blockquote>
+
+<p>These metacharacters give elasticity to a regular expression.</p>
+
+<p>Now let's look at a pair of metacharacters that allow you to indicate
+a span and also determine the length of the span. So, you
+can specify the minimum and maximum number of occurrences of a literal
+character or regular expression.</p>
+
+<p>
+<a name="IXT-3-265561" />
+<a name="IXT-3-265562" />
+<a name="IXT-3-265563" />
+\{ and \} are available in <b class="emphasis-bold">grep</b> and
+sed.<a href="#FOOTNOTE-18">[18]</a> POSIX <b class="emphasis-bold">egrep</b> and POSIX
+awk use { and }. In any case, the braces enclose one or two arguments.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-18" /><p> [18] Very old versions may not have them; Caveat
+emptor.</p>
+
+</blockquote>
+
+
+<p>\{<em class="emphasis">n</em>,<em class="emphasis">m</em>\}</p>
+
+
+<p><em class="emphasis">n</em> and <em class="emphasis">m</em> are integers between 0 and 255.
+If you specify \{<em class="emphasis">n</em>\} by itself, then exactly <em class="emphasis">n</em> occurrences
+of the preceding character or regular expression will be matched.
+If you specify \{<em class="emphasis">n</em>,\}, then at least <em class="emphasis">n</em> occurrences
+will be matched.   
+If you specify \{<em class="emphasis">n</em>,<em class="emphasis">m</em>\}, then any number of
+occurrences between <em class="emphasis">n</em> and <em class="emphasis">m</em> will be matched.<a href="#FOOTNOTE-19">[19]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-19" /><p> [19]Note that "?" is equivalent to "\{0,1\}",
+"*" is equivalent to "\{0,\}",
+"+" is equivalent to "\{1,\}",
+and no modifier is equivalent to "\{1\}".</p>
+
+</blockquote>
+
+<p>For example, the following expression will match "1001," "10001," and "100001" but not "101" or "1000001":</p>
+
+<blockquote><pre class="code">10\{2,4\}1</pre></blockquote>
+
+<p>This metacharacter pair can be useful for matching data
+in fixed-length fields, data that perhaps was 
+extracted from a database.
+It can also be used to match formatted data such as phone numbers,
+U.S. social security numbers, inventory part IDs, etc.
+For instance, the format of a social security number is
+three digits, a hyphen, 
+followed by two digits, a hyphen, and
+then four digits.
+That pattern could be described as follows:</p>
+
+<blockquote><pre class="code">[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}</pre></blockquote>
+
+<p>Similarly, a North American local phone number could be described with
+the following regular expression:</p>
+
+<blockquote><pre class="code">[0-9]\{3\}-[0-9]\{4\}</pre></blockquote>
+
+<p>If you are using pre-POSIX awk, where you do not have braces 
+available,
+you can simply repeat the character classes the appropriate number
+of times:</p>
+
+<blockquote><pre class="code">[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]</pre></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.9" /><div class="sect2">
+<h3 class="sect2">3.2.9. Alternative Operations</h3>
+
+<p>
+<a name="IXT-3-265564" />
+<a name="IXT-3-265565" />
+<a name="IXT-3-265566" />
+<a name="IXT-3-265567" />
+<a name="IXT-3-265568" />
+The vertical bar (|) metacharacter, part of the extended set of metacharacters,
+allows you to specify a union of regular expressions.  A line will match
+the pattern if it matches one of the regular expressions.  For instance,
+this regular expression:</p>
+
+<blockquote><pre class="code">UNIX|LINUX</pre></blockquote>
+
+<p>will match lines containing either the string "UNIX" or the string "LINUX".
+More than one alternative can be specified:</p>
+
+<blockquote><pre class="code">UNIX|LINUX|NETBSD</pre></blockquote>
+
+<p>A line matching any of these three patterns will be printed by <b class="emphasis-bold">egrep</b>.</p>
+
+<p>
+<a name="IXT-3-265569" />
+In sed, lacking the union metacharacter, 
+you would specify each pattern
+separately.  
+In the next section, where we look at grouping operations,
+we will see additional examples of this metacharacter.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.10" /><div class="sect2">
+<h3 class="sect2">3.2.10. Grouping Operations</h3>
+
+<p>
+<a name="IXT-3-265570" />
+<a name="IXT-3-265571" />
+<a name="IXT-3-265572" />
+Parentheses, (),  are used to
+group regular expressions and establish precedence. 
+They are part of the extended set of metacharacters.
+Let's say that a company's name in a text file
+is referred to as "BigOne" or "BigOne Computer":</p>
+
+<blockquote><pre class="code">BigOne(<img src="figs/squ.gif" alt="Figure " />Computer)?</pre></blockquote>
+
+<p>This expression will match the string "BigOne" by
+itself or followed by a single occurrence of the string
+"<img src="figs/squ.gif" alt="Figure " />Computer".
+Similarly, if a term is sometime spelled out and at other
+times abbreviated:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>egrep "Lab(oratorie)?s" mail.list</b></tt>
+Bell Laboratories, Lucent Technologies
+Bell Labs</pre></blockquote>
+
+<p>You can use parentheses with a vertical bar to group alternative operations.
+In the following example, we use it to specify a match of the
+singular or plural of the word "company."</p>
+
+<blockquote><pre class="code">compan(y|ies)</pre></blockquote>
+
+<p>It is important to note that applying a quantifier to a parenthesized
+group of characters can't be done in most versions of sed and
+<b class="emphasis-bold">grep</b>, but is available in all versions of
+<b class="emphasis-bold">egrep</b> and awk.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.11" /><div class="sect2">
+<h3 class="sect2">3.2.11. What's the Word? Part II</h3>
+
+<p>Let's reevaluate the regular expression
+for searching for a single word in light
+of the new metacharacters we've discussed.  
+Our first attempt at writing a regular
+expression for <b class="emphasis-bold">grep</b>
+to search for a word concluded with the following expression:</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " />book.*<img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>This expression is fairly simple, matching a space followed by the string
+"book" followed by any number of characters followed by a space.  However,
+it does not match all possible occurrences and it does match a few
+nuisance words.</p>
+
+<p>The following test file contains numerous occurrences of "book."
+We've added a notation, which is not part of the file, 
+to indicate whether the input line should be a "hit" (&gt;) and
+included in the output or a "miss" (&lt;). 
+We've tried to include as many different examples as possible.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat bookwords</b></tt>
+&gt; This file tests for book in various places, such as
+&gt; book at the beginning of a line or
+&gt; at the end of a line book
+&gt; as well as the plural books and
+&lt; handbooks.  Here are some
+&lt; phrases that use the word in different ways:
+&gt; "book of the year award"
+&gt; to look for a line with the word "book"
+&gt; A GREAT book!
+&gt; A great book? No.
+&gt; told them about (the books) until it
+&gt; Here are the books that you requested
+&gt; Yes, it is a good book for children
+&gt; amazing that it was called a "harmful book" when
+&gt; once you get to the end of the book, you can't believe
+&lt; A well-written regular expression should
+&lt; avoid matching unrelated words,
+&lt; such as booky (is that a word?)
+&lt; and bookish and
+&lt; bookworm and so on.</pre></blockquote>
+
+<p>As we search for occurrences of the word "book," there are 13 lines 
+that should be matched and 7 lines that should not be matched.
+First, let's run the previous regular expression on
+the sample file and check the results.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep '<img src="figs/squ.gif" alt="Figure " />book.*<img src="figs/squ.gif" alt="Figure " />' bookwords</b></tt>
+This file tests for book in various places, such as
+as well as the plural books and
+A great book? No.
+told them about (the books) until it
+Here are the books that you requested
+Yes, it is a good book for children
+amazing that it was called a "harmful book" when
+once you get to the end of the book, you can't believe
+such as booky (is that a word?)
+and bookish and</pre></blockquote>
+
+<p>It only prints 8 of the 13 lines that we want to match
+and it prints 2 of the lines that we don't want to match.
+The expression matches lines containing
+the words "booky" and "bookish." It ignores "book" at the beginning
+of a line and at the end of a line.  
+It ignores "book" when there are certain punctuation marks involved.</p>
+
+<p>To restrict the search even more,
+we must use character classes. 
+Generally, the list of characters that might end a word
+are punctuation marks, such as:</p>
+
+<blockquote><pre class="code">? . , ! ; : '</pre></blockquote>
+
+<p>In addition, quotation marks, parentheses, braces, and brackets
+might surround a word or open or close with a word:</p>
+
+<blockquote><pre class="code">" () {} []</pre></blockquote>
+
+<p>You would also have to accommodate
+the plural or possessive forms of the word.</p>
+
+<p>Thus, you would have two different character classes:  before and after
+the word.  Remember that all we have to do is list the members of
+the class inside square brackets.
+Before the word, we now have:</p>
+
+<blockquote><pre class="code">["[{(]</pre></blockquote>
+
+<p>and after the word:</p>
+
+<blockquote><pre class="code">[]})"?!.,;:'s]</pre></blockquote>
+
+<p>Note that putting the closing square bracket as the first character in the class
+makes it a member of the class rather than closing the set.
+Putting the two classes together, we get the expression:</p>
+
+<blockquote><pre class="code"><img src="figs/squ.gif" alt="Figure " />["[{(]*book[]})"?!.,;:'s]*<img src="figs/squ.gif" alt="Figure " /></pre></blockquote>
+
+<p>Show this to the uninitiated, and they'll throw up their hands in
+despair!  But now that you know the principles involved, you can not
+only understand this expression, but could easily reconstruct it.
+Let's see how it does on the sample file (we use double quotes to
+enclose the single quote character, and then a backslash in front of
+the embedded double quotes):</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep " [\"[{(]*book[]})\"?!.,;:'s]* " bookwords</b></tt>
+This file tests for book in various places, such as
+as well as the plural books and
+A great book? No.
+told them about (the books) until it
+Here are the books that you requested
+Yes, it is a good book for children
+amazing that it was called a "harmful book" when
+once you get to the end of the book, you can't believe</pre></blockquote>
+
+<p>We eliminated the lines that we don't want but there
+are four lines that we're not getting. 
+Let's examine the four lines:</p>
+
+<blockquote><pre class="code">book at the beginning of a line or
+at the end of a line book
+"book of the year award" 
+A GREAT book!</pre></blockquote>
+
+<p>All of these are problems caused by the string appearing
+at the beginning or end of a line.  
+Because there is no space at the beginning
+or end of a line, the pattern is not matched.  
+We can use the positional metacharacters, ^ and $.  Since
+we want to match either a space or beginning or end
+of a line, we can use <b class="emphasis-bold">egrep</b> and specify the "or" metacharacter along with
+parentheses for grouping.  
+For instance, to match either the beginning of a line
+or a space, you could write the expression:</p>
+
+<blockquote><pre class="code">(^| )</pre></blockquote>
+
+<p>(Because | and ()
+are part of the extended set of metacharacters, if
+you were using sed, you'd have to write
+different expressions to handle each case.)</p>
+
+<p>Here's the revised regular expression:</p>
+
+<blockquote><pre class="code">(^| )["[{(]*book[]})"?\!.,;:'s]*( |$)</pre></blockquote>
+
+<p>Now let's see how it works:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>egrep "(^| )[\"[{(]*book[]})\"?\!.,;:'s]*( |$)" bookwords</b></tt>
+This file tests for book in various places, such as
+book at the beginning of a line or
+at the end of a line book
+as well as the plural books and
+"book of the year award"
+to look for a line with the word "book"
+A GREAT book!
+A great book? No.
+told them about (the books) until it
+Here are the books that you requested
+Yes, it is a good book for children
+amazing that it was called a "harmful book" when
+once you get to the end of the book, you can't believe</pre></blockquote>
+
+<p>This is certainly a complex regular expression; however,
+it can be broken down into parts.  
+This expression may not match every single instance,
+but it can be easily adapted to handle other occurrences
+that you may find.</p>
+
+<p>You could also create a simple shell script to replace "book" with
+a command-line argument.  The only problem might be 
+that the plural of some words is not simply "s." 
+By sleight of hand, you could handle the "es" plural by adding "e" to the character
+class following the word; it would work in many cases.</p>
+
+<p>
+<a name="IXT-3-265573" />
+<a name="IXT-3-265574" />
+<a name="IXT-3-265575" />
+<a name="IXT-3-265576" />
+<a name="IXT-3-265577" />
+<a name="IXT-3-265578" />
+<a name="IXT-3-265579" />
+<a name="IXT-3-265580" />
+<a name="IXT-3-265581" />
+<a name="IXT-3-265582" />
+<a name="IXT-3-265583" />
+As a further note, the <b class="emphasis-bold">ex</b> and <b class="emphasis-bold">vi</b>
+text editors have a special metacharacter 
+for matching a string at the beginning of a word, \&lt;,
+and one for matching a string at the end of a word, \&gt;.  Used
+as a pair, they can match a string only when it is a complete word. 
+(For these operators, a word is a string of non-whitespace
+characters with whitespace on both sides, or at the beginning
+or end of a line.)
+Matching a word is such a common case that these metacharacters 
+would be widely used, if they were available for all 
+regular expressions.<a href="#FOOTNOTE-20">[20]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-20" /><p> [20]GNU programs, such as the GNU versions of awk, sed,
+and <b class="emphasis-bold">grep</b>,
+also support \&lt; and \&gt;.</p>
+
+</blockquote>
+
+<a name="ch03-sidebar" /><blockquote><table border="1" cellpadding="6"><tr><td><h4 class="objtitle">A Program for Making Single Replacements</h4>
+
+<p>The MKS Toolkit, a set of UNIX utilities for DOS by Mortice Kern
+Systems, Inc., contains a very useful program called <b class="emphasis-bold">gres</b>
+(<em class="emphasis">g</em>lobal <em class="emphasis">r</em>egular <em class="emphasis">e</em>xpression <em class="emphasis">s</em>ubstitution).
+<a name="IXT-3-265584" />
+Just like <b class="emphasis-bold">grep</b>, it searches for a pattern in a file; however,
+it allows you to specify a replacement for the string that you match.
+This program is in fact a simplified version of sed, and
+like sed, it prints all lines
+regardless of whether or not a replacement was made.
+It does not make the replacement in the file itself.  You have to
+redirect the output from the program into a file if you want to save
+the changes.</p>
+
+<p><b class="emphasis-bold">gres</b> is not part of standard UNIX but it would be a nice
+tool to have.  It can be created using a simple shell
+script that invokes sed to do the work.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat gres</b></tt>
+if [ $# -lt "3" ] 
+then 
+	echo Usage: gres pattern replacement file
+	exit 1
+fi
+pattern=$1
+replacement=$2
+if [ -f $3 ] 
+then 
+	file=$3
+else
+	echo $3 is not a file.
+	exit 1
+fi
+A="`echo | tr '\012' '\001' `" # See footnote<a href="#FOOTNOTE-21">[21]</a>
+sed -e "s$A$pattern$A$replacement$A" $file</pre></blockquote>
+
+<p>Throughout the rest of the chapter, we will use <b class="emphasis-bold">gres</b> to
+demonstrate the use of replacement metacharacters.  Remember that
+whatever applies to <b class="emphasis-bold">gres</b> applies to sed as well.
+Here we replace the string matched by the 
+regular expression "A.*Z" with double zero (00).</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gres "A.*Z" "00" sample</b></tt>
+00ippy, our dog
+00iggy
+00elda</pre></blockquote>
+
+<blockquote class="footnote">
+
+<a name="FOOTNOTE-21" /><p> [21]The <b class="emphasis-bold">echo | tr ...</b> line is a complicated but portable
+way to generate a Control-A character to use as the separator
+for the sed substitute command.  Doing this greatly decreases
+the chance of having the separator character appear in the
+pattern or replacement texts.</p>
+
+</blockquote></td></tr></table><p></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.12" /><div class="sect2">
+<h3 class="sect2">3.2.12. Your Replacement Is Here</h3>
+
+<p>When using <b class="emphasis-bold">grep</b>, it seldom matters how you match the line
+as long as you match it.  
+When you want to make a replacement, however, 
+you have to consider
+the extent of the match.
+So, what characters on the line did you 
+actually match?</p>
+
+<p>In this section, we're going to look at
+several examples that demonstrate the extent of a match.  
+Then we'll use a program that works
+like <b class="emphasis-bold">grep</b> but also allows you to specify a
+replacement string.  Lastly, we will look at several
+metacharacters used to describe the replacement string.</p>
+
+<a name="sedawk-ch-3-sect-2.12.1" /><div class="sect3">
+<h3 class="sect3">3.2.12.1. The extent of the match</h3>
+
+<p>
+<a name="ch03.patt1" />
+<a name="ch03.patt2" />
+<a name="ch03.search" />
+<a name="ch03.search2" />
+Let's look at the following regular
+expression:</p>
+
+<blockquote><pre class="code">A*Z</pre></blockquote>
+
+<p>This matches "zero or more occurrences of A followed by Z."  
+It will produce
+the same result as simply specifying "Z".  The letter "A" could be there
+or not; in fact, the letter "Z" is the only character matched.  
+Here's a sample two-line file:</p>
+
+<blockquote><pre class="code">All of us, including Zippy, our dog
+Some of us, including Zippy, our dog</pre></blockquote>
+
+<p>If we try to match the previous regular expression, both lines
+would print out.  
+Interestingly enough, the actual match in both cases 
+is made on the "Z" and only the "Z".  We can use the <b class="emphasis-bold">gres</b> command
+(see <a href="ch03_02.htm#ch03-sidebar">A Program for Making Single Replacements</a>) to demonstrate
+the extent of the match.</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>$ gres "A*Z" "00" test</b></tt>
+All of us, including 00ippy, our dog
+Some of us, including 00ippy, our dog</pre></blockquote>
+
+<p>We would have expected the 
+extent of the match on the first line to be from the "A" to the "Z"
+but only the "Z" is actually matched.
+This result may be more apparent if we change the
+regular expression slightly:</p>
+
+<blockquote><pre class="code">A.*Z</pre></blockquote>
+
+<p>".*" can be interpreted as "zero or more occurrences of any 
+character," which means that "any number of characters" can be
+found, including none at all.
+The entire expression can be evaluated as 
+"an A followed by any number of characters followed by a Z."  
+An "A" is the initial character in the 
+pattern and "Z" is the last character; anything or nothing
+might occur in between.
+Running <b class="emphasis-bold">grep</b> on the same two-line file
+produces one line of output. 
+We've added a line of carets (^) underneath to mark what was matched.</p>
+
+
+<blockquote><pre class="code">All of us, including Zippy, our dog
+^^^^^^^^^^^^^^^^^^^^^^</pre></blockquote>
+
+<p>The extent of the match is from "A" to "Z". 
+The same regular expression would also match the following line:</p>
+
+<blockquote><pre class="code">I heard it on radio station WVAZ 1060.
+                              ^^</pre></blockquote>
+
+<p>The string "A.*Z" matches "A followed by any number of characters (including
+zero) followed by Z."
+Now, let's look at a similar set of sample lines that 
+contain multiple occurrences of "A" and "Z".</p>
+
+<blockquote><pre class="code">All of us, including Zippy, our dog
+All of us, including Zippy and Ziggy
+All of us, including Zippy and Ziggy and Zelda</pre></blockquote>
+
+<p>The regular expression "A.*Z" will match the longest possible extent in each
+case.</p>
+
+<blockquote><pre class="code">All of us, including Zippy, our dog
+^^^^^^^^^^^^^^^^^^^^^^
+All of us, including Zippy and Ziggy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+All of us, including Zippy and Ziggy and Zelda 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre></blockquote>
+
+<p>This can cause problems if what you want is to match the shortest
+extent possible.</p>
+</div>
+</div>
+
+
+
+
+<a name="sedawk-ch-3-sect-2.13" /><div class="sect2">
+<h3 class="sect2">3.2.13. Limiting the Extent</h3>
+
+<p>
+<a name="IXT-3-265585" />
+Earlier we said that a regular expression tries to match
+the longest string possible and that can cause
+unexpected problems.
+For instance, look at the regular expression to match
+any number of characters inside of quotation marks:</p>
+
+<blockquote><pre class="code">".*"</pre></blockquote>
+
+<p>Let's look at a <b class="emphasis-bold">troff</b> macro
+that has two quoted arguments, as shown below:</p>
+
+<blockquote><pre class="code">.Se "Appendix" "Full Program Listings"</pre></blockquote>
+
+<p>To match the first argument,
+we might describe the pattern with the 
+following regular expression:</p>
+
+<blockquote><pre class="code">\.Se ".*"</pre></blockquote>
+
+<p>However, it ends up matching the whole line because the second
+quotation mark in the pattern matches the last quotation mark on the
+line.
+If you know how many arguments there are, you can specify each
+of them:</p>
+
+<blockquote><pre class="code">\.Se ".*" ".*"</pre></blockquote>
+
+<p>Although this works as you'd expect, each line might not have the
+same number of arguments, causing omissions--you simply want the
+first argument.
+Here's a different regular expression that matches
+the shortest possible extent between two quotation marks:</p>
+
+<blockquote><pre class="code">"[^"]*"</pre></blockquote>
+
+<p>It matches "a quote followed by any number of characters that
+do not match a quote followed by a quote":</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gres '"[^"]*"' '00' sampleLine</b></tt>
+.Se 00 "Full Program Listings"</pre></blockquote>
+
+<p>Now let's look at a few lines with a dot character (.)
+used as a leader between two columns of numbers:</p>
+
+<blockquote><pre class="code">1........5
+5........10
+10.......20
+100......200</pre></blockquote>
+
+<p>The difficulty in matching the leader characters is that their number
+is variable. Let's say that you wanted to replace all of the leaders
+with a single tab. You might write a regular expression to match the
+line as follows:</p>
+
+<blockquote><pre class="code">[0-9][0-9]*\.\.*[0-9][0-9]*</pre></blockquote>
+
+<p>This expression might unexpectedly match the line:</p>
+
+<blockquote><pre class="code">see Section 2.3</pre></blockquote>
+
+<p>To restrict matching, 
+you could specify the minimum number of dots that are common
+to all lines:</p>
+
+<blockquote><pre class="code">[0-9][0-9]*\.\{5,\}[0-9][0-9]*</pre></blockquote>
+
+<p>This expression uses braces available in sed to match "a single number followed by at least
+five dots and then followed by a single number."
+To see this in action, we'll show a sed command that replaces the
+leader dots with a hyphen.  However, we have not covered the syntax of
+sed's replacement
+metacharacters--<b class="emphasis-bold">\(</b>
+and <b class="emphasis-bold">\)</b> to save a part of a
+regular expression and <b class="emphasis-bold">\1</b> and <b class="emphasis-bold">\2</b> to recall the saved portion.
+This command, therefore, may look rather complex (it is!) but it does
+the job.</p>
+
+<blockquote><pre class="code">$ sed 's/\([0-9][0-9]*\)\.\{5,\}\([0-9][0-9]*\)/\1-\2/' sample
+1-5
+5-10
+10-20
+100-200</pre></blockquote>
+
+<p>A similar expression can be written to match one or more
+leading tabs or tabs between columns of data.
+You could change the order of columns as well as replacing the
+tab with another delimiter.
+You should experiment on your own by making simple and complex
+replacements, using sed or <b class="emphasis-bold">gres</b>.</p>
+
+<a name="IXT-3-265586" />
+<a name="IXT-3-265587" />
+<a name="IXT-3-265588" />
+<a name="IXT-3-265589" />
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3. Understanding Regular Expression Syntax</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.3. I Never Metacharacter I Didn't Like</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

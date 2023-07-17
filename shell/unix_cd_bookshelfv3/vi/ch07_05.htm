@@ -1,0 +1,431 @@
+<html><head><title>Editing Program Source Code  (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="part2.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.5. Editing Program Source Code </h2>
+
+<p>
+<a name="ch07.source1" />
+<a name="ch07.source2" />
+<a name="ch07.source3" />
+All of the features discussed so far are of interest
+whether you are editing English text or program source code. However,
+there are a number of additional features that are of interest chiefly
+to programmers. These include indentation control, searching for the
+beginning and end of procedures, and using <tt class="literal">ctags</tt>.</p>
+
+<p>
+<a name="IXT-7-281098" />
+The following discussion is adapted from documentation provided by
+Mortice Kern Systems with their excellent implementation of <em class="emphasis">vi</em>
+for DOS and Windows-based systems, available as a part of the MKS Toolkit or
+separately as MKS Vi. It is
+reprinted by permission of Mortice Kern Systems.</p>
+
+<a name="vi6-ch-7-sect-5.1" /><div class="sect2">
+<h3 class="sect2">7.5.1. Indentation Control </h3>
+
+<p>
+<a name="ch07.indent1" />
+<a name="ch07.indent2" />
+<a name="ch07.indent3" />
+<a name="ch07.sourceindent1" />
+<a name="ch07.sourceindent2" />
+<a name="ch07.sourceindent3" />
+The source code for a program differs from ordinary text in
+a number of ways. One of the most important of these is the way
+in which source code uses indentation. Indentation shows the
+logical structure of the program: the way in which statements are
+grouped into blocks.
+<em class="emphasis">vi</em> provides automatic indentation control. To use it,
+issue the command:</p>
+
+<blockquote><pre class="code">:set autoindent</pre></blockquote>
+
+<p>Now, when you indent a line with spaces or tabs, the
+following lines will automatically be indented by the same
+amount. When you press
+<span class="keycap">RETURN</span>
+after typing the first indented
+line, the cursor goes to the next line and automatically
+indents the same distance as the previous line.</p>
+
+<p>As a programmer, you will find this saves you quite a bit of work
+getting the indentation right, especially when you have several
+levels of indentation.</p>
+
+<p>When you are entering code with autoindent enabled, typing
+<span class="keycap">CTRL-T</span>
+at the start of a line gives you another level of indentation and
+typing
+<span class="keycap">CTRL-D</span>
+takes one away.</p>
+
+<p>We should point out that
+<span class="keycap">CTRL-T</span>
+and
+<span class="keycap">CTRL-D</span>
+are typed while you are in insert mode, unlike most other commands,
+which are typed in command mode.</p>
+
+<p>There are two additional variants of the
+<span class="keycap">CTRL-D</span> command.<a href="#FOOTNOTE-34">[34]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-34" /><p> [34]These do not work in <em class="emphasis">elvis</em> 2.0.</p>
+
+</blockquote>
+
+<dl>
+<dt><tt class="literal">^ ^D</tt></dt><dd>When you type <tt class="literal">^ ^D</tt>
+(<span class="keycap">^</span> <span class="keycap">CTRL-D</span>), <em class="emphasis">vi</em></tt>
+shifts the cursor back to the beginning of the line, but only for
+the current line. The next line you enter will start at
+the current auto-indent level.
+This is particularly useful for entering C preprocessor commands
+while typing in C/C++ source code.</p></dd>
+
+
+<dt><tt class="literal">0 ^D</tt></dt><dd>When you type <tt class="literal">0 ^D</tt>, <em class="emphasis">vi</em></tt>
+shifts the cursor back to the beginning of the line. In addition,
+the current auto-indent level is reset to zero; the next line you
+enter will not be auto-indented.<a href="#FOOTNOTE-35">[35]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-35" /><p> [35]The <em class="emphasis">nvi</em> 1.79 documentation has these two
+commands switched, but the program actually behaves as
+described here.</p>
+
+</blockquote></dd>
+
+</dl>
+
+<p>Try using the <tt class="literal">autoindent</tt> option when you are entering
+source code. It simplifies the job of getting indentation
+correct. It can even sometimes help you avoid bugs (e.g., in C
+source code, where you usually need one closing curly brace
+(<tt class="literal">}</tt>) for every
+level of indentation you go backwards).</p>
+
+<p>The <tt class="literal">&lt;&lt;</tt> and <tt class="literal">&gt;&gt;</tt>
+commands are also helpful when indenting
+source code.
+By default, <tt class="literal">&gt;&gt;</tt> shifts a line right eight spaces
+(i.e., adds eight spaces of indentation)
+and <tt class="literal">&lt;&lt;</tt> shifts a line left eight spaces.
+For example, move the cursor to the beginning of a line and
+press the <tt class="literal">&gt;</tt> key twice (<tt class="literal">&gt;&gt;</tt>).
+You will see the line move right.
+If you now press the <tt class="literal">&lt;</tt>
+key twice (<tt class="literal">&lt;&lt;</tt>), the line will move back again.</p>
+
+<p>You can shift a number of lines by typing the number followed
+by <tt class="literal">&gt;&gt;</tt> or <tt class="literal">&lt;&lt;</tt>.
+For example, move the cursor to the first line of
+a good-size paragraph and type <tt class="literal">5&gt;&gt;</tt>.
+You will shift the first five lines in
+the paragraph.</p>
+
+<p>The default shift is eight spaces (right or left). This default
+can be changed with a command like:</p>
+
+<blockquote><pre class="code">:set shiftwidth=4</pre></blockquote>
+
+<p>You will find it convenient to have a shiftwidth that is the
+same size as the width between tab stops.</p>
+
+<p><em class="emphasis">vi</em> attempts to be smart when doing indenting.
+Usually, when you see text indented by eight spaces at a time,
+<em class="emphasis">vi</em> will actually insert tab characters into
+the file, since tabs usually expand to eight spaces.
+This is the UNIX default; it is most noticable when you type
+a tab during normal input, and when files are sent to a
+printer&#8212;UNIX expands them with a tab stop of eight spaces.</p>
+
+<p>If you wish, you can change how <em class="emphasis">vi</em> represents
+tabs on your screen, by changing the <tt class="literal">tabstop</tt>
+option. For example, if you have something that is deeply indented,
+you might wish to have use a tab stop setting of every four
+characters, so that the lines will not wrap.
+The following command will make this change:</p>
+
+<blockquote><pre class="code">:set tabstop=4</pre></blockquote>
+
+<blockquote><b>NOTE:</b> 
+Changing your tab stops is not recommended. Although <em class="emphasis">vi</em>
+will display the file using an arbitrary tabstop setting, the tab characters
+in your files will still be expanded using an eight-character tab
+stop by every other UNIX program.
+Eight-character tab stops are one of the facts of life on UNIX,
+and you should just get used to them.</p>
+</blockquote>
+
+<p>Sometimes indentation won't work the way you expect, because
+what you believe to be a tab character is actually one or more
+spaces.
+Normally, your screen displays both a tab and a space
+as whitespace, making the two indistinguishable.
+You can, however, issue the command:</p>
+
+<blockquote><pre class="code">:set list</pre></blockquote>
+
+<p> 
+ 
+This alters your display so that a tab appears as the control
+character <tt class="literal">^I</tt> and an end-of-line appears as a <tt class="literal">$</tt>.
+This way, you can spot a true space, and you can see extra spaces
+at the end of a line. A temporary equivalent is the
+<tt class="literal">:l</tt> command.
+For example, the command:</p>
+
+<blockquote><pre class="code">:5,20 l</pre></blockquote>
+
+<p>displays lines 5 through 20,
+showing tab characters and end-of-line characters.</p>
+
+<a name="IXT-7-281099" />
+<a name="IXT-7-281100" />
+<a name="IXT-7-281101" />
+<a name="IXT-7-281102" />
+<a name="IXT-7-281103" />
+<a name="IXT-7-281104" />
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-5.2" /><div class="sect2">
+<h3 class="sect2">7.5.2. A Special Search Command </h3>
+
+<p>
+<a name="ch07.sourcebracket1" />
+<a name="ch07.sourcebracket2" />
+<a name="ch07.sourcebracket3" />
+
+<a name="ch07.bracket1" />
+<a name="ch07.bracket2" />
+<a name="ch07.bracket3" />
+<a name="ch07.bracket4" />
+<a name="ch07.bracket5" />
+<a name="ch07.bracket6" />
+<a name="ch07.bracket7" />
+<a name="ch07.bracket8" />
+<a name="ch07.bracket9" />
+<a name="ch07.bracket10" />
+<a name="IXT-7-281105" />
+<a name="IXT-7-281106" />
+<a name="IXT-7-281107" />
+The characters <tt class="literal">(</tt>,
+<tt class="literal">[</tt>, <tt class="literal">{</tt>,
+and <tt class="literal">&lt;</tt> can all be called
+opening brackets. When the cursor is resting on one of these
+characters, pressing the <tt class="literal">%</tt> key moves the cursor from the opening
+bracket forward to the corresponding closing
+bracket&#8212;<tt class="literal">)</tt>,
+<tt class="literal">]</tt>,
+<tt class="literal">}</tt>,
+or <tt class="literal">&gt;</tt>&#8212;keeping in mind the usual
+rules for nesting brackets.<a href="#FOOTNOTE-36">[36]</a>
+For example, if you were to move the cursor to the
+first <tt class="literal">(</tt> in:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-36" /><p> [36]Of the versions tested, only <em class="emphasis">nvi</em>
+supported matching <tt class="literal">&lt;</tt> and
+<tt class="literal">&gt;</tt> with <tt class="literal">%</tt>.
+<em class="emphasis">vile</em> lets you set an option with the sets of pairs
+of characters that match for <tt class="literal">%</tt>.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">if ( cos(a[i]) &gt; sin(b[i]+c[i]) )
+{
+	printf("cos and sin equal!\n");
+}</pre></blockquote>
+
+<p>and press <tt class="literal">%</tt>, you would see that the cursor jumps to the
+parenthesis at the end of the line. This is the closing
+parenthesis that matches the opening one.</p>
+
+<p>Similarly if the cursor is on one of the closing bracket
+characters, pressing <tt class="literal">%</tt> will move the cursor backwards to the
+corresponding opening bracket character. For example, move the
+cursor to the closing brace after the <tt class="literal">printf</tt> line above
+and press <tt class="literal">%</tt>.</p>
+
+
+<p><em class="emphasis">vi</em> is even smart enough to find a bracket character
+for you. If the cursor is not on a bracket character, when you press
+<tt class="literal">%</tt>, <em class="emphasis">vi</em> will search forward on the
+current line to the first open or close bracket character it finds,
+and then move to the matching bracket!
+For instance, with the cursor on the <tt class="literal">&gt;</tt> in the
+first line of the example above, <tt class="literal">%</tt> will find the
+open parenthesis, and then move to the close parenthesis.</p>
+
+<p>Not only does this search character help you move forward and
+backward through a program in long jumps, it lets you check the
+nesting of brackets and parentheses in source code. For example, if you put
+the cursor on the first <tt class="literal">{</tt> at the beginning of a C function,
+pressing <tt class="literal">%</tt> should move you to the <tt class="literal">}</tt>
+that (you think) ends the
+function. If it's the wrong one, something has gone wrong somewhere.
+If there is no matching <tt class="literal">}</tt> in the file,
+<em class="emphasis">vi</em> will beep at you.</p>
+
+<p>Another technique for finding matching brackets is to turn on
+the following option:</p>
+
+<blockquote><pre class="code">:set showmatch</pre></blockquote>
+
+<p>Unlike <tt class="literal">%</tt>, setting <tt class="literal">showmatch</tt>
+(or its abbreviation <tt class="literal">sm</tt>) helps you
+while you're in insert mode. When you type a <tt class="literal">)</tt> or a
+<tt class="literal">}</tt>,<a href="#FOOTNOTE-37">[37]</a>
+the cursor will briefly move back to the matching <tt class="literal">(</tt> or
+<tt class="literal">{</tt> before returning to your current position.
+If the match doesn't exist, the terminal beeps.
+If the match is merely off-screen, <em class="emphasis">vi</em> silently keeps going.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-37" /><p> [37]In <em class="emphasis">elvis</em>, <em class="emphasis">vim</em>,
+and <em class="emphasis">vile</em>, <tt class="literal">showmatch</tt>
+also shows you matching square brackets
+(<tt class="literal">[</tt> and <tt class="literal">]</tt>).</p>
+
+</blockquote>
+
+<a name="IXT-7-281108" />
+<a name="IXT-7-281109" />
+<a name="IXT-7-281110" />
+<a name="IXT-7-281111" />
+<a name="IXT-7-281112" />
+<a name="IXT-7-281113" />
+<a name="IXT-7-281114" />
+<a name="IXT-7-281115" />
+<a name="IXT-7-281116" />
+<a name="IXT-7-281117" />
+<a name="IXT-7-281118" />
+<a name="IXT-7-281119" />
+<a name="IXT-7-281120" />
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-5.3" /><div class="sect2">
+<h3 class="sect2">7.5.3. Using Tags</h3>
+
+<p>
+<a name="IXT-7-281121" />
+<a name="IXT-7-281122" />
+<a name="IXT-7-281123" />
+<a name="IXT-7-281124" />
+The source code for a large C or C++ program will usually be spread
+over several files. Sometimes, it is difficult to keep track of
+which file contains which function definitions. To simplify
+matters, a UNIX command called <tt class="literal">ctags</tt> can be used together
+with the <tt class="literal">:tag</tt> command of <em class="emphasis">vi</em>.
+<a name="IXT-7-281125" /></p>
+
+<blockquote><b>NOTE:</b> 
+UNIX versions of <tt class="literal">ctags</tt> handle the C language, and
+often Pascal and Fortran 77. Sometimes they even handle assembly language.
+Almost universally, however, they do not handle C++.
+Other versions are available that can generate <em class="filename">tags</em>
+files for C++, and for
+other languages and file types.</p>
+</blockquote>
+
+<p>The <tt class="literal">ctags</tt> command is issued at the UNIX command line.
+Its purpose is to create an information file
+that <em class="emphasis">vi</em> can use later to determine which files define which
+functions. By default, this file is called <em class="filename">tags</em>.
+From within <em class="emphasis">vi</em>, a command of the form:</p>
+
+<blockquote><pre class="code">:!ctags file.c</pre></blockquote>
+
+<p>will create a file named <em class="filename">tags</em> in your current directory
+that contains information on the functions defined in <em class="filename">file.c</em>.
+A command like:</p>
+
+<blockquote><pre class="code">:!ctags *.c</pre></blockquote>
+
+<p>will create a <em class="filename">tags</em> file describing all the C source files in the
+directory.</p>
+
+<p>Now suppose your <em class="filename">tags</em> file contains information on all the
+source files that make up a C program. Also suppose that you want
+to look at or edit a function in the program, but do not know where
+the function is.
+From within <em class="emphasis">vi</em>, the command:</p>
+
+<blockquote><pre class="code">:tag <em class="replaceable"><tt>name</tt></em></pre></blockquote>
+
+<p>will look at the <em class="filename">tags</em> file to find out which file contains the
+definition of the function <em class="emphasis">name</em>.
+It will then read in the file and position
+the cursor on the line where the name is defined. In this way,
+you don't have to know which file you have to edit; you only have
+to decide which function you want to edit.</p>
+
+<p>You can use the tag facility from <em class="emphasis">vi</em>'s command
+mode as well. Place the cursor on the identifier you wish to look
+up, and then type <tt class="literal">^]</tt>.  <em class="emphasis">vi</em> will
+perform the tag lookup and move to the file that defines the identifier.
+Be careful where you place the cursor; <em class="emphasis">vi</em> uses the
+"word" under the cursor starting at the current cursor
+position, not the entire word containing the cursor.</p>
+
+<blockquote><b>NOTE:</b> 
+If you try to use the <tt class="literal">:tag</tt> command to
+read in a new file and you haven't saved your current text since
+the last time you changed it, <em class="emphasis">vi</em> will not let you go
+to the new file. You must either write out your current file with the
+<tt class="literal">:w</tt> command and then issue <tt class="literal">:tag</tt>,
+or else type:</p>
+
+<blockquote><pre class="code">:tag! <em class="replaceable"><tt>name</tt></em></pre></blockquote>
+
+<p>to override <em class="emphasis">vi</em>'s reluctance to discard edits.</p>
+</blockquote>
+
+<p>
+<a name="IXT-7-281126" />
+<a name="IXT-7-281127" />
+<a name="IXT-7-281128" />
+<a name="IXT-7-281129" />
+The Solaris 2.6 version of <em class="emphasis">vi</em> actually
+supports tag <em class="emphasis">stacks</em>.
+It appears, however, to be completely undocumented in the
+Solaris man pages.
+Because many, if not most, versions of UNIX <em class="emphasis">vi</em>
+don't do tag stacking, we have moved the discussion of this feature
+to <a href="ch08_05.htm#vi6-ch-8-sect-5.2">Section 8.5.3</a>,
+where tag stacking is introduced.</p>
+</div>
+
+
+
+
+<a name="IXT-7-281130" />
+<a name="IXT-7-281131" />
+<a name="IXT-7-281132" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="part2.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.4. Using ex Scripts </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">II. Extensions and Clones</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,209 @@
+<html><head><title>Line Addressing (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch20_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">20.3. Line Addressing</h2>
+
+<p><a name="IXT-20-217" /><a name="IXT-20-218" /><a name="IXT-20-219" /> <a name="IXT-20-220" />The key to making line editors
+work for you is understanding how to select (or
+"address") the lines that will be
+affected by the commands in your script.
+</p>
+
+<p><a name="IXT-20-221" />In<a name="IXT-20-222" />
+<i class="command">ed</i> and <i class="command">ex</i>, a command affects
+only the "current" line -- the
+first line of the file to begin with, and later the site of the last
+edit or movement command -- unless you precede the command with an
+address to indicate some other line or lines. In
+<i class="command">sed</i>, most commands apply to every line unless you
+give an address.
+</p>
+
+<p>Most line editors address lines in three ways:</p>
+
+<ul><li>
+<p>with line numbers</p>
+</li><li>
+<p>with regular expression patterns</p>
+</li><li>
+<p>with special symbols</p>
+</li></ul>
+<p>It's possible to address single lines or a range of
+lines.
+</p>
+
+<p><a href="ch20_03.htm#upt3-CHP-20-TABLE-1">Table 20-1</a> describes the addresses you can use with
+<i class="command">ex</i>.
+</p>
+
+<a name="upt3-CHP-20-TABLE-1" /><h4 class="objtitle">Table 20-1. Line addressing in the ex editor </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Address</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">1,$</tt></p>
+</td>
+<td>
+<p>All lines in the file.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">%</tt></p>
+</td>
+<td>
+<p>All lines; same as <tt class="literal">1,$</tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>x</em>,<em class="replaceable">y</tt></em></p>
+</td>
+<td>
+<p>Lines <em class="emphasis">x</em> through <em class="emphasis">y</em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>x</em><tt class="literal">;</tt><em class="replaceable">y</tt></em>
+</p>
+</td>
+<td>
+<p>Lines <em class="emphasis">x</em> through <em class="emphasis">y</em>, with
+current line reset to <em class="emphasis">x</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">1</tt></p>
+</td>
+<td>
+<p>Top of file.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">0</tt></p>
+</td>
+<td>
+<p>"Before the top" of file. Used to
+add text above top line: <tt class="literal">0r</tt>,
+<em class="replaceable"><tt>x</tt></em><tt class="literal">m0</tt>, etc.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>.</p>
+</td>
+<td>
+<p>Current line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>n</tt></em></p>
+</td>
+<td>
+<p>Absolute line number <em class="emphasis">n</em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">$</tt></p>
+</td>
+<td>
+<p>Last line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>x</em><tt class="literal">-</tt><em class="replaceable">n</tt></em>
+</p>
+</td>
+<td>
+<p><em class="emphasis">n</em> lines before <em class="emphasis">x</em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>x</em><tt class="literal">+</tt><em class="replaceable">n</tt></em>
+</p>
+</td>
+<td>
+<p><em class="emphasis">n</em> lines after <em class="emphasis">x</em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-</tt><em class="replaceable"><tt>n</tt></em></p>
+</td>
+<td>
+<p><em class="emphasis">n</em> lines previous.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-</tt></p>
+</td>
+<td>
+<p>Previous line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">+</tt><em class="replaceable"><tt>n</tt></em></p>
+</td>
+<td>
+<p><em class="emphasis">n</em> lines ahead.</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>If the address specifies a range of lines, the format is:</p>
+
+<blockquote><pre class="code"><em class="replaceable"><tt>x</em>,<em class="replaceable">y</tt></em></pre></blockquote>
+
+<p>where <em class="replaceable"><tt>x</em> and <em class="replaceable">y</tt></em>
+are the first and last addressed lines. <em class="replaceable"><tt>x</tt></em>
+must precede <em class="replaceable"><tt>y</tt></em> in the file.
+</p>
+
+<p><em class="emphasis">--TOR, DG, and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch20_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">20.2. Writing Editing Scripts</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">20.4. Useful ex Commands</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

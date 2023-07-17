@@ -1,0 +1,432 @@
+<html><head><title>case (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.3. case</h2>
+
+<p>
+<a name="korn2-IDXTERM-1147" />
+<a name="IXT-5-287704" />
+<a name="IXT-5-287705" />
+<a name="IXT-5-287706" />
+
+The next flow control construct to cover is <tt class="literal">case</tt>.
+While the <tt class="literal">case</tt> statement in Pascal and the similar <tt class="literal">switch</tt>
+statement in C can be used to test simple values like integers and
+characters, the Korn shell's <tt class="literal">case</tt> construct lets you test
+strings against patterns that can contain wildcard characters.
+Like its conventional language counterparts, <tt class="literal">case</tt> lets you
+express a series of if-then-else type statements in a concise way.
+</p>
+
+<p>
+<a name="IXT-5-287707" />
+The syntax of <tt class="literal">case</tt> is as follows:
+</p>
+
+<p>
+<blockquote><pre class="code">
+case <em class="replaceable"><tt>expression</tt></em> in
+    <em class="replaceable"><tt>pattern1</tt></em> )
+        <em class="replaceable"><tt>statements ;;</tt></em>
+    <em class="replaceable"><tt>pattern2</tt></em> )
+        <em class="replaceable"><tt>statements ;;</tt></em>
+    ...
+esac
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-5-287708" />
+<a name="IXT-5-287709" />
+Any of the <em class="emphasis">pattern</em>s can actually be several patterns separated
+by "OR bar" characters (<tt class="literal">|</tt>, which is the same as the
+pipe symbol, but in this context means "or"). If <em class="emphasis">expression</em> matches
+one of the patterns, its corresponding statements are executed.
+If there are several patterns separated by OR bars, the
+expression can match any of them in order for the associated statements
+to be run. The patterns are checked in order until a match is found;
+if none is found, nothing happens.
+</p>
+
+<p>
+This rather ungainly syntax should become clearer with an example.
+
+An obvious choice is to revisit our solution to <a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-2">Task 4-2</a>, the front-end
+for the C compiler. Earlier in this chapter, we wrote some
+code that processed input files according to their suffixes
+(<tt class="literal">.c</tt>, <tt class="literal">.s</tt>,
+or <tt class="literal">.o</tt> for C, assembly, or object code, respectively).
+</p>
+
+<p>
+
+<a name="IXT-5-287710" />
+<a name="IXT-5-287711" />
+
+We can improve upon this solution in two ways.
+First, we can
+use <tt class="literal">for</tt> to allow multiple files to be processed at one time;
+second, we can use <tt class="literal">case</tt> to streamline the code:
+</p>
+
+<p>
+<blockquote><pre class="code">
+for filename in "$@"; do
+    case $filename in
+        *.c )
+            objname=${filename%.c}.o
+            ccom "$filename" "$objname" ;;
+        *.s )
+            objname=${filename%.s}.o
+            as "$filename" "$objname" ;;
+        *.o ) ;;
+        *   )
+            print "error: $filename is not a source or object file."
+            exit 1 ;;
+    esac
+done
+</pre></blockquote>
+</p>
+
+<p>
+The <tt class="literal">case</tt> construct in this code handles four cases. The first
+two are similar to the <tt class="literal">if</tt> and first <tt class="literal">elif</tt> cases in the
+code earlier in this chapter; they call the compiler or the assembler if the
+filename ends in <tt class="literal">.c</tt> or <tt class="literal">.s</tt>, respectively.
+</p>
+
+<p>
+After that, the code is a bit different. Recall that if the
+filename ends in <tt class="literal">.o</tt> nothing is to be done (on the assumption
+that the relevant files will be linked later).
+We handle this with
+the case <tt class="literal">*.o )</tt>, which has no statements. There is nothing
+wrong with a "case" for which the script does nothing.
+</p>
+
+<p>
+<a name="IXT-5-287712" />
+<a name="IXT-5-287713" />
+<a name="IXT-5-287714" />
+<a name="IXT-5-287715" />
+
+If the filename
+does not end in <tt class="literal">.o</tt>, there is an error.
+This is dealt with in
+the final case, which is <tt class="literal">*</tt>. This is a catchall
+for whatever didn't match the other cases.
+(In fact, a <tt class="literal">*</tt> case
+is analogous to a <tt class="literal">default</tt> case in C and an <tt class="literal">otherwise</tt>
+case in some Pascal-derived languages.)
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1160" />
+
+The surrounding <tt class="literal">for</tt> loop processes all command-line arguments
+properly. This leads to a further enhancement: now that we know
+how to process all arguments, we should be able to write the
+code that passes all of the object files to the linker
+(the program <em class="emphasis">ld</em>) at the end.
+We can do this by building up a string of object file
+names, separated by spaces, and hand that off to the linker when
+we've processed all of the input files. We initialize the string
+to null and append an object file name each time one is created,
+i.e., during each iteration of the <tt class="literal">for</tt> loop.
+The code for this is simple, requiring only minor additions:
+</p>
+
+<p>
+<blockquote><pre class="code">
+objfiles=""
+for filename in "$@"; do
+    case $filename in
+        *.c )
+            objname=${filename%.c}.o
+            ccom "$filename" "$objname" ;;
+        *.s )
+            objname=${filename%.s}.o
+            as "$filename" "$objname" ;;
+        *.o )
+            objname=$filename ;;
+        *   )
+            print "error: $filename is not a source or object file."
+            exit 1 ;;
+    esac
+    objfiles+=" $objname"
+done
+ld $objfiles
+</pre></blockquote>
+</p>
+
+<p>
+The first line in this version of the script initializes the
+variable <tt class="literal">objfiles</tt> to null.<a href="#FOOTNOTE-77">[77]</a>
+We added a line of code in
+the <tt class="literal">*.o</tt> case to set <tt class="literal">objname</tt>
+equal to <tt class="literal">$filename</tt>,
+because we already know it's an object file. Thus, the value
+of <tt class="literal">objname</tt> is set in every case -- except for the error case,
+in which the routine prints a message and bails out.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-77" /><p> [77]
+This isn't strictly necessary, because all variables are
+assumed to be null if not explicitly initialized
+(unless the <em class="emphasis">nounset</em> option is turned on). It
+just makes the code easier to read.
+</p>
+</blockquote>
+
+<p>
+The last line of code in the <tt class="literal">for</tt> loop body appends a space and
+the latest <tt class="literal">$objname</tt> to <tt class="literal">objfiles</tt>. Calling
+this script with the same arguments as in <a href="ch05_01.htm#korn2-CHP-5-FIG-1">Figure 5-1</a> would result
+in <tt class="literal">$objfiles</tt> being equal to " a.o b.o c.o d.o"
+when the <tt class="literal">for</tt> loop finishes (the leading space doesn't matter).
+This list of object filenames is given to <em class="emphasis">ld</em> as a single argument,
+but the shell divides it up into multiple file names properly.
+<a name="IXTR3-249" />
+<a name="IXTR3-250" />
+</p>
+
+<p>
+<a href="ch05_03.htm#korn2-CHP-5-SIDEBAR-5">Task 5-4</a> is a new task whose initial solution uses <tt class="literal">case</tt>.
+</p>
+
+<a name="korn2-CHP-5-SIDEBAR-5" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 5-4</h4>
+
+<p>
+<a name="IXT-5-287716" />
+<a name="IXT-5-287717" />
+
+
+You are a system administrator,<a href="#FOOTNOTE-78">[78]</a>
+and you need to
+<a name="korn2-IDXTERM-1165" />
+
+set up the system so that users' <tt class="literal">TERM</tt> environment variables
+correctly reflect what type of terminal they are on. Write some code that
+does this.
+</p>
+
+<blockquote class="footnote">
+<a name="FOOTNOTE-78" /><p> [78]
+Our condolences.
+</p>
+</blockquote></td></tr></table><p></blockquote>
+<p>
+
+
+The code for the solution to this task should go into the file
+<em class="emphasis">/etc/profile</em>, which is the master startup file that is run
+for each user <em class="emphasis">before</em> his or her <em class="emphasis">.profile</em>.
+</p>
+
+<p>
+For the time being, we assume that you have a traditional
+mainframe-style setup, in which terminals are hard-wired to
+the computer.
+<a name="IXT-5-287718" />
+This means that you can determine which (physical)
+terminal is being used by the line (or <em class="emphasis">tty</em>) it is on.
+This is typically a name like <em class="emphasis">/dev/ttyNN</em>,
+where <em class="emphasis">NN</em> is the line number.
+You can find your tty with the command <em class="emphasis">tty</em>(1),
+which prints it on the standard output.
+</p>
+
+<p>
+Let's assume that your system has ten lines plus a system
+console line (<em class="emphasis">/dev/console</em>), with the following terminals:
+</p>
+
+<ul>
+
+<li><p>
+Lines tty01, tty03, and tty04 are Givalt GL35a's
+(<em class="emphasis">terminfo</em> name "gl35a").
+</p></li>
+
+<li><p>
+Line tty07 is a Tsoris T-2000 ("t2000").
+</p></li>
+
+<li><p>
+Line tty08 and the console are Shande 531s ("s531").
+</p></li>
+
+<li><p>
+The rest are Vey VT99s ("vt99").
+</p></li>
+
+</ul>
+
+<p>
+Here is the code that does the job:
+</p>
+
+<p>
+<blockquote><pre class="code">
+case $(tty) in
+    /dev/tty0[134]            ) TERM=gl35a ;;
+    /dev/tty07                ) TERM=t2000 ;;
+    /dev/tty08 | /dev/console ) TERM=s531  ;;
+    *                         ) TERM=vt99  ;;
+esac
+</pre></blockquote>
+</p>
+
+<p>
+The value that <tt class="literal">case</tt> checks is the result of command substitution.
+Otherwise, the only thing new about this code is the OR bar
+after <em class="emphasis">/dev/tty08</em>.  This means that
+<em class="emphasis">/dev/tty08</em> and <em class="emphasis">/dev/console</em> are alternate patterns for the case
+that sets <tt class="literal">TERM</tt> to "s531".
+</p>
+
+<p>
+Note that it is <em class="emphasis">not</em> possible
+to put alternate patterns on separate lines unless you use backslash
+continuation characters at the end of all but the last line.
+In other words, the line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+/dev/tty08 | /dev/console ) TERM=s531  ;;
+</pre></blockquote>
+</p>
+
+<p>
+could be changed to the slightly more readable:
+</p>
+
+<p>
+<blockquote><pre class="code">
+/dev/tty08 | \
+    /dev/console   ) TERM=s531  ;;
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-251" />
+<a name="IXTR3-252" />
+The backslash must be at the end of the line. If you omit it,
+or if there are characters (even spaces) following it, the shell
+complains with a syntax error message.
+</p>
+
+<p>
+This problem is actually better solved using a file that contains
+a table of lines and terminal types. We'll see how to do it that way
+in <a href="ch07_01.htm">Chapter 7</a>.
+</p>
+
+<p>
+When a <tt class="literal">case</tt> appeared inside
+the <tt class="literal">$(</tt>...<tt class="literal">)</tt>
+command-substitution
+construct, <em class="emphasis">ksh88</em> had a problem:
+the <tt class="literal">)</tt> that demarcates each pattern
+from the code to execute terminated the <tt class="literal">$(</tt>...<tt class="literal">)</tt>.
+To get around this, it was necessary
+to supply a leading <tt class="literal">(</tt> in front of the pattern:
+
+<blockquote><pre class="code">
+result=$(case $input in
+         ( dave ) print Dave! ;;      <i class="lineannotation">Open paren required in ksh88</i>
+         ( bob  ) print Bob! ;;
+         esac)
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">ksh93</em> still accepts this syntax, but it no
+longer requires it.
+</p>
+
+<a name="korn2-CHP-5-SECT-3.1" /><div class="sect2">
+<h3 class="sect2">5.3.1. Merging Cases</h3>
+
+<p>
+Sometimes, when writing a <tt class="literal">case</tt>-style construct, there are
+instances where one case is a subset of what should be done for another.
+The C language handles this by letting one <tt class="literal">case</tt> in a
+<tt class="literal">switch</tt> "fall through" into the code for another.
+A little-known fact is that the Korn shell (but not the Bourne shell) has a similar facility.
+</p>
+
+<p>
+<a name="IXT-5-287719" />
+<a name="IXT-5-287720" />
+
+For example, let's suppose that our C compiler generates only
+assembly code, and that it's up to our front-end script to turn the
+assembly code into object code.  In this case, we want to fall through
+from the <tt class="literal">*.c</tt> case into the <tt class="literal">*.s</tt> case.
+This is done using <tt class="literal">;&amp;</tt> to terminate the body of the
+case that does the falling through:
+</p>
+
+<p>
+<blockquote><pre class="code">
+objfiles=""
+for filename in "$@"; do
+    case $filename in
+        *.c )
+            asmname=${filename%.c}.s
+            ccom "$filename" "$asmname"
+            filename=$asmname ;&amp;    # fall through!
+        *.s )
+            objname=${filename%.s}.o
+            as "$filename" "$objname" ;;
+        *.o )
+            objname=$filename ;;
+        *   )
+            print "error: $filename is not a source or object file."
+            exit 1 ;;
+    esac
+    objfiles+=" $objname"
+done
+ld $objfiles
+</pre></blockquote>
+</p>
+
+<p>
+Before falling through, the <tt class="literal">*c</tt> case has to reset the
+value of <tt class="literal">filename</tt> so that the <tt class="literal">*.s</tt> case
+works correctly.
+It is usually a very good idea to add a comment indicating that the
+"fall through" is on purpose, although it is more obvious
+in shell than in C.
+We'll return to this example once more in <a href="ch06_01.htm">Chapter 6</a>
+when we discuss how to handle dash options on the command line.
+<a name="IXTR3-253" />
+</p>
+
+</div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.2. for</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.4. select</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

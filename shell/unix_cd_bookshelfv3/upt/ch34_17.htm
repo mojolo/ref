@@ -1,0 +1,171 @@
+<html><head><title>The Deliberate Scrivener (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.17. The Deliberate Scrivener</h2>
+
+<p><a name="upt3-IDXTERM-5296" /> <a name="upt3-IDXTERM-5297" />The
+operations of <i class="command">sed</i>'s most
+difficult commands -- <a name="IXT-34-768" /> <a name="IXT-34-769" /><a name="IXT-34-770" /> <a name="IXT-34-771" /> <a name="IXT-34-772" /> <a name="IXT-34-773" />hold
+(<em class="emphasis">h</em> or <em class="emphasis">H</em>), get
+(<em class="emphasis">g</em> or <em class="emphasis">G</em>), and exchange
+(<em class="emphasis">x</em>) -- can be explained, somewhat fancifully,
+in terms of an extremely deliberate medieval scrivener or amanuensis
+toiling to make a copy of a manuscript. His work is bound by several
+spatial restrictions: the original manuscript is displayed in one
+room; the set of instructions for copying the manuscript are stored
+in a middle room; and the quill, ink, and folio are set up in yet
+another room. The original manuscript and the set of instructions are
+written in stone and cannot be moved about. The dutiful scrivener,
+being sounder of body than mind, is able to make a copy by going from
+room to room, working on only one line at a time. Entering the room
+where the original manuscript is, he removes from his robes a scrap
+of paper to take down the first line of the manuscript. Then he moves
+to the room containing the list of editing instructions. He reads
+each instruction to see if it applies to the single line he has
+scribbled down.
+</p>
+
+<p>Each instruction, written in special notation, consists of two parts:
+a
+<em class="emphasis">pattern</em><a name="IXT-34-774" /> and a
+<em class="emphasis">procedure</em>. The scrivener reads the first
+instruction and checks the pattern against his line. If there is no
+match, he doesn't have to worry about the procedure,
+so he goes to the next instruction. If he finds a match, the
+scrivener follows the action or actions specified in the procedure.
+</p>
+
+<p>He makes the edit on his piece of paper before trying to match the
+pattern in the next instruction. Remember, the scrivener has to read
+through a series of instructions, and he reads all of them, not just
+the first instruction that matches the pattern. Because he makes his
+edits as he goes, he is always trying to match the latest version
+against the next pattern; he doesn't remember the
+original line.
+</p>
+
+<p>When he gets to the bottom of the list of instructions, and has made
+any edits that were necessary on his piece of paper, he goes into the
+next room to copy out the line. (He doesn't need to
+be told to print out the line.) After that is done, he returns to the
+first room and takes down the next line on a new scrap of paper. When
+he goes to the second room, once again he reads every instruction
+from first to last before leaving.
+</p>
+
+<p>This is what he normally does, that is, unless he is told otherwise.
+For instance, before he starts, he can be told
+<em class="emphasis">not</em> to write out every line (the
+<span class="option">-n</span><a name="IXT-34-775" /> option).
+In this case, he must wait for an instruction that tells him to print
+(<em class="emphasis">p</em><a name="IXT-34-776" /> <a name="IXT-34-777" />). If he does not get that
+instruction, he throws away his piece of paper and starts over. By
+the way, regardless of whether or not he is told to write out the
+line, he always gets to the last instruction on the list.
+</p>
+
+<p>Let's look at other kinds of instructions the
+scrivener has to interpret. First of all, an instruction can have
+zero, one, or two patterns specified:
+</p>
+
+<ul><li>
+<p>If no pattern is specified, the same procedure is followed for each
+line.
+</p>
+</li><li>
+<p>If there is only one pattern, he will follow the procedure for any
+line matching the pattern.
+</p>
+</li><li>
+<p>If a pattern is followed by a <tt class="literal">!</tt>, the procedure is
+followed for all lines that do <em class="emphasis">not</em> match the
+pattern.
+</p>
+</li><li>
+<p>If two patterns are specified, the actions described in the procedure
+are performed on the first matching line and all succeeding lines
+until a line matches the second pattern.
+</p>
+</li></ul>
+<p>The scrivener can work on only one line at a time, so you might
+wonder how he handles a range of lines. Each time he goes through the
+instructions, he tries to match only the first of two patterns. Now,
+after he has found a line that matches the first pattern, each time
+through with a new line he tries to match the second pattern. He
+interprets the second pattern as
+<em class="replaceable"><tt>pattern</tt></em><tt class="literal">!</tt>, so that the
+procedure is followed only if there is no match. When the second
+pattern is matched, he starts looking again for the first pattern.
+</p>
+
+<p>Each procedure contains one or more
+<a name="IXT-34-778" />commands or
+<em class="emphasis">actions</em>. Remember, if a pattern is specified
+with a procedure, the pattern must be matched before the procedure is
+executed. We have already shown many of the usual commands that are
+similar to other editing commands. However, there are several highly
+unusual commands.
+</p>
+
+<p>For instance, the <em class="emphasis">N</em><a name="IXT-34-779" /><a name="IXT-34-780" /> command tells the scrivener to go, right
+now, and get another line, adding it to the same piece of paper. The
+scrivener can be instructed to
+"hold" on to a single piece of
+scrap paper. The <em class="emphasis">h</em><a name="IXT-34-781" /> <a name="IXT-34-782" /> command tells him to make a copy of
+the line on another piece of paper and put it in his pocket. The
+<em class="emphasis">x</em> command tells him to exchange the extra piece
+of paper in his pocket with the one in his hand. The
+<em class="emphasis">g</em><a name="IXT-34-783" /> <a name="IXT-34-784" /> command tells him to throw
+out the paper in his hand and replace it with the one in his pocket.
+The <em class="emphasis">G</em> command tells him to append the line he is
+holding to the paper in front of him. If he encounters a
+<em class="emphasis">d</em><a name="IXT-34-785" /> <a name="IXT-34-786" /> command, he throws out the
+scrap of paper and begins again at the top of the list of
+instructions. A <em class="emphasis">D</em> command has effect when he has
+been instructed to append two lines on his piece of paper. The
+<em class="emphasis">D</em> command tells him to delete the first of those
+lines.
+</p>
+
+<p>If you want the analogy converted back to computers, the first and
+last rooms in this medieval manor are standard input and standard
+output. Thus, the original file is never changed. The line on the
+scrivener's piece of scrap paper is in the
+<em class="emphasis">pattern space</em><a name="IXT-34-787" /> <a name="IXT-34-788" />; the line on the piece of paper
+that he holds in his pocket is in the <em class="emphasis">hold
+space</em>. The hold space allows you to retain a duplicate of
+a line while you change the original in the pattern space.
+</p>
+
+<p><a href="ch34_18.htm#upt3-CHP-34-SECT-18">Section 34.18</a> shows a practical application of
+the scrivener's work, a <i class="command">sed</i>
+program that searches for a particular phrase that might be split
+across two lines.<a name="IXTR3-827" /> <a name="IXTR3-828" /> 
+</p>
+
+<p> <em class="emphasis">-- DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.16. Making Edits Across Line Boundaries</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.18. Searching for Patterns Split Across Lines</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

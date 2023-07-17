@@ -1,0 +1,228 @@
+<html><head><title>Setting Resources with xrdb (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.8. Setting Resources with xrdb</h2>
+
+<p><a name="upt3-IDXTERM-1172" /> <a name="upt3-IDXTERM-1173" />The <i class="command">xrdb</i> program saves
+you from maintaining multiple resource files if you run clients on
+multiple machines. It stores resources on the X server, where they
+are accessible to all clients using that server. (This property is
+also called the resource database.)
+</p>
+
+<p>Place the appropriate <i class="command">xrdb</i> command line in your
+<em class="filename">.xinitrc</em> file or <em class="filename">.xsession</em>
+file to initialize resources at login, although it can also be
+invoked interactively. It has the following syntax:
+</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>xrdb</b></tt> [<em class="replaceable"><tt>options</em>] [<em class="replaceable">filename</tt></em>]</pre></blockquote>
+
+<p>The <i class="command">xrdb</i> client takes several options, all of
+which are documented on its manual page. We'll
+discuss the most useful options.
+</p>
+
+<p>The optional <em class="emphasis">filename</em> argument specifies the
+name of a file from which the values of client variables (resources)
+will be read. If no filename is specified, <i class="command">xrdb</i>
+will expect to read its data from standard input. Note that whatever
+you type will override the previous contents, so if you inadvertently
+type <i class="command">xrdb</i> without a filename argument and then
+quit with CTRL-d, you will delete any previous values. (You can
+append new settings to current ones using the <span class="option">-merge</span>
+option discussed later in this article.)
+</p>
+
+<p>The resource <em class="replaceable"><tt>filename</tt></em> can be anything you
+want. Two commonly used names are <em class="filename">.Xresources</em>
+and <em class="filename">.Xdefaults</em>.
+</p>
+
+<p>You should load a resource file with the <i class="command">xrdb</i>
+-<span class="option">load</span> option. For example, to load the contents of
+your <em class="filename">.Xresources</em> file into the RESOURCE_MANAGER,
+you would type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xrdb -load .Xresources</b></tt></pre></blockquote>
+
+<dl>
+<a name="IXT-6-896" /><dt><i>Querying the resource database</i></dt>
+<dd>
+You can find out what options are currently set by using the
+<span class="option">-query</span><a name="IXT-6-897" /> <a name="IXT-6-898" /> option. For example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xrdb -query</b></tt>
+XTerm*ScrollBar:     True
+bigxterm*font:       9x15
+bigxterm*Geometry:   80x55
+smallxterm*Font:     6x10
+smallxterm*Geometry: 80x10
+xterm*borderWidth:   3</pre></blockquote>
+
+<p>If <i class="command">xrdb</i> has not been run, this command will
+produce no output.
+</p>
+</dd>
+
+
+<dt><i>Loading new values into the resource database</i></dt>
+<dd>
+By default, <i class="command">xrdb</i> reads its input (either a file or
+standard input) and stores the results into the resource database,
+replacing the previous values. If you simply want to merge new values
+with the currently active ones (perhaps by specifying a single value
+from standard input), you can use the
+<span class="option">-merge</span><a name="IXT-6-899" /> <a name="IXT-6-900" /> option. Only the new values will be
+changed; variables that were already set will be preserved rather
+than overwritten with empty values.
+</p>
+
+
+<p>For example, let's say you wanted to add new
+resources listed in the file <em class="filename">new.values</em>. You
+could say:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xrdb -merge new.values</b></tt></pre></blockquote>
+
+<p>As another example, if you wanted all subsequently run
+<i class="command">xterm</i> windows to have scrollbars, you could use
+standard input and enter:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xrdb -merge</b></tt>
+xterm*scrollBar:        True</pre></blockquote>
+
+<p>and then press CTRL-d to end the standard input. Note that because of
+precedence rules for resource naming, you may not get what you want
+automatically. For example, if you specify:
+</p>
+
+<blockquote><pre class="code">xterm*scrollBar:        True</pre></blockquote>
+
+<p>and the more specific value:</p>
+
+<blockquote><pre class="code">xterm*vt100.scrollBar:  False</pre></blockquote>
+
+<p>has already been set, your new, less specific setting will be
+ignored. The problem isn't that you used the
+<span class="option">-merge</span> option incorrectly -- you just got caught
+by the rules of precedence.
+</p>
+
+<p>If your specifications don't seem to work, use the
+<span class="option">-query</span> option to list the values in the
+<a name="IXT-6-901" />RESOURCE_MANAGER property, and look for
+conflicting specifications.
+</p>
+
+<p>Note also that when you add new specifications, they
+won't affect any programs already running -- only
+programs started after the new resource specifications are in effect.
+(This is also true even if you overwrite the existing specifications
+by loading a new resource file. Only programs run after this point
+will reflect the new specifications.)
+</p></dd>
+
+
+<dt><i>Saving active resource definitions in a file</i></dt>
+<dd>
+Assume that you've loaded the RESOURCE_MANAGER
+property from an <em class="filename">.Xresources</em></tt> or other file.
+However, you've dynamically loaded a different value
+using the <span class="option">-merge</span> option, and you'd
+like to make the new value your default.
+</p>
+
+
+<p>You don't need to edit the file manually (although
+you certainly could.) The
+<span class="option">-edit</span><a name="IXT-6-902" /> <a name="IXT-6-903" />
+option allows you to write the current value of the RESOURCE_MANAGER
+property to a file. If the file already exists, it is overwritten
+with the new values. However, <i class="command">xrdb</i> is smart enough
+to preserve any comments and preprocessor declarations in the file
+being overwritten, replacing only the resource definitions. For
+example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xrdb -edit ~/.Xresources</b></tt></pre></blockquote>
+
+<p>will save the current contents of the RESOURCE_MANAGER property in
+the file <em class="filename">.Xresources</em></tt> in your home directory.
+</p>
+
+<p>If you want to save a backup copy of an existing file, use the
+<span class="option">-backup</span><a name="IXT-6-904" /> <a name="IXT-6-905" /> option:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xrdb -edit .mydefaults -backup old</b></tt></pre></blockquote>
+
+<p>The string following the <span class="option">-backup</span> option is an
+extension appended to the old filename. In the prior example, the
+previous copy of <em class="filename">.mydefaults</em></tt> would be saved as
+<em class="filename">.mydefaults.old</em></tt>.
+</p></dd>
+
+
+<dt><i>Removing resource definitions</i></dt>
+<dd>
+<a name="IXT-6-906" /><a name="IXT-6-907" />You can delete the definition of
+the RESOURCE_MANAGER property from the server by calling
+<i class="command">xrdb</i> with the
+<span class="option">-remove</span><a name="IXT-6-908" /> option.
+</p>
+
+
+<p>There is no way to delete a single resource definition other than to
+read the current <i class="command">xrdb</i> values into a file. For
+example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xrdb -query &gt; </b></tt><em class="replaceable"><tt>filename</tt></em></pre></blockquote>
+
+<p>Use an editor to edit the file, deleting the resource definitions you
+no longer want, and save the file:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>vi </b></tt><em class="replaceable"><tt>filename</tt></em></pre></blockquote>
+
+<p><span class="option" /><a name="IXT-6-909" /> <a name="IXT-6-910" />Then read the edited values back into
+the RESOURCE_MANAGER with <i class="command">xrdb</i> (note that
+we're replacing the values, not merging them, so we
+use <span class="option">-load</span>):
+</p>
+
+<a name="IXTR3-969" /><a name="IXTR3-970" /><blockquote><pre class="code">% <tt class="userinput"><b>xrdb -load </b></tt><em class="replaceable"><tt>filename</tt></em>
+</pre></blockquote></dd>
+
+</dl>
+
+<p><em class="emphasis">--VQ and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.7. How -name Affects Resources</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.9. Listing the Current Resources for a Client: appres</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

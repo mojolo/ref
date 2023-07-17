@@ -1,0 +1,159 @@
+<html><head><title>Deleting Stale Files (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch14_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch14_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">14.17. Deleting Stale Files</h2>
+
+<p><a name="IXT-14-6293" /><a name="IXT-14-6294" /> <a name="IXT-14-6295" /> <a name="IXT-14-6296" />Sooner or later, a lot of junk
+collects in your directories: files that you don't
+really care about and never use. It's possible to
+write <b class="emphasis-bold">find</b> (<a href="ch09_01.htm#upt3-CHP-9-SECT-1">Section 9.1</a>) commands that will automatically clean these
+up. If you want to clean up regularly, you can add some
+<i class="command">find</i> commands to your <b class="emphasis-bold">crontab file</b> (<a name="IXT-14-6297" /><a href="ch25_02.htm#upt3-CHP-25-SECT-2">Section 25.2</a>).
+</p>
+
+<p>Basically, all you need to do is write a
+<i class="command">find</i><a name="IXT-14-6298" /> <a name="IXT-14-6299" />
+command that locates files based on their last access time (<b class="emphasis-bold">-atime</b> (<a href="ch09_05.htm#upt3-CHP-9-SECT-5">Section 9.5</a>)) and use
+<b class="emphasis-bold">-ok or -exec</b> (<a href="ch09_09.htm#upt3-CHP-9-SECT-9">Section 9.9</a>) to delete them. Such a command might look
+like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -atime +60 -ok rm -f {} \;</b></tt></pre></blockquote>
+
+<p>This locates files that haven't been accessed in the
+last 60 days, asks if you want to delete the file, and then deletes
+the file. (If you run it from <i class="command">cron</i>, make sure you
+use <span class="option">-exec</span> instead of <span class="option">-ok</span>, and make
+<em class="emphasis">absolutely sure</em> that the <i class="command">find</i>
+won't delete files that you think are important.)
+</p>
+
+<p>Of course, you can modify this <i class="command">find</i> command to
+exclude (or select) files with particular names; for example, the
+following command deletes old core dumps and GNU Emacs backup files
+(whose names end in <tt class="literal">~</tt>), but leaves all others
+alone:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . \( -name core -o -name "*~" \) -atime +60 -ok rm -f {} \;</b></tt></pre></blockquote>
+
+<p><a name="IXT-14-6300" />If you take an automated approach to deleting
+stale files, watch out for these things:
+</p>
+
+<ul><li>
+<p>There are plenty of files (for example, Unix utilities and log files)
+that should <em class="emphasis">never</em> be removed. Never run any
+"automatic deletion" script on
+<em class="emphasis">/usr</em> or <tt class="literal">/</tt> or any other
+"system" directory.
+</p>
+</li>
+
+<li>
+<p>On some systems, executing a <a name="IXT-14-6301" />binary executable
+doesn't update the last access time. Since
+there's no reason to read these files, you can
+expect them to get pretty stale, even if they're
+used often. But you don't want to delete them. If
+you cook up a complicated enough <i class="command">find</i> command, you
+should be able to handle this automatically. Something like this
+should (at least partially) do the trick:
+</p>
+
+<p><tt class="literal">!</tt> <a href="ch09_06.htm#upt3-CHP-9-SECT-6">Section
+9.6</a>, <tt class="literal">-perm</tt> <a href="ch09_15.htm#upt3-CHP-9-SECT-15">Section 9.15</a> 
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -atime +30 ! -perm -111 ... -exec rm {} \;</b></tt></pre></blockquote>
+</li>
+
+<li>
+<p>Along the same lines, you'd probably never want to
+delete C source code, so you might modify your
+<i class="command">find</i> command to look like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -atime +30 ! -perm -111 ! -name "*.c" ... -exec rm {} \;</b></tt></pre></blockquote>
+</li>
+
+<li>
+<p>I personally find that automatically deleting files is an extreme and
+bizarre solution. I can't imagine deleting files
+without knowing exactly what I've deleted or without
+(somehow) saving the "trash"
+somewhere just in case I accidentally removed something important. To
+archive the deleted files on tape, you can use the
+<i class="command">find</i><a name="IXT-14-6302" /><a name="IXT-14-6303" /> <a name="IXT-14-6304" /><a name="IXT-14-6305" /> <a name="IXT-14-6306" />-<span class="option">cpio</span> operator
+if your system has it. Otherwise, try a little
+<a name="IXT-14-6307" /> <a name="IXT-14-6308" />shell script with GNU
+<i class="command">tar</i>; <a name="IXT-14-6309" />the following script writes the list of
+files to a temporary file and then, if that succeeds, reads the list
+of files, writes them to tape, and removes the files if the tape
+write succeeds:
+</p>
+
+<blockquote><pre class="code">umask 077
+files=/tmp/CLEANUP$$</pre></blockquote>
+
+<p><tt class="literal">if</tt> <a href="ch35_13.htm#upt3-CHP-35-SECT-13">Section 35.13</a>, <tt class="literal">&amp;&amp;</tt> <a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a></p>
+
+<blockquote><pre class="code">if find ... -print &gt; $files</pre></blockquote>
+
+
+<blockquote><pre class="code">then tar -c -T $files --remove &amp;&amp; rm $files
+else echo "cleanup aborted because find returned nonzero status"
+fi</pre></blockquote>
+</li>
+</ul>
+
+<p>Okay, I've said that I don't really
+think that automated deletion scripts are a good idea. However, I
+don't have a good comprehensive solution. I spend a
+reasonable amount of time (maybe an hour a month) going through
+directories and deleting stale files by hand. I also have a
+<i class="command">clean</i><a name="IXT-14-6310" /><a name="IXT-14-6311" /> alias that I type whenever I think
+about it. It looks like this:
+</p>
+
+<blockquote><pre class="code">alias clean "rm *~ junk *.BAK core #*"</pre></blockquote>
+
+<p>That is, this alias deletes all of my <b class="emphasis-bold">Emacs</b> (<a href="ch19_01.htm#upt3-CHP-19-SECT-1">Section 19.1</a>) backup
+files, Emacs autosave files (risky, I know), files named
+<em class="emphasis">junk</em>, some other backup files, and core dumps.
+I'll admit that since I <em class="emphasis">never</em>
+want to save these files, I could probably live with something like
+this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find ~ \( -name "*~" -o -name core \) -atime +1 -exec rm {} \;</b></tt></pre></blockquote>
+
+<p>But stil, automated deletion commands make me really nervous, and
+I'd prefer to live without them.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch14_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch14_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">14.16. Problems Deleting Directories</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">14.18. Removing Every File but One</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

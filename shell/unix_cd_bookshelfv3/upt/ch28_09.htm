@@ -1,0 +1,226 @@
+<html><head><title>Repeating and Varying Commands (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch28_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">28.9. Repeating and Varying Commands</h2>
+
+<a name="upt3-CHP-28-SECT-9.1" /><div class="sect2">
+<h3 class="sect2">28.9.1. A foreach Loop</h3>
+
+<p><a name="IXT-28-4620" /><a name="IXT-28-4621" /><a name="IXT-28-4622" /><a name="IXT-28-4623" />When
+<a name="upt3-IDXTERM-4269" /> <a name="upt3-IDXTERM-4270" />some people
+<a name="IXT-28-4624" /> <a name="IXT-28-4625" /><a name="IXT-28-4626" />need to
+repeat a command on several files, the first thing they think of is
+<b class="emphasis-bold">command line editing</b> (<a href="ch30_14.htm#upt3-CHP-30-SECT-14">Section 30.14</a>) or -- as we show here -- <b class="emphasis-bold">history substitution</b>
+(<a name="IXT-28-4627" /><a href="ch30_05.htm#upt3-CHP-30-SECT-5">Section 30.5</a>):
+</p>
+
+<p><tt class="literal">-v</tt> <a href="ch12_04.htm#upt3-CHP-12-SECT-4">Section 12.4</a>, <tt class="literal">less</tt> <a href="ch12_03.htm#upt3-CHP-12-SECT-3">Section 12.3</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat -t -v /usr/fran/report | less</b></tt>
+   ...
+% <tt class="userinput"><b>^fran/report^rob/file3</b></tt>
+cat -t -v /usr/rob/file3 | less
+   ...
+% <tt class="userinput"><b>^3^21</b></tt>
+cat -t -v /usr/rob/file21 | less
+   ...
+%</pre></blockquote>
+
+<p>The second substitution (changing <em class="emphasis">3</em> to
+<em class="emphasis">21</em>) was quick to do, but the first one was
+longer. If there are lots of related commands like this, it can be
+easier to list all the variations at once -- then let the shell do
+the dirty work. To do that, use the shell's
+<i class="command">foreach</i> loop in C-type shells -- or, in
+Bourne-type shells, use a <i class="command">for</i> loop, shown later in
+this article. (<i class="command">zsh</i> has both
+<i class="command">foreach</i> and <i class="command">for</i> loops.) You
+give the loop a list of the words that will change each time the
+command line is run. In this example, it's a list of
+filenames. The loop will step through the words, one by one, storing
+a word into a <b class="emphasis-bold">shell variable</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>), then running the command(s). The loop goes
+on until it has read all the words. For example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>foreach file (/usr/fran/report /usr/rob/file3 /usr/rob/file21)</b></tt>
+? <tt class="userinput"><b>cat -t -v $file | less</b></tt>
+? <tt class="userinput"><b>end</b></tt>
+   <i class="lineannotation">...Shell runs cat -t -v /usr/fran/report | less...</i>
+   <i class="lineannotation">...Shell runs cat -t -v /usr/rob/file3 | less...</i>
+   <i class="lineannotation">...Shell runs cat -t -v /usr/rob/file21 | less...</i>
+%</pre></blockquote>
+
+<p><a name="IXT-28-4628" /><a name="IXT-28-4629" /><a name="IXT-28-4630" />The question marks (<tt class="literal">?</tt>)
+are <b class="emphasis-bold">secondary prompts</b> (<a href="ch28_12.htm#upt3-CHP-28-SECT-12">Section 28.12</a>); the shell will keep printing them until you
+type the command <i class="command">end</i>. Then the loop runs.
+</p>
+
+<p>The list between the parentheses doesn't have to be
+filenames. Among other things, you can use <b class="emphasis-bold">wildcards</b> (<a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a>),
+<b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) (command substitution), <b class="emphasis-bold">variables</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>,
+<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>), and the handy <a name="IXT-28-4631" /><b class="emphasis-bold">curly brace ({})
+operators</b> (<a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a>). For example, you
+could have typed the above loop this way:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>foreach file (/usr/fran/report /usr/rob/file{3,21})</b></tt>
+? <tt class="userinput"><b>cat -t -v $file | less</b></tt>
+? <tt class="userinput"><b>end</b></tt></pre></blockquote>
+
+<p>If you want the loop to stop before or after running each command,
+add the C shell operator <tt class="literal">$&lt;</tt>. It reads keyboard
+input and waits for a RETURN. In this case, you can probably ignore
+the input; you'll use <tt class="literal">$&lt;</tt> to
+make the loop wait. For example, to make the previous loop prompt
+before each command line:
+</p>
+
+<p><tt class="literal">set</tt> <a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>foreach file (/usr/fran/report /usr/rob/file{3,21})</b></tt>
+? <tt class="userinput"><b>echo -n "Press RETURN to see $file--"</b></tt>
+? <tt class="userinput"><b>set x="$&lt;"</b></tt>
+? <tt class="userinput"><b>cat -t -v $file | less</b></tt>
+? <tt class="userinput"><b>end</b></tt>
+Press RETURN to see /usr/fran/report--RETURN
+   <i class="lineannotation">Shell runs cat -t -v /usr/fran/report | less...</i>
+Press RETURN to see /usr/rob/file3--RETURN
+   <i class="lineannotation">Shell runs cat -t -v /usr/rob/file3 | less...</i>
+Press RETURN to see /usr/rob/file21--RETURN
+   <i class="lineannotation">Shell runs cat -t -v /usr/rob/file21 | less...</i></pre></blockquote>
+
+<p><a name="IXT-28-4632" />The loop parameters don't
+need to be filenames. For instance, you could send a personalized
+<b class="emphasis-bold">email</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>)
+message to five people this way:<a href="#FOOTNOTE-87">[87]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-87" /><p> [87]If
+you're sending lots of mail messages with a loop,
+your system mailer may get overloaded. In that case,
+it's a good idea to put a command like <b class="emphasis-bold">sleep 5</b> (<a href="ch25_09.htm#upt3-CHP-25-SECT-9">Section 25.9</a>) on a
+separate line before the <tt class="literal">end</tt>. That will give the
+mailer five seconds to send each message.</p> </blockquote>
+
+<p><tt class="literal">cat</tt> <tt class="literal">-</tt> <b class="emphasis-bold"><a href="ch12_02.htm#upt3-CHP-12-SECT-2">Section 12.2</a></b>
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>foreach person (John Cathy Agnes Brett Elma)</b></tt>
+? <tt class="userinput"><b>echo "Dear $person," | cat - formletter | mail $person</b></tt>
+? <tt class="userinput"><b>end</b></tt></pre></blockquote>
+
+<p>The first line of the first letter will be "Dear
+John,"; the second letter "Dear
+Cathy,"; and so on.
+</p>
+
+<p>Want to take this idea further? It's a part of
+<b class="emphasis-bold">shell programming</b> (<a href="ch35_02.htm#upt3-CHP-35-SECT-2">Section 35.2</a>). I usually don't recommend
+shell programming with the C shell, but this is a handy technique to
+use interactively.
+</p>
+
+</div>
+<a name="upt3-CHP-28-SECT-9.2" /><div class="sect2">
+<h3 class="sect2">28.9.2. A for Loop</h3>
+
+<p><a name="IXT-28-4633" /><a name="IXT-28-4634" />The <i class="command">for</i> loop
+<a name="IXT-28-4635" /> <a name="IXT-28-4636" />in Bourne-type shells is like the
+<i class="command">foreach</i> loop shown earlier: it loops through a
+list of words, running one or more commands for each word in the
+list. This saves time when you want to run the same series of
+commands separately on several files.
+</p>
+
+<p>Let's repeat an earlier example:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>for file in /usr/fran/report /usr/rob/file2 /usr/rob/file3</b></tt>
+&gt; <tt class="userinput"><b>do</b></tt>
+&gt; <tt class="userinput"><b>cat -t -v $file | less</b></tt>
+&gt; <tt class="userinput"><b>done</b></tt>
+   <i class="lineannotation">...Shell runs cat -t -v /usr/fran/report | less...</i>
+   <i class="lineannotation">...Shell runs cat -t -v /usr/rob/file2 | less...</i>
+   <i class="lineannotation">...Shell runs cat -t -v /usr/rob/file3 | less...</i>
+$</pre></blockquote>
+
+<p><a name="IXT-28-4637" /><a name="IXT-28-4638" /><a name="IXT-28-4639" />The greater-than signs
+(<tt class="literal">&gt;</tt>) are <b class="emphasis-bold">secondary
+prompts</b> (<a href="ch28_12.htm#upt3-CHP-28-SECT-12">Section 28.12</a>); the Bourne shell
+will keep printing them until you type the command
+<i class="command">done</i>. Then it runs the loop. You
+don't have to press RETURN after the
+<tt class="literal">do</tt>; you can type the first command on the same
+line after it.
+</p>
+
+<p>In a shell script, the loop body (the lines between
+<tt class="literal">do</tt> and <tt class="literal">done</tt>) is usually
+indented for clarity.
+</p>
+
+<p>The list after the <tt class="literal">in</tt> doesn't
+have to be filenames. Among other things, you can use <b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>)
+(command substitution), <b class="emphasis-bold">variables</b>
+(<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>, <a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>),
+<b class="emphasis-bold">wildcards</b> (<a href="ch33_01.htm#upt3-CHP-33-SECT-1">Section 33.1</a>), and, on shells like <i class="command">bash</i>
+that have them, <b class="emphasis-bold">curly brace ({})
+operators</b> (<a name="IXT-28-4640" /><a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a>). For
+example, you could have typed the previous loop this way:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>for file in /usr/fran/report /usr/rob/file[23]</b></tt>
+&gt; <tt class="userinput"><b>do cat -t -v $file | less</b></tt>
+&gt; <tt class="userinput"><b>done</b></tt></pre></blockquote>
+
+<p>If you want the loop to stop before or after running each command,
+add the shell's <b class="emphasis-bold">read
+command</b> (<a name="IXT-28-4641" /><a href="ch35_18.htm#upt3-CHP-35-SECT-18">Section 35.18</a>). It reads
+keyboard input and waits for a RETURN. In this case, you can ignore
+the input; you'll use <i class="command">read</i> just
+to make the loop wait. For example, to make the above loop prompt
+before each command line:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>for file in /usr/fran/report /usr/rob/file[23]</b></tt>
+&gt; <tt class="userinput"><b>do</b></tt>
+&gt; <tt class="userinput"><b>echo -n "Press RETURN to see $file--"</b></tt>
+&gt; <tt class="userinput"><b>read x</b></tt>
+&gt; <tt class="userinput"><b>cat -t -v $file | less</b></tt>
+&gt; <tt class="userinput"><b>done</b></tt>
+Press RETURN to see /usr/fran/report--RETURN
+   <i class="lineannotation">Shell runs cat -t -v /usr/fran/report | less...</i>
+Press RETURN to see /usr/rob/file2--RETURN
+   <i class="lineannotation">Shell runs cat -t -v /usr/rob/file2 | less...</i>
+Press RETURN to see /usr/rob/file3--RETURN
+   <i class="lineannotation">Shell runs cat -t -v /usr/rob/file3 | less...</i></pre></blockquote>
+
+<p><a href="ch35_21.htm#upt3-CHP-35-SECT-21">Section 35.21</a> has more information about the
+<i class="command">for</i> loop. <a href="ch36_12.htm#upt3-CHP-36-SECT-12">Section 36.12</a>
+shows how to make a <i class="command">for</i> loop that varies several
+parameters at <a name="IXTR3-4754" /> <a name="IXTR3-4755" />once. 
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch28_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">28.8. Repeating Commands</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">28.10. Repeating a Command with Copy-and-Paste</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

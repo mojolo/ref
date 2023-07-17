@@ -1,0 +1,245 @@
+<html><head><title>Making Edits Across Line Boundaries (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.16. Making Edits Across Line Boundaries</h2>
+
+<p><a name="upt3-IDXTERM-5287" /> <a name="upt3-IDXTERM-5288" />Most programs that use <b class="emphasis-bold">regular expressions</b> (<a href="ch32_04.htm#upt3-CHP-32-SECT-4">Section 32.4</a>) are able to match a pattern only on a single
+line of input. This makes it difficult to find or change a phrase,
+for instance, because it can start near the end of one line and
+finish near the beginning of the next line. Other patterns might be
+significant only when repeated on multiple lines.
+</p>
+
+<p><i class="command">sed</i> has the ability to load more than one line
+into the pattern space. This allows you to match (and change)
+patterns that extend over multiple lines. In this article, we show
+how to create a multiline pattern space and manipulate its contents.
+</p>
+
+<p>The multiline <a name="IXT-34-765" />Next command, <em class="emphasis">N</em>,
+creates a multiline pattern space by reading a new line of input and
+appending it to the contents of the pattern space. The original
+contents of the pattern space and the new input line are separated by
+a newline. The embedded newline character can be matched in patterns
+by the escape sequence <tt class="literal">\n</tt>. In a multiline pattern
+space, only the metacharacter
+<tt class="literal">^</tt><a name="IXT-34-766" /><a name="IXT-34-767" /> matches the
+newline at the beginning of the pattern space, and
+<tt class="literal">$</tt> matches the newline at the end. After the Next
+command is executed, control is then passed to subsequent commands in
+the script.
+</p>
+
+<p>The Next command differs from the next command,
+<em class="emphasis">n</em>, which outputs the contents of the pattern
+space and then reads a new line of input. The next command does not
+create a multiline pattern space.
+</p>
+
+<p>For our first example, let's suppose that we wanted
+to change "Owner and Operator
+Guide" to "Installation
+Guide", but we found that it appears in the file on
+two lines, splitting between <tt class="literal">Operator</tt> and
+<tt class="literal">Guide</tt>. For instance, here are a few lines of
+sample text:
+</p>
+
+<blockquote><pre class="code">Consult Section 3.1 in the Owner and Operator
+Guide for a description of the tape drives
+available on your system.</pre></blockquote>
+
+<p>The following script looks for <tt class="literal">Operator</tt> at the end
+of a line, reads the next line of input, and then makes the
+replacement:
+</p>
+
+<blockquote><pre class="code">/Operator$/{
+    N
+    s/Owner and Operator\nGuide/Installation Guide/
+}</pre></blockquote>
+
+<p><a name="upt3-IDXTERM-5292" />In this example, we know where the two
+lines split and where to specify the embedded newline. When the
+script is run on the sample file, it produces the two lines of
+output, one of which combines the first and second lines and is too
+long to show here. This happens because the substitute command
+matches the embedded newline but does not replace it. Unfortunately,
+you cannot use <tt class="literal">\n</tt> to insert a newline in the
+replacement string. You must either use the backslash to escape the
+newline, as follows:
+</p>
+
+<blockquote><pre class="code">s/Owner and Operator\nGuide /Installation Guide\
+/</pre></blockquote>
+
+<p>or use the <b class="emphasis-bold">\(..\) operators</b> (<a href="ch34_11.htm#upt3-CHP-34-SECT-11">Section 34.11</a>) to keep the newline:
+</p>
+
+<blockquote><pre class="code">s/Owner and Operator\(\n\)Guide /Installation Guide\1/</pre></blockquote>
+
+<p>This command restores the newline after <tt class="literal">Installation
+Guide</tt>. It is also necessary to match a blank space
+following <tt class="literal">Guide</tt> so the new line
+won't begin with a space. Now we can show the
+output:
+</p>
+
+<blockquote><pre class="code">Consult Section 3.1 in the Installation Guide
+for a description of the tape drives
+available on your system.</pre></blockquote>
+
+<p>Remember, you don't have to replace the newline, but
+if you don't, it can make for some long lines.
+</p>
+
+<p>What if there are other occurrences of "Owner and
+Operator Guide" that break over multiple lines in
+different places? You could change the address to match
+<tt class="literal">Owner</tt>, the first word in the pattern instead of
+the last, and then modify the regular expression to look for a space
+or a newline between words, as shown below:
+</p>
+
+<blockquote><pre class="code">/Owner/{
+N
+s/Owner *\n*and *\n*Operator *\n*Guide/Installation Guide/
+}</pre></blockquote>
+
+<p>The asterisk (<tt class="literal">*</tt>) indicates that the space or
+newline is optional. This seems like hard work though, and indeed
+there is a more general way. We can read the newline into the pattern
+space and then use a substitute command to remove the embedded
+newline, wherever it is:
+</p>
+
+<blockquote><pre class="code">s/Owner and Operator Guide/Installation Guide/
+/Owner/{
+N
+s/ *\n/ /
+s/Owner and Operator Guide */Installation Guide\
+/
+}</pre></blockquote>
+
+<p>The first line of the script matches <tt class="literal">Owner and Operator
+Guide</tt> when it appears on a line by itself. (See the
+discussion at the end of the article about why this is necessary.) If
+we match the string <tt class="literal">Owner</tt>, we read the next line
+into the pattern space and replace the embedded newline with a space.
+Then we attempt to match the whole pattern and make the replacement
+followed by a newline. This script will match <tt class="literal">Owner and
+Operator Guide</tt> regardless of how it is broken across two
+lines. Here's our expanded test file:
+</p>
+
+<blockquote><pre class="code">Consult Section 3.1 in the Owner and Operator
+Guide for a description of the tape drives
+available on your system.
+
+Look in the Owner and Operator Guide shipped with your system.
+
+Two manuals are provided, including the Owner and
+Operator Guide and the User Guide.
+
+The Owner and Operator Guide is shipped with your system.</pre></blockquote>
+
+<p>Running the above script on the sample file produces the following
+result:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sed -f sedscr sample</b></tt>
+Consult Section 3.1 in the Installation Guide
+for a description of the tape drives
+available on your system.
+
+Look in the Installation Guide shipped with your system.
+
+Two manuals are provided, including the Installation Guide
+and the User Guide.
+
+The Installation Guide is shipped with your system.</pre></blockquote>
+
+<p>In this sample script, it might seem redundant to have two substitute
+commands that match the pattern. The first command matches it when
+the pattern is found already on one line, and the second matches the
+pattern after two lines have been read into the pattern space. Why
+the first command is necessary is perhaps best demonstrated by
+removing that command from the script and running it on the sample
+file:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sed -f sedscr2 sample</b></tt>
+Consult Section 3.1 in the Installation Guide
+for a description of the tape drives
+available on your system.
+
+Look in the Installation Guide
+shipped with your system.
+Two manuals are provided, including the Installation Guide
+and the User Guide.</pre></blockquote>
+
+<p>Do you see the two problems? The most obvious problem is that the
+last line did not print. The last line matches
+<tt class="literal">Owner</tt>, and when <em class="emphasis">N</em> is
+executed, there is not another input line to read, so
+<i class="command">sed</i> quits. It does not even output the line. If
+this is the normal behavior, the Next command should be used as
+follows to be safe:
+</p>
+
+<blockquote><pre class="code">$!N</pre></blockquote>
+
+<p>It excludes the last line (<tt class="literal">$</tt>) from the Next
+command. As it is in our script, by matching <tt class="literal">Owner and
+Operator Guide</tt> on the last line, we avoid matching
+<tt class="literal">Owner</tt> and applying the <em class="emphasis">N</em>
+command. However, if the word <tt class="literal">Owner</tt> appeared on
+the last line, we'd have the same problem unless we
+implement the <tt class="literal">$!N</tt> syntax.
+</p>
+
+<p>The second problem is a little less conspicuous. It has to do with
+the occurrence of <tt class="literal">Owner and Operator Guide</tt> in the
+second paragraph. In the input file, it is found on a line by itself:
+</p>
+
+<blockquote><pre class="code">Look in the Owner and Operator Guide shipped with your system.</pre></blockquote>
+
+<p>In the output shown above, the blank line following <tt class="literal">shipped
+with your system</tt> is missing. The reason for this is that
+this line matches <tt class="literal">Owner</tt> and the next line, a blank
+line, is appended to the pattern space. The substitute command
+removes the embedded newline, and the blank line has in effect
+vanished. (If the line were not blank, the newline would still be
+removed but the text would appear on the same line with
+<tt class="literal">shipped with your system</tt>.) The best solution seems
+to be to avoid reading the next line when the pattern can be matched
+on one line. That is why the first instruction attempts to match the
+case where the string appears all <a name="IXTR3-824" />on <a name="IXTR3-825" /> <a name="IXTR3-826" />one line.
+</p>
+
+<p> <em class="emphasis">-- DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.15. Transforming Part of a Line</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.17. The Deliberate Scrivener</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,162 @@
+<html><head><title>Communication with Unix (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">1.4. Communication with Unix</h2>
+
+<p><a name="IXT-1-1134" /><a name="IXT-1-1135" />Probably the single most important
+concept for would-be power users to grasp is that you
+don't "talk"
+directly to the Unix operating system. Instead, you talk to a
+<em class="emphasis">program</em><a name="upt3-IDXTERM-26" /> -- and
+that program either talks to Unix itself or it talks to
+<em class="emphasis">another</em> program that talks to Unix. (When we say
+"talk" here, we mean communication
+using a keyboard and a mouse.)
+</p>
+
+<p>There are three general kinds of programs you'll
+probably "talk" to:
+</p>
+
+<ul><li>
+<p><a name="IXT-1-1136" /><a name="IXT-1-1137" />The program called
+the <b class="emphasis-bold">shell</b> (<a href="ch27_01.htm#upt3-CHP-27-SECT-1">Section 27.1</a>). A shell is a <em class="emphasis">command
+interpreter</em>. Its main job is to interpret the commands you
+type and to run the programs you specify in your command lines. By
+default, the shell reads commands from your <em class="emphasis">tty</em>
+and arranges for other programs to write their results there. The
+shell protects Unix from the user (and the user from Unix).
+It's the main focus of this book (and the rest of
+this article).
+</p>
+</li><li>
+<p><a name="IXT-1-1138" /><a name="IXT-1-1139" />An <em class="emphasis">interactive
+command</em>, running
+"inside" a
+<em class="emphasis">tty</em>, that reads what you type directly. These
+take input directly from the user, without intervention from the
+shell. The shell's only job is to start them up. A
+text editor, a mail program, or almost any application program (such
+as word processing) includes its own command interpreter with its own
+rules. This book covers a few interactive commands -- such as the
+<i class="command">vi</i> editor -- but its main focus is the shell
+and "noninteractive" utilities that
+the shell coordinates to do what needs doing.
+</p>
+</li><li>
+<p><a name="IXT-1-1140" /> <a name="IXT-1-1141" /><a name="IXT-1-1142" />A Graphical User
+Interface (GUI) with a desktop, windows, and so on. On Unix, a GUI is
+implemented with a set of running programs (all of which talk to Unix
+for you).
+</p>
+
+<p>Unix was around long before GUIs were common, and
+there's no need to use a GUI to use Unix.
+<a name="IXT-1-1143" /><a name="IXT-1-1144" />In
+fact, Unix started in the days of teletypes, those clattering
+printing devices used to send telegrams. Unix terminals are still
+referred to as teletypes or <b class="emphasis-bold">ttys</b>
+(<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>).
+</p>
+</li></ul>
+<p><a name="IXT-1-1145" />The core of the Unix
+operating system is referred to as <b class="emphasis-bold">the
+kernel</b> (<a href="ch01_10.htm#upt3-CHP-1-SECT-10">Section 1.10</a>). Usually, only
+programs talk to the kernel (through <a name="IXT-1-1146" />system calls). Users talk to one of the
+three previous types of programs, which interprets their commands and
+either executes them directly or passes them on to other programs.
+These programs may, in turn, request lower-level services from the
+kernel.
+</p>
+
+<p>Let's look at a specific example of using the shell.
+When you type a command to display files whose four-character
+filenames start with the letter
+"m":
+</p>
+
+<p><tt class="literal">???</tt> <a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat m???</b></tt></pre></blockquote>
+
+<p><a name="IXT-1-1147" /><a name="IXT-1-1148" />it is the shell that finds the
+filenames, makes a complete list of them, and calls the <b class="emphasis-bold">cat</b> (<a href="ch12_02.htm#upt3-CHP-12-SECT-2">Section 12.2</a>) command to
+print the expanded list. The <i class="command">cat</i> command calls on
+the kernel to find each file on the disk and print its contents as a
+stream of characters on the display.
+</p>
+
+<p>Why is this important? First of all, you can choose between <b class="emphasis-bold">several different shells</b> (<a href="ch01_06.htm#upt3-CHP-1-SECT-6">Section 1.6</a>), each of which may have different rules for
+interpreting command lines.
+</p>
+
+<p><a name="IXT-1-1149" /><a name="IXT-1-1150" />Second, the shell has to
+interpret the command line you type and package it up for the command
+you are calling. Because the shell reads the command line first,
+it's important to understand just how the shell
+changes what it reads.
+</p>
+
+<p><a name="IXT-1-1151" />For example, one basic rule is that
+the shell uses "whitespace" (spaces
+or tabs) to separate each
+"argument" of a command. But
+sometimes, you want the shell to interpret its arguments differently.
+For example, if you are calling <b class="emphasis-bold">grep</b><a name="IXT-1-1152" /><a name="IXT-1-1153" /> (<a href="ch13_01.htm#upt3-CHP-13-SECT-1">Section 13.1</a>), a program for searching through files for a
+matching line of text, you might want to supply an entire phrase as a
+single argument. The shell lets you do this by <b class="emphasis-bold">quoting</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>)
+arguments. For example:<a name="IXT-1-1154" />
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>grep "Power Tools" articles/*</b></tt></pre></blockquote>
+
+<p>Understanding how the shell interprets the command line, and when to
+keep it from doing so, can be very important in a lot of special
+cases, especially when dealing with <b class="emphasis-bold">wildcards</b> (<a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a>), like
+the <tt class="literal">*</tt> (asterisk) in the previous example.
+</p>
+
+<p><a name="IXT-1-1155" /><a name="IXT-1-1156" /><a name="IXT-1-1157" />You
+<a name="IXT-1-1158" />can think
+of the relationship of the kernel, the shell, and various Unix
+utilities and applications as looking like <a href="ch01_04.htm#upt3-CHP-1-FIG-1">Figure 1-1</a>. 
+</p>
+
+<a name="upt3-CHP-1-FIG-1" /><div class="figure"><img src="figs/upt3_0101.gif" alt="Figure 1-1" width="428" /></div><h4 class="objtitle">Figure 1-1. Relationship of kernel, shell, utilities, and applications</h4>
+
+<p><a href="ch01_04.htm#upt3-CHP-1-FIG-1">Figure 1-1</a> shows that a user can interact with the
+shell, as well as directly with interactive commands like
+<i class="command">cat</i> and <i class="command">ls</i>. The shell transfers
+control to the commands it starts for you -- then those commands
+may write the output you see.
+<a name="IXT-1-1159" /><a name="IXT-1-1160" />The
+shell also has some <b class="emphasis-bold">built-in
+commands</b> (<a href="ch01_09.htm#upt3-CHP-1-SECT-9">Section 1.9</a>) that run directly
+within the shell itself. All of the commands shown in <a href="ch01_04.htm#upt3-CHP-1-FIG-1">Figure 1-1</a> interact directly with Unix itself.
+</p>
+
+<p><em class="emphasis">--TOR and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.3. The Core of Unix</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.5. Programs Are Designed to Work Together</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,120 @@
+<html><head><title>Instead of Removing a File, Empty It (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch15_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">15.2. Instead of Removing a File, Empty It</h2>
+
+<p><a name="IXT-15-6103" /><a name="IXT-15-6104" /><a name="IXT-15-6105" /><a name="IXT-15-6106" />Sometimes you don't want
+to remove a file completely -- you just want to empty it:
+</p>
+
+<ul><li>
+<p>If an active process has the file open (not uncommon for log files),
+removing the file and creating a new one will not affect the logging
+program; those messages will just keep going to the file
+that's no longer linked. Emptying the file
+doesn't break the association, and so it clears the
+file without affecting the logging program.
+</p>
+</li><li>
+<p>When you remove a file and create a new one with the same name, the
+new file will have your default permissions and <b class="emphasis-bold">ownership</b> (<a href="ch50_03.htm#upt3-CHP-50-SECT-3">Section 50.3</a>).
+It's better to empty the file now, then add new text
+later; this won't change the permissions and
+ownership.
+</p>
+</li><li>
+<p>Completely empty files (ones that <em class="emphasis">ls -l</em> says
+have zero characters) don't take any disk space to
+store (except the few bytes that the <b class="emphasis-bold">directory
+entry</b> (<a href="ch10_02.htm#upt3-CHP-10-SECT-2">Section 10.2</a>) uses).
+</p>
+</li><li>
+<p>You can use the empty files as "place
+markers" to remind you that something was there or
+belongs there. Some Unix logging programs won't
+write errors to their log files unless the log files already exist.
+Empty files work fine for that.
+</p>
+</li><li>
+<p>Empty files hold a "timestamp"
+(just as files with text do) that shows when the file was last
+modified. I use empty files in some directories to remind me when
+I've last done something (backups, printouts, etc.).
+The <b class="emphasis-bold">find -newer</b> (<a href="ch09_08.htm#upt3-CHP-9-SECT-8">Section 9.8</a>) command can compare other files to a
+timestamp file.
+</p>
+</li></ul>
+
+<p>Well, you get the idea by now.</p>
+
+<p>How can you empty a file? Watch out: when some editors say that a
+file has "no lines," they may still
+append a newline character when writing the file. Just one character
+still takes a block of disk space to store. Here are some better ways
+to get a properly empty file:
+</p>
+
+<ul><li>
+<p>In Bourne-type shells like <i class="command">sh</i> and
+<i class="command">bash</i>, the most efficient way is to redirect the
+output of a null command:
+</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>&gt; afile</b></tt></pre></blockquote>
+</li><li>
+<p>If the file already exists, that command will truncate the file
+without needing a subprocess.
+</p>
+</li><li>
+<p>Copy the Unix empty file, <b class="emphasis-bold">/dev/null</b>
+(<a href="ch43_12.htm#upt3-CHP-43-SECT-12">Section 43.12</a>), on top of the file:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cp /dev/null afile</b></tt></pre></blockquote>
+
+</li><li>
+<p>Or just <i class="command">cat</i> it there:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cat /dev/null &gt; afile</b></tt></pre></blockquote>
+</li></ul>
+
+<p>You can also "almost" empty the
+file, leaving just a few lines, this way:
+</p>
+
+<p><tt class="literal">tail</tt> <a href="ch12_08.htm#upt3-CHP-12-SECT-8">Section 12.8</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tail afile &gt; tmpfile</b></tt>
+% <tt class="userinput"><b>cat tmpfile &gt; afile</b></tt>
+% <tt class="userinput"><b>rm tmpfile</b></tt></pre></blockquote>
+
+<p>That's especially good for log files that you never
+want to delete completely. Use <i class="command">cat</i> and
+<i class="command">rm</i>, not
+<i class="command">mv</i> -- <i class="command">mv</i> will break any
+other links to the original file (<tt class="literal">afile</tt>) and
+replace it with the temporary file.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch15_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">15. Optimizing Disk Space</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">15.3. Save Space with "Bit Bucket" Log Files and Mailboxes</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

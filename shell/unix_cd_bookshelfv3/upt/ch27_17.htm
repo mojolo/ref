@@ -1,0 +1,1387 @@
+<html><head><title>"Special" Characters and Operators (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch27_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">27.17. "Special" Characters and Operators</h2>
+
+<p>Before you learn about <b class="emphasis-bold">regular
+expressions</b> (<a href="ch32_01.htm#upt3-CHP-32-SECT-1">Section 32.1</a>), you should
+understand how <b class="emphasis-bold">quoting</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) works in Unix.
+</p>
+
+<p><a name="IXT-27-4947" />Regular
+expressions use
+<a name="IXT-27-4948" />metacharacters. The
+<a name="IXT-27-4949" /><a name="IXT-27-4950" />shells also have
+metacharacters. Metacharacters are simply characters that have a
+special meaning. The problem occurs when you want to use a regular
+expression in a <a name="IXT-27-4951" />shell script. Will the shell do something
+special with the character? Or will it be passed unchanged to the
+program? The <tt class="literal">$</tt><a name="IXT-27-4952" /> character is a good example of a
+regular expression metacharacter that is also used by the shell, but
+whose meaning is different depending upon who interprets it, the
+shell or other programs. <b class="emphasis-bold">It could be the
+beginning of a variable name or it could be part of a regular
+expression</b> (<a href="ch32_02.htm#upt3-CHP-32-SECT-2">Section 32.2</a>). If you need a
+regular expression, you must know whether any of the characters of
+the expression are metacharacters, and must know the right way to
+quote that character so that it is passed to the program without
+being modified by the shell.
+</p>
+
+<p><a name="upt3-IDXTERM-4129" /> <a name="upt3-IDXTERM-4130" /> <a name="upt3-IDXTERM-4131" /><a href="ch27_17.htm#upt3-CHP-27-TABLE-3">Table 27-3</a>
+<a name="upt3-IDXTERM-4132" /> <a name="upt3-IDXTERM-4133" /> <a name="upt3-IDXTERM-4134" />is a table of <a name="upt3-IDXTERM-4135" /> <a name="upt3-IDXTERM-4136" /> <a name="upt3-IDXTERM-4137" />special characters and
+<a name="upt3-IDXTERM-4138" />operators in the shells covered by
+this book. (Because <i class="command">zsh</i> acts basically like both
+C-type and Bourne-type shells, its name would show up in every entry.
+So we don't list it here unless an entry applies
+only to <i class="command">zsh</i> -- or one or two other shells.) The
+chart also includes several combinations of characters just to be
+complete. But, to keep things simple, it doesn't
+include:
+</p>
+
+<ul><li>
+<p>Arithmetic operators like <tt class="literal">+</tt>, <tt class="literal">-</tt>,
+and so on; see the articles on built-in arithmetic for a list.
+</p>
+</li><li>
+<p>History substitution like <tt class="literal">!!</tt>,
+<tt class="literal">!$</tt>, and so on; see <a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a> instead.
+</p>
+</li></ul>
+<p>As in other parts of this book, the <i class="command">sh</i> entries
+apply to <i class="command">ksh</i> and <i class="command">bash</i>; the
+<i class="command">csh</i> entries apply to <i class="command">tcsh</i>.
+</p>
+
+<a name="upt3-CHP-27-TABLE-3" /><h4 class="objtitle">Table 27-3. Special characters and their meanings </h4><table border="1" cellpadding="3">
+
+
+
+
+
+<tr>
+<th>
+<p>Character</p>
+</th>
+<th>
+<p>Where</p>
+</th>
+<th>
+<p>Meaning</p>
+</th>
+<th>
+<p>Articles</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<blockquote><pre class="code">ESC</pre></blockquote>
+</td>
+<td>
+<p>csh</p>
+</td>
+<td>
+<p>Filename completion.</p>
+</td>
+<td>
+<p><a href="ch28_06.htm#upt3-CHP-28-SECT-6">Section 28.6</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">RETURN</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Execute command.</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">space</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Argument separator.</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">TAB</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Argument separator.</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">TAB</pre></blockquote>
+</td>
+<td>
+<p>bash</p>
+</td>
+<td>
+<p>Completion (in interactive shells).</p>
+</td>
+<td>
+<p><a href="ch28_06.htm#upt3-CHP-28-SECT-6">Section 28.6</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">#</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Start a comment.</p>
+</td>
+<td>
+<p><a href="ch35_01.htm#upt3-CHP-35-SECT-1">Section 35.1</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">`</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Command substitution (backquotes).</p>
+</td>
+<td>
+<p><a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">"</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Weak quotes.</p>
+</td>
+<td>
+<p><a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">"</pre></blockquote>
+</td>
+<td>
+<p>csh</p>
+</td>
+<td>
+<p>Weak quotes.</p>
+</td>
+<td>
+<p><a href="ch27_13.htm#upt3-CHP-27-SECT-13">Section 27.13</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$<em class="replaceable"><tt>var</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Expand variable <em class="replaceable"><tt>var</tt></em>.</p>
+</td>
+<td>
+<p><a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>, <a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Same as <tt class="literal">$</tt><em class="replaceable"><tt>var</tt></em>.</p>
+</td>
+<td>
+<p><a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$<em class="replaceable"><tt>var</em>:<em class="replaceable">mod</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh</p>
+</td>
+<td>
+<p>Edit <em class="replaceable"><tt>var</tt></em> with modifier
+<em class="replaceable"><tt>mod</tt></em>
+</p>
+</td>
+<td>
+<p><a href="ch28_05.htm#upt3-CHP-28-SECT-5">Section 28.5</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>-<em class="replaceable">default</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>If <em class="replaceable"><tt>var</tt></em> not set, use
+<em class="replaceable"><tt>default</tt></em>.
+</p>
+</td>
+<td>
+<p><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>:-<em class="replaceable">default</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>bash</p>
+</td>
+<td>
+<p>If <em class="replaceable"><tt>var</tt></em> not set or null, use
+<em class="replaceable"><tt>default</tt></em>.
+</p>
+</td>
+<td>
+<p><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>=<em class="replaceable">default</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>If <em class="replaceable"><tt>var</tt></em> not set, set it to
+<em class="replaceable"><tt>default</tt></em> and use that value.
+</p>
+</td>
+<td>
+<p><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>:=<em class="replaceable">default</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>bash</p>
+</td>
+<td>
+<p>If <em class="replaceable"><tt>var</tt></em> not set or null, set it to
+<em class="replaceable"><tt>default</tt></em> and use that value.
+</p>
+</td>
+<td>
+<p><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>+<em class="replaceable">instead</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>If <em class="replaceable"><tt>var</tt></em> set, use
+<em class="replaceable"><tt>instead</tt></em>. Otherwise, null string.
+</p>
+</td>
+<td>
+<p><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>:+<em class="replaceable">instead</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>bash</p>
+</td>
+<td>
+<p>If <em class="replaceable"><tt>var</tt></em> set or not null, use
+<em class="replaceable"><tt>instead</tt></em>. Otherwise, null string.
+</p>
+</td>
+<td>
+<p><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>?<em class="replaceable">message</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>If <em class="replaceable"><tt>var</tt></em> set, use its value. Else print
+<em class="replaceable"><tt>message</tt></em> (or default) and exit.
+</p>
+</td>
+<td>
+<p><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>:?<em class="replaceable">message</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>bash</p>
+</td>
+<td>
+<p>If <em class="replaceable"><tt>var</tt></em> set or not null, use its value.
+Else print <em class="replaceable"><tt>message</tt></em> (or default) and exit.
+</p>
+</td>
+<td>
+<p><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>#<em class="replaceable">pat</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>ksh, bash</p>
+</td>
+<td>
+<p>Value of <em class="replaceable"><tt>var</tt></em> with smallest
+<em class="replaceable"><tt>pat</tt></em> deleted from start.
+</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>##<em class="replaceable">pat</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>ksh, bash</p>
+</td>
+<td>
+<p>Value of <em class="replaceable"><tt>var</tt></em> with largest
+<em class="replaceable"><tt>pat</tt></em> deleted from start.
+</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>%<em class="replaceable">pat</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>ksh, bash</p>
+</td>
+<td>
+<p>Value of <em class="replaceable"><tt>var</tt></em> with smallest
+<em class="replaceable"><tt>pat</tt></em> deleted from end.
+</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${<em class="replaceable"><tt>var</em>%%<em class="replaceable">pat</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>ksh, bash</p>
+</td>
+<td>
+<p>Value of <em class="replaceable"><tt>var</tt></em> with largest
+<em class="replaceable"><tt>pat</tt></em> deleted from end.
+</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${^<em class="replaceable"><tt>array</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>zsh</p>
+</td>
+<td>
+<p>Expand <em class="replaceable"><tt>array</tt></em> in place, like
+<em class="emphasis">rc_expand_param</em> option.
+</p>
+</td>
+<td>
+<p><a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${=<em class="replaceable"><tt>spec</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>zsh</p>
+</td>
+<td>
+<p>Turn on <em class="emphasis">sh_word_split</em> option while evaluating
+<em class="replaceable"><tt>spec</tt></em>.
+</p>
+</td>
+<td>
+<p><a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">${~<em class="replaceable"><tt>array</tt></em>}</pre></blockquote>
+</td>
+<td>
+<p>zsh</p>
+</td>
+<td>
+<p>Turn on <em class="emphasis">glob_subst</em> option while evaluating
+<em class="replaceable"><tt>spec</tt></em>.
+</p>
+</td>
+<td>
+<p><a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">|</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Pipe standard output.</p>
+</td>
+<td>
+<p><a href="ch01_05.htm#upt3-CHP-1-SECT-5">Section 1.5</a>, <a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">|&amp;</pre></blockquote>
+</td>
+<td>
+<p>csh</p>
+</td>
+<td>
+<p>Pipe standard output and standard error.</p>
+</td>
+<td>
+<p><a href="ch43_05.htm#upt3-CHP-43-SECT-5">Section 43.5</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">|&amp;</pre></blockquote>
+</td>
+<td>
+<p>ksh</p>
+</td>
+<td>
+<p>Coroutine.</p>
+</td>
+<td>
+<p><a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">^</pre></blockquote>
+</td>
+<td>
+<p>sh <em class="emphasis">only</em></p>
+</td>
+<td>
+<p>Pipe character (obsolete).</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">^</pre></blockquote>
+</td>
+<td>
+<p>csh, bash</p>
+</td>
+<td>
+<p>Edit previous command line.</p>
+</td>
+<td>
+<p><a href="ch30_05.htm#upt3-CHP-30-SECT-5">Section 30.5</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&amp;</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Run program in background.</p>
+</td>
+<td>
+<p><a href="ch23_02.htm#upt3-CHP-23-SECT-2">Section 23.2</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&amp;!</pre></blockquote>
+</td>
+<td>
+<p>zsh</p>
+</td>
+<td>
+<p>Run program in background without job control.</p>
+</td>
+<td>
+<p><a href="ch23_11.htm#upt3-CHP-23-SECT-11">Section 23.11</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&amp;|</pre></blockquote>
+</td>
+<td>
+<p>zsh</p>
+</td>
+<td>
+<p>Run program in background without job control.</p>
+</td>
+<td>
+<p><a href="ch23_11.htm#upt3-CHP-23-SECT-11">Section 23.11</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">?</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Match one character.</p>
+</td>
+<td>
+<p><a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a>, <a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">*</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Match zero or more characters.</p>
+</td>
+<td>
+<p><a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a>, <a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">;</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Command separator.</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">;;</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>End of <em class="emphasis">case</em> element.</p>
+</td>
+<td>
+<p><a href="ch35_10.htm#upt3-CHP-35-SECT-10">Section 35.10</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">~</pre></blockquote>
+</td>
+<td>
+<p>csh, ksh, bash</p>
+</td>
+<td>
+<p>Home directory.</p>
+</td>
+<td>
+<p><a href="ch31_11.htm#upt3-CHP-31-SECT-11">Section 31.11</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">~<em class="replaceable"><tt>user</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, ksh, bash</p>
+</td>
+<td>
+<p>Home directory of <em class="replaceable"><tt>user</tt></em>.</p>
+</td>
+<td>
+<p><a href="ch31_11.htm#upt3-CHP-31-SECT-11">Section 31.11</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">!</pre></blockquote>
+</td>
+<td>
+<p>csh, bash</p>
+</td>
+<td>
+<p>Command history.</p>
+</td>
+<td>
+<p><a href="ch30_02.htm#upt3-CHP-30-SECT-2">Section 30.2</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">!</pre></blockquote>
+</td>
+<td>
+<p>bash, ksh93, zsh</p>
+</td>
+<td>
+<p>Toggle exit status.</p>
+</td>
+<td>
+<p><a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">-</pre></blockquote>
+</td>
+<td>
+<p>zsh</p>
+</td>
+<td>
+<p>Make a login shell.</p>
+</td>
+<td>
+<p><a href="ch03_19.htm#upt3-CHP-3-SECT-19">Section 3.19</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">=</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Assignment.</p>
+</td>
+<td>
+<p><a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>,</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$#</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Number of shell arguments or words in an array.</p>
+</td>
+<td>
+<p><a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>,</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">"$@"</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Original script arguments.</p>
+</td>
+<td>
+<p><a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$*</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Original script arguments, broken into words.</p>
+</td>
+<td>
+<p><a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$?</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Status of previous command.</p>
+</td>
+<td>
+<p><a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$$</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Process identification number.</p>
+</td>
+<td>
+<p><a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$!</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Process identification number of last background job.</p>
+</td>
+<td>
+<p><a href="ch04_15.htm#upt3-CHP-4-SECT-15">Section 4.15</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$&lt;</pre></blockquote>
+</td>
+<td>
+<p>csh</p>
+</td>
+<td>
+<p>Read input from terminal.</p>
+</td>
+<td>
+<p><a href="ch28_09.htm#upt3-CHP-28-SECT-9">Section 28.9</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$_</pre></blockquote>
+</td>
+<td>
+<p>bash, ksh, zsh</p>
+</td>
+<td>
+<p>Last argument of previous command.</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$<em class="replaceable"><tt>n</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Argument <em class="replaceable"><tt>n</tt></em>. 1 &lt;= n &lt;= 9 for most
+shells; bash and ksh93 support ${n} for n &gt;= 10.
+</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$0</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Name of the shell or shell script.</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code"><em class="replaceable"><tt>cmd1</em> &amp;&amp; <em class="replaceable">cmd2</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Execute <em class="replaceable"><tt>cmd2</tt></em> if
+<em class="replaceable"><tt>cmd1</tt></em> succeeds.
+</p>
+</td>
+<td>
+<p><a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code"><em class="replaceable"><tt>cmd1</em> || <em class="replaceable">cmd2</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Execute <em class="replaceable"><tt>cmd2</tt></em> if
+<em class="replaceable"><tt>cmd1</tt></em> fails.
+</p>
+</td>
+<td>
+<p><a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">$(..)</pre></blockquote>
+</td>
+<td>
+<p>ksh, bash</p>
+</td>
+<td>
+<p>Command substitution.</p>
+</td>
+<td>
+<p><a href="ch36_24.htm#upt3-CHP-36-SECT-24">Section 36.24</a>, <a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">. <em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Execute commands from <em class="replaceable"><tt>file</tt></em> in this shell.</p>
+</td>
+<td>
+<p><a href="ch35_29.htm#upt3-CHP-35-SECT-29">Section 35.29</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">:</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Evaluate arguments, return true.</p>
+</td>
+<td>
+<p><a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">:</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Separate values in paths.</p>
+</td>
+<td>
+<p><a href="ch31_05.htm#upt3-CHP-31-SECT-5">Section 31.5</a>, <a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">:</pre></blockquote>
+</td>
+<td>
+<p>csh</p>
+</td>
+<td>
+<p>Variable modifier.</p>
+</td>
+<td>
+<p><a href="ch28_05.htm#upt3-CHP-28-SECT-5">Section 28.5</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">[ ]</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Match range of characters.</p>
+</td>
+<td>
+<p><a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a>, <a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">[ ]</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Test.</p>
+</td>
+<td>
+<p><a href="ch35_26.htm#upt3-CHP-35-SECT-26">Section 35.26</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">%<em class="replaceable"><tt>n</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, ksh, bash, zsh</p>
+</td>
+<td>
+<p>Job number <em class="replaceable"><tt>n</tt></em>.</p>
+</td>
+<td>
+<p><a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">(<em class="replaceable"><tt>cmd</em>;<em class="replaceable">cmd</tt></em>)</pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Run
+<em class="replaceable"><tt>cmd</em><tt class="literal">;</tt><em class="replaceable">cmd</tt></em>
+in a subshell.
+</p>
+</td>
+<td>
+<p><a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">{ }</pre></blockquote>
+</td>
+<td>
+<p>csh, bash</p>
+</td>
+<td>
+<p>In-line expansions.</p>
+</td>
+<td>
+<p><a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&gt;<em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Redirect standard output.</p>
+</td>
+<td>
+<p><a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&gt;! <em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh</p>
+</td>
+<td>
+<p>Output to <em class="replaceable"><tt>file</tt></em>, even if
+<em class="emphasis">noclobber</em> set and
+<em class="replaceable"><tt>file</tt></em> exists.
+</p>
+</td>
+<td>
+<p><a href="ch43_06.htm#upt3-CHP-43-SECT-6">Section 43.6</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&gt;| <em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>ksh, bash</p>
+</td>
+<td>
+<p>Output to <em class="replaceable"><tt>file</tt></em>, even if
+<em class="emphasis">noclobber</em> set and
+<em class="replaceable"><tt>file</tt></em> exists.
+</p>
+</td>
+<td>
+<p><a href="ch43_06.htm#upt3-CHP-43-SECT-6">Section 43.6</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&gt;&gt;<em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Append standard output.</p>
+</td>
+<td>
+<p><a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&gt;&gt;! <em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh</p>
+</td>
+<td>
+<p>Append to <em class="replaceable"><tt>file</tt></em>, even if
+<em class="emphasis">noclobber</em> set and
+<em class="replaceable"><tt>file</tt></em> doesn't exist.
+</p>
+</td>
+<td>
+<p><a href="ch43_06.htm#upt3-CHP-43-SECT-6">Section 43.6</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&lt;<em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Redirect standard input.</p>
+</td>
+<td>
+<p><a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&lt;&lt;<em class="replaceable"><tt>word</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Read until <em class="replaceable"><tt>word</tt></em>, do command and variable
+substitution.
+</p>
+</td>
+<td>
+<p><a href="ch27_16.htm#upt3-CHP-27-SECT-16">Section 27.16</a>, <a href="ch28_13.htm#upt3-CHP-28-SECT-13">Section 28.13</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&lt;&lt;\<em class="replaceable"><tt>word</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, sh</p>
+</td>
+<td>
+<p>Read until <em class="replaceable"><tt>word</tt></em>, no substitution.</p>
+</td>
+<td>
+<p><a href="ch27_16.htm#upt3-CHP-27-SECT-16">Section 27.16</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&lt;&lt;-<em class="replaceable"><tt>word</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Read until <em class="replaceable"><tt>word</tt></em>, ignoring leading TABs.</p>
+</td>
+<td>
+<p><a href="ch27_16.htm#upt3-CHP-27-SECT-16">Section 27.16</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&lt;&gt; <em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>ksh, bash, zsh</p>
+</td>
+<td>
+<p>Open <em class="replaceable"><tt>file</tt></em> for writing and reading.</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&gt;&amp; <em class="replaceable"><tt>file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>csh, bash</p>
+</td>
+<td>
+<p>Redirect standard output and standard error to
+<em class="replaceable"><tt>file</tt></em>.
+</p>
+</td>
+<td>
+<p><a href="ch43_05.htm#upt3-CHP-43-SECT-5">Section 43.5</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code"><em class="replaceable"><tt>m</em>&gt; <em class="replaceable">file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Redirect output file descriptor <em class="replaceable"><tt>m</tt></em> to
+<em class="replaceable"><tt>file</tt></em>.
+</p>
+</td>
+<td>
+<p><a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code"><em class="replaceable"><tt>m</em>&gt;&gt; <em class="replaceable">file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Append output file descriptor <em class="replaceable"><tt>m</tt></em> to
+<em class="replaceable"><tt>file</tt></em>.
+</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code"><em class="replaceable"><tt>m</em>&lt; <em class="replaceable">file</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Redirect input file descriptor <em class="replaceable"><tt>m</tt></em> from
+<em class="replaceable"><tt>file</tt></em>.
+</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&lt;&amp;<em class="replaceable"><tt>m</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Take standard input from file descriptor <em class="replaceable"><tt>m</tt></em>.</p>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&gt;&amp;<em class="replaceable"><tt>m</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Use file descriptor <em class="replaceable"><tt>m</tt></em> as standard output.</p>
+</td>
+<td>
+<p><a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">&gt;&amp; -</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Close standard output.</p>
+</td>
+<td>
+<p><a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code"><em class="replaceable"><tt>m</tt></em>&lt;&amp; -</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Close input file descriptor <em class="replaceable"><tt>m</tt></em>.</p>
+</td>
+<td>
+<p><a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code"><em class="replaceable"><tt>n</em>&gt;&amp;<em class="replaceable">m</tt></em></pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Connect output file descriptor <em class="replaceable"><tt>n</tt></em> to file
+descriptor <em class="replaceable"><tt>m</tt></em>.
+</p>
+</td>
+<td>
+<p><a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code"><em class="replaceable"><tt>m</tt></em>&gt;&amp; -</pre></blockquote>
+</td>
+<td>
+<p>sh</p>
+</td>
+<td>
+<p>Close output file descriptor <em class="replaceable"><tt>m</tt></em>.</p>
+</td>
+<td>
+<p><a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a></p>
+</td>
+</tr>
+
+</table><p>
+
+<p><em class="emphasis"><a name="IXTR3-4973" /> <a name="IXTR3-4974" />-- BB <a name="IXTR3-4975" /> <a name="IXTR3-4976" /> <a name="IXTR3-4977" />an<a name="IXTR3-4978" />d <a name="IXTR3-4979" /> JP<a name="IXTR3-4980" /> <a name="IXTR3-4981" /> <a name="IXTR3-4982" /></em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch27_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">27.16. Here Documents</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">27.18. How Many Backslashes?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

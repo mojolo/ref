@@ -1,0 +1,137 @@
+<html><head><title>Linking Directories (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.7. Linking Directories</h2>
+
+<p>One feature of <b class="emphasis-bold">symbolic links</b>
+(<a name="IXT-10-6386" /><a name="IXT-10-6387" /><a name="IXT-10-6388" /><a name="IXT-10-6389" /><a href="ch10_05.htm#upt3-CHP-10-SECT-5">Section 10.5</a>) (a.k.a.
+<em class="filename">symlinks</em>) is that unlike hard links, you can use
+symbolic links to link directories as well as files. Since symbolic
+links can span between filesystems, this can become enormously
+useful.
+</p>
+
+<p>For example, sometimes administrators want to install a package in a
+directory tree that's not where users and other
+programs expect it to be. On our site, we like to keep
+<em class="filename">/usr/bin</em><a name="IXT-10-6390" /> pure -- that is, we like to be sure
+that all the programs in <em class="filename">/usr/bin</em> came with the
+operating system. That way, when we install a new OS, we know for
+sure that we can overwrite the entirety of
+<em class="filename">/usr/bin</em> and not lose any
+"local" programs. We install all
+<a name="IXT-10-6391" /><a name="IXT-10-6392" />local programs in
+<em class="filename">/usr/local</em>.
+</p>
+
+<p>The X11 package poses a problem, though. Our X windows package
+(discussed in <a href="ch05_01.htm">Chapter 5</a>) expects X11 programs to
+be installed in <em class="filename">/usr/bin/X11</em>. But X
+isn't distributed as part of our OS, so
+we'd prefer not to put it there. Instead, we install
+X programs in <em class="filename">/usr/local/X11/bin</em> and create a
+symbolic link named <em class="filename">/usr/bin/X11</em>. We do the same
+for <em class="filename">/usr/include/X11</em> and
+<em class="filename">/usr/lib/X11</em>:
+</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>ln -s /usr/local/X11/bin /usr/bin/X11</b></tt>
+# <tt class="userinput"><b>ln -s /usr/local/X11/lib /usr/lib/X11</b></tt>
+# <tt class="userinput"><b>ln -s /usr/local/X11/include /usr/include/X11</b></tt></pre></blockquote>
+
+<p>By using symlinks, we installed the package where we wanted, but we
+kept it invisible to any users or programs that expected the X
+programs, libraries, or include files to be in the standard
+directories.
+</p>
+
+<p>Directory links can result in some unexpected behavior, however. For
+example, let's suppose I want to look at files in
+<em class="filename">/usr/bin/X11</em>. I can just <em class="filename">cd</em>
+to <em class="filename">/usr/bin/X11</em>, even though the files are
+really in <em class="filename">/usr/local/X11/bin</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd /usr/bin/X11</b></tt>
+% <tt class="userinput"><b>ls -F</b></tt>
+       mkfontdir*      xcalc*          xinit*          xset*
+   ...</pre></blockquote>
+
+<p>But when I do <a name="IXT-10-6393" />a <em class="filename">pwd</em>,<a href="#FOOTNOTE-42">[42]</a> I see that
+I'm really in
+<em class="filename">/usr/local/X11/bin</em>. If I didn't
+know about the symlink, this might be confusing for me:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-42" /><p> [42]I mean the standard Unix <em class="filename">pwd</em> command, an
+external command that isn't built into your shell.
+Most shells have an internal version of <em class="filename">pwd</em> that
+"keeps track" of you as you change
+your current directory; it may not give the same answer I show here.
+You can run the external version by typing
+<em class="filename">/bin/pwd</em>.</p> </blockquote>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>pwd</b></tt>
+/usr/local/X11/bin</pre></blockquote>
+
+<p>Now suppose I want to look at files in <em class="filename">/usr/bin</em>.
+Since I did a <em class="filename">cd</em> to
+<em class="filename">/usr/bin/X11</em>, I might think I can just go up a
+level. But that doesn't work:
+</p>
+
+<p><tt class="literal">-F</tt> <a href="ch08_03.htm#upt3-CHP-8-SECT-3">Section 8.3</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd ..</b></tt>
+% <tt class="userinput"><b>ls -F</b></tt>
+bin/     include/     lib/
+% <tt class="userinput"><b>pwd</b></tt>
+/usr/local/X11</pre></blockquote>
+
+<p>What happened? Remember that a symbolic link is just a
+<em class="emphasis">pointer</em><a name="IXT-10-6394" /> to another file or directory. So when I went
+to the <em class="filename">/usr/bin/X11</em>
+"directory," my current working
+directory became the directory to which
+<em class="filename">/usr/bin/X11</em> points, which is
+<em class="filename">/usr/local/X11/bin</em>.
+</p>
+
+<p>As a solution to this problem and others, the X distribution provides
+a program called <i class="command">lndir</i><a name="IXT-10-6395" />. <i class="command">lndir</i> makes
+symlinks between directories by creating links for each individual
+file. It's cheesy, but it works. If you have it, you
+can use <i class="command">lndir</i> instead of <i class="command">ln -s</i>:
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: lndir</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>lndir /usr/local/X11/bin /usr/bin/X11</b></tt>
+# <tt class="userinput"><b>ls -F /usr/bin/X11</b></tt>
+X@       mkfontdir@      xcalc@          xinit@          xset@
+   ...</pre></blockquote>
+
+<p> <em class="emphasis">-- LM</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.6. Stale Symbolic Links</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.8. Showing the Actual Filenames for Symbolic Links</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,103 @@
+<html><head><title>Straightening Jagged Columns (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.17. Straightening Jagged Columns</h2>
+
+<p><a name="IXT-21-5770" /><a name="IXT-21-5771" /><a name="IXT-21-5772" /><a name="IXT-21-5773" />As
+we were writing this book, I decided to make a list of all the
+articles and the numbers of lines and characters in each, then
+combine that with the description, a status code, and the
+article's title. After a few minutes with <b class="emphasis-bold">wc -l -c</b> (<a href="ch16_06.htm#upt3-CHP-16-SECT-6">Section 16.6</a>),
+<b class="emphasis-bold">cut</b> (<a href="ch21_14.htm#upt3-CHP-21-SECT-14">Section 21.14</a>),
+<b class="emphasis-bold">sort</b> (<a href="ch22_01.htm#upt3-CHP-22-SECT-1">Section 22.1</a>),
+and <b class="emphasis-bold">join</b> (<a href="ch21_19.htm#upt3-CHP-21-SECT-19">Section 21.19</a>), I had a file that looked like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat messfile</b></tt>
+2850 2095 51441 ~BB A sed tutorial
+3120 868 21259 +BB mail - lots of basics
+6480 732 31034 + How to find sources - JIK's periodic posting
+    <i class="lineannotation">...900 lines...</i>
+5630 14 453 +JP Running Commands on Directory Stacks
+1600 12 420 !JP With find, Don't Forget -print
+0495 9 399 + Make 'xargs -i' use more than one filename</pre></blockquote>
+
+<p>Yuck. It was tough to read: the columns needed to be straightened.
+The <b class="emphasis-bold">column</b> (<a href="ch21_16.htm#upt3-CHP-21-SECT-16">Section 21.16</a>) command could do it automatically, but I
+wanted more control over the alignment of each column. A little
+<b class="emphasis-bold">awk</b> (<a href="ch20_10.htm#upt3-CHP-20-SECT-10">Section 20.10</a>)
+script turned the mess into this: <a name="IXT-21-5774" />
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat cleanfile</b></tt>
+2850 2095  51441 ~BB  A sed tutorial
+3120  868  21259 +BB  mail - lots of basics
+6480  732  31034 +    How to find sources - JIK's periodic posting
+    <i class="lineannotation">...900 lines...</i>
+5630   14    453 +JP  Running Commands on Directory Stacks
+1600   12    420 !JP  With find, Don't Forget -print
+0495    9    399 +    Make 'xargs -i' use more than one filename</pre></blockquote>
+
+<p>Here's the simple script I used and the command I
+typed to run it:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat neatcols</b></tt>
+{
+printf "%4s %4s %6s %-4s %s\n", \
+     $1, $2, $3, $4, substr($0, index($0,$5))
+}
+% <tt class="userinput"><b>awk -f neatcols messfile &gt; cleanfile</b></tt></pre></blockquote>
+
+<p>You can adapt that script for whatever kinds of columns you need to
+clean up. In case you don't know
+<i class="command">awk</i>, here's a quick summary:
+</p>
+
+<ul><li>
+<p>The first line of the <em class="emphasis">printf</em>, between double
+quotes (<tt class="literal">"</tt>), specifies the field widths and
+alignments. For example, the first column should be right-aligned in
+4 characters (<tt class="literal">%4s</tt>). The fourth column should be 4
+characters wide left-adjusted (<tt class="literal">%-4s</tt>). The fifth
+column is big enough to just fit (<tt class="literal">%s</tt>). I used
+string (<tt class="literal">%s</tt>) instead of decimal
+(<tt class="literal">%d</tt>) so <i class="command">awk</i>
+wouldn't strip off the leading zeros in the columns.
+</p>
+</li><li>
+<p>The second line arranges the input data fields onto the output line.
+Here, input and output are in the same order, but I could have
+reordered them. The first four columns get the first four fields
+(<tt class="literal">$1, $2, $3, $4</tt>). The fifth column is a catch-all;
+it gets everything else. <tt class="literal">substr($0,</tt>
+<tt class="literal">index($0,$5))</tt> means "find the
+fifth input column; print it and everything after
+it."
+</p>
+</li></ul>
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.16. Make Columns Automatically with column</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.18. Pasting Things in Columns</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

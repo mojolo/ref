@@ -1,0 +1,99 @@
+<html><head><title>Be Careful with vi -r Recovered Buffers (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch17_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch17_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">17.20. Be Careful with vi -r Recovered Buffers</h2>
+
+<p><a name="IXT-17-1481" /> <a name="IXT-17-1482" /><a name="IXT-17-1483" /><a name="IXT-17-1484" />Usually, when you're editing a
+file with <i class="command">vi</i>, if you type the command
+<em class="emphasis">ZZ</em>, it saves your file. But if you recover a
+file with <b class="emphasis-bold">vi -r</b> (<a href="ch17_19.htm#upt3-CHP-17-SECT-19">Section 17.19</a>), typing <em class="emphasis">ZZ</em> may not save
+your edits!
+</p>
+
+<p>That might be a good thing. When you recover a buffer, you need to
+decide whether the recovered buffer is really what you want. Maybe
+you've made other changes to the file since then. Maybe something
+went wrong as the buffer was being saved (say, the system crashed).
+You shouldn't just save without checking first.
+</p>
+
+<p>You can use the <tt class="literal">:w!</tt> command to write the recovered
+version after you're sure that you want it. Use the
+<tt class="literal">:q!</tt> command if you don't want the recovered
+version.
+</p>
+
+<p>Another good choice is to write the recovered buffer using a
+different filename, then compare the recovered buffer to the original
+file. For example, here I recover a draft MH email message and
+immediately write it to a file named <em class="filename">recovered-9</em>
+in my <em class="filename">tmp</em> directory. Then I use a <b class="emphasis-bold">shell escape</b> (<a href="ch17_21.htm#upt3-CHP-17-SECT-21">Section 17.21</a>) to
+run <b class="emphasis-bold">diff</b> (<a href="ch11_01.htm#upt3-CHP-11-SECT-1">Section 11.1</a>) and compare the draft file on disk
+(<em class="filename">/home/jerry/Mail/drafts/9</em>) with the copy of the
+recovered buffer that I just wrote
+(<em class="filename">/home/jerry/tmp/recovered-9</em>); the <b class="emphasis-bold">vi</b> <b class="emphasis-bold">current
+filename</b> <tt class="literal">%</tt> and alternate filename
+<b class="emphasis-bold"># shortcuts</b> (<a href="ch17_03.htm#upt3-CHP-17-SECT-3">Section 17.3</a>) are handy here. Oops: <i class="command">diff</i>
+shows that the recovered version has replaced the last three lines of
+the message on disk, in the recovered version, with more than 2,000
+lines of junk!
+</p>
+<p><tt class="literal">less</tt> <a href="ch12_03.htm#upt3-CHP-12-SECT-3">Section 12.3</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>vi -r /home/jerry/Mail/drafts/9</b></tt>
+    <i class="lineannotation">...recovered file appears...</i>
+<tt class="userinput"><b>:w ~/tmp/recovered-9</b></tt>
+/home/jerry/tmp/recovered-9: 55 lines, 168767 characters.
+<tt class="userinput"><b>:!diff % # | less</b></tt>
+!diff /home/jerry/Mail/drafts/9 /home/jerry/tmp/recovered-9 | less
+5c5
+&lt; Subject: Re: Two more Unix Power Tools questions
+---
+&gt; Subject: Next UPT (was: Re: Two more Unix Power Tools questions)
+146,148c146,2182
+&lt; Yes, you mentioned it once.  Thanks for pointing that out, Greg.
+&lt; I think the next job is to review all the articles in that chapter
+&lt; to be sure which items should be included -- just the articles, or
+---
+&gt; Yes, you^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@
+&gt; ^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@
+&gt; ^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@
+    <i class="lineannotation">...zillions of lines of junk...</i></pre></blockquote>
+
+<p>At this point, the best thing to do is to quit <i class="command">vi</i>
+immediately (with <tt class="literal">:q!</tt>). Then fix up the original
+file by copying and pasting the good text from the copy of the
+recovered buffer that I just wrote. (You might want to rerun
+<i class="command">diff</i>, outside of <i class="command">vi</i>, to remind
+yourself which parts of the recovered file you want to transfer to
+the original file.) Starting a new <i class="command">vi</i> session with
+the filenames of both the original file and the (mostly trashed)
+recovered buffer, as <a href="ch17_04.htm#upt3-CHP-17-SECT-4">Section 17.4</a> explains,
+can make the recovery job easier.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch17_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch17_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">17.19. vi File Recovery Versus Networked Filesystems</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">17.21. Shell Escapes: Running One UnixCommand While Using Another</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

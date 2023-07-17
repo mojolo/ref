@@ -1,0 +1,214 @@
+<html><head><title>Show Nonprinting Characters with cat -v or od -c (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.4. Show Nonprinting Characters with cat -v or od -c</h2>
+
+<p><a name="upt3-IDXTERM-1882" /> <a name="upt3-IDXTERM-1883" />Especially if you
+<a name="IXT-12-6452" /> <a name="IXT-12-6453" />use an
+ASCII-based terminal, files can have characters that your terminal
+can't display. Some characters will lock up your
+communications software or hardware, make your screen look strange,
+or cause other weird problems. So if you'd like to
+look at a file and you aren't sure
+what's in there, it's not a good
+idea to just <i class="command">cat</i> the file!
+</p>
+
+<p>Instead, try <em class="emphasis">cat -v</em>. It shows an
+<span class="acronym">ASCII</span><a name="IXT-12-6454" />
+("printable") representation of
+unprintable and non-<span class="acronym">ASCII</span> characters. In fact,
+although most manual pages don't explain how, you
+can read the output and see what's in the file.
+Another utility for displaying nonprintable files is
+<i class="command">od</i><a name="IXT-12-6455" />. I usually use its
+<span class="option">-c</span> option when I need to look at a file character by
+character.
+</p>
+
+<p>Let's look at a file that's almost
+guaranteed to be unprintable: a directory file. This example is on a
+standard V7 (Unix Version 7) filesystem. (Unfortunately, some Unix
+systems won't let you read a directory. If you want
+to follow along on one of those systems, try a <b class="emphasis-bold">compressed file</b> (<a href="ch15_06.htm#upt3-CHP-15-SECT-6">Section 15.6</a>)
+or an executable program from <em class="emphasis">/bin</em>.) A directory
+usually has some long lines, so it's a good idea to
+pipe <i class="command">cat</i>'s output through
+<i class="command">fold</i>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls -fa</b></tt>
+.
+..
+comp
+% <tt class="userinput"><b>cat -v . | fold -62</b></tt>
+M-^?^N.^@^@^@^@^@^@^@^@^@^@^@^@^@&gt;^G..^@^@^@^@^@^@^@^@^@^@^@^@
+M-a
+comp^@^@^@^@^@^@^@^@^@^@^@^@MassAveFood^@^@^@^@^@hist^@^@^
+@^@^@^@^@^@^@^@
+% <tt class="userinput"><b>od -c .</b></tt>
+0000000 377 016   .  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0
+0000020   &gt; 007   .   .  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0
+0000040 341  \n   c   o   m   p  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0
+0000060  \0  \0   M   a   s   s   A   v   e   F   o   o   d  \0  \0  \0
+0000100  \0  \0   h   i   s   t  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0
+0000120</pre></blockquote>
+
+<p>Each entry in a V7-type directory is 16 bytes long
+(that's also 16 characters, in the ASCII system).
+The <em class="emphasis">od -c</em> command starts each line with the
+number of bytes, in octal, shown since the start of the file. The
+first line starts at byte 0. The second line starts at byte 20 octal
+(that's byte 16 in decimal, the way most people
+count). And so on. Enough about <i class="command">od</i> for now,
+though. We'll come back to it in a minute. Time to
+dissect the <em class="emphasis">cat -v</em> output:
+</p>
+
+<ul><li>
+<p>You've probably seen sequences like
+<tt class="literal">^N</tt> and <tt class="literal">^G</tt>. Those are control
+characters.<a name="IXT-12-6456" />
+</p>
+
+<p>Another character like this is <tt class="literal">^@</tt>, the character
+<a name="IXT-12-6457" />NUL (ASCII
+0). There are a lot of NULs in the directory; more about that later.
+A <a name="IXT-12-6458" />DEL
+character (ASCII 177 octal) is shown as <tt class="literal">^?</tt>. Check
+an ASCII chart.
+</p>
+</li><li>
+<p><em class="emphasis">cat -v</em> has its own symbol for characters outside
+the ASCII range with their high bits set, also called
+<a name="IXT-12-6459" />metacharacters. <em class="emphasis">cat
+-v</em> prints those as <tt class="literal">M-</tt> followed by
+another character. There are two of them in the <em class="emphasis">cat
+-v</em> output: <tt class="literal">M-^?</tt> and
+<tt class="literal">M-a</tt>.
+</p>
+
+<p>To get a metacharacter, you add 200 octal. For an example,
+let's look at <tt class="literal">M-a</tt>. The octal
+value of the letter <tt class="literal">a</tt> is 141. When <em class="emphasis">cat
+-v</em> prints <tt class="literal">M-a</tt>, it means the character
+you get by adding 141+200, or 341 octal.
+</p>
+
+<p>You can decode that the character <i class="command">cat</i> prints as
+<tt class="literal">M-^?</tt> in the same way. The <tt class="literal">^?</tt>
+stands for the DEL character, which is octal 177. Add 200+177 to get
+377 octal.
+</p>
+</li><li>
+<p>If a character isn't
+<tt class="literal">M-</tt><em class="replaceable"><tt>something</tt></em> or
+<tt class="literal">^</tt><em class="replaceable"><tt>something</tt></em>,
+it's a regular printable character. The entries in
+the directory (<tt class="literal">.</tt>, <tt class="literal">..</tt>,
+<tt class="literal">comp</tt>, <tt class="literal">MassAveFood</tt>, and
+<tt class="literal">hist</tt>) are all made of regular ASCII characters.
+</p>
+
+<p>If you're wondering where the entries
+<tt class="literal">MassAveFood</tt> and <tt class="literal">hist</tt> are in the
+<i class="command">ls</i> listing, the answer is that they
+aren't. Those entries have been deleted from the
+directory. Unix puts two NUL (ASCII 0, or <tt class="literal">^@</tt>)
+bytes in front of the names of deleted V7 directory entries.
+</p>
+</li></ul>
+<p><i class="command">cat</i><a name="IXT-12-6460" /><a name="IXT-12-6461" /> has two options,
+<span class="option">-t</span> and <span class="option">-e</span>, for displaying
+whitespace in a line. The <span class="option">-v</span> option
+doesn't convert
+<a name="IXT-12-6462" />TAB and trailing-space characters to a
+visible form without those options. See <a href="ch12_05.htm#upt3-CHP-12-SECT-5">Section 12.5</a>. 
+</p>
+
+<p><a name="IXT-12-6463" />Next, <em class="emphasis">od
+-c</em>. It's easier to explain than
+<em class="emphasis">cat -v</em>:
+</p>
+
+<ul><li>
+<p><em class="emphasis">od -c</em><a name="IXT-12-6464" /><a name="IXT-12-6465" /> shows some characters
+starting with a backslash (<tt class="literal">\</tt>). It uses the
+standard Unix and C abbreviations for <a name="IXT-12-6466" />control characters where it can. For
+instance, <tt class="literal">\n</tt> stands for a newline character,
+<tt class="literal">\t</tt> for a tab, etc. There's a
+newline at the start of the <tt class="literal">comp</tt> entry -- see
+it in the <em class="emphasis">od -c</em> output? That explains why the
+<em class="emphasis">cat -v</em> output was broken onto a new line at that
+place: <em class="emphasis">cat -v</em> doesn't translate
+newlines when it finds them.
+</p>
+
+<p>The <tt class="literal">\0</tt> is a NUL character (ASCII 0).
+It's used to pad the ends of entries in V7
+directories when a name isn't the full 14 characters
+long.
+</p>
+</li><li>
+<p><em class="emphasis">od -c</em> shows the octal value of other characters
+as three digits. For instance, the <tt class="literal">007</tt> means
+"the character 7 octal."
+<em class="emphasis">cat -v</em> shows this as <tt class="literal">^G</tt>
+(CTRL-g).
+</p>
+
+<p><a name="IXT-12-6467" />Metacharacters, the ones with octal
+values 200 and higher, are shown as
+<tt class="literal">M-</tt><em class="replaceable"><tt>something</tt></em> by
+<em class="emphasis">cat -v</em>. In <em class="emphasis">od -c</em>,
+you'll see their octal values -- such as
+<tt class="literal">341</tt>.
+</p>
+
+<p>Each directory entry on a Unix Version 7 filesystem starts with a
+two-byte "pointer" to its location
+in the disk's inode table. When you type a filename,
+Unix uses this pointer to find the actual file information on the
+disk. The entry for this directory (named .) is <tt class="literal">377
+016</tt>. Its parent (named <tt class="literal">..</tt>) is at
+<tt class="literal">&gt; 007</tt>. And
+<em class="emphasis">comp</em>'s entry is <tt class="literal">341
+\n</tt>. Find those in the <em class="emphasis">cat -v</em> output,
+if you want; and compare the two outputs.
+</p>
+</li><li>
+<p>Like <em class="emphasis">cat -v</em>, regular printable characters are
+shown as is by <em class="emphasis">od -c</em>.
+</p>
+</li></ul>
+<p>The <b class="emphasis-bold">strings</b>
+(<a name="IXT-12-6468" /><a href="ch13_15.htm#upt3-CHP-13-SECT-15">Section 13.15</a>) program finds printable strings of characters
+(such as filenames) inside mostly nonprintable files (such as
+executable binaries).<a name="IXTR3-6521" /> <a name="IXTR3-6522" /> 
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.3. "less" is More</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12.5. What's in That Whitespace?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

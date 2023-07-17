@@ -1,0 +1,94 @@
+<html><head><title>What Good Is a Current Directory? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch31_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch31_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">31.3. What Good Is a Current Directory?</h2>
+
+<p><a name="IXT-31-4089" /> <a name="IXT-31-4090" /><a name="IXT-31-4091" /><a name="IXT-31-4092" />People who think the
+<i class="command">cd</i> command is all they need to know about current
+directories should read this article! Understanding how Unix uses the
+current directory can save you work.
+</p>
+
+<p>Each Unix process has its own current directory. For instance, your
+shell has a current directory. So do <i class="command">vi</i>,
+<i class="command">ls</i>, <i class="command">sed</i>, and every other Unix
+process. When your shell starts a process running, that child process
+starts with the same current directory as its parent. So how does
+<i class="command">ls</i> know which directory to list? It uses the
+current directory it inherited from its parent process, the shell:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls</b></tt>
+   <i class="lineannotation">...Listing of ls's current directory appears,</i>
+         which is the same current directory as the shell.</pre></blockquote>
+
+<p>Each process can change its current directory and that
+won't change the current directory of other
+processes that are already running. So:
+</p>
+
+<ul><li>
+<p>Your shell script (which runs in a separate process) can
+<i class="command">cd</i> to another directory without affecting the
+shell that started it. (So, the script doesn't need
+to <i class="command">cd</i> back to the directory where it started
+before it exits.)
+</p>
+</li><li>
+<p>If you have more than one window or login session to the same
+computer, they probably run separate processes. So, they have
+independent current directories.
+</p>
+</li><li>
+<p>When you use a <b class="emphasis-bold">subshell</b> (<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>, <a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) or a shell
+escape, you can <i class="command">cd</i> anywhere you want. After you
+exit that shell, the parent shell's current
+directory won't have changed. For example, if you
+want to run a command in another directory without
+<i class="command">cd</i>ing there first (and having to
+<i class="command">cd</i> back), do it in a subshell:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>pwd</b></tt>
+/foo/bar
+% <tt class="userinput"><b>(cd </b></tt><em class="replaceable"><tt>baz</em>; <em class="replaceable">somecommand</em><em class="replaceable"> </em>&gt; <em class="replaceable">somefile</tt></em>)
+% <tt class="userinput"><b>pwd</b></tt>
+/foo/bar</pre></blockquote>
+</li></ul>
+
+
+<p>When you really get down to it, what good is a current directory?
+Here it is: <a name="IXT-31-4093" />relative pathnames start at the current
+directory. Having a current directory means you can refer to a file
+by its relative pathname, like <em class="filename">afile</em>. Programs
+like <i class="command">ls</i> access the current directory through its
+relative pathname<b class="emphasis-bold"> . (dot)</b>
+(<a name="IXT-31-4094" /><a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>). Without a current directory and relative
+pathnames, you'd always have to use <b class="emphasis-bold">absolute pathnames</b> (<a href="ch31_02.htm#upt3-CHP-31-SECT-2">Section 31.2</a>) like
+<em class="filename">/usr/joe/projects/alpha/afile</em>.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch31_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch31_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">31.2. Using Relative and Absolute Pathnames</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">31.4. How Does Unix Find Your Current Directory?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

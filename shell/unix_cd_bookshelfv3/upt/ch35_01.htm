@@ -1,0 +1,200 @@
+<html><head><title>Shell Programming for the Uninitiated (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_24.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 35. Shell Programming for the Uninitiated</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch35_01.htm#sect1">Writing a Simple Shell Program</a><br />
+<a href="ch35_02.htm">Everyone Should Learn Some Shell Programming</a><br />
+<a href="ch35_03.htm">What Environment Variables Are Good For</a><br />
+<a href="ch35_04.htm">Parent-Child Relationships</a><br />
+<a href="ch35_05.htm">Predefined Environment Variables</a><br />
+<a href="ch35_06.htm">The PATH Environment Variable</a><br />
+<a href="ch35_07.htm">PATH and path</a><br />
+<a href="ch35_08.htm">The DISPLAY Environment Variable</a><br />
+<a href="ch35_09.htm">Shell Variables</a><br />
+<a href="ch35_10.htm">Test String Values with Bourne-Shell case</a><br />
+<a href="ch35_11.htm">Pattern Matching in case Statements</a><br />
+<a href="ch35_12.htm">Exit Status of Unix Processes</a><br />
+<a href="ch35_13.htm">Test Exit Status with the if Statement</a><br />
+<a href="ch35_14.htm">Testing Your Success</a><br />
+<a href="ch35_15.htm">Loops That Test Exit Status</a><br />
+<a href="ch35_16.htm">Set Exit Status of a Shell (Script)</a><br />
+<a href="ch35_17.htm">Trapping Exits Caused by Interrupts</a><br />
+<a href="ch35_18.htm">read: Reading from the Keyboard</a><br />
+<a href="ch35_19.htm">Shell Script "Wrappers" for awk, sed, etc.</a><br />
+<a href="ch35_20.htm">Handling Command-Line Arguments in Shell Scripts</a><br />
+<a href="ch35_21.htm">Handling Command-Line Arguments with a for Loop</a><br />
+<a href="ch35_22.htm">Handling Arguments with while and shift</a><br />
+<a href="ch35_23.htm">Loop Control: break and continue</a><br />
+<a href="ch35_24.htm">Standard Command-Line Parsing</a><br />
+<a href="ch35_25.htm">The Bourne Shell set Command</a><br />
+<a href="ch35_26.htm">test: Testing Files and Strings</a><br />
+<a href="ch35_27.htm">Picking a Name for a New Command</a><br />
+<a href="ch35_28.htm">Finding a Program Name and Giving Your Program Multiple Names</a><br />
+<a href="ch35_29.htm">Reading Files with the . and source Commands</a><br />
+<a href="ch35_30.htm">Using Shell Functions in Shell Scripts</a><br /></p></div><div class="sect1"><a name="upt3-CHP-35-SECT-1" />
+<h2 class="sect1"><a name="sect1" />35.1. Writing a Simple Shell Program</h2>
+
+<p><a name="IXT-35-3461" /><a name="IXT-35-3462" />A
+shell <a name="upt3-IDXTERM-5364" />
+<a name="upt3-IDXTERM-5365" /> <a name="upt3-IDXTERM-5366" />script
+<a name="IXT-35-3463" />need <a name="IXT-35-3464" />be
+no more than a <a name="IXT-35-3465" />command
+<a name="IXT-35-3466" />line saved in a file. For example,
+let's assume that you'd like a
+compact list of all the users who are currently logged in on the
+system.
+</p>
+
+<p><a name="IXT-35-3467" />A command
+like this might do the trick:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>who | cut -c1-8 | sort -u | pr -l1 -8 -w78 -t</b></tt></pre></blockquote>
+
+<p>A list of logged-in users should come out in columns, looking
+something like this:
+</p>
+
+<blockquote><pre class="code">abraham  appleton biscuit  charlie  charlott fizzie   howard   howie
+hstern   jerry    kosmo    linda    ocshner  peterson root     ross
+sutton   yuppie</pre></blockquote>
+
+<p><a name="IXT-35-3468" /><a name="IXT-35-3469" />We used four Unix commands joined with
+pipes:
+</p>
+
+<ol><li>
+<p><b class="emphasis-bold">who</b> (<a href="ch02_08.htm#upt3-CHP-2-SECT-8">Section 2.8</a>)
+gives a list of all users.
+</p>
+</li><li>
+<p><b class="emphasis-bold">cut -c1-8</b> (<a href="ch21_14.htm#upt3-CHP-21-SECT-14">Section 21.14</a>) outputs columns 1-8 of the
+<i class="command">who</i> output -- the usernames.
+</p>
+</li><li>
+<p><b class="emphasis-bold">sort -u</b> (<a href="ch22_06.htm#upt3-CHP-22-SECT-6">Section 22.6</a>) puts names in order and takes out names of
+users who are logged on more than once.
+</p>
+</li><li>
+<p><b class="emphasis-bold">pr -l1 -8 -w78 -t</b> (<a href="ch21_15.htm#upt3-CHP-21-SECT-15">Section 21.15</a>, <a href="ch45_06.htm#upt3-CHP-45-SECT-6">Section 45.6</a>) takes the list
+of usernames, one per line, and makes it into 8 columns on
+78-character-wide lines. (The <tt class="literal">-l1</tt> is the lowercase
+letter <em class="emphasis">L</em> followed by the digit
+<em class="emphasis">1</em>.)
+</p>
+</li></ol>
+<p>If you wanted to do this frequently, wouldn't it be
+better if all you had to do was type something like:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>loggedin</b></tt></pre></blockquote>
+
+<p>to get the same result? Here's how:</p>
+
+<ol><li>
+<p>Start a text editor on a new file named <em class="filename">loggedin</em>.</p>
+</li><li>
+<p><a name="IXT-35-3470" />If your system supports the <b class="emphasis-bold">special #! notation</b> (<a href="ch36_02.htm#upt3-CHP-36-SECT-2">Section 36.2</a>) (and it probably does), the first line of the
+script file should be:
+</p>
+
+<blockquote><pre class="code">#!/bin/sh</pre></blockquote>
+
+<p>Otherwise, leave the first line blank. (When the first line of a
+script is blank, most shells will start a Bourne shell to read it.
+<a href="ch36_02.htm#upt3-CHP-36-SECT-2">Section 36.2</a> has more information.)
+</p>
+
+<p><a name="IXT-35-3471" />I think that the second line of a
+shell script should always be a comment to explain what the script
+does. (Use more than one line, if you want.) A comment starts with a
+hash mark (<tt class="literal">#</tt>); all characters after it on the line
+are ignored. Oh, and try to make sure there's a bit
+of whitespace between the comment character and the actual comment;
+that's a pet peeve of mine:
+</p>
+
+<blockquote><pre class="code"># loggedin - list logged-in users, once per user, in 8 columns</pre></blockquote>
+
+<p>Put this on the third line, just like you did on the command line:</p>
+<blockquote><pre class="code">who | cut -c1-8 | sort -u | pr -l1 -8 -w78 -t</pre></blockquote>
+
+</li><li>
+<p>Save the file and leave the editor. You've just
+written a shell script.
+</p>
+</li><li>
+<p><a name="IXT-35-3472" /><a name="IXT-35-3473" /><a name="IXT-35-3474" />Next,
+you need to make the shell script executable. The <b class="emphasis-bold">chmod</b> (<a href="ch50_05.htm#upt3-CHP-50-SECT-5">Section 50.5</a>) (change
+mode) command is used to change permissions on a file. The plus sign
+followed by an x (<tt class="literal">+x</tt>) makes the file executable:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>chmod +x loggedin</b></tt></pre></blockquote>
+
+</li><li>
+<p><a name="IXT-35-3475" /><a name="IXT-35-3476" /> <a name="IXT-35-3477" /><a name="IXT-35-3478" />If
+your <b class="emphasis-bold">login shell</b> (<a href="ch03_04.htm#upt3-CHP-3-SECT-4">Section 3.4</a>) is <i class="command">csh</i> or
+<i class="command">tcsh</i>, you'll need to reset its
+command search table. To do that, type:
+</p>
+<p><tt class="literal">rehash</tt> <a href="ch27_06.htm#upt3-CHP-27-SECT-6">Section 27.6</a></p>
+<blockquote><pre class="code">% <tt class="userinput"><b>rehash</b></tt></pre></blockquote>
+</li>
+
+<li>
+<p>Finally, try the script. Just type its name and it should run:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>loggedin</b></tt></pre></blockquote>
+
+<p>If that doesn't run, your current directory may not
+be in your <a name="IXT-35-3479" /> <a name="IXT-35-3480" />shell's <b class="emphasis-bold">command search path</b> (<a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a>, <a href="ch35_07.htm#upt3-CHP-35-SECT-7">Section 35.7</a>). In that case,
+try this:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>./loggedin</b></tt></pre></blockquote>
+
+<p>If it still doesn't work, and you started the first
+line of your script with <tt class="literal">#!</tt>, be sure that the
+Bourne shell's pathname on that line (like
+<tt class="literal">/bin/sh</tt>) is correct. Another common error is to
+swap the <tt class="literal">#</tt> and <tt class="literal">!</tt>, so check
+that, too. You should get an error like this, if that is the problem,
+although the script may itself run as well, depending on your system:
+</p>
+<blockquote><pre class="code">!#/bin/sh: No such file or directory</pre></blockquote>
+
+</li><li>
+<p>If you want to run the script from somewhere other than the current
+directory, or if you want other programs and scripts you write to be
+able to use it, you need to put it in a directory
+that's in your search path and/or <b class="emphasis-bold">change your search path</b> (<a href="ch27_06.htm#upt3-CHP-27-SECT-6">Section 27.6</a>). If you're the only person
+who plans to use the script, you should put it in your personal
+<b class="emphasis-bold">bin directory</b> (<a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a>). Otherwise, you might ask your system
+administrator if there's a systemwide directory for
+local commands.
+</p>
+</li></ol>
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_24.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.24. sed Newlines, Quoting, and Backslashes in a Shell Script</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.2. Everyone Should Learn Some Shell Programming</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

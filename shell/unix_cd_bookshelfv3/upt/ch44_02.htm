@@ -1,0 +1,99 @@
+<html><head><title>Reading Kernel Boot Output (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch44_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch44_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">44.2. Reading Kernel Boot Output</h2>
+
+<p><a name="IXT-44-2119" /><a name="IXT-44-2120" /><a name="IXT-44-2121" />As your Unix machine boots up, it
+will display a message for each device driver as it initializes. This
+is a good way to tell what devices your kernel was able to find. The
+exact output varies, but here is the output for hard
+<a name="IXT-44-2122" /> <a name="IXT-44-2123" /> <a name="IXT-44-2124" /> <a name="IXT-44-2125" />drive controllers, hard drives,
+and network cards from a <a name="IXT-44-2126" />FreeBSD machine and a Debian Linux
+machine:
+</p>
+
+<a name="IXT-44-2127" /><blockquote><pre class="code"># FreeBSD
+atapci0: &lt;Intel ICH ATA66 controller&gt; port 0xffa0-0xffaf at device 31.1 on pci0
+ata0: at 0x1f0 irq 14 on atapci0
+ata1: at 0x170 irq 15 on atapci0
+ad0: 19569MB &lt;ST320430A&gt; [39761/16/63] at ata0- master UDMA66
+afd0: 239MB &lt;IOMEGA ZIP 250 ATAPI&gt; [239/64/32] at ata0-slave using PIO3
+acd0: CDROM &lt;ATAPI CDROM&gt; at ata1-master using PIO4
+rl0: &lt;D-Link DFE-530TX+ 10/100BaseTX&gt; port 0xbc 00-0xbcff
+    mem 0xefdfff00-0xefdfffff irq 11 at device 4.0 on pci1
+
+# Linux
+PIIX4: IDE controller on PCI bus 00 dev 39
+PIIX4: not 100% native mode: will probe irqs later
+    ide0: BM-DMA at 0xf000-0xf007, BIOS settings: hda:DMA, hdb:pio
+    ide1: BM-DMA at 0xf008-0xf00f, BIOS settings: hdc:pio, hdd:pio
+hda: WDC WD307AA-32BAA0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: WDC WD307AA-32BAA0, 29333MB w/2048kB Cache, CHS=3739/255/63, UDMA
+Partition check:
+ hda: hda1 hda2 hda3
+rtl8139.c:v1.07 5/6/99 Donald Becker
+    http://cesdis.gsfc.nasa.gov/linux/drivers/rtl8139.html
+eth0: RealTek RTL8139 Fast Ethernet at 0xd400, IRQ 11, 00:50:ba:d3:9e:14.</pre></blockquote>
+
+<p>More specifically, in the line:</p>
+
+<blockquote><pre class="code">atapci0: &lt;Intel ICH ATA66 controller&gt; port 0xffa0-0xffaf at device 31.1 on pci0</pre></blockquote>
+
+<p><tt class="literal">atapci</tt> is the name of the device;
+<tt class="literal">0</tt> is the number of the device (devices are
+generally numbered sequentially with the first one probed getting the
+number 0); <tt class="literal">&lt;Intel ICH ATA66 controller&gt;</tt> is
+the name of the specific driver that successfully attached to this
+device; <tt class="literal">port 0xffa0-0xffaf at device 31.1</tt> is
+physical address information about where this particular device is
+located; and finally, <tt class="literal">on</tt> <tt class="literal">pci0</tt>
+tells us this device is attached to the first PCI bus (since
+<tt class="literal">pci</tt> is the device name of a PCI bus and 0 is the
+number assigned to the first PCI bus probed).
+</p>
+
+<p>Note that in both FreeBSD and Linux, each line gives information
+about which driver is being used, hardware addresses, and options.
+Other platforms give similar information during boot. Often if you
+have a <a name="IXT-44-2128" />device that's not
+being recognized, you will see a line in the boot output telling you
+that a device was found but no driver for it could be found. If you
+would like more information, you may be able to boot your machine
+with <em class="emphasis">boot -v</em><a name="IXT-44-2129" /> from the bootstrap prompt -- the
+BSDs and Solaris support <span class="option">-v</span>. This enables verbose
+booting, which prints out a lot more information during device
+probing and may help you understand why a device driver
+couldn't be found.
+<a name="IXT-44-2130" />Linux doesn't have
+any straightforward way to get verbose information like this, but you
+can use <i class="command">lspci</i> to show every device on the PCI bus,
+whether there's an active driver for that device or
+not.
+</p>
+
+<p> <em class="emphasis">-- DJPH</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch44_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch44_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">44. Devices</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">44.3. Basic Kernel Configuration</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

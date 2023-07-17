@@ -1,0 +1,155 @@
+<html><head><title>Getting a List of Nonmatching Files (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch33_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">33.7. Getting a List of Nonmatching Files</h2>
+
+<p>You can use the <b class="emphasis-bold">grep</b>
+(<a name="IXT-33-3887" /><a name="IXT-33-3888" /><a href="ch13_02.htm#upt3-CHP-13-SECT-2">Section 13.2</a>) option <span class="option">-c</span> to tell you how
+many occurrences of a pattern appear in a given file, so you can also
+use it to find files that <em class="emphasis">don't</em>
+contain a pattern (i.e., zero occurrences of the pattern). This is a
+handy technique to package into a shell script.
+</p>
+
+<a name="upt3-CHP-33-SECT-7.1" /><div class="sect2">
+<h3 class="sect2">33.7.1. Using grep -c</h3>
+
+<p>Let's say you're indexing a DocBook
+(<span class="acronym">SGML</span>) document and you want to make a list of
+files that don't yet contain indexing tags. What you
+need to find are files with zero occurrences of the string
+<tt class="literal">&lt;indexterm&gt;</tt>. (If your tags might be
+uppercase, you'll also want the<b class="emphasis-bold"> -i option</b> (<a href="ch09_22.htm#upt3-CHP-9-SECT-22">Section 9.22</a>).)
+The following command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>grep -c "&lt;indexterm&gt;" chapter*</b></tt></pre></blockquote>
+
+<p>might produce the following output:</p>
+
+<blockquote><pre class="code">chapter1.sgm:10
+chapter2.sgm:27
+chapter3.sgm:19
+chapter4.sgm:0
+chapter5.sgm:39
+   ...</pre></blockquote>
+
+<p>This is all well and good, but suppose you need to check index
+entries in hundreds of reference pages. Well, just filter
+<i class="command">grep</i>'s output by piping it
+through another <i class="command">grep</i>. The previous command can be
+modified as follows:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>grep -c "&lt;indexterm&gt;" chapter* | grep :0</b></tt></pre></blockquote>
+
+<p>This results in the following output:</p>
+
+<blockquote><pre class="code">chapter4.sgm:0</pre></blockquote>
+
+<p>Using <b class="emphasis-bold">sed</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) to truncate the <tt class="literal">:0</tt>, you
+can save the output as a list of files. For example,
+here's a trick for creating a list of files that
+<em class="emphasis">don't</em> contain index macros:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>grep -c "&lt;indexterm&gt;" * | sed -n 's/:0$//p' &gt; ../not_indexed.list</b></tt></pre></blockquote>
+
+<p>The <i class="command">sed -n</i> command prints only the lines that
+contain <tt class="literal">:0</tt>; it also strips the
+<tt class="literal">:0</tt> from the output so that
+<em class="filename">../not_indexed.list</em> contains a list of files,
+one per line. For a bit of extra safety, we've added
+a <b class="emphasis-bold">$ anchor</b> (<a href="ch32_05.htm#upt3-CHP-32-SECT-5">Section 32.5</a>) to be sure <i class="command">sed</i> matches
+only <tt class="literal">0</tt> at the end of a line -- and not, say, in
+some bizarre filename that contains <tt class="literal">:0</tt>.
+(We've <b class="emphasis-bold">quoted</b>
+(<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) the <tt class="literal">$</tt> for
+safety -- though it's not really necessary in
+most shells because <tt class="literal">$/</tt> can't
+match shell variables.) The <b class="emphasis-bold">..
+pathname</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>) puts the
+<em class="filename">not_indexed.list</em> file into the parent
+directory -- this is one easy way to keep <i class="command">grep</i>
+from searching that file, but it may not be worth the bother.
+</p>
+
+<p>To edit all files that need index macros added, you could type this:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>vi `grep -c "&lt;indexterm&gt;" * | sed -n 's/:0$//p'`</b></tt></pre></blockquote>
+
+<p>This command is  more obvious once you start using backquotes a lot.</p>
+
+</div>
+<a name="upt3-CHP-33-SECT-7.2" /><div class="sect2">
+<h3 class="sect2">33.7.2. The vgrep Script</h3>
+
+<p><a name="IXT-33-3889" /><a name="IXT-33-3890" /><a name="IXT-33-3891" />You
+can put the <i class="command">grep</i> -<span class="option">c</span> technique
+into a little script named <i class="command">vgrep</i> with a couple
+<a name="IXT-33-3892" />of safety
+features added:
+</p>
+<p><tt class="literal">"$@"</tt> <a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a></p>
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: vgrep</p>
+
+<blockquote><pre class="code">#!/bin/sh
+case $# in
+0|1) echo "Usage: `basename $0` pattern file [files...]" 1&gt;&amp;2; exit 2 ;;
+2)  # Given a single filename, grep returns a count with no colon or name.
+    grep -c -e "$1" "$2" | sed -n "s|^0\$|$2|p"
+    ;;
+*)  # With more than one filename, grep returns "name:count" for each file.
+    pat="$1"; shift
+    grep -c -e "$pat" "$@" | sed -n "s|:0\$||p"
+    ;;
+esac</pre></blockquote>
+
+<p>Now you can type, for example:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>vi `vgrep "&lt;indexterm&gt;" *`</b></tt></pre></blockquote>
+
+<p>One of the script's safety features works around a
+problem that happens if you pass <i class="command">grep</i> just one
+filename. In that case, most versions of <i class="command">grep</i>
+won't print the file's name, just
+the number of matches. So the first <i class="command">sed</i> command
+substitutes a digit <tt class="literal">0</tt> with the filename.
+</p>
+
+<p>The second safety feature is the
+<i class="command">grep</i><a name="IXT-33-3893" />
+-<span class="option">e</span> option. It tells <i class="command">grep</i> that the
+following argument is the search pattern, even if that pattern looks
+like an option because it starts with a dash (<tt class="literal">-</tt>).
+This lets you type commands like <tt class="literal">vgrep -0123 *</tt> to
+find files that don't contain the string
+<em class="emphasis">-0123</em>. 
+</p>
+
+<p>--<em class="emphasis">DG and JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch33_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">33.6. Getting a List of Matching Files with grep -l</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">33.8. nom: List Files That Don't Match a Wildcard</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

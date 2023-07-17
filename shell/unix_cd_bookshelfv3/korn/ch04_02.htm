@@ -1,0 +1,566 @@
+<html><head><title>Shell Variables (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.2. Shell Variables</h2>
+
+<p>
+<a name="korn2-IDXTERM-757" />
+
+A major piece of the Korn shell's programming functionality
+relates to shell variables.  We've already seen the basics of
+variables.  To recap briefly: they are named places to
+store data, usually in the form of character strings, and their values can be
+obtained by preceding their names with dollar signs (<tt class="literal">$</tt>).
+Certain variables, called <em class="emphasis">environment variables</em>, are conventionally
+named in all capital letters, and their values are made known
+(with the <em class="emphasis">export</em> statement) to subprocesses.
+</p>
+
+<p>
+This section presents the basics for shell variables.
+Discussion of certain advanced features is delayed until
+later in the chapter, after covering regular expressions.
+</p>
+
+<p>
+If you are a programmer, you already know that just about
+every major programming language uses variables in some way; in fact,
+an important way of characterizing differences between languages
+is comparing their facilities for variables.
+</p>
+
+<p>
+<a name="IXT-4-287465" />
+The chief difference between
+the Korn shell's variable schema and those of conventional
+languages is that the Korn shell's schema places heavy emphasis on
+character strings.
+<a name="IXT-4-287466" />
+<a name="IXT-4-287467" />
+
+(Thus it has more in common with a special-purpose
+language like SNOBOL than a general-purpose one like Pascal.)
+This is also true of the Bourne shell and the
+C shell, but the Korn shell goes beyond them by having additional
+mechanisms for handling integers and double-precision floating point
+numbers explicitly, as well as simple arrays.
+</p>
+
+<a name="korn2-CHP-4-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">4.2.1. Positional Parameters</h3>
+
+<p>
+<a name="korn2-IDXTERM-761" />
+
+As we have already seen, you can define values for variables
+with statements of the form
+<em class="replaceable"><tt>varname</em><tt class="literal">=</tt><em class="replaceable">value</tt></em>, e.g.:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fred=bob</b></tt>
+$ <tt class="userinput"><b>print "$fred"</b></tt>
+bob
+</pre></blockquote>
+</p>
+
+<p>
+Some environment
+variables are predefined by the shell when you log in.  There are
+other built-in variables that are vital to shell programming.
+We look at a few of them now and save the others for later.
+</p>
+
+<p>
+
+<a name="korn2-IDXTERM-762" />
+The most important special, built-in variables
+are called <em class="emphasis">positional parameters</em>.
+These hold the command-line arguments to scripts when they are
+invoked.  Positional parameters have names <tt class="literal">1</tt>, <tt class="literal">2</tt>, <tt class="literal">3</tt>,
+etc., meaning that their values are denoted by
+<tt class="literal">$1</tt>, <tt class="literal">$2</tt>, <tt class="literal">$3</tt>, etc.  There is also
+a positional parameter <tt class="literal">0</tt>, whose value is the name of the script
+(i.e., the command typed in to invoke it).
+</p>
+
+<p>
+<a name="IXT-4-287468" />
+<a name="IXT-4-287469" />
+<a name="IXT-4-287470" />
+<a name="IXT-4-287471" />
+
+
+Two special variables contain all of the positional parameters
+(except positional parameter <tt class="literal">0</tt>): <tt class="literal">*</tt> and <tt class="literal">@</tt>.
+The difference between them is subtle but important, and
+it's apparent only when they are within double quotes.
+</p>
+
+<p>
+<a name="IXT-4-287472" />
+<a name="IXT-4-287473" />
+<a name="korn2-IDXTERM-769" />
+<a name="korn2-IDXTERM-770" />
+
+<tt class="literal">"$*"</tt> is a single string that consists of all of the positional
+parameters, separated by the first character in the
+variable <tt class="literal">IFS</tt> (internal field separator),
+which is a space, TAB, and
+newline by default.  On the other hand,
+<tt class="literal">"$@"</tt>
+is equal to
+<tt class="literal">"$1"</tt>
+<tt class="literal">"$2"</tt> ...
+<tt class="literal">"$</tt><em class="emphasis">N</em><tt class="literal">"</tt>,
+where <em class="emphasis">N</em> is the
+number of positional parameters.  That is, it's equal to <em class="emphasis">N</em>
+separate double-quoted strings, which are separated by spaces.
+We'll explore the ramifications of this difference in a little while.
+</p>
+
+<p>
+<a name="IXT-4-287474" />
+<a name="IXT-4-287475" />
+<a name="IXT-4-287476" />
+
+The variable <tt class="literal">#</tt> holds the number of positional parameters
+(as a character string).
+All of these variables are "read-only," meaning that you can't
+assign new values to them within scripts.
+(They can be changed, just not via assignment. See
+<a href="ch04_02.htm#korn2-CHP-4-SECT-2.1.2">Section 4.2.1.2</a>, later in this chapter.)
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+For example, assume that you have the following simple shell script:
+</p>
+
+<p>
+<blockquote><pre class="code">
+print "fred: $*"
+print "$0: $1 and $2"
+print "$# arguments"
+</pre></blockquote>
+</p>
+
+<p>
+Assume further that the script is called <em class="emphasis">fred</em>.
+Then if you type <tt class="literal">fred bob dave</tt>, you will see the following
+output:
+</p>
+
+<p>
+<blockquote><pre class="code">
+fred: bob dave
+fred: bob and dave
+2 arguments
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-4-287477" />
+In this case, <tt class="literal">$3</tt>, <tt class="literal">$4</tt>, etc., are all unset,
+which means that the shell substitutes the empty
+(or null) string for them (unless the option <em class="emphasis">nounset</em> is turned on).
+</p>
+
+<a name="korn2-CHP-4-SECT-2.1.1" /><div class="sect3">
+<h3 class="sect3">4.2.1.1. Positional parameters in functions</h3>
+
+<p>
+<a name="korn2-IDXTERM-775" />
+
+Shell functions use positional parameters and special variables
+like <tt class="literal">*</tt> and <tt class="literal">#</tt> in exactly the same way that shell scripts do.
+If you wanted to define <em class="emphasis">fred</em> as a function, you could put
+the following in your <em class="emphasis">.profile</em> or environment file:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function fred {
+    print "fred: $*"
+    print "$0: $1 and $2"
+    print "$# arguments"
+}
+</pre></blockquote>
+</p>
+
+<p>
+You get the same result if you type <tt class="literal">fred bob dave</tt>.
+</p>
+
+<p>
+Typically, several shell
+functions are defined within a single shell script.  Therefore
+each function needs to handle its own arguments, which in turn
+means that each function needs to keep track of positional parameters
+separately.
+<a name="IXT-4-287478" />
+Sure enough, each function has its
+own copies of these variables (even though functions don't
+run in their own subprocess, as scripts do); we say that such variables
+are <em class="emphasis">local</em> to the function.
+</p>
+
+<p>
+<a name="IXT-4-287479" />
+Other variables defined within functions are not local;
+they are <em class="emphasis">global</em>, meaning that their values are known throughout
+the entire shell script.<a href="#FOOTNOTE-54">[54]</a>
+For example, assume that you have a shell script
+called <em class="emphasis">ascript</em> that contains this:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-54" /><p> [54]
+However, see the section on <em class="emphasis">typeset</em> in <a href="ch06_01.htm">Chapter 6</a>
+for a way of making variables local to functions.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+function afunc {
+    print in function $0: $1 $2
+    var1="in function"
+}
+var1="outside of function"
+print var1: $var1
+print $0: $1 $2
+afunc funcarg1 funcarg2
+print var1: $var1
+print $0: $1 $2
+</pre></blockquote>
+</p>
+
+<p>
+If you invoke this script by typing <tt class="literal">ascript arg1 arg2</tt>,
+you will see this output:
+</p>
+
+<p>
+<blockquote><pre class="code">
+var1: outside of function
+ascript: arg1 arg2
+in function afunc: funcarg1 funcarg2
+var1: in function
+ascript: arg1 arg2
+</pre></blockquote>
+</p>
+
+<p>
+In other words, the function <em class="emphasis">afunc</em> changes the value of the
+variable <tt class="literal">var1</tt> from "outside of function" to
+"in function," and that change is
+known outside the function, while <tt class="literal">$0</tt>, <tt class="literal">$1</tt>,
+and <tt class="literal">$2</tt>
+have different values in the function and the main script.
+<a href="ch04_02.htm#korn2-CHP-4-FIG-2">Figure 4-2</a> shows this graphically.
+</p>
+
+<a name="korn2-CHP-4-FIG-2" /><div class="figure"><img src="figs/ksh2.0402.gif" alt="Figure 4-2" width="374" /></div><h4 class="objtitle">Figure 4-2. Functions have their own positional parameters</h4>
+
+
+<p>
+<a name="IXTR3-164" />
+<a name="IXT-4-287480" />
+
+It is possible to make other variables local to
+functions by using the <em class="emphasis">typeset</em> command, which we'll see in
+<a href="ch06_01.htm">Chapter 6</a>.
+
+Now that we have this background,
+let's take a closer look at <tt class="literal">"$@"</tt> and <tt class="literal">"$*"</tt>.  These variables
+are two of the shell's greatest idiosyncracies, so we'll discuss some
+of the most common sources of confusion.
+
+</p>
+
+<ul>
+
+<li><p>
+<a name="IXT-4-287481" />
+Why are the elements of <tt class="literal">"$*"</tt>
+separated by the first character of <tt class="literal">IFS</tt> instead of just spaces?
+To give you output flexibility.  As a simple example, let's say
+you want to print a list of positional parameters separated by commas.
+This script<?troff .ne 10?> would do it:
+</p>
+
+<p>
+<blockquote><pre class="code">
+IFS=,
+print "$*"
+</pre></blockquote>
+</p>
+
+<p>
+Changing <tt class="literal">IFS</tt> in a script is fairly risky, but it's probably OK
+as long as nothing else in the script depends on it.  If this script
+were called <em class="emphasis">arglist</em>,
+the command <tt class="literal">arglist bob dave ed</tt>
+would produce the output <tt class="literal">bob,dave,ed</tt>.  <a href="ch10_01.htm">Chapter 10</a>
+contains another example of changing <tt class="literal">IFS</tt>.
+</p></li>
+
+<li><p>
+Why does <tt class="literal">"$@"</tt> act like <em class="emphasis">N</em> separate double-quoted strings?
+To allow you to use them again as separate values.  For example,
+say you want to call a function within your script with the same list
+of positional parameters, like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function countargs {
+    print "$# args."
+}
+</pre></blockquote>
+</p>
+
+<p>
+Assume your script is called with the same arguments as <em class="emphasis">arglist</em>
+above.  Then if it contains the command <tt class="literal">countargs "$*"</tt>,
+the function prints <tt class="literal">1 args</tt>.  But if the command is
+<tt class="literal">countargs "$@"</tt>, the function prints <tt class="literal">3 args</tt>.
+</p>
+
+<p>
+Being able to retrieve the arguments as they came in is also important in
+case you need to preserve any embedded white space.  If your script was
+invoked with the arguments "hi", "howdy", and "hello there", here are the
+different results you might get:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>countargs $*</b></tt>
+4 args
+$ <tt class="userinput"><b>countargs "$*"</b></tt>
+1 args
+$ <tt class="userinput"><b>countargs $@</b></tt>
+4 args
+$ <tt class="userinput"><b>countargs "$@"</b></tt>
+3 args
+</pre></blockquote>
+</p>
+
+<p>
+Because <tt class="literal">"$@"</tt> always exactly preserves arguments,
+we use it in just about all the example programs in this book.
+</p></li>
+</ul>
+
+<p>
+<a name="IXTR3-165" />
+</p>
+</div>
+
+<a name="korn2-CHP-4-SECT-2.1.2" /><div class="sect3">
+<h3 class="sect3">4.2.1.2. Changing the positional parameters</h3>
+
+<p>
+Occasionally, it's useful to change the positional parameters.
+We've already mentioned that you cannot set them directly, using an
+assignment such as <tt class="literal">1="first"</tt>.
+However, the built-in command <em class="emphasis">set</em> can be used
+for this purpose.
+</p>
+
+<p>
+<a name="IXT-4-287482" />
+
+The <em class="emphasis">set</em> command is perhaps the single most complicated
+and overloaded command in the shell.  It takes a large number of options,
+which are discussed in <a href="ch09_01.htm">Chapter 9</a>.
+What we care about for the moment is that additional non-option arguments to
+<em class="emphasis">set</em> replace the positional parameters.
+Suppose our script was invoked with the three arguments "bob",
+"fred", and "dave".  Then <tt class="literal">countargs "$@"</tt>
+tells us that we have three arguments.
+Upon using <em class="emphasis">set</em> to change the positional
+parameters, <tt class="literal">$#</tt> is updated too.
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>set one two three "four not five"</b></tt>   <i class="lineannotation">Change the positional parameters</i>
+$ <tt class="userinput"><b>countargs "$@"</b></tt>                      <i class="lineannotation">Verify the change</i>
+4 args
+</pre></blockquote>
+
+<p>
+The <em class="emphasis">set</em> command also works inside a shell function.
+The shell function's positional parameters are changed, but not those of the
+calling script:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>function testme {</b></tt>
+&gt;     <tt class="userinput"><b>countargs "$@"</b></tt>           <i class="lineannotation">Show the original number of parameters</i>
+&gt;     <tt class="userinput"><b>set a b c</b></tt>                <i class="lineannotation">Now change them</i>
+&gt;     <tt class="userinput"><b>countargs "$@"</b></tt>           <i class="lineannotation">Print the new count</i>
+&gt; <tt class="userinput"><b>}</b></tt>
+$ <tt class="userinput"><b>testme 1 2 3 4 5 6</b></tt>           <i class="lineannotation">Run the function</i>
+6 args                         <i class="lineannotation">Original count</i>
+3 args                         <i class="lineannotation">New count</i>
+$ <tt class="userinput"><b>countargs "$@"</b></tt>               <i class="lineannotation">No change to invoking shell's parameters</i>
+4 args
+</pre></blockquote>
+
+</div>
+</div>
+
+<a name="korn2-CHP-4-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">4.2.2. More on Variable Syntax</h3>
+
+<p>
+<a name="IXTR3-166" />
+<a name="IXTR3-167" />
+
+<a name="IXT-4-287483" />
+<a name="IXTR3-168" />
+
+
+Before we show the many things you can do with shell variables,
+we have to make a confession: the syntax
+of <tt class="literal">$</tt><em class="replaceable"><tt>varname</tt></em> for taking the value of a variable is not
+quite accurate.  Actually, it's the simple form of the more general
+syntax, which is <tt class="literal">${<em class="replaceable"><tt>varname</tt></em>}</tt>.
+</p>
+
+<p>
+Why two syntaxes?
+<a name="IXT-4-287484" />
+For one thing, the more general syntax
+is necessary if your code refers to more than nine positional
+parameters: you must use <tt class="literal">${10}</tt> for the tenth instead of <tt class="literal">$10</tt>.
+(This ensures compatibility with the Bourne shell, where <tt class="literal">$10</tt>
+means <tt class="literal">${1}0</tt>.)
+<a name="IXTR3-169" />
+Aside from that, consider the <a href="ch03_01.htm">Chapter 3</a> example
+of setting your primary prompt variable (<tt class="literal">PS1</tt>) to your login name:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS1="($LOGNAME)-&gt; "
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-4-287485" />
+This happens to work because the right parenthesis immediately
+following <tt class="literal">LOGNAME</tt> isn't a valid character for a
+variable name,
+so the shell doesn't
+mistake it for part of the variable name.  Now suppose that, for
+some reason, you want your prompt to be your login name followed
+by an underscore.  If you type:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS1="$LOGNAME_ "
+</pre></blockquote>
+</p>
+
+<p>
+then the shell tries to use "LOGNAME_" as the name of the
+variable, i.e., to take the value of <tt class="literal">$LOGNAME_</tt>.  Since there is
+no such variable, the value defaults to <em class="emphasis">null</em>
+(the empty string, ""), and <tt class="literal">PS1</tt> is set just to a single space.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+For this reason, the full syntax for taking the value of a variable
+is <tt class="literal">${</tt><em class="replaceable"><tt>varname</tt></em><tt class="literal">}</tt>.  So if we used:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS1="${LOGNAME}_ "
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-4-287486" />
+<a name="IXT-4-287487" />
+
+we would get the desired <em class="replaceable"><tt>yourname</tt></em><tt class="literal">_</tt>.
+It is safe to omit the curly braces (<tt class="literal">{}</tt>) if the
+variable name is followed by a character that isn't a letter,
+digit, or underscore.
+</p>
+</div>
+
+<a name="korn2-CHP-4-SECT-2.3" /><div class="sect2">
+<h3 class="sect2">4.2.3. Appending to a Variable</h3>
+
+<p>
+<a name="IXT-4-287488" />
+
+As mentioned, Korn shell variables tend to be string-oriented.  One operation that's
+very common is to append a new value onto an existing variable.
+(For example, collecting a set of options into a single string.)
+Since time immemorial, this was done by taking advantage of
+variable substitution inside double quotes:
+</p>
+
+<blockquote><pre class="code">
+myopts="$myopts $newopt"
+</pre></blockquote>
+
+<p>
+The values of <tt class="literal">myopts</tt> and <tt class="literal">newopt</tt> are
+concatenated together into a single string, and the result is then assigned
+back to <tt class="literal">myopts</tt>.
+Starting with <em class="emphasis">ksh93j</em>,
+the Korn shell provides a more efficient and intuitive
+mechanism for doing this:
+</p>
+
+<blockquote><pre class="code">
+myopts+=" $newopt"
+</pre></blockquote>
+
+<p>
+This accomplishes the same thing, but it is more efficient,
+and it also makes it clear that the new value is being added onto the string.
+(In C, the <tt class="literal">+=</tt> operator adds the value on the right to the
+variable on the left; <tt class="literal">x += 42</tt> is the same as
+<tt class="literal">x = x + 42</tt>.)
+<a name="IXTR3-170" />
+
+
+</p>
+
+</div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4. Basic Shell Programming</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.3. Compound Variables</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

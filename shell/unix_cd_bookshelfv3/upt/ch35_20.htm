@@ -1,0 +1,127 @@
+<html><head><title>Handling Command-Line Arguments in Shell Scripts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.20. Handling Command-Line Arguments in Shell Scripts</h2>
+
+<p><a name="upt3-IDXTERM-5638" /> <a name="upt3-IDXTERM-5639" /><a name="IXT-35-3706" /><a name="IXT-35-3707" />To write flexible shell scripts, you
+usually want to give them command-line arguments. As
+you've seen in <b class="emphasis-bold">other
+articles</b> (<a href="ch35_16.htm#upt3-CHP-35-SECT-16">Section 35.16</a>, <a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>), <tt class="literal">$1</tt> holds the first
+command-line argument. The Bourne shell can give you arguments
+through the ninth, <tt class="literal">$9</tt>. The Korn shell and some
+other newer Bourne-type shells understand <tt class="literal">${10}</tt>
+for the tenth argument, and so on.
+</p>
+
+<a name="upt3-CHP-35-SECT-20.1" /><div class="sect2">
+<h3 class="sect2">35.20.1. With the "$@" Parameter</h3>
+
+<p><a name="IXT-35-3708" />If
+<a name="IXT-35-3709" />you've been
+<a name="IXT-35-3710" /><a name="IXT-35-3711" />reading this <b class="emphasis-bold">series</b> (<a href="ch35_02.htm#upt3-CHP-35-SECT-2">Section 35.2</a>) of
+articles in order, you saw the <i class="command">zmore</i> (<a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>) script that accepted just one command-line
+argument. <a name="IXT-35-3712" />If you put <tt class="literal">"$@"</tt> in
+a script, the shell will replace that string with a <b class="emphasis-bold">quoted</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) set of
+the script's command-line arguments. Then you can
+pass as many arguments as you want, including pathnames with
+<b class="emphasis-bold">unusual characters</b> (<a href="ch14_11.htm#upt3-CHP-14-SECT-11">Section 14.11</a>): 
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>zmore report memo "savearts/What's next?"</b></tt></pre></blockquote>
+
+<p>The third argument has a perfectly legal filename; we see more and
+more of them on our system -- especially filesystems that are
+networked to computers like the Macintosh, or on systems that use
+windowing systems to run graphical programs such as FrameMaker, where
+spaces and other "special"
+characters in filenames are common. Double-quoting all arguments
+through the script helps to be sure that the script can handle these
+unusual but legal pathnames.
+</p>
+
+<p><a name="IXT-35-3713" />In this case, we want the arguments to be
+passed to the <span class="acronym">GNU</span> <i class="command">zcat</i> command.
+Let's change the <i class="command">zmore</i> script to
+read:
+</p>
+
+<blockquote><pre class="code">zcat "$@" &gt;$temp</pre></blockquote>
+
+<p>When the shell runs the script with the arguments shown above, the
+command line will become:
+</p>
+
+<blockquote><pre class="code">zcat "report" "memo" "savearts/What's next?" &gt;/tmp/zmore12345</pre></blockquote>
+
+<a name="ch35-6-fm2xml" /><blockquote><b>NOTE:</b> 
+<a name="IXT-35-3714" />On some Bourne shells, if there are
+no command-line arguments, the <tt class="literal">"$@"</tt> <b class="emphasis-bold">becomes a single empty argument</b> (<a href="ch37_05.htm#upt3-CHP-37-SECT-5">Section 37.5</a>), as if you'd typed this:
+</p>
+<blockquote><pre class="code">zcat "" &gt;/tmp/zmore12345</pre></blockquote>
+<p>In this case, the <i class="command">zcat</i> command would complain that
+it can't find a file. (Of course, in this script,
+the <i class="command">case</i> would prevent this problem. But not all
+scripts test the number of arguments.)
+</p>
+<p>On those shells, you can replace <tt class="literal">"$@"</tt> with
+<b class="emphasis-bold">${1+"$@"}</b> (<a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a>). That means that if <tt class="literal">$1</tt> is
+defined, <tt class="literal">"$@"</tt> should be used. A not-quite-as-good
+fix is to replace <tt class="literal">"$@</tt>" with
+<tt class="literal">$*</tt>. It gives you an unquoted list of command-line
+arguments; that's usually fine but can cause trouble
+on pathnames with special characters in them.
+</p>
+</blockquote>
+
+</div>
+<a name="upt3-CHP-35-SECT-20.2" /><div class="sect2">
+<h3 class="sect2">35.20.2. With a Loop</h3>
+
+<p><a name="IXT-35-3715" /><a name="IXT-35-3716" /><a name="IXT-35-3717" /><a name="IXT-35-3718" /><a name="IXT-35-3719" />A <b class="emphasis-bold">for
+loop</b> (<a href="ch35_21.htm#upt3-CHP-35-SECT-21">Section 35.21</a>) can step through all
+command-line arguments, one by one. You can also use a <b class="emphasis-bold">while loop</b> (<a href="ch35_15.htm#upt3-CHP-35-SECT-15">Section 35.15</a>) that
+tests <tt class="literal">$#</tt> (see below) and removes the arguments one
+by one with the <b class="emphasis-bold">shift command</b> (<a href="ch35_22.htm#upt3-CHP-35-SECT-22">Section 35.22</a>). The <b class="emphasis-bold">getopt and
+getopts</b> (<a href="ch35_24.htm#upt3-CHP-35-SECT-24">Section 35.24</a>) commands handle
+arguments in a more standard way.
+</p>
+
+</div>
+<a name="upt3-CHP-35-SECT-20.3" /><div class="sect2">
+<h3 class="sect2">35.20.3. Counting Arguments with $#</h3>
+
+<p><a name="IXT-35-3720" />The
+<tt class="literal">$#</tt> parameter counts the number of command-line
+arguments. For instance, if there are three arguments,
+<tt class="literal">$#</tt> will contain <tt class="literal">3</tt>. This is
+usually used for error-checking (as in the <i class="command">zmore</i>
+script in <a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>) with <b class="emphasis-bold">case</b> (<a href="ch35_10.htm#upt3-CHP-35-SECT-10">Section 35.10</a>) or
+<b class="emphasis-bold">test</b> (<a href="ch35_26.htm#upt3-CHP-35-SECT-26">Section 35.26</a>).
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.19. Shell Script "Wrappers" for awk, sed, etc.</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.21. Handling Command-Line Arguments with a for Loop</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

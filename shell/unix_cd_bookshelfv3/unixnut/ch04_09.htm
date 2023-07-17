@@ -1,0 +1,1685 @@
+<html><head><title>Built-in Commands (Bourne and Korn Shells) (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">4.9. Built-in Commands (Bourne and Korn Shells)</h2><p>
+<a name="unut-ch-4-ix-ksh-korn-shell-built-in-commands-list-of" />
+<a name="unut-ch-4-ix-sh-bourne-shell-built-in-commands-list-of" />
+<a name="unut-ch-4-ix-commands-for-sh-and-ksh-shells-sh-and-ksh-shells" />Examples to be entered as a command line
+are shown with the <tt class="literal">$</tt> prompt.  Otherwise,
+examples should be treated as code fragments 
+that might be included in a shell script.
+For convenience, some of the reserved words used by multiline commands
+are also included.</p>
+
+<table border="1" cellpadding="5"><tr><td valign="top"><a name="!">!</a></a></td><td><p><tt class="literal">!</tt> <em class="replaceable"><tt>pipeline</tt></em></p>
+<p><tt class="literal">ksh93</tt> only.
+Negate the sense of a pipeline.
+Returns an exit status of 0 if the pipeline exited nonzero,
+and an exit status of 1 if the pipeline exited zero.
+Typically used in <tt class="literal">if</tt> and
+<tt class="literal">while</tt> statements.</p>
+<h4 class="refsect2">Example</h4><p>This code prints a message if user <tt class="literal">jane</tt>
+is not logged on:</p>
+<blockquote><pre class="code">if ! who | grep jane &gt; /dev/null
+then
+	echo jane is not currently logged on
+fi</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="#">#</a></a></td><td><tt class="literal">#</tt>
+<p>
+<a name="IXT-4-122817" />
+<a name="IXT-4-122818" />Ignore all text that follows on the same line.  <tt class="literal">#</tt> is used in shell
+scripts as the comment character and is not really a command.  (Take
+care when commenting a Bourne shell script.
+A file that has
+<tt class="literal">#</tt> as its first character is sometimes interpreted by
+older systems as a C shell script.)</p>
+</td></tr><tr><td valign="top"><a name="#!shell">#!shell</a></a></td><td><tt class="literal">#!</tt><em class="replaceable"><tt>shell</em> [<em class="replaceable">option</tt></em>]
+<p>
+<a name="IXT-4-122819" />
+<a name="IXT-4-122820" />Used as the first line of a script to
+invoke the named <em class="emphasis">shell</em>.
+Anything given on the rest of the line is passed
+<em class="emphasis">as a single argument</em> to the named <em class="emphasis">shell</em>.
+This feature is typically implemented by the kernel, but may not
+be supported on some older systems.
+Some systems have
+a limit of around 32 characters on the maximum length
+of <em class="emphasis">shell</em>.
+For example:</p>
+<blockquote><pre class="code">#!/bin/sh</pre></blockquote>
+</td></tr><tr><td valign="top"><a name=":">:</a></a></td><td><tt class="literal">:</tt>
+<p>
+<a name="IXT-4-122821" />Null command.  Returns an exit status of 0.
+Sometimes used on older systems
+as the first character in a file to denote a Bourne
+shell script.
+See this Example and under <b class="emphasis-bold"><a href="#case">case</a></b>.
+The line is still processed for side effects, such as
+variable and command substitutions.</p>
+<h4 class="refsect2">Example</h4><p>Check whether someone is logged in:</p>
+<blockquote><pre class="code">if who | grep $1 &gt; /dev/null
+then :	 # Do nothing if pattern is found
+else echo "User $1 is not logged in"
+fi</pre></blockquote>
+
+</td></tr>
+
+<tr><td valign="top"><a name=".">.</a></a></td><td><p><tt class="literal">.</tt>  <em class="replaceable"><tt>file</em> [<em class="replaceable">arguments</tt></em>]</p>
+<p>Read and execute lines in <em class="emphasis">file</em>.
+<em class="emphasis">file</em> does not have to be
+executable but must reside in a directory searched by PATH.
+The Korn shell supports <em class="emphasis">arguments</em> that are stored in the 
+positional parameters.</p>
+</td></tr>
+
+
+<tr><td valign="top"><a name="[[ ]]">[[ ]]</a></a></td><td><p><tt class="literal">[[</tt> <em class="replaceable"><tt>expression</tt></em> <tt class="literal">]]</tt></p>
+<p>
+<a name="IXT-4-122822" />Korn shell only.  Same as <tt class="literal">test</tt>  <em class="emphasis">expression</em> or 
+<tt class="literal">[</tt> <em class="emphasis">expression</em> <tt class="literal">]</tt>,
+except that <tt class="literal">[[  ]]</tt> allows additional operators.  Word
+splitting and filename expansion are disabled.
+Note that the brackets (<tt class="literal">[ ]</tt>) are typed literally, and
+that they must be surrounded by whitespace.</p>
+<h4 class="refsect2">Additional Operators</h4>
+<table border="1" cellpadding="3">
+<tr><td><tt class="literal">&amp;&amp;</tt></td><td><p>Logical AND of test expressions (short circuit).</p>
+</td></tr>
+<tr><td><tt class="literal">||</tt></td><td><p>Logical OR of test expressions (short circuit).</p>
+</td></tr>
+<tr><td><tt class="literal">&lt;</tt></td><td><p>First string is lexically &#8220;less than&#8221; the second.</p>
+</td></tr>
+<tr><td><tt class="literal">&gt;</tt></td><td><p>First string is lexically &#8220;greater than&#8221; the second. </p>
+</td></tr>
+</table><p>
+
+</td></tr><tr><td valign="top"><a name="name()">name()</a></a></td><td><em class="replaceable"><tt>name</em> <tt class="literal">() { </tt><em class="replaceable">commands</tt></em><tt class="literal">; }</tt>
+<p>Define <em class="emphasis">name</em> as a function.  Syntax can be written on
+one line or across many.  Since the Bourne shell has no
+aliasing capability, simple functions can serve as aliases.
+The Korn shell provides the <tt class="literal">function</tt> keyword,
+an alternate
+form that works the same way.</p>
+<p>There are semantic differences that should be kept in mind:</p>
+<ul><li><p>In the Bourne shell, all functions
+share traps with the &#8220;parent&#8221; shell and
+may not be recursive.</p>
+</li><li><p>In <tt class="literal">ksh88</tt>, all functions
+have their own traps and local variables, and may
+be recursive.</p>
+</li><li><p>In <tt class="literal">ksh93</tt>, <em class="emphasis">name</em> <tt class="literal">()</tt> functions
+share traps with the &#8220;parent&#8221; shell and
+may not be recursive.</p>
+</li><li><p>In <tt class="literal">ksh93</tt>, <tt class="literal">function</tt> functions
+have their own traps and local variables, and may
+be recursive.
+Using the <tt class="literal">.</tt> command
+with a <tt class="literal">function</tt> function gives it
+Bourne shell semantics.</p>
+</li></ul>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">
+$ <tt class="userinput"><b>count () {</b></tt>
+&gt; <tt class="userinput"><b>ls | wc -l</b></tt>
+&gt; <tt class="userinput"><b>}</b></tt></pre></blockquote>
+
+
+<p>When issued at the command line, <tt class="literal">count</tt> now displays the
+number of files in the current directory.</p>
+
+</td></tr><tr><td valign="top"><a name="alias">alias</a></a></td><td><tt class="literal">alias</tt> [<em class="replaceable"><tt>options</em>] [<em class="replaceable">name</em>[<tt class="literal">='</tt><em class="replaceable">cmd</tt></em><tt class="literal">'</tt>]]
+<p>
+<a name="IXT-4-122823" />
+<a name="IXT-4-122824" />
+<a name="IXT-4-122825" />Korn shell only.
+Assign a shorthand <em class="emphasis">name</em> as a synonym for <em class="emphasis">cmd</em>.
+If <tt class="literal">='</tt><em class="emphasis">cmd</em><tt class="literal">'</tt> is omitted, print the alias for <em class="emphasis">name</em>;
+if <em class="emphasis">name</em> is also omitted, print all aliases.
+If the alias value contains a trailing space, the next word on the command
+line also becomes a candidate for alias expansion.
+See also <b class="emphasis-bold"><a href="#unalias">unalias</a></b>.</p>
+<p>These aliases are built into <tt class="literal">ksh88</tt>.
+Some use names of existing 
+Bourne shell or C shell commands (which points 
+out the similarities among the shells).</p>
+<blockquote><pre class="code">autoload='typeset -fu'
+false='let 0'
+functions='typeset -f'
+hash='alias -t'
+history='fc -l'
+integer='typeset -i'
+nohup='nohup '
+r='fc -e -'
+true=':'
+type='whence -v'</pre></blockquote>
+<p>The following aliases are built into <tt class="literal">ksh93</tt>:</p>
+
+<blockquote><pre class="code">autoload='typeset -fu'
+command='command '
+fc='hist'
+float='typeset -E'
+functions='typeset -f'
+hash='alias -t --'
+history='hist -l'
+integer='typeset -i'
+nameref='typeset -n'
+nohup='nohup '
+r='hist -s'
+redirect='command exec'
+stop='kill -s STOP'
+times='{ {time;} 2&gt;&amp;1;}'
+type='whence -v'</pre></blockquote>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-p</tt></dt><dd>Print the word <tt class="literal">alias</tt> before each alias.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-t</tt></dt><dd>Create a tracked alias for a Unix command <em class="emphasis">name</em></tt>.
+The Korn shell remembers the full pathname of the command,
+allowing it to be found more quickly and to be issued from any directory.
+If no name is supplied, current tracked aliases are listed.
+Tracked aliases are the similar to hashed commands in the Bourne shell.</p>
+</dd>
+<dt><tt class="literal">-x</tt></dt><dd>Export the alias; it can now be used in shell scripts and other
+subshells.  If no name is supplied, current 
+
+
+exported aliases are listed.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">alias dir='echo ${PWD##*/}'</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="autoload">autoload</a></a></td><td><tt class="literal">autoload</tt> [<tt><em class="replaceable"><tt>functions</tt></em></tt>]
+<p>
+<a name="IXT-4-122826" />Load (define) the <em class="emphasis">functions</em></tt> only when they are first used.
+Korn shell alias for <tt class="literal">typeset -fu</tt>.</p>
+</td></tr><tr><td valign="top"><a name="bg">bg</a></a></td><td><tt class="literal">bg</tt> [<tt><em class="replaceable"><tt>jobIDs</tt></em></tt>]
+<p>
+<a name="IXT-4-122827" />Put current job or <em class="emphasis">jobIDs</em></tt> in the background. See <a href="ch04_06.htm#unut-ch-4-sect-6">Section 4.6</a>.</p>
+</td></tr><tr><td valign="top"><a name="break">break</a></a></td><td><tt class="literal">break</tt> [<tt><em class="replaceable"><tt>n</tt></em></tt>]
+<p>
+<a name="IXT-4-122828" />Exit from a <tt class="literal">for</tt>
+<tt class="literal">while</tt>,
+<tt class="literal">select</tt>,
+or <tt class="literal">until</tt> loop
+(or break out of <em class="emphasis">n</em></tt> loops).</p>
+</td></tr><tr><td valign="top"><a name="builtin">builtin</a></a></td><td><tt class="literal">builtin</tt> [ <tt class="literal">-ds</tt> ] [ <tt class="literal">-f</tt> <tt><em class="replaceable"><tt>library</em></tt> ] [ <tt><em class="replaceable">name</tt></em></tt> ... ]
+<p>
+<a name="IXT-4-122829" /><tt class="literal">ksh93</tt> only.
+This command allows you to load new built-in commands into the shell
+at runtime from shared library files.</p>
+<p>If no arguments are given, <tt class="literal">builtin</tt>
+prints all the built-in command names.
+With arguments, <tt class="literal">builtin</tt> adds each <em class="emphasis">name</em></tt>
+as a new built-in command (like <tt class="literal">cd</tt> or <tt class="literal">pwd</tt>).
+If the <em class="emphasis">name</em></tt> contains a slash, the newly-added
+built-in version is used only if a path search would otherwise have found a
+command of the same name.
+(This allows replacement of system commands with faster, built-in versions.)
+Otherwise, the built-in command is always found.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-d</tt></dt><dd>Delete the built-in command <em class="emphasis">name</em></tt>.</p>
+</dd>
+<dt><tt class="literal">-f</tt></dt><dd>Load new built-in command from <em class="emphasis">library</em></tt>.</p>
+</dd>
+<dt><tt class="literal">-s</tt></dt><dd>Only
+
+
+print &#8220;special&#8221; built-ins (those designated
+as special by POSIX).</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="case">case</a></a></td>
+<td><br><tt class="literal">case</tt> <em class="replaceable"><tt>value</em> <tt class="literal">in</tt><br>&#160;&#160;&#160;&#160;<em class="replaceable">pattern1</em><tt class="literal">)</tt> <em class="replaceable">cmds1</em><tt class="literal">;;</tt><br>&#160;&#160;&#160;&#160;<em class="replaceable">pattern2</em><tt class="literal">)</tt> <em class="replaceable">cmds2</tt></em><tt class="literal">;;</tt><br>&#160;&#160;&#160;&#160;.<br>&#160;&#160;&#160;&#160;.<br>&#160;&#160;&#160;&#160;.<br><tt class="literal">esac</tt>
+<p>
+<a name="IXT-4-122830" />Execute the first set of commands (<em class="emphasis">cmds1</em>) if <em class="emphasis">value</em> matches
+<em class="emphasis">pattern1</em>, execute the second set of commands (<em class="emphasis">cmds2</em>) if 
+<em class="emphasis">value</em> matches <em class="emphasis">pattern2</em>, etc.
+Be sure the last command in each set ends with <tt class="literal">;;</tt>.
+<em class="emphasis">value</em> is typically a positional parameter or other shell variable.
+<em class="emphasis">cmds</em> are typically Unix commands, shell programming commands,
+or variable assignments.
+Patterns can use file-generation metacharacters.
+Multiple patterns (separated by <tt class="literal">|</tt>) can be specified on the same line;
+in this case, the associated <em class="emphasis">cmds</em> are executed 
+whenever <em class="emphasis">value</em> matches any of these patterns.
+See the Examples here and under <tt class="literal">eval</tt>.</p>
+<h4 class="refsect2">Korn Shell Notes</h4><ul><li><p>The Korn shell allows <em class="emphasis">pattern</em> to be preceded by an optional
+open parenthesis, as in <tt class="literal">(</tt><em class="replaceable"><tt>pattern</tt></em><tt class="literal">)</tt>.
+It's useful for balancing
+parentheses inside a <tt class="literal">$(&#160;)</tt> construct.</p>
+</li><li><p>The Korn shell also allows a case to end with <tt class="literal">;&amp;</tt>
+instead of <tt class="literal">;;</tt>.
+In such cases 
+
+
+control &#8220;falls through&#8221; to the group of statements for
+the next <em class="emphasis">pattern</em>.</p>
+</li></ul>
+
+<h4 class="refsect2">Examples</h4><p>Check
+
+
+first command-line argument and take appropriate action:</p>
+<blockquote><pre class="code">case $1 in     # Match the first arg
+    no|yes) response=1;;
+    -[tT])  table=TRUE;;
+    *)      echo "unknown option"; exit 1;;
+esac</pre></blockquote>
+<p>Read user-supplied lines until user exits:</p>
+<blockquote><pre class="code">while :        # Null command; always true
+do
+   echo "Type . to finish ==&gt; \c"
+   read line
+   case "$line" in
+      .) echo "Message done"
+         break ;;
+      *) echo "$line" &gt;&gt; $message ;;
+   esac
+done</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="cd">cd</a></a></td><td><tt class="literal">cd</tt> [<em class="replaceable"><tt>dir</em>]<br><tt class="literal">cd</tt> [<tt class="literal">-LP</tt>] [<em class="replaceable">dir</em>]<br><tt class="literal">cd</tt> [<tt class="literal">-LP</tt>] [<tt class="literal">-</tt>]<br><tt class="literal">cd</tt> [<tt class="literal">-LP</tt>] [<em class="replaceable">old new</tt></em>]
+<p>
+<a name="IXT-4-122831" />
+<a name="IXT-4-122832" />With no arguments, change to home directory of user.
+Otherwise, change working directory to <em class="emphasis">dir</em>.  If <em class="emphasis">dir</em> is a
+relative pathname but is not in the current directory, the CDPATH
+variable is searched.  The last three command forms are specific to the 
+Korn shell, where <tt class="literal">-</tt> stands for the previous directory.
+The fourth syntax modifies the current directory name
+by replacing string <em class="emphasis">old</em> with <em class="emphasis">new</em> and
+then switches to the resulting directory.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-L</tt></dt><dd>Use the logical path (what the user typed, including any symbolic links)
+for <tt class="literal">cd ..</tt>
+and the value of PWD.
+This is the default.</p>
+</dd>
+<dt><tt class="literal">-P</tt></dt><dd>Use the actual filesystem physical path
+for <tt class="literal">cd ..</tt>
+and the value of PWD.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">$ <tt class="userinput"><b>pwd</b></tt>
+/var/spool/cron
+$ <tt class="userinput"><b>cd cron uucp</b></tt>	<i class="lineannotation">cd prints the new directory</i>
+/var/spool/uucp</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="command">command</a></a></td><td><tt class="literal">command</tt> [<tt class="literal">-pvV</tt>] <em class="replaceable"><tt>name</em> [<em class="replaceable">arg</tt></em> ...]
+<p>
+<a name="IXT-4-122833" /><tt class="literal">ksh93</tt> only.
+Without <tt class="literal">-v</tt> or <tt class="literal">-V</tt>,
+execute <em class="emphasis">name</em> with given arguments.
+This command bypasses any aliases or functions that may be
+defined for <em class="emphasis">name</em>.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-p</tt></dt><dd>Use a predefined, default search path, not the current value of PATH.</p>
+</dd>
+<dt><tt class="literal">-v</tt></dt><dd>Just like <tt class="literal">whence</tt>.</p>
+</dd>
+<dt><tt class="literal">-V</tt></dt><dd>Just like <tt class="literal">whence -v</tt>.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Example</h4><p>Create
+
+
+an alias for <tt class="literal">rm</tt> that will get the system's
+version, and run it with the <tt class="literal">-i</tt> option:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>alias 'rm=command -p rm -i'</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="continue">continue</a></a></td><td><tt class="literal">continue</tt> [<tt><em class="replaceable"><tt>n</tt></em></tt>]
+<p>
+<a name="IXT-4-122834" />Skip remaining commands in a <tt class="literal">for</tt>,
+<tt class="literal">while</tt>,
+<tt class="literal">select</tt>,
+or <tt class="literal">until</tt> loop,
+resuming with the next iteration of the loop
+(or skipping <em class="emphasis">n</em></tt> loops).</p>
+</td></tr><tr><td valign="top"><a name="disown">disown</a></a></td><td><tt class="literal">disown</tt> [<tt><em class="replaceable"><tt>job</tt></em></tt> ...]
+<p>
+<a name="IXT-4-122835" /><tt class="literal">ksh93</tt> only.
+When a login shell exits, do not send a <tt class="literal">SIGHUP</tt>
+to the given jobs.
+If no jobs are listed, no background jobs
+will receive <tt class="literal">SIGHUP</tt>.</p>
+</td></tr><tr><td valign="top"><a name="do">do</a></a></td><td><tt class="literal">do</tt>
+<p>
+<a name="IXT-4-122836" />Reserved word that precedes the command sequence in a
+<tt class="literal">for</tt>, <tt class="literal">while</tt>, <tt class="literal">until</tt>, or <tt class="literal">select</tt> statement.</p>
+</td></tr><tr><td valign="top"><a name="done">done</a></a></td><td><tt class="literal">done</tt>
+<p>
+<a name="IXT-4-122837" />Reserved word that ends a 
+<tt class="literal">for</tt>, <tt class="literal">while</tt>, <tt class="literal">until</tt>, or <tt class="literal">select</tt> statement.
+</p>
+</td></tr><tr><td valign="top"><a name="echo">echo</a></a></td><td><tt class="literal">echo</tt> [<tt class="literal">-n</tt>] [<tt><em class="replaceable"><tt>string</tt></em></tt>]
+<p>
+<a name="IXT-4-122838" />Write <em class="emphasis">string</em></tt> to standard output; if <tt class="literal">-n</tt> is
+specified, the output is not terminated by a newline.
+If no <em class="emphasis">string</em></tt> is supplied, echo a newline.
+In the Korn shell, <tt class="literal">echo</tt> is built-in, and it
+emulates the system's real <tt class="literal">echo</tt> command.<a href="#FOOTNOTE-6">[6]</a>
+(See also <b class="emphasis-bold"><a href="#echo">echo</a></b> in <a href="ch02_01.htm">Chapter 2</a>.)
+<tt class="literal">echo</tt> understands special escape characters,
+which must be quoted (or escaped with a \)
+to prevent interpretation by the shell:</p><blockquote class="footnote"><a name="FOOTNOTE-6" /><p> [6]But, if a path search finds <tt class="literal">/usr/bin/echo</tt>, the
+<tt class="literal">ksh</tt> built-in <tt class="literal">echo</tt> doesn't accept the <tt class="literal">-n</tt> option.
+(The situation with <tt class="literal">echo</tt> is a mess; consider using <tt class="literal">printf</tt> instead.)</p>
+</blockquote>
+
+<dl><dt><tt class="literal">\a</tt></dt><dd>Alert (ASCII BEL).
+(Not in <tt class="literal">/bin/sh</tt>'s <tt class="literal">echo</tt>.)</p>
+</dd>
+<dt><tt class="literal">\b</tt></dt><dd>Backspace.</p>
+</dd>
+<dt><tt class="literal">\c</tt></dt><dd>Suppress the terminating newline (same as <tt class="literal">-n</tt>).</p>
+</dd>
+<dt><tt class="literal">\f</tt></dt><dd>Formfeed.</p>
+</dd>
+<dt><tt class="literal">\n</tt></dt><dd>Newline.</p>
+</dd>
+<dt><tt class="literal">\r</tt></dt><dd>Carriage return.</p>
+</dd>
+<dt><tt class="literal">\t</tt></dt><dd>Tab character.</p>
+</dd>
+<dt><tt class="literal">\v</tt></dt><dd>Vertical-tab character.</p>
+</dd>
+<dt><tt class="literal">\\</tt></dt><dd>Backslash.</p>
+</dd>
+<dt><tt class="literal">\0</tt><tt><em class="replaceable">nnn</em></tt></dt><dd>ASCII character represented by octal number <em class="emphasis">nnn</em></tt>, where <em class="emphasis">nnn</em></tt>
+is one, two, or three digits and is preceded by a 0.</p>
+</dd>
+</dl>
+<h4 class="refsect2">Examples</h4><blockquote><pre class="code">$ <tt class="userinput"><b>echo "testing printer" | lp</b></tt>
+$ <tt class="userinput"><b>echo "Warning: ringing bell \a"</b></tt></pre></blockquote>
+
+
+</td></tr><tr><td valign="top"><a name="esac">esac</a></a></td><td><tt class="literal">esac</tt>
+<p>
+<a name="IXT-4-122839" />Reserved word that ends a <tt class="literal">case</tt> statement.
+Omitting <tt class="literal">esac</tt> is a common programming error.</p>
+</td></tr><tr><td valign="top"><a name="eval">eval</a></a></td><td><tt class="literal">eval</tt> <tt><em class="replaceable"><tt>args</tt></em></tt>
+<p>
+<a name="IXT-4-122840" />Typically, <tt class="literal">eval</tt> is used in shell scripts,
+and <em class="emphasis">args</em></tt> is a line of code that contains shell variables. 
+<tt class="literal">eval</tt> forces variable expansion to happen first
+and then runs the resulting command.
+This &#8220;double-scanning&#8221; is useful any time shell variables 
+contain input/output redirection symbols, aliases, or other shell variables.
+(For example, redirection normally happens before variable 
+expansion, so a variable containing redirection symbols must be
+expanded first using <tt class="literal">eval</tt>; otherwise, the redirection symbols 
+remain uninterpreted.)  See the C shell <tt class="literal">eval</tt>
+(<a href="ch05_01.htm">Chapter 5</a>) for another example.</p>
+<h4 class="refsect2">Example</h4><p>This fragment of a Bourne shell script shows how <tt class="literal">eval</tt>
+constructs a command that is
+
+
+interpreted in the right order:</p>
+<blockquote><pre class="code">for option
+do
+   case "$option" in   <i class="lineannotation">Define where output goes</i>
+      save) out=' &gt; $newfile' ;;
+      show) out=' | more' ;;
+   esac
+done
+
+eval sort $file $out</pre></blockquote>
+
+</td></tr>
+
+<tr><td valign="top"><a name="exec">exec</a></a></td><td><p><tt class="literal">exec</tt> [<tt><em class="replaceable"><tt>command</em></tt> <tt><em class="replaceable">args</em></tt> ...]</p><p><tt class="literal">exec</tt> [<tt class="literal">-a</tt> <tt><em class="replaceable">name</em></tt>] [<tt class="literal">-c</tt>] [<tt><em class="replaceable">command</em></tt> <tt><em class="replaceable">args</tt></em></tt> ... ]</p>
+<p>
+<a name="IXT-4-122841" />Execute <em class="emphasis">command</em></tt> in place of the current process
+(instead of creating a new process).  <tt class="literal">exec</tt> is also useful for
+opening, closing, or copying file descriptors.
+The second form is for <tt class="literal">ksh93</tt> only.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-a</tt></dt><dd>Use <em class="emphasis">name</em></tt> for the value
+of <tt class="literal">argv[0]</tt>.</p>
+</dd>
+<dt><tt class="literal">-c</tt></dt><dd>Clear the environment before executing the program.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Examples</h4><blockquote><pre class="code">trap 'exec 2&gt;&amp;-' 0		<i class="lineannotation">Close standard error when </i>
+			<i class="lineannotation">shell script exits (signal 0)</i>
+$ <tt class="userinput"><b>exec /bin/csh</b></tt>		<i class="lineannotation">Replace Bourne shell with C shell</i>
+$ <tt class="userinput"><b>exec &lt; infile</b></tt>		<i class="lineannotation">Reassign standard input to infile</i></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="exit">exit</a></a></td><td><tt class="literal">exit</tt> [<tt><em class="replaceable"><tt>n</tt></em></tt>]
+<p>
+<a name="IXT-4-122842" />Exit a shell script with status <em class="emphasis">n</em></tt> (e.g., <tt class="literal">exit 1</tt>).
+<em class="emphasis">n</em></tt> can be 0 (success) or nonzero (failure).
+If <em class="emphasis">n</em></tt> is not given, exit status is that of the most recent command.
+<tt class="literal">exit</tt> can be issued at the command line to close a window (log out).
+Exit statuses can range in value from 0 to 255.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">if [ $# -eq 0 ]
+then
+   echo "Usage:  $0 [-c] [-d] file(s)" 1&gt;&amp;2
+   exit 1		# Error status
+fi</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="export">export</a></a></td><td><tt class="literal">export</tt> [<tt><em class="replaceable"><tt>variables</em></tt>]<br><tt class="literal">export</tt> [<tt><em class="replaceable">name</em></tt><tt class="literal">=</tt>[<tt><em class="replaceable">value</tt></em></tt>] ...]<br><tt class="literal">export -p</tt>
+<p>
+<a name="IXT-4-122843" />Pass (export) the value of one or more shell <em class="emphasis">variables</em></tt>, 
+giving global meaning to the variables (which are local by default).
+For example, a variable defined in one shell script must be
+exported if its value is used in other programs
+called by the script.  If no <em class="emphasis">variables</em></tt> are given, 
+<tt class="literal">export</tt> lists the variables exported by the current shell.
+The
+second form is the Korn shell version, which is similar to the first
+form except that you can set a variable <em class="emphasis">name</em></tt> to a <em class="emphasis">value</em></tt>
+before exporting it.
+The third form is specific to <tt class="literal">ksh93</tt>.</p>
+
+
+<h4 class="refsect2">Option</h4><dl><dt><tt class="literal">-p</tt></dt><dd>Print <tt class="literal">export</tt> before printing the
+names and values of exported variables.
+This allows saving a list of exported variables for rereading later.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Example</h4><p>In the Bourne shell, you would type:</p>
+<blockquote><pre class="code">TERM=vt100
+export TERM</pre></blockquote>
+<p>In the Korn shell, you could type this instead:</p>
+<blockquote><pre class="code">export TERM=vt100</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="false">false</a></a></td><td><tt class="literal">false</tt>
+<p>
+<a name="IXT-4-122844" /><tt class="literal">ksh88</tt> alias for <tt class="literal">let 0</tt>.
+Built-in command in <tt class="literal">ksh93</tt> that exits with
+a false return value.</p>
+</td></tr><tr><td valign="top"><a name="fc">fc</a></a></td><td><tt class="literal">fc</tt> [<em class="replaceable"><tt>options</em>] [<em class="replaceable">first</em> [<em class="replaceable">last</em>]]<br><tt class="literal">fc -e -</tt> [<em class="replaceable">old</em><tt class="literal">=</tt><em class="replaceable">new</em>] [<em class="replaceable">command</tt></em>]
+<p>
+<a name="IXT-4-122845" /><tt class="literal">ksh88</tt> only.  Display or edit commands in the history list.
+(Use only one of <tt class="literal">-l</tt> or <tt class="literal">-e</tt>.)
+
+
+<em class="emphasis">first</em> and <em class="emphasis">last</em> are numbers or
+strings specifying the range of commands to display or edit.
+If <em class="emphasis">last</em> is omitted, <tt class="literal">fc</tt> applies to a single command (specified
+by <em class="emphasis">first</em>).  If both <em class="emphasis">first</em> and <em class="emphasis">last</em> are omitted,
+<tt class="literal">fc</tt> edits the previous command or lists the last 16.
+The second form of <tt class="literal">fc</tt> takes a history <em class="emphasis">command</em>,
+replaces <em class="emphasis">old</em> string with <em class="emphasis">new</em> string,
+and executes the modified command.  If no strings are
+specified, <em class="emphasis">command</em> is just reexecuted.  If no <em class="emphasis">command</em>
+is given either, the previous command is reexecuted.
+<em class="emphasis">command</em> is a number or string like <em class="emphasis">first</em>.
+See the examples in <a href="ch04_05.htm#unut-ch-4-sect-5">Section 4.5</a>.</p>
+<h4 class="refsect2">Options</h4>
+<dl><dt><tt class="literal">-e</tt> [<tt><em class="replaceable">editor</em></tt>]</dt><dd>Invoke <em class="emphasis">editor</em></tt> to edit the specified history commands.
+The default <em class="emphasis">editor</em></tt> is set by the shell variable FCEDIT.
+If that variable is not
+set, the default is <tt class="literal">/bin/ed</tt>.</p>
+</dd>
+<dt><tt class="literal">-e</tt> <tt class="literal">-</tt></dt><dd>Execute (or redo) a history command; refer to second syntax line above.</p>
+</dd>
+<dt><tt class="literal">-l</tt></dt><dd>List the specified command or range of commands, or list the last 16.</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd>Suppress command numbering from the <tt class="literal">-l</tt> listing.</p>
+</dd>
+<dt><tt class="literal">-r</tt></dt><dd>Reverse the order of the <tt class="literal">-l</tt> listing.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="fc">fc</a></a></td><td><tt class="literal">fc</tt>
+<p><tt class="literal">ksh93</tt> alias for <tt class="literal">hist</tt>.
+<a name="IXT-4-122846" /></p>
+</td></tr><tr><td valign="top"><a name="fg">fg</a></a></td><td><tt class="literal">fg</tt> [<tt><em class="replaceable"><tt>jobIDs</tt></em></tt>]
+<p>
+<a name="IXT-4-122847" />Bring current job or <em class="emphasis">jobIDs</em></tt> to the foreground.  
+See <a href="ch04_06.htm#unut-ch-4-sect-6">Section 4.6</a></p>
+</td></tr><tr><td valign="top"><a name="fi">fi</a></a></td><td><tt class="literal">fi</tt>
+<p>
+<a name="IXT-4-122848" />Reserved word that ends an <tt class="literal">if</tt> statement.
+(Don't forget to use it!)</p>
+</td></tr><tr><td valign="top"><a name="for">for</a></a></td><td><tt class="literal">for x</tt> [<tt class="literal">in</tt> <tt><em class="replaceable"><tt>list</em></tt>]<br><tt class="literal">do </tt><br>&#160;&#160;&#160;&#160;<tt><em class="replaceable">commands</tt></em></tt> <br><tt class="literal">done</tt>
+<p>
+<a name="IXT-4-122849" />For variable <em class="emphasis">x</em></tt> (in optional <em class="emphasis">list</em></tt> of values) do <em class="emphasis">commands</em></tt>.
+If <tt class="literal">in</tt> <em class="emphasis">list</em></tt> is omitted,
+<tt class="literal">"$@"</tt> (the positional parameters) is assumed.</p>
+<h4 class="refsect2">Examples</h4><p>Paginate files specified on the command line; save each result:</p>
+<blockquote><pre class="code">for file; do
+     pr $file &gt; $file.tmp
+done</pre></blockquote>
+<p>Search chapters for a list of words (like <tt class="literal">fgrep -f</tt>):</p>
+<blockquote><pre class="code">for item in `cat program_list`
+do
+     echo "Checking chapters for"
+     echo "references to program $item..."
+     grep -c "$item.[co]" chap*
+done</pre></blockquote>
+
+
+<p>Extract a one-word title from each file and use as new filename:</p>
+<blockquote><pre class="code">for file
+do
+     name=`sed -n 's/NAME: //p' $file`
+     mv $file $name
+done</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="for">for</a></a></td><td><tt class="literal">for ((</tt><tt><em class="replaceable"><tt>init</em></tt><tt class="literal">;</tt> <tt><em class="replaceable">cond</em></tt><tt class="literal">;</tt> <tt><em class="replaceable">incr</em></tt><tt class="literal">))</tt><br><tt class="literal">do</tt><br>&#160;&#160;&#160;&#160;<tt><em class="replaceable">commands</tt></em></tt> <br><tt class="literal">done</tt>
+<p>
+<a name="IXT-4-122850" /><tt class="literal">ksh93</tt> only.
+Arithmetic <tt class="literal">for</tt> loop, similar to C's.
+Evaluate <em class="emphasis">init</em></tt>.
+While <em class="emphasis">cond</em></tt> is true, execute the body of the loop.
+Evaluate <em class="emphasis">incr</em></tt> before re-testing <em class="emphasis">cond</em></tt>.
+Any one of the expressions may be omitted; a missing <em class="emphasis">cond</em></tt>
+is treated as being true.</p>
+<h4 class="refsect2">Examples</h4><p>Search for a phrase in each odd chapter:</p>
+<blockquote><pre class="code">for ((x=1; x &lt;= 20; x += 2))
+do
+	grep $1 chap$x
+done</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="function">function</a></a></td><td><tt class="literal">function</tt> <tt><em class="replaceable"><tt>name</em></tt> <tt class="literal">{</tt> <tt><em class="replaceable">commands</tt></em></tt><tt class="literal">; }</tt>
+<p>
+<a name="IXT-4-122851" />Korn shell only.
+Define <em class="emphasis">name</em></tt> as a shell function.
+See the description of semantic issues in the <em class="emphasis">name</em></tt>
+<tt class="literal">()</tt> entry earlier.</p>
+<h4 class="refsect2">Example</h4><p>Define a function to count files.</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>function fcount {</b></tt>
+&gt;	<tt class="userinput"><b>ls | wc -l</b></tt>
+&gt; <tt class="userinput"><b>}</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="functions">functions</a></a></td><td><tt class="literal">functions</tt>
+
+
+<p>
+<a name="IXT-4-122852" />Korn shell alias for <tt class="literal">typeset -f</tt>.
+(Note the &#8220;s&#8221; in the name; <tt class="literal">function</tt>
+is a Korn shell keyword.)
+See <b class="emphasis-bold"><a href="#typeset">typeset</a></b> later in this listing.</p>
+</td></tr>
+
+<tr><td valign="top"><a name="getconf">getconf</a></a></td><td><p><tt class="literal">getconf</tt> [<tt><em class="replaceable"><tt>name</em></tt> [<tt><em class="replaceable">path</tt></em></tt>]]</p>
+<p>
+<a name="IXT-4-122853" /><tt class="literal">ksh93</tt> only.
+Retrieve the values for parameters that can vary across
+systems.  <em class="emphasis">name</em></tt> is the parameter to retrieve;
+<em class="emphasis">path</em></tt> is a filename to test for parameters that
+can vary on different filesystem types.</p>
+<p>The parameters are defined by the POSIX 1003.1 and 1003.2 standards.
+See the entry for <b class="emphasis-bold"><a href="#getconf">getconf</a></b> in <a href="ch02_01.htm">Chapter 2</a>.</p>
+<h4 class="refsect2">Example</h4><p>Print the maximum value that can be held 
+in a C <tt class="literal">int</tt>.</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>getconf INT_MAX</b></tt>
+2147483647</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="getopts">getopts</a></a></td><td><tt class="literal">getopts</tt> [<tt class="literal">-a</tt> <tt><em class="replaceable"><tt>name</em></tt>] <tt><em class="replaceable">string</em></tt> <tt><em class="replaceable">name</em></tt> [<tt><em class="replaceable">args</tt></em></tt>]
+<p>
+<a name="IXT-4-122854" />Process command-line arguments (or <em class="emphasis">args</em></tt>,
+if specified) and check
+for legal options.  <tt class="literal">getopts</tt>
+is used in shell script loops and is intended to ensure standard syntax for
+command-line options.  Standard syntax dictates that command-line
+options begin with a <tt class="literal">+</tt> or a <tt class="literal">-</tt>.  Options can be
+stacked; i.e., consecutive letters can follow a single <tt class="literal">-</tt>.  End
+processing of options by specifying <tt class="literal">--</tt> on
+the command line.  
+<em class="emphasis">string</em></tt> contains the option letters
+to be recognized by <tt class="literal">getopts</tt> when running
+the shell script.  Valid options are processed
+in turn and stored in the shell variable <em class="emphasis">name</em></tt>.  
+If an option is followed by a
+colon, the option must be followed by one or more arguments.  
+(Multiple arguments must be given to the command as one shell <em class="emphasis">word</em></tt>.
+This is done by quoting the arguments or separating them with commas.
+The application must be written to expect multiple arguments in this
+format.)
+<tt class="literal">getopts</tt> uses the shell variables OPTARG and OPTIND.
+<tt class="literal">getopts</tt> is available to non-Bourne shell users as
+<tt class="literal">/usr/bin/getopts</tt>.</p>
+<h4 class="refsect2">Option</h4><dl><dt><tt class="literal">-a</tt></dt><dd>Use <em class="emphasis">name</em></tt> in error messages about invalid
+options. <tt class="literal">ksh93</tt> only.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="hash">hash</a></a></td><td><tt class="literal">hash</tt> [<tt class="literal">-r</tt>] [<em class="replaceable"><tt>commands</tt></em>]
+<p>
+<a name="IXT-4-122855" />Bourne shell version.
+As the shell finds commands along the search path ($PATH),
+it remembers the found location in an internal hash table.
+The next time you enter a command, the shell uses the value stored
+in its hash table.</p>
+<p>With no arguments, <tt class="literal">hash</tt> lists the current hashed commands.
+The display shows <em class="emphasis">hits</em> (the number of times the command
+is called by the shell) and <em class="emphasis">cost</em> (the level of work needed
+to find the command).
+Commands that were found in a relative directory have an
+asterisk (<tt class="literal">*</tt>) added in the <em class="emphasis">hits</em> column.</p>
+<p>With <em class="emphasis">commands</em>, the shell will add those commands to the
+hash table.</p>
+<p><tt class="literal">-r</tt> removes
+commands from the hash list, either all of them or just the specified
+<em class="emphasis">commands</em>.
+The hash table is also cleared when PATH is assigned.
+Use <tt class="literal">PATH=$PATH</tt> to clear the hash table without
+affecting your search path.
+This is most useful if you have installed a new version of a command
+in a directory that is earlier in $PATH than the current
+version of the command.</p>
+</td></tr><tr><td valign="top"><a name="hash">hash</a></a></td><td><tt class="literal">hash</tt>
+<p>
+<a name="IXT-4-122856" />Korn shell alias for <tt class="literal">alias -t</tt>
+(<tt class="literal">alias -t --</tt> in <tt class="literal">ksh93</tt>).
+Emulates Bourne shell's <tt class="literal">hash</tt>.</p>
+</td></tr><tr><td valign="top"><a name="hist">hist</a></a></td><td><tt class="literal">hist</tt> [<em class="replaceable"><tt>options</em>] [<em class="replaceable">first</em> [<em class="replaceable">last</em>]]<br><tt class="literal">hist -s</tt> [<em class="replaceable">old</em><tt class="literal">=</tt><em class="replaceable">new</em>] [<em class="replaceable">command</tt></em>]
+<p>
+<a name="IXT-4-122857" /><tt class="literal">ksh93</tt> only.  Display or edit commands in the history list.
+(Use only one of <tt class="literal">-l</tt> or <tt class="literal">-s</tt>.)
+
+
+<em class="emphasis">first</em> and <em class="emphasis">last</em> are numbers or
+strings specifying the range of commands to display or edit.
+If <em class="emphasis">last</em> is omitted, <tt class="literal">hist</tt>
+applies to a single command (specified
+by <em class="emphasis">first</em>).
+If both <em class="emphasis">first</em> and <em class="emphasis">last</em> are omitted,
+<tt class="literal">hist</tt> edits the previous command or lists the last 16.
+The second form of <tt class="literal">hist</tt> takes
+a history <em class="emphasis">command</em>,
+replaces <em class="emphasis">old</em> string with <em class="emphasis">new</em> string,
+and executes the modified command.  If no strings are
+specified, <em class="emphasis">command</em> is just reexecuted.
+If no <em class="emphasis">command</em>
+is given either, the previous command is reexecuted.
+<em class="emphasis">command</em> is a number or string like <em class="emphasis">first</em>.
+See the examples in <a href="ch04_05.htm#unut-ch-4-sect-5">Section 4.5</a>.</p>
+<h4 class="refsect2">Options</h4>
+<dl><dt><tt class="literal">-e</tt> [<tt><em class="replaceable">editor</em></tt>]</dt><dd>Invoke <em class="emphasis">editor</em></tt> to edit the specified history commands.
+The default <em class="emphasis">editor</em></tt> is set by the shell variable HISTEDIT.
+If that variable is not set, FCEDIT is used.
+If neither is set, the default is <tt class="literal">/bin/ed</tt>.</p>
+</dd>
+<dt><tt class="literal">-l</tt></dt><dd>List the specified command or range of commands, or list the last 16.</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd>Suppress command numbering from the <tt class="literal">-l</tt> listing.</p>
+</dd>
+<dt><tt class="literal">-r</tt></dt><dd>Reverse the order of the <tt class="literal">-l</tt> listing.</p>
+</dd>
+<dt><tt class="literal">-s</tt></dt><dd>Execute (or redo) a history command; refer
+
+
+to second syntax line above.</p>
+</dd>
+</dl>
+
+</td></tr>
+
+<tr><td valign="top"><a name="history">history</a></a></td><td><p><tt class="literal">history</tt></p>
+<p>
+<a name="IXT-4-122858" />Show the last 16 commands.
+<tt class="literal">ksh88</tt> alias for <tt class="literal">fc -l</tt>.
+<tt class="literal">ksh93</tt> alias for <tt class="literal">hist -l</tt>.</p>
+</td></tr><tr><td valign="top"><a name="if">if</a></a></td><td>
+<tt class="literal">if</tt> <tt><em class="replaceable"><tt>condition1</em></tt><br><tt class="literal">then</tt> <tt><em class="replaceable">commands1</em></tt> <br>[ <tt class="literal">elif</tt> <tt><em class="replaceable">condition2</em></tt><br>&#160;&#160;&#160;&#160;<tt class="literal">then</tt> <tt><em class="replaceable">commands2</em></tt> ]<br> .<br> .<br> .<br>[ <tt class="literal">else</tt> <tt><em class="replaceable">commands3</tt></em></tt> ]<br><tt class="literal">fi</tt>
+<p>
+<a name="IXT-4-122859" />If <em class="emphasis">condition1</em></tt> is met, do <em class="emphasis">commands1</em></tt>; otherwise, if
+<em class="emphasis">condition2</em></tt> is met, do <em class="emphasis">commands2</em></tt>; if neither is met, do
+<em class="emphasis">commands3</em></tt>.
+Conditions are usually specified with the <tt class="literal">test</tt>
+and <tt class="literal">[[ ]]</tt>
+commands.
+See <b class="emphasis-bold"><a href="#test">test</a></b> 
+and <b class="emphasis-bold">[[ ]]</b>
+for a full list of conditions, and
+see additional Examples under <b class="emphasis-bold"><a href="#:">:</a></b>
+and <b class="emphasis-bold"><a href="#exit">exit</a></b>.</p>
+<h4 class="refsect2">Examples</h4><p>Insert a 0 before numbers less than 10: </p>
+<blockquote><pre class="code">if [ $counter -lt 10 ]
+then number=0$counter
+else number=$counter
+fi</pre></blockquote>
+<p>Make a directory if it doesn't exist:</p>
+<blockquote><pre class="code">if [ ! -d $dir ]; then
+   mkdir $dir
+   chmod 775 $dir
+fi</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="integer">integer</a></a></td><td><tt class="literal">integer</tt>
+<p>
+<a name="IXT-4-122860" />Specify integer variables.
+Korn shell alias for <tt class="literal">typeset -i</tt>.</p>
+</td></tr><tr><td valign="top"><a name="jobs">jobs</a></a></td><td><tt class="literal">jobs</tt> [<tt><em class="replaceable"><tt>options</em></tt>] [<tt><em class="replaceable">jobIDs</tt></em></tt>]
+<p>
+<a name="IXT-4-122861" />List all running or stopped jobs, or list those specified by <em class="emphasis">jobIDs</em></tt>.  
+For example, you can check whether a long compilation or text format
+is still running.  Also useful before logging out. See <a href="ch04_06.htm#unut-ch-4-sect-6">Section 4.6</a></p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-l</tt></dt><dd>List job IDs and process group IDs.</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd>List only jobs whose status changed since last notification.  Korn
+shell only.</p>
+</dd>
+<dt><tt class="literal">-p</tt></dt><dd>List process group IDs only.</p>
+</dd>
+<dt><tt class="literal">-x</tt> <tt><em class="replaceable">cmd</em></tt></dt><dd>Replace each job ID found in <em class="emphasis">cmd</em></tt> with the associated process ID
+and then execute <em class="emphasis">cmd</em></tt>.  Not valid for Korn shell.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="kill">kill</a></a></td><td><tt class="literal">kill</tt> [<tt><em class="replaceable"><tt>options</em></tt>] <tt><em class="replaceable">IDs</tt></em></tt>
+<p>
+<a name="IXT-4-122862" />Terminate each specified process <em class="emphasis">ID</em></tt> or job <em class="emphasis">ID</em></tt>.
+You must own the process or be a privileged user.
+This built-in is similar to <tt class="literal">/usr/bin/kill</tt>
+described in <a href="ch02_01.htm">Chapter 2</a>. See <a href="ch04_06.htm#unut-ch-4-sect-6">Section 4.6</a>.</p>
+<h4 class="refsect2">Options</h4>
+<dl><dt><tt class="literal">-l</tt></dt><dd>List the signal names.  (Used by itself.)</p>
+</dd>
+<dt><tt class="literal">-n</tt> <tt><em class="replaceable">num</em></tt></dt><dd>Send the given signal number. <tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-s</tt> <tt><em class="replaceable">name</em></tt></dt><dd>Send the given signal name. <tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-</tt><tt><em class="replaceable">signal</em></tt></dt><dd>The signal number (from <tt class="literal">/usr/include/sys/signal.h</tt>)
+or name (from <tt class="literal">kill -l</tt>).
+With a signal number of 9, the kill is absolute.  </p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Signals</h4><p>Signals are defined
+in <tt class="literal">/usr/include/sys/signal.h</tt> and are listed here without
+the <tt class="literal">SIG</tt> prefix.
+You probably have more signals on your system than the ones shown here.</p>
+<blockquote><pre class="code">HUP	1	hangup
+INT	2	interrupt
+QUIT	3	quit
+ILL	4	illegal instruction
+TRAP	5	trace trap
+IOT	6	IOT instruction
+EMT	7	EMT instruction
+FPE	8	floating point exception
+KILL	9	kill
+BUS	10	bus error
+SEGV	11	segmentation violation
+SYS	12	bad argument to system call
+PIPE	13	write to pipe, but no process to read it
+ALRM	14	alarm clock
+TERM	15	software termination (the default signal)
+USR1	16	user-defined signal 1
+USR2	17	user-defined signal 2
+CLD	18	child process died
+PWR	19	restart after power failure</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="let">let</a></a></td><td><tt class="literal">let</tt> <tt><em class="replaceable"><tt>expressions</em></tt><br>&#160;&#160;&#160;&#160;&#160;or <br><tt class="literal">((</tt><tt><em class="replaceable">expressions</tt></em></tt><tt class="literal">))</tt>
+<p>
+<a name="IXT-4-122863" />Korn shell only.  Perform arithmetic as specified by one or more <em class="emphasis">expressions</em></tt>.
+<em class="emphasis">expressions</em></tt> consist of numbers, operators, and
+shell variables (which don't need a preceding <tt class="literal">$</tt>).
+Expressions must be quoted if they contain spaces or other special characters.
+The <tt class="literal">(( ))</tt> form does the quoting for you.  
+For more information and examples, 
+see &#8220;Arithmetic Expressions&#8221; earlier in this chapter.
+See also <b class="emphasis-bold"><a href="#expr">expr</a></b> in <a href="ch02_01.htm">Chapter 2</a>.</p>
+<h4 class="refsect2">Examples</h4><p>Each of these examples adds 1 to variable <tt class="literal">i</tt>:</p>
+<blockquote><pre class="code">i=`expr $i + 1`	<i class="lineannotation">sh, ksh88, ksh93</i>
+let i=i+1		<i class="lineannotation">ksh88 and ksh93</i>
+let "i = i + 1"
+(( i = i + 1 ))
+(( i += 1 ))
+(( i++ ))		<i class="lineannotation">ksh93 only</i></pre></blockquote>
+
+
+</td></tr><tr><td valign="top"><a name="nameref">nameref</a></a></td><td><tt class="literal">nameref</tt> <tt><em class="replaceable"><tt>newvar</em></tt><tt class="literal">=</tt><tt><em class="replaceable">oldvar</tt></em></tt> ...
+<p>
+<a name="IXT-4-122864" /><tt class="literal">ksh93</tt> alias for <tt class="literal">typeset -n</tt>.
+See the discussion of indirect variables in <a href="ch04_03.htm#unut-ch-4-sect-3">Section 4.3</a> earlier in this chapter.</p>
+</td></tr><tr><td valign="top"><a name="newgrp">newgrp</a></a></td><td><tt class="literal">newgrp</tt> [<tt><em class="replaceable"><tt>group</tt></em></tt>]
+<p>
+<a name="IXT-4-122865" />Change your group ID to <em class="emphasis">group</em></tt>, or return to your default group.
+On modern Unix systems where users can be in multiple groups,
+this command is obsolete.</p>
+</td></tr><tr><td valign="top"><a name="nohup">nohup</a></a></td><td><tt class="literal">nohup</tt>
+<p>
+<a name="IXT-4-122866" />Don't terminate
+a command after log out.
+<tt class="literal">nohup</tt> is a Korn shell alias:</p>
+<blockquote><pre class="code">nohup='nohup '</pre></blockquote>
+
+
+<p>The embedded space at the end lets <tt class="literal">nohup</tt>
+interpret the following command as an alias, if needed.</p>
+</td></tr><tr><td valign="top"><a name="print">print</a></a></td><td><tt class="literal">print</tt> [<tt><em class="replaceable"><tt>options</em></tt>] [<tt><em class="replaceable">string</tt></em></tt> ...]
+<p>
+<a name="IXT-4-122867" />Korn shell only.
+Display <em class="emphasis">string</em></tt> (on standard output by default).
+<tt class="literal">print</tt> includes the
+functions of <tt class="literal">echo</tt> and can be used in its place on most Unix systems.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-</tt></dt><dd>Ignore all subsequent options.</p>
+</dd>
+<dt><tt class="literal">--</tt></dt><dd>Same as <tt class="literal">&#8211;</tt>.</p>
+</dd>
+<dt><tt class="literal">-f</tt> <tt><em class="replaceable">format</em></tt></dt><dd>Print like <tt class="literal">printf</tt>,
+using <em class="emphasis">format</em> as the format string.
+Ignores the <tt class="literal">-n</tt>, <tt class="literal">-r</tt>,
+and <tt class="literal">-R</tt> options.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd>Don't end output with a newline.</p>
+</dd>
+<dt><tt class="literal">-p</tt></dt><dd>Send <em class="emphasis">string</em></tt> to the process created by <tt class="literal">|&amp;</tt>,
+instead of to standard output.</p>
+</dd>
+<dt><tt class="literal">-r</tt></dt><dd>Ignore the escape sequences often used with <tt class="literal">echo</tt>.</p>
+</dd>
+<dt><tt class="literal">-R</tt></dt><dd>Same as <tt class="literal">-r</tt> and ignore subsequent options
+(except <tt class="literal">-n</tt>).</p>
+</dd>
+<dt><tt class="literal">-s</tt></dt><dd>Send <em class="emphasis">string</em></tt> to the history file.</p>
+</dd>
+<dt><tt class="literal">-u</tt>[<tt><em class="replaceable">n</em></tt>]</dt><dd>Send <em class="emphasis">string</em></tt> to file descriptor <em class="emphasis">n</em></tt> (default is 1).
+</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="printf">printf</a></a></td><td><tt class="literal">printf</tt> <em class="replaceable"><tt>format</em> [<em class="replaceable">val</tt></em> ...]
+<p>
+<a name="IXT-4-122868" /> <tt class="literal">ksh93</tt> only.Formatted printing, like the ANSI C <tt class="literal">printf</tt>
+function.</p>
+<h4 class="refsect2">Additional Format Letters</h4><dl><dt><tt class="literal">%b</tt></dt><dd>Expand escape sequences in strings (e.g., <tt class="literal">\t</tt>
+to tab, and so on).</p>
+</dd>
+<dt><tt class="literal">%d</tt></dt><dd>An additional period and the output base can follow the precision
+(e.g., <tt class="literal">%5.3.6d</tt> to produce output
+in base 6).</p>
+</dd>
+<dt><tt class="literal">%P</tt></dt><dd>Translate <tt class="literal">egrep</tt> extended regular expression
+into <tt class="literal">ksh</tt> pattern.</p>
+</dd>
+<dt><tt class="literal">%q</tt></dt><dd>Print a quoted string that can
+
+
+be reread later on.</p>
+</dd>
+</dl>
+
+</td></tr>
+
+<tr><td valign="top"><a name="pwd">pwd</a></a></td><td><p><tt class="literal">pwd</tt></p><p><tt class="literal">pwd</tt> [<tt class="literal">-LP</tt>]</p>
+<p>
+<a name="IXT-4-122869" />Print your present working directory on standard output.
+The second form is specific to the Korn shell.</p>
+<h4 class="refsect2">Options</h4><p>Options give control over the use of logical versus physical
+treatment of the printed path.
+See the entry for <b class="emphasis-bold"><a href="#cd">cd</a></b>, earlier in this section.</p>
+<dl><dt><tt class="literal">-L</tt></dt><dd>Use logical path (what the user typed, including any symbolic links)
+and the value of PWD for the current directory.
+This is the default.</p>
+</dd>
+<dt><tt class="literal">-P</tt></dt><dd>Use the actual filesystem physical path
+for the current directory.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="r">r</a></a></td><td><tt class="literal">r</tt>
+<p>
+<a name="IXT-4-122870" />Reexecute previous command.
+<tt class="literal">ksh88</tt> alias for <tt class="literal">fc -e -</tt>.
+<tt class="literal">ksh93</tt> alias for <tt class="literal">hist -s</tt>.</p>
+</td></tr><tr><td valign="top"><a name="read">read</a></a></td><td><tt class="literal">read</tt> <em class="replaceable"><tt>variable1</em> [<em class="replaceable">variable2 ...</tt></em>]
+<p>
+<a name="IXT-4-122871" />Read one line of standard input and assign each word to
+the corresponding
+<em class="emphasis">variable</em>, with all leftover words assigned to the last variable.  If
+only one variable is specified, the entire line will be assigned to
+that variable.  See the Examples here and under <tt class="literal">case</tt>.
+The return status is 0 unless <em class="emphasis">EOF</em> is reached.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">$ <tt class="userinput"><b>read first last address</b></tt>
+Sarah Caldwell 123 Main Street
+$ <tt class="userinput"><b>echo "$last, $first\n$address"</b></tt>
+<tt class="userinput"><b>Caldwell, Sarah
+123 Main Street</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="read">read</a></a></td><td><tt class="literal">read</tt> [<em class="replaceable"><tt>options</em>] [<em class="replaceable">variable1</em>[<tt class="literal">?</tt><em class="replaceable">string</em>]] [<em class="replaceable">variable2</tt></em> ...]
+<p>
+<a name="IXT-4-122872" />Korn shell only.  Same as in the Bourne shell, except that the Korn 
+shell version
+supports the following options as well as the <tt class="literal">?</tt> syntax for prompting.
+If the first variable is followed by <tt class="literal">?</tt><em class="emphasis">string</em>,
+<em class="emphasis">string</em> is displayed
+as a user prompt.  If no variables are given, input is stored in the
+REPLY variable.
+Additionally, <tt class="literal">ksh93</tt> allows you to specify a
+timeout.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-A</tt> <tt><em class="replaceable">array</em></tt></dt><dd>Read into indexed array <em class="emphasis">array</em></tt>.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-d</tt> <tt><em class="replaceable">delim</em></tt></dt><dd>Read up to first occurrence of <em class="emphasis">delim</em></tt>,
+instead of newline.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-p</tt></dt><dd>Read from the output of a <tt class="literal">|&amp;</tt> coprocess.</p>
+</dd>
+<dt><tt class="literal">-r</tt></dt><dd>Raw mode; ignore \ as a line continuation character.</p>
+</dd>
+<dt><tt class="literal">-s</tt></dt><dd>Save input as a command in the history file.</p>
+</dd>
+<dt><tt class="literal">-t</tt> <tt><em class="replaceable">timeout</em></tt></dt><dd>When reading from a terminal or pipe,
+if no data is entered after <em class="emphasis">timeout</em> seconds,
+return <tt class="literal">l</tt>.
+This prevents an application from hanging forever, waiting for
+user input.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-u</tt>[<tt><em class="replaceable">n</em></tt>]</dt><dd>Read input from file descriptor <em class="emphasis">n</em></tt> (default is 0).</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Example</h4><p>Prompt yourself to enter two temperatures:</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>read n1?"High low: " n2</b></tt>
+High low: <tt class="userinput"><b>65 33</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="readonly">readonly</a></a></td><td><tt class="literal">readonly</tt> [<tt><em class="replaceable"><tt>variable1 variable2</tt></em></tt> ...]<br><tt class="literal">readonly -p</tt>
+<p>
+<a name="IXT-4-122873" />Prevent the specified shell variables from being assigned new values.
+Variables can be accessed (read) but not overwritten.
+In the Korn shell, the syntax 
+<em class="emphasis">variable</em></tt><tt class="literal">=</tt><em class="emphasis">value</em></tt> can
+assign a new value that cannot be changed.
+The second form is specific to <tt class="literal">ksh93</tt>.</p>
+<h4 class="refsect2">Option</h4><dl><dt><tt class="literal">-p</tt></dt><dd>Print <tt class="literal">readonly</tt> before printing the
+names and values of read-only variables.
+This allows saving a list of read-only variables for rereading later.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="redirect">redirect</a></a></td><td><tt class="literal">redirect</tt> <em class="replaceable"><tt>i/o-redirection</tt></em> ... 
+<p><tt class="literal">ksh93</tt> alias for <tt class="literal">command exec</tt>.
+<a name="IXT-4-122874" /></p>
+
+
+<h4 class="refsect2">Example</h4><p>Change the shell's standard error to the console:</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>redirect 2&gt;/dev/console</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="return">return</a></a></td><td><tt class="literal">return</tt> [<em class="replaceable"><tt>n</tt></em>]
+<p>
+<a name="IXT-4-122875" />Use inside a function definition.
+Exit the function with status <em class="emphasis">n</em> 
+or with the exit status of the previously executed command.</p>
+</td></tr><tr><td valign="top"><a name="select">select</a></a></td><td><tt class="literal">select</tt> <em class="replaceable"><tt>x</em> [<tt class="literal">in</tt> <em class="replaceable">list</em>]<br><tt class="literal">do</tt><br>&#160;&#160;&#160;&#160;<em class="replaceable">commands</tt></em><br><tt class="literal">done</tt>
+<p>
+<a name="IXT-4-122876" />Korn shell only.
+Display a list of menu items on standard error, numbered in the
+order they are specified in <em class="emphasis">list</em>.
+If no <tt class="literal">in</tt> <em class="emphasis">list</em> is given,
+items are taken from the command line (via
+<tt class="literal">"$@"</tt>).
+Following the menu is a prompt string (set by PS3).
+At the PS3 prompt, users select a menu item by typing its
+line number, or they redisplay the menu by pressing the Return key.  (User input is
+stored in the shell variable REPLY.)
+If a valid line number is typed, <em class="emphasis">commands</em> are executed.
+Typing <em class="emphasis">EOF</em> terminates the loop.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">PS3="Select the item number: "
+select event in Format Page View Exit
+do
+   case "$event" in
+     Format) nroff $file | lp;;
+     Page)   pr $file | lp;;
+     View)   more $file;;
+     Exit)   exit 0;;
+     *   )   echo "Invalid selection";;
+   esac
+done</pre></blockquote>
+<p>The output of this script looks like this:</p>
+<blockquote><pre class="code">1. Format
+2. Page
+3. View
+4. Exit
+Select the item number:</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="set">set</a></a></td><td><tt class="literal">set</tt> [<em class="replaceable"><tt>options arg1 arg2 ...</tt></em>]
+<p>
+<a name="IXT-4-122877" />With no arguments, <tt class="literal">set</tt> prints the values of all variables
+known to the current shell.  Options can be enabled
+(<tt class="literal">-</tt><em class="emphasis">option</em>) or disabled (+<em class="emphasis">option</em>).
+Options can also be set when the shell is invoked,
+via <tt class="literal">ksh</tt> or <tt class="literal">sh</tt>.
+(See the earlier <a href="ch04_07.htm#unut-ch-4-sect-7">Section 4.7</a>.) Arguments are assigned in order to <tt class="literal">$1</tt>,
+<tt class="literal">$2</tt>, etc.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">+A</tt> <tt><em class="replaceable">name</em></tt></dt><dd>Assign remaining arguments as elements of array <em class="emphasis">name</em></tt>.  Korn
+shell only.</p>
+</dd>
+<dt><tt class="literal">-A</tt> <tt><em class="replaceable">name</em></tt></dt><dd>Same as <tt class="literal">+A</tt>, but unset <em class="emphasis">name</em></tt> before making assignments.
+Korn shell only.</p>
+</dd>
+<dt><tt class="literal">-a</tt></dt><dd>From now on automatically mark variables for export
+after defining or changing them.</p>
+</dd>
+<dt><tt class="literal">-b</tt></dt><dd>Same as <tt class="literal">-o notify</tt>.
+The single-letter form is only in <tt class="literal">ksh93</tt>.</p>
+</dd>
+<dt><tt class="literal">-C</tt></dt><dd>Same as <tt class="literal">-o noclobber</tt>.
+The single-letter form is only in <tt class="literal">ksh93</tt>.</p>
+</dd>
+<dt><tt class="literal">-e</tt></dt><dd>Exit if a command yields a nonzero exit status.
+In the Korn shell, the <tt class="literal">ERR</tt> trap is executed
+before the shell exits.</p>
+</dd>
+<dt><tt class="literal">-f</tt></dt><dd>Ignore filename metacharacters (e.g., <tt class="literal">* ? [ ]</tt>).</p>
+</dd>
+<dt><tt class="literal">-h</tt></dt><dd>Locate commands as they are defined.  The Korn shell creates
+tracked aliases, whereas the Bourne shell hashes command names.
+See <b class="emphasis-bold"><a href="#hash">hash</a></b>.</p>
+</dd>
+<dt><tt class="literal">-k</tt></dt><dd>Assignment of environment variables (<em class="emphasis">var</em></tt><tt class="literal">=</tt><em class="emphasis">value</em></tt>) takes effect regardless of where they appear on the
+command line.  Normally, assignments must precede the command name.</p>
+</dd>
+<dt><tt class="literal">-m</tt></dt><dd>Enable job control; background jobs execute in a separate process
+group.  <tt class="literal">-m</tt> is usually set automatically.  Korn
+shell only.</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd>Read commands but don't execute; useful for checking syntax.
+The Korn shell ignores this option if it is interactive.</p>
+</dd>
+<dt><tt class="literal">-o</tt> [<tt><em class="replaceable">mode</em></tt>]</dt><dd>List Korn shell modes, or turn on mode <em class="emphasis">mode</em></tt>.
+Many modes can be set by other options.  Modes are:
+</p></dd>
+</dl>
+
+<table border="1" cellpadding="3">
+
+<tr><td><tt class="literal">allexport</tt></td><td><p>Same as <tt class="literal">-a</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">bgnice</tt></td><td><p>Run background jobs at lower priority.</p>
+</td></tr>
+<tr><td><tt class="literal">emacs</tt></td><td><p>Set command-line editor to <tt class="literal">emacs</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">errexit</tt></td><td><p>Same as <tt class="literal">-e</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">ignoreeof</tt></td><td><p>Don't process <em class="emphasis">EOF</em> signals.
+To exit the shell, type <tt class="literal">exit</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">keyword</tt></td><td><p>Same as <tt class="literal">-k</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">markdirs</tt></td><td><p>Append / to directory names.</p>
+</td></tr>
+<tr><td><tt class="literal">monitor</tt></td><td><p>Same as <tt class="literal">-m</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">noclobber</tt></td><td><p>Prevent overwriting via <tt class="literal">&gt;</tt> redirection;
+use <tt class="literal">&gt;|</tt> to overwrite files.</p>
+</td></tr>
+<tr><td><tt class="literal">noexec</tt></td><td><p>Same as <tt class="literal">-n</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">noglob</tt></td><td><p>Same as <tt class="literal">-f</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">nolog</tt></td><td><p>Omit function definitions from history file.</p>
+</td></tr>
+<tr><td><tt class="literal">notify</tt></td><td><p>Print job completion messages as soon as jobs terminate; don't
+wait until the next prompt.</p>
+</td></tr>
+<tr><td><tt class="literal">nounset</tt></td><td><p>Same as <tt class="literal">-u</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">privileged</tt></td><td><p>Same as <tt class="literal">-p</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">trackall</tt></td><td><p>Same as <tt class="literal">-h</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">verbose</tt></td><td><p>Same as <tt class="literal">-v</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">vi</tt></td><td><p>Set command-line editor to <tt class="literal">vi</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">viraw</tt></td><td><p>Same as <tt class="literal">vi</tt>, but process each character when it's typed.</p>
+</td></tr>
+<tr><td><tt class="literal">xtrace</tt></td><td><p>Same as <tt class="literal">-x</tt>.</p>
+</td></tr>
+</table><p>
+
+<dl>
+<dt><tt class="literal">-p</tt></dt><dd>Start up as a privileged user (i.e., don't process <tt class="literal">$HOME/.profile</tt>).</p>
+</dd>
+<dt><tt class="literal">-s</tt></dt><dd>Sort the positional parameters.
+Korn shell only.</p>
+</dd>
+<dt><tt class="literal">-t</tt></dt><dd>Exit after one command is executed.</p>
+</dd>
+<dt><tt class="literal">-u</tt></dt><dd>In substitutions, treat unset variables as errors.</p>
+</dd>
+<dt><tt class="literal">-v</tt></dt><dd>Show each shell command line when read.</p>
+</dd>
+<dt><tt class="literal">-x</tt></dt><dd>Show commands and arguments when executed, preceded by a <tt class="literal">+</tt>.
+(Korn shell: precede with the value of PS4.)
+This provides step-by-step debugging of shell scripts.</p>
+</dd>
+<dt><tt class="literal">-</tt></dt><dd>Turn off <tt class="literal">-v</tt> and <tt class="literal">-x</tt>,
+and turn off option processing.
+Included in Korn shell for compatibility with older versions of Bourne
+shell.</p>
+</dd>
+<dt><tt class="literal">--</tt></dt><dd>Used as the last option; <tt class="literal">--</tt> turns
+off option processing
+so that arguments beginning with <tt class="literal">-</tt> are not misinterpreted as options.
+(For example, you can set <tt class="literal">$1</tt> to -1.)  If no arguments are given
+after <tt class="literal">--</tt>, unset the positional parameters.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Examples</h4><blockquote><pre class="code">set - "$num" -20 -30	<i class="lineannotation">Set $1 to $num, $2 to -20, $3 to -30</i>
+set -vx			<i class="lineannotation">Read each command line; show it;</i>
+			<i class="lineannotation">execute it; show it again (with arguments)</i>
+set +x			<i class="lineannotation">Stop command tracing</i>
+set -o noclobber		<i class="lineannotation">Prevent file overwriting</i>
+set +o noclobber		<i class="lineannotation">Allow file overwriting again</i></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="shift">shift</a></a></td><td><tt class="literal">shift</tt> [<em class="replaceable"><tt>n</tt></em>]
+<p>
+<a name="IXT-4-122878" />Shift positional arguments (e.g., <tt class="literal">$2</tt> becomes <tt class="literal">$1</tt>).
+If <em class="emphasis">n</em> is given, shift to the left <em class="emphasis">n</em> places.
+Used in <tt class="literal">while</tt> loops to iterate through command-line arguments.
+In the Korn shell, <em class="emphasis">n</em> can be an integer expression.</p>
+</td></tr><tr><td valign="top"><a name="sleep">sleep</a></a></td><td><tt class="literal">sleep</tt> [<em class="replaceable"><tt>n</tt></em>]
+<p>
+<a name="IXT-4-122879" /><tt class="literal">ksh93</tt> only. Sleep for <em class="emphasis">n</em> seconds.
+<em class="emphasis">n</em> can have a fractional part.</p>
+</td></tr><tr><td valign="top"><a name="stop">stop</a></a></td><td><tt class="literal">stop</tt> [<em class="replaceable"><tt>jobIDs</tt></em>]
+<p>
+<a name="IXT-4-122880" />Suspend the background job specified by <em class="emphasis">jobIDs</em>; this is
+the complement of <tt class="literal">CTRL-Z</tt> or <tt class="literal">suspend</tt>.
+Not valid in <tt class="literal">ksh88</tt>.  See <a href="ch04_06.htm#unut-ch-4-sect-6">Section 4.6</a>.</p>
+</td></tr><tr><td valign="top"><a name="stop">stop</a></a></td><td><tt class="literal">stop</tt> [<em class="replaceable"><tt>jobIDs</tt></em>]
+<p>
+<a name="IXT-4-122881" /><tt class="literal">ksh93</tt> alias for
+<tt class="literal">kill -s STOP</tt>.</p>
+</td></tr><tr><td valign="top"><a name="suspend">suspend</a></a></td><td><tt class="literal">suspend</tt>
+<p>
+<a name="IXT-4-122882" />Same as <tt class="literal">CTRL-Z</tt>.  Often used to stop an <tt class="literal">su</tt> command.
+Not valid in <tt class="literal">ksh88</tt>; in <tt class="literal">ksh93</tt>,
+<tt class="literal">suspend</tt> is an alias for <tt class="literal">kill -s STOP $$</tt>.</p>
+</td></tr><tr><td valign="top"><a name="test">test</a></a></td><td><tt class="literal">test</tt> <em class="replaceable"><tt>condition</em><br>&#160;&#160;&#160;&#160;&#160;or <br><tt class="literal">[</tt> <em class="replaceable">condition</tt></em> <tt class="literal">]</tt>
+<p>
+<a name="IXT-4-122883" />Evaluate a <em class="emphasis">condition</em> and, if its value is true, return a zero 
+exit status; otherwise, return a nonzero exit status. 
+An alternate form of the command uses <tt class="literal">[ ]</tt> rather than the word
+<tt class="literal">test</tt>.  The Korn shell allows an additional form, <tt class="literal">[[ ]]</tt>.
+<em class="emphasis">condition</em> is constructed using the following expressions.  Conditions
+are true if the description holds true.  Features that are
+specific to the
+Korn shell are marked with a (K).
+Features that are specific to <tt class="literal">ksh93</tt> are
+marked with a (K93).</p>
+<h4 class="refsect2">File Conditions</h4>
+<dl><dt><tt class="literal">-a</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists.  (K)</p>
+</dd>
+<dt><tt class="literal">-b</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is a block special file.</p>
+</dd>
+<dt><tt class="literal">-c</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is a character special file.</p>
+</dd>
+<dt><tt class="literal">-d</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is a directory.</p>
+</dd>
+<dt><tt class="literal">-f</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is a regular file.</p>
+</dd>
+<dt><tt class="literal">-g</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists, and its set-group-id bit is set.</p>
+</dd>
+<dt><tt class="literal">-G</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists, and its group is the effective group ID.  (K)</p>
+</dd>
+<dt><tt class="literal">-k</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists, and its sticky bit is set.</p>
+</dd>
+<dt><tt class="literal">-L</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is a symbolic link.  (K)</p>
+</dd>
+<dt><tt class="literal">-o</tt> <tt><em class="replaceable">c</em></tt></dt><dd>Option <em class="emphasis">c</em></tt> is on.  (K)</p>
+</dd>
+<dt><tt class="literal">-O</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists, and its owner is the effective user ID.  (K)</p>
+</dd>
+<dt><tt class="literal">-p</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is a named pipe (fifo).</p>
+</dd>
+<dt><tt class="literal">-r</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is readable.</p>
+</dd>
+<dt><tt class="literal">-s</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and has a size greater than zero.</p>
+</dd>
+<dt><tt class="literal">-S</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is a socket.  (K)</p>
+</dd>
+<dt><tt class="literal">-t</tt> [<tt><em class="replaceable">n</em></tt>]</dt><dd>The open file descriptor <em class="emphasis">n</em></tt> is associated with a terminal device;
+default <em class="emphasis">n</em> is 1.</p>
+</dd>
+<dt><tt class="literal">-u</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists, and its set-user-id bit is set.</p>
+</dd>
+<dt><tt class="literal">-w</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is writable.</p>
+</dd>
+<dt><tt class="literal">-x</tt> <tt><em class="replaceable">file</em></tt></dt><dd><em class="emphasis">file</em></tt> exists and is executable.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>f1</em></tt> <tt class="literal">-ef</tt> <tt><em class="replaceable">f2</em></tt></i></dt><dd>Files <em class="emphasis">f1</em></tt> and <em class="emphasis">f2</tt></em></tt> are linked (refer to same file).  (K)</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>f1</em></tt> <tt class="literal">-nt</tt> <tt><em class="replaceable">f2</em></tt></i></dt><dd>File <em class="emphasis">f1</em></tt> is newer than <em class="emphasis">f2</tt></em></tt>.  (K)</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>f1</em></tt> <tt class="literal">-ot</tt> <tt><em class="replaceable">f2</em></tt></i></dt><dd>File <em class="emphasis">f1</em></tt> is older than <em class="emphasis">f2</tt></em></tt>.  (K)</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">String Conditions</h4><dl><dt><i><tt><em class="replaceable"><tt>string</em></tt></i></dt><dd><em class="emphasis">string</tt></em></tt> is not null.</p>
+</dd>
+<dt><tt class="literal">-n</tt> <tt><em class="replaceable">s1</em></tt></dt><dd>String <em class="emphasis">s1</em></tt> has nonzero length.</p>
+</dd>
+<dt><tt class="literal">-z</tt> <tt><em class="replaceable">s1</em></tt></dt><dd>String <em class="emphasis">s1</em></tt> has zero length.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>s1</em></tt> <tt class="literal">=</tt> <tt><em class="replaceable">s2</em></tt></i></dt><dd>Strings <em class="emphasis">s1</em></tt> and <em class="emphasis">s2</em></tt> are identical.
+In the Korn shell, <em class="emphasis">s2</tt></em> can be a wildcard pattern.
+(See <a href="ch04_02.htm#unut-ch-4-sect-2.2">Section 4.2.2</a> earlier in this chapter.)</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>s1</em></tt> <tt class="literal">==</tt> <tt><em class="replaceable">s2</em></tt></i></dt><dd>Strings <em class="emphasis">s1</em></tt> and <em class="emphasis">s2</em></tt> are identical.
+<em class="emphasis">s2</tt></em></tt> can be a wildcard pattern.
+Preferred over <tt class="literal">=</tt>. (K93)</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>s1</em></tt> <tt class="literal">!=</tt> <tt><em class="replaceable">s2</em></tt></i></dt><dd>Strings <em class="emphasis">s1</em></tt> and <em class="emphasis">s2</em></tt> are <em class="emphasis">not</em></tt> identical.
+In the Korn shell, <em class="emphasis">s2</tt></em> can be a wildcard pattern.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>s1</em></tt> <tt class="literal">&lt;</tt> <tt><em class="replaceable">s2</em></tt></i></dt><dd>ASCII value of <em class="emphasis">s1</em></tt> precedes that of <em class="emphasis">s2</tt></em></tt>.
+(Valid only within <tt class="literal">[[]]</tt> construct).  (K)</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>s1</em></tt> <tt class="literal">&gt;</tt> <tt><em class="replaceable">s2</em></tt></i></dt><dd>ASCII value of <em class="emphasis">s1</em></tt> follows that of <em class="emphasis">s2</tt></em></tt>.
+(Valid only within <tt class="literal">[[]]</tt> construct).  (K)</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Integer Comparisons</h4><dl><dt><i><tt><em class="replaceable"><tt>n1</em></tt> <tt class="literal">-eq</tt> <tt><em class="replaceable">n2</em></tt></i></dt><dd><em class="emphasis">n1</em></tt> equals <em class="emphasis">n2</tt></em></tt>.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>n1</em></tt> <tt class="literal">-ge</tt> <tt><em class="replaceable">n2</em></tt></i></dt><dd><em class="emphasis">n1</em></tt> is greater than or equal to <em class="emphasis">n2</tt></em></tt>.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>n1</em></tt> <tt class="literal">-gt</tt> <tt><em class="replaceable">n2</em></tt></i></dt><dd><em class="emphasis">n1</em></tt> is greater than <em class="emphasis">n2</tt></em></tt>.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>n1</em></tt> <tt class="literal">-le</tt> <tt><em class="replaceable">n2</em></tt></i></dt><dd><em class="emphasis">n1</em></tt> is less than or equal to <em class="emphasis">n2</tt></em></tt>.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>n1</em></tt> <tt class="literal">-lt</tt> <tt><em class="replaceable">n2</em></tt></i></dt><dd><em class="emphasis">n1</em></tt> is less than <em class="emphasis">n2</tt></em></tt>.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>n1</em></tt> <tt class="literal">-ne</tt> <tt><em class="replaceable">n2</em></tt></i></dt><dd><em class="emphasis">n1</em></tt> does not equal <em class="emphasis">n2</tt></em></tt>.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Combined Forms</h4><dl><dt><tt class="literal">(</tt><tt><em class="replaceable">condition</em></tt><tt class="literal">)</tt></dt><dd>True if <em class="emphasis">condition</em></tt> is true (used for grouping).
+The <tt class="literal">()</tt> s should be quoted by a <tt class="literal">\</tt>.</p>
+</dd>
+<dt><tt class="literal">!</tt> <tt><em class="replaceable">condition</em></tt></dt><dd>True if <em class="emphasis">condition</em></tt> is false.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>condition1</em></tt> <tt class="literal">-a</tt> <tt><em class="replaceable">condition2</tt></em></tt></i></dt><dd>True if both conditions are true.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>condition1</em></tt> <tt class="literal">&amp;&amp;</tt> <tt><em class="replaceable">condition2</tt></em></tt></i></dt><dd>True if both conditions are true.
+(Valid only within <tt class="literal">[[]]</tt> construct.)  (K)</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>condition1</em></tt> <tt class="literal">-o</tt> <tt><em class="replaceable">condition2</tt></em></tt></i></dt><dd>True if either condition is true.</p>
+</dd>
+<dt><i><tt><em class="replaceable"><tt>condition1</em></tt> <tt class="literal">||</tt> <tt><em class="replaceable">condition2</tt></em></tt></i></dt><dd>True if either condition is true.
+(Valid only within <tt class="literal">[[]]</tt> construct.)  (K)</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Examples</h4><p>The following examples show the first line of various statements
+that might use a test condition:</p>
+
+
+<blockquote><pre class="code">
+while test $# -gt 0             <i class="lineannotation">While there are arguments...</i>
+while [ -n "$1" ]               <i class="lineannotation">While there are nonempty arguments...</i>
+if [ $count -lt 10 ]            <i class="lineannotation">If $count is less than 10...</i>
+if [ -d RCS ]                   <i class="lineannotation">If the RCS directory exists...</i>
+if [ "$answer" != "y" ]         <i class="lineannotation">If the answer is not y...</i>
+if [ ! -r "$1" -o ! -f "$1" ]   <i class="lineannotation">If the first argument is not a
+                                readable file or a regular file...</i></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="time">time</a></a></td><td><tt class="literal">time</tt> <em class="replaceable"><tt>command</em><br><tt class="literal">time</tt> [<em class="replaceable">command</tt></em>]
+<p>
+<a name="IXT-4-122884" />Korn shell only.
+Execute <em class="emphasis">command</em> and print the total elapsed time, user time,
+and system time (in seconds).
+Same as the Unix command <tt class="literal">time</tt> (see <a href="ch02_01.htm">Chapter 2</a>), except that
+the built-in version can also time other built-in commands as well
+as all commands in a pipeline.</p>
+<p>The second form applies to <tt class="literal">ksh93</tt>; with no
+<em class="emphasis">command</em>, the total
+
+
+user and system times for
+the shell, and all children are printed.</p>
+</td></tr>
+
+<tr><td valign="top"><a name="times">times</a></a></td><td><p><tt class="literal">times</tt></p>
+<p>
+<a name="IXT-4-122885" />Print accumulated process times for user and system.</p>
+</td></tr><tr><td valign="top"><a name="times">times</a></a></td><td><tt class="literal">times</tt>
+<p>
+<a name="IXT-4-122886" /><tt class="literal">ksh93</tt> alias for
+<tt class="literal">{ {time;} 2&gt;&amp;1;}</tt>.
+See also <b class="emphasis-bold"><a href="#time">time</a></b>.</p>
+</td></tr><tr><td valign="top"><a name="trap">trap</a></a></td><td><tt class="literal">trap</tt> [ [<em class="replaceable"><tt>commands</em>] <em class="replaceable">signals</tt></em>]<br><tt class="literal">trap -p</tt>
+<p>
+<a name="IXT-4-122887" />Execute <em class="emphasis">commands</em> if any <em class="emphasis">signals</em> are received.
+The second form is specific to <tt class="literal">ksh93</tt>; it prints
+the current trap settings in a form suitable for rereading later.</p>
+<p>Common signals include 0, 1, 2, and 15.
+Multiple commands should be quoted as a group and separated by
+semicolons internally.
+If <em class="emphasis">commands</em> is the
+null string
+(i.e., <tt class="literal">trap ""</tt> <em class="replaceable"><tt>signals</em>), <em class="emphasis">signals</tt></em> are ignored by the shell.
+If <em class="emphasis">commands</em> are omitted entirely, reset processing of specified
+signals to the default action.
+<tt class="literal">ksh93</tt>: if <em class="emphasis">commands</em> is
+&#8220;-&#8221;, reset <em class="emphasis">signals</em> to their
+initial defaults.</p>
+<p>If both <em class="emphasis">commands</em> and <em class="emphasis">signals</em> are omitted,
+list current trap assignments.
+See the Examples here and in <b class="emphasis-bold"><a href="#exec">exec</a></b>.</p>
+<h4 class="refsect2">Signals</h4><p>Signals are listed along with what triggers them:</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td> 0</td><td><p>Exit from shell (usually when shell script finishes).</p>
+</td></tr>
+<tr><td> 1</td><td><p>Hangup (usually logout).</p>
+</td></tr>
+<tr><td> 2</td><td><p>Interrupt (usually <tt class="literal">CTRL-C</tt>).</p>
+</td></tr>
+<tr><td> 3</td><td><p>Quit.</p>
+</td></tr>
+<tr><td> 4</td><td><p>Illegal instruction.</p>
+</td></tr>
+<tr><td> 5</td><td><p>Trace trap.</p>
+</td></tr>
+<tr><td> 6</td><td><p>IOT instruction.</p>
+</td></tr>
+<tr><td> 7</td><td><p>EMT instruction.</p>
+</td></tr>
+<tr><td> 8</td><td><p>Floating-point exception.</p>
+</td></tr>
+<tr><td>10</td><td><p>Bus error.</p>
+</td></tr>
+<tr><td>12</td><td><p>Bad argument to a system call.</p>
+</td></tr>
+<tr><td>13</td><td><p>Write to a pipe without a process to read it.</p>
+</td></tr>
+<tr><td>14</td><td><p>Alarm timeout.</p>
+</td></tr>
+<tr><td>15</td><td><p>Software termination (usually via <tt class="literal">kill</tt>).</p>
+</td></tr>
+<tr><td><tt class="literal">ERR</tt></td><td><p>Nonzero exit status.  Korn shell only.</p>
+</td></tr>
+<tr><td><tt class="literal">DEBUG</tt></td><td><p>Execution of any command.  Korn shell only.</p>
+</td></tr>
+<tr><td><tt class="literal">KEYBD</tt></td><td><p>A key has been read in <tt class="literal">emacs</tt>,
+<tt class="literal">gmacs</tt>, or <tt class="literal">vi</tt>
+editing mode.
+<tt class="literal">ksh93</tt> only.</p>
+</td></tr>
+</table><p>
+
+<h4 class="refsect2">Examples</h4><blockquote><pre class="code">trap "" 2		<i class="lineannotation">Ignore signal 2 (interrupts)</i>
+trap 2		<i class="lineannotation">Obey interrupts again</i></pre></blockquote>
+<p>Remove a <tt class="literal">$tmp</tt> file when the shell program exits, or if the user
+logs out, presses <tt class="literal">CTRL-C</tt>, or does a <tt class="literal">kill</tt>:</p>
+<blockquote><pre class="code">trap "rm -f $tmp; exit" 0 1 2 15</pre></blockquote>
+<p>Print a &#8220;clean up&#8221; message when the shell program receives
+signals 1, 2, or 15:</p>
+<blockquote><pre class="code">trap 'echo Interrupt!  Cleaning up...' 1 2 15</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="true">true</a></a></td><td><tt class="literal">true</tt>
+<p>
+<a name="IXT-4-122888" /><tt class="literal">ksh88</tt> alias for <tt class="literal">:</tt>.
+<tt class="literal">ksh93</tt> built-in command that exits with
+a true return value.</p>
+</td></tr><tr><td valign="top"><a name="type">type</a></a></td><td><tt class="literal">type</tt> <em class="replaceable"><tt>commands</tt></em>
+<p>
+<a name="IXT-4-122889" />Show whether each command name is a Unix command, a built-in command,
+or a defined shell function.  In the Korn shell, this is simply an alias 
+for <tt class="literal">whence -v</tt>.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">$ <tt class="userinput"><b>type mv read</b></tt>
+mv is /bin/mv
+read is a shell builtin</pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="typeset">typeset</a></a></td><td><tt class="literal">typeset</tt> [<em class="replaceable"><tt>options</em>] [<em class="replaceable">variable</em>[<tt class="literal">=</tt><em class="replaceable">value</tt></em> ...]]<br><tt class="literal">typeset -p</tt>
+<p>
+<a name="IXT-4-122890" />Korn shell only.  Assign a type to each variable (along with an optional 
+initial <em class="emphasis">value</em>),
+or, if no variables are supplied, display all variables of a particular type
+(as determined by the options).
+When variables are specified, <tt class="literal">-</tt><em class="emphasis">option</em> enables the type, and
++<em class="emphasis">option</em> disables it.
+With no variables given, <tt class="literal">-</tt><em class="emphasis">option</em> prints
+variable names and values; +<em class="emphasis">option</em> prints only the names.</p>
+<p>The second form shown is specific to <tt class="literal">ksh93</tt>.</p>
+<h4 class="refsect2">Options</h4>
+<dl><dt><tt class="literal">-A</tt> <tt><em class="replaceable">arr</em></tt></dt><dd><em class="emphasis">arr</em></tt> is an associative array.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-E</tt> <tt><em class="replaceable">d</em></tt></dt><dd><em class="emphasis">variable</em></tt> is a floating-point number.
+<em class="emphasis">d</em> is the number of decimal places.
+The value is printed using <tt class="literal">printf</tt>
+<tt class="literal">%g</tt> format.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-F</tt> <tt><em class="replaceable">d</em></tt></dt><dd><em class="emphasis">variable</em></tt> is a floating-point number.
+<em class="emphasis">d</em></tt> is the number of decimal places.
+The value is printed using <tt class="literal">printf</tt>
+<tt class="literal">%f</tt> format.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-f</tt>[<tt><em class="replaceable">c</em></tt>]</dt><dd>The named variable is a function; no assignment is allowed.
+If no variable is given, list current function names.
+Flag <em class="emphasis">c</em> can be <tt class="literal">t</tt>,
+<tt class="literal">u</tt>, or <tt class="literal">x</tt>.
+<tt class="literal">t</tt> turns on tracing (same as <tt class="literal">set -x</tt>).
+<tt class="literal">u</tt> marks
+the function as undefined, which causes autoloading of the function
+(i.e., a search of FPATH locates the function when it's
+first used.
+<tt class="literal">ksh93</tt> also searches PATH).
+<tt class="literal">x</tt> exports the function.
+Note the aliases <b class="emphasis-bold"><a href="#autoload">autoload</a></b>
+and <b class="emphasis-bold"><a href="#functions">functions</a></b>.</p>
+</dd>
+<dt><tt class="literal">-H</tt></dt><dd>On non-Unix systems, map Unix filenames to host filenames.</p>
+</dd>
+<dt><tt class="literal">-i</tt>[<tt><em class="replaceable">n</em></tt>]</dt><dd>Define variables as integers of base <em class="emphasis">n</em></tt>.
+<tt class="literal">integer</tt> is an alias for <tt class="literal">typeset -i</tt>.</p>
+</dd>
+<dt><tt class="literal">-L</tt>[<tt><em class="replaceable">n</em></tt>]</dt><dd>Define variables as left-justified strings, <em class="emphasis">n</em></tt> characters long
+(truncate or pad with blanks on the right as needed).  
+Leading blanks are stripped;
+leading 0s are stripped if <tt class="literal">-Z</tt> is also specified.
+If no <em class="emphasis">n</em></tt> is supplied, field width is that of the variable's first
+assigned value.</p>
+</dd>
+<dt><tt class="literal">-l</tt></dt><dd>Convert uppercase to lowercase.</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd><em class="emphasis">variable</em></tt> is an indirect reference
+to another variable (a <em class="emphasis">nameref</em></tt>).
+<tt class="literal">ksh93</tt> only.
+(See <a href="ch04_03.htm#unut-ch-4-sect-3">Section 4.3</a> earlier in this chapter.)</p>
+</dd>
+<dt><tt class="literal">-p</tt></dt><dd>Print <tt class="literal">typeset</tt> commands to recreate the types of
+all the current variables.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-R</tt>[<tt><em class="replaceable">n</em></tt>]</dt><dd>Define variables as right-justified strings, <em class="emphasis">n</em></tt> characters long
+(truncate or pad with blanks on the left as needed).  
+Trailing blanks are stripped.
+If no <em class="emphasis">n</em></tt> is supplied, field width is that of the variable's first
+assigned value.</p>
+</dd>
+<dt><tt class="literal">-r</tt></dt><dd>Mark variables as read-only.  See also <b class="emphasis-bold"><a href="#readonly">readonly</a></b>.</p>
+</dd>
+<dt><tt class="literal">-t</tt></dt><dd>Mark variables with a user-definable tag.</p>
+</dd>
+<dt><tt class="literal">-u</tt></dt><dd>Convert lowercase to uppercase.</p>
+</dd>
+<dt><tt class="literal">-x</tt></dt><dd>Mark variables for automatic export.</p>
+</dd>
+<dt><tt class="literal">-Z</tt>[<tt><em class="replaceable">n</em></tt>]</dt><dd>When used with <tt class="literal">-L</tt>, strip leading 0s.
+When used alone, it's similar to <tt class="literal">-R</tt>
+except that <tt class="literal">-Z</tt> pads numeric values with 0s and pads text values 
+with blanks.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Examples</h4><blockquote><pre class="code">typeset                 <i class="lineannotation">List name, value, and type of all set variables</i>
+typeset -x              <i class="lineannotation">List names and values of exported variables</i>
+typeset +r PWD          <i class="lineannotation">End read-only status of PWD</i>
+typeset -i n1 n2 n3     <i class="lineannotation">Three variables are integers</i>
+typeset -R5 zipcode     <i class="lineannotation">zipcode is flush right, five characters wide</i></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="ulimit">ulimit</a></a></td><td><tt class="literal">ulimit</tt> [<em class="replaceable"><tt>options</em>] [<em class="replaceable">n</tt></em>]
+<p>
+<a name="IXT-4-122891" />Print the value of one or more resource limits, or, if <em class="emphasis">n</em> is specified,
+set a resource limit to <em class="emphasis">n</em>.  Resource limits can be either 
+hard (<tt class="literal">-H</tt>) or 
+soft (<tt class="literal">-S</tt>).  By default, <tt class="literal">ulimit</tt> sets both limits or
+prints the soft limit.  The options determine which resource is acted on.</p>
+<h4 class="refsect2">Options</h4>
+<dl><dt><tt class="literal">-H</tt></dt><dd>Hard limit.  Anyone can lower a hard limit; 
+only privileged users can raise it.</p>
+</dd>
+<dt><tt class="literal">-S</tt></dt><dd>Soft limit.  Must be lower than the hard limit.</p>
+</dd>
+<dt><tt class="literal">-a</tt></dt><dd>Print all limits.</p>
+</dd>
+<dt><tt class="literal">-c</tt></dt><dd>Maximum size of core files.</p>
+</dd>
+<dt><tt class="literal">-d</tt></dt><dd>Maximum kilobytes of data segment or heap.</p>
+</dd>
+<dt><tt class="literal">-f</tt></dt><dd>Maximum size of files (the default option).</p>
+</dd>
+<dt><tt class="literal">-m</tt></dt><dd>Maximum kilobytes of physical memory.
+Korn shell only.
+(Not effective on all Unix systems.)</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd>Maximum file descriptor plus 1.</p>
+</dd>
+<dt><tt class="literal">-p</tt></dt><dd>Size of pipe buffers.
+Korn shell only.
+(Not effective on all Unix systems.)</p>
+</dd>
+<dt><tt class="literal">-s</tt></dt><dd>Maximum kilobytes of stack segment.</p>
+</dd>
+<dt><tt class="literal">-t</tt></dt><dd>Maximum CPU seconds.</p>
+</dd>
+<dt><tt class="literal">-v</tt></dt><dd>Maximum
+
+
+kilobytes of virtual memory.</p>
+</dd>
+</dl>
+
+</td></tr>
+
+<tr><td valign="top"><a name="umask">umask</a></a></td><td><p><tt class="literal">umask</tt> [<em class="replaceable"><tt>nnn</em>]</p><p><tt class="literal">umask</tt> [<tt class="literal">-S</tt>] [<em class="replaceable">mask</tt></em>]</p>
+<p>
+<a name="IXT-4-122892" />Display file creation mask or 
+set file creation mask to octal value <em class="emphasis">nnn</em>.  The file creation
+mask determines which permission bits are turned off (e.g.,
+<tt class="literal">umask 002</tt> produces <tt class="literal">rw-rw-r--</tt>).
+See the entry in <a href="ch02_01.htm">Chapter 2</a> for examples.</p>
+<p>The second form is specific to <tt class="literal">ksh93</tt>.
+A symbolic mask is permissions to keep.</p>
+<h4 class="refsect2">Option</h4><dl><dt><tt class="literal">-S</tt></dt><dd>Print the current mask using symbolic notation.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="unalias">unalias</a></a></td><td><tt class="literal">unalias</tt> <tt><em class="replaceable"><tt>names</tt></em></tt><br><tt class="literal">unalias -a</tt>
+<p>
+<a name="IXT-4-122893" />
+<a name="IXT-4-122894" />
+<a name="IXT-4-122895" />Korn shell only.  Remove <em class="emphasis">names</em></tt> from the alias list.
+See also <b class="emphasis-bold"><a href="#alias">alias</a></b>.</p>
+<h4 class="refsect2">Option</h4><dl><dt><tt class="literal">-a</tt></dt><dd>Remove all aliases.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="unset">unset</a></a></td><td><tt class="literal">unset</tt> <em class="replaceable"><tt>names</tt></em>
+<p>
+<a name="IXT-4-122896" />Bourne shell version.
+Erase definitions of functions or variables listed in <em class="emphasis">names</em>.</p>
+</td></tr><tr><td valign="top"><a name="unset">unset</a></a></td><td><tt class="literal">unset</tt> [<em class="replaceable"><tt>options</em>] <em class="replaceable">names</tt></em>
+<p>
+<a name="IXT-4-122897" />Erase definitions of functions or variables listed in <em class="emphasis">names</em>.
+The Korn shell version supports options.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-f</tt></dt><dd>Unset functions in <em class="emphasis">names</em></tt>.</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd>Unset indirect variable (nameref) <em class="emphasis">name</em></tt>,
+not the variable the nameref refers to.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-v</tt></dt><dd>Unset
+
+
+variables <em class="emphasis">names</em></tt> (default).
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+</dl>
+
+</td></tr>
+
+<tr><td valign="top"><a name="until">until</a></a></td><td><p><tt class="literal">until</tt> <tt><em class="replaceable"><tt>condition</em></tt></p><p><tt class="literal">do</tt> </p><p>&#160;&#160;&#160;&#160;<tt><em class="replaceable">commands</tt></em></tt></p><p><tt class="literal">done</tt></p>
+<p>
+<a name="IXT-4-122898" />Until <em class="emphasis">condition</em></tt> is met, do <em class="emphasis">commands</em></tt>.  <em class="emphasis">condition</em></tt> is
+usually specified with the <tt class="literal">test</tt> command.</p>
+</td></tr><tr><td valign="top"><a name="wait">wait</a></a></td><td><tt class="literal">wait</tt> [<tt><em class="replaceable"><tt>ID</tt></em></tt>]
+<p>
+<a name="IXT-4-122899" />Pause in execution until all background jobs complete
+(exit status 0 is returned),
+or pause until the specified background 
+process <em class="emphasis">ID</em></tt> or job <em class="emphasis">ID</em></tt> completes (exit status of <em class="emphasis">ID</em></tt> 
+is returned).  Note that the shell variable $! contains the process ID 
+of the most recent background process.  If job control is not in effect, 
+<em class="emphasis">ID</em></tt> can be only a process ID number.
+See <a href="ch04_06.htm#unut-ch-4-sect-6">Section 4.6</a>.</p>
+<h4 class="refsect2">Example</h4><blockquote><pre class="code">wait $!	<i class="lineannotation">Wait for most recent background process to finish</i></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="whence">whence</a></a></td><td><tt class="literal">whence</tt> [<tt><em class="replaceable"><tt>options</em></tt>] <tt><em class="replaceable">commands</tt></em></tt>
+<p>
+<a name="IXT-4-122900" />Korn shell only.  Show whether each command name is a Unix command, a 
+built-in command, a defined shell function, or an alias.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-a</tt></dt><dd>Print all interpretations of <em class="emphasis">commands</em></tt>.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-f</tt></dt><dd>Skip the search for shell functions.
+<tt class="literal">ksh93</tt> only.</p>
+</dd>
+<dt><tt class="literal">-p</tt></dt><dd>Search for the pathname of <em class="emphasis">commands</em></tt>.</p>
+</dd>
+<dt><tt class="literal">-v</tt></dt><dd>Verbose output; same as <tt class="literal">type</tt>.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="while">while</a></a></td><td><tt class="literal">while</tt> <tt><em class="replaceable"><tt>condition</em></tt><br><tt class="literal">do</tt><br>&#160;&#160;&#160;&#160;<tt><em class="replaceable">commands</tt></em></tt> <br><tt class="literal">done</tt>
+<p>
+<a name="IXT-4-122901" />While <em class="emphasis">condition</em></tt> is met, do <em class="emphasis">commands</em></tt>.  <em class="emphasis">condition</em></tt> is
+usually specified with the <tt class="literal">test</tt> command.
+See the
+
+
+Examples under <b class="emphasis-bold"><a href="#case">case</a></b> 
+and <b class="emphasis-bold"><a href="#test">test</a></b>.</p>
+</td></tr>
+
+<tr><td valign="top"><a name="filename">filename</a></a></td><td><p><tt><em class="replaceable"><tt>filename</tt></em></tt></p>
+<p>Read and execute commands from executable file <em class="emphasis">filename</em></tt>,
+or execute a binary object file.</p>
+</td></tr></table><p>
+
+<a name="IXT-4-122902" />
+<a name="IXT-4-122903" />
+<a name="IXT-4-122904" />
+<a name="IXT-4-122905" />
+<a name="IXT-4-122906" />
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.8. Restricted Shells</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5. The C Shell</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

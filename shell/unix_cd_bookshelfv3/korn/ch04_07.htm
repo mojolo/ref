@@ -1,0 +1,365 @@
+<html><head><title>Advanced Examples: pushd and popd (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.7. Advanced Examples: pushd and popd</h2>
+
+<p>
+<a name="korn2-IDXTERM-972" />
+<a name="korn2-IDXTERM-973" />
+<a name="korn2-IDXTERM-974" />
+<a name="korn2-IDXTERM-975" />
+
+We conclude this chapter with a couple of functions that
+you may find handy in your everyday Unix use.
+They solve the problem presented by
+<a href="ch04_07.htm#korn2-CHP-4-SIDEBAR-7">Task 4-7</a>.
+</p>
+
+<a name="korn2-CHP-4-SIDEBAR-7" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 4-7</h4>
+
+<p>
+<a name="IXT-4-287595" />
+<a name="IXT-4-287596" />
+<a name="IXT-4-287597" />
+<a name="IXT-4-287598" />
+<a name="IXT-4-287599" />
+
+In the C shell, the commands
+<em class="emphasis">pushd</em> and <em class="emphasis">popd</em> implement a <em class="emphasis">stack</em> of directories
+that enable you to move to another directory temporarily and have
+the shell remember where you were.
+The <em class="emphasis">dirs</em> command prints the stack.
+The Korn shell does not provide these commands.
+Implement them as shell functions.
+</p>
+
+</td></tr></table><p></blockquote>
+
+<p>
+We start by implementing a significant subset of their
+capabilities and finish the implementation in <a href="ch06_01.htm">Chapter 6</a>.
+(For ease of development and explanation, our implementation ignores
+some things that a more bullet-proof version should handle.  For example,
+spaces in filenames will cause things to break.)
+</p>
+
+<p>
+If you don't know what a stack is, think of a spring-loaded
+dish receptacle in a cafeteria. When you place dishes on the
+receptacle, the spring compresses so that the top stays at roughly
+the same level. The dish most recently placed on the stack is
+the first to be taken when someone wants food; thus, the
+stack is known as a "last-in, first-out" or <em class="emphasis">LIFO</em> structure.
+(Victims of a recession or company takeovers will also recognize
+this mechanism in the context of corporate layoff policies.)
+Putting something onto a stack is known in computer science
+parlance as <em class="emphasis">pushing</em>, and taking something off the top
+is called <em class="emphasis">popping</em>.
+</p>
+
+<p>
+
+<a name="IXT-4-287600" />
+
+A stack is very handy for remembering directories, as we will see;
+it can "hold your place" up to an arbitrary number of times.
+
+The <tt class="literal">cd -</tt> form of the <em class="emphasis">cd</em>
+command does this, but only to one level. For example: if you
+are in <em class="emphasis">firstdir</em> and then you change to
+<em class="emphasis">seconddir</em>, you can type <tt class="literal">cd -</tt>
+to go back.  But if you start out in <em class="emphasis">firstdir</em>,
+then change to <em class="emphasis">seconddir</em>, and then go to
+<em class="emphasis">thirddir</em>, you can use <tt class="literal">cd -</tt> only
+to go back to <em class="emphasis">seconddir</em>. If you type <tt class="literal">cd
+-</tt> again, you will be back in <em class="emphasis">thirddir</em>,
+because it is the previous directory.<a href="#FOOTNOTE-64">[64]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-64" /><p> [64]
+<a name="IXT-4-287601" />
+Think of <tt class="literal">cd -</tt> as a synonym for
+<tt class="literal">cd $OLDPWD</tt>; see the previous chapter.
+</p>
+</blockquote>
+
+<p>
+If you want the "nested" remember-and-change functionality that will
+take you back to <em class="emphasis">firstdir</em>, you need a stack of directories
+along with the <em class="emphasis">dirs</em>, <em class="emphasis">pushd</em>
+and <em class="emphasis">popd</em> commands. Here is how these work:<a href="#FOOTNOTE-65">[65]</a>
+
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-65" /><p> [65]
+<a name="IXT-4-287602" />
+We've done it here differently from the C shell.
+The C shell <em class="emphasis">pushd</em> pushes the
+initial directory onto the stack first, followed by the command's argument.
+The C shell <em class="emphasis">popd</em>
+removes the top directory off the stack, revealing a
+new top. Then it <em class="emphasis">cd</em>s to the new top directory.
+We feel that this behavior is less intuitive than our design here.
+</p>
+</blockquote>
+
+<ul>
+
+<li><p>
+<em class="emphasis">pushd</em> <em class="emphasis">dir</em>
+does a <em class="emphasis">cd</em> to <em class="emphasis">dir</em> and then
+pushes <em class="emphasis">dir</em> onto the stack.
+</p></li>
+
+<li><p>
+<em class="emphasis">popd</em> does a
+<em class="emphasis">cd</em> to the top directory, then pops it off the stack.
+</p></li>
+</ul>
+
+<p>
+For example, consider the series of events in
+<a href="ch04_07.htm#korn2-CHP-4-TABLE-12">Table 4-12</a>.
+Assume that you
+have just logged in and that you are in your home directory (<em class="emphasis">/home/you</em>).
+</p>
+
+<p>
+We will implement a stack as an environment variable containing a
+list of directories separated by spaces.
+</p>
+
+<a name="korn2-CHP-4-TABLE-12" /><h4 class="objtitle">Table 4-12. pushd/popd example</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Command</th>
+<th>Stack contents (top on left)</th>
+<th>Result directory</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">pushd fred</tt></td>
+<td><em class="emphasis">/home/you/fred</em></td>
+<td><em class="emphasis">/home/you/fred</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">pushd /etc</tt></td>
+<td><em class="emphasis">/etc  /home/you/fred</em></td>
+<td><em class="emphasis">/etc</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd /usr/tmp</tt></td>
+<td><em class="emphasis">/etc  /home/you/fred</em></td>
+<td><em class="emphasis">/usr/tmp</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">popd</tt></td>
+<td><em class="emphasis">/home/you/fred</em></td>
+<td><em class="emphasis">/etc</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">popd</tt></td>
+<td>(empty)</td>
+<td><em class="emphasis">/home/you/fred</em></td>
+</tr>
+
+
+</table><p>
+
+<p>
+Your directory stack should be initialized to your home directory when you log in.
+To do so, put this in your <em class="emphasis">.profile</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+DIRSTACK="$PWD"
+export DIRSTACK
+</pre></blockquote>
+</p>
+
+<p>
+Do <em class="emphasis">not</em> put this in your environment file if you have one.
+The <em class="emphasis">export</em> statement guarantees that <tt class="literal">DIRSTACK</tt> is known to all
+subprocesses; you want to initialize it only once. If you put this
+code in an environment file, it will get reinitialized in every
+interactive shell subprocess, which you probably don't want.
+</p>
+
+<p>
+Next, we need to implement <em class="emphasis">dirs</em>, <em class="emphasis">pushd</em>,
+and <em class="emphasis">popd</em> as functions.
+Here are our initial versions:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function dirs {        # print directory stack (easy)
+    print $DIRSTACK
+}
+
+function pushd {       # push current directory onto stack
+    dirname=$1
+    cd ${dirname:?"missing directory name."}
+    DIRSTACK="$PWD $DIRSTACK"
+    print "$DIRSTACK"
+}
+
+function popd {        # cd to top, pop it off stack
+    top=${DIRSTACK%% *}
+    DIRSTACK=${DIRSTACK#* }
+    cd $top
+    print "$PWD"
+}
+</pre></blockquote>
+</p>
+
+<p>
+Notice that there isn't much code! Let's go through the functions
+and see how they work.
+<em class="emphasis">dirs</em> is easy; it just prints the stack.
+The fun starts with <em class="emphasis">pushd</em>.
+The first line merely saves the first argument in the variable
+<em class="emphasis">dirname</em> for readability reasons.
+</p>
+
+<p>
+The second line's main purpose is to change to the new directory.
+
+We use the <tt class="literal">:?</tt> operator to handle the error when the argument is
+missing: if the argument is given, the expression
+<tt class="literal">${dirname:?"missing directory name."}</tt>
+evaluates to
+<tt class="literal">$dirname</tt>, but if
+it is not given, the shell prints the message
+<tt class="literal">ksh: pushd: line 2:<?troff .ne 10?> dirname: missing directory name.</tt>
+and exits from the function.
+</p>
+
+<?troff .sp -1p?>
+<p>
+The third line of the function pushes the new directory onto the stack.
+The expression within double quotes
+consists of the full pathname for the current directory,
+followed by a single space, followed
+by the contents of the directory stack
+(<tt class="literal">$DIRSTACK</tt>). The double quotes ensure
+that all of this is packaged into a single string for assignment
+back to <tt class="literal">DIRSTACK</tt>.
+</p>
+
+<?troff .sp -1p?>
+<p>
+The last line merely prints the contents of the stack, with the
+implication that the leftmost directory is both the current directory
+and at the top of the stack.
+(This is why we chose spaces to
+separate directories, rather than the more customary colons as in
+<tt class="literal">PATH</tt> and <tt class="literal">MAILPATH</tt>.)
+</p>
+
+<?troff .sp -1p?>
+<p>
+The <em class="emphasis">popd</em> function makes yet another
+use of the shell's pattern-matching operators.
+<a name="IXT-4-287603" />
+<a name="IXT-4-287604" />
+The first line uses the <tt class="literal">%%</tt> operator, which deletes the longest match of
+" <tt class="literal">*</tt>" (a space followed by anything).  This removes all
+but the top of the stack.
+The result is saved in the variable <tt class="literal">top</tt>, again for readability reasons.
+</p>
+
+<?troff .sp -1p?>
+<p>
+<a name="IXT-4-287605" />
+<a name="IXT-4-287606" />
+The second line is similar, but going in the other direction.
+It uses the <tt class="literal">#</tt> operator, which tries to delete
+the shortest match of the pattern "<tt class="literal">*</tt> " (anything followed by a space)
+from the value of <tt class="literal">DIRSTACK</tt>. The result is that the top directory
+(and the space following it) is deleted from the stack.
+</p>
+
+<?troff .sp -1p?>
+<p>
+The third line actually changes directory to the previous top of the stack.
+(Note that <em class="emphasis">popd</em> doesn't care where you are when you
+run it; if your current directory is the one on the top of the stack,
+you won't go anywhere.)
+The final line just prints a confirmation message.
+</p>
+
+<?troff .sp -1p?>
+<p>
+This code is deficient in the following ways: first, it has no provision for errors.
+For example:
+</p>
+
+<ul>
+
+<li><p>
+What if the user tries to push a directory that doesn't exist
+or is invalid?
+</p></li>
+
+<li><p>
+What if the user tries <em class="emphasis">popd</em> and the stack is empty?
+</p></li>
+</ul>
+
+<p>
+Test your understanding of the code by figuring out how it
+would respond to these error conditions.
+The second deficiency is that the code implements only some
+of the functionality of the C shell's <em class="emphasis">pushd</em> and <em class="emphasis">popd</em>
+commands -- albeit the most useful parts.
+In the next chapter, we will see how to overcome both of these
+deficiencies.
+</p>
+<?troff .sp -1p?>
+
+<p>
+The third problem with the code is that it will not work if, for some
+reason, a directory name contains a space. The code will treat the space
+as a separator character. We'll accept this deficiency for now. However,
+when you read about arrays in <a href="ch06_01.htm">Chapter 6</a>,
+think about how you might use them to rewrite this code and
+eliminate the problem.
+<a name="IXTR3-214" />
+<a name="IXTR3-215" />
+<a name="IXTR3-216" />
+<a name="IXTR3-217" />
+<a name="IXTR3-218" />
+<a name="IXTR3-219" />
+<a name="IXTR3-220" />
+</p>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.6. Command Substitution</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5. Flow Control</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

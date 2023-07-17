@@ -1,0 +1,230 @@
+<html><head><title>Splitting Files by Context: csplit (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.10. Splitting Files by Context: csplit</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: csplit</p>
+
+<p><a name="upt3-IDXTERM-3012" />
+<a name="upt3-IDXTERM-3013" /> <a name="upt3-IDXTERM-3014" /> <a name="upt3-IDXTERM-3015" />Like <b class="emphasis-bold">split</b> (<a href="ch21_09.htm#upt3-CHP-21-SECT-9">Section 21.9</a>),
+<a name="upt3-IDXTERM-3016" /><i class="command">csplit</i> lets you
+break a file into smaller pieces, but <i class="command">csplit</i>
+(context split) also allows the file to be broken into
+different-sized pieces, according to context. With
+<i class="command">csplit</i>, you give the locations (line numbers or
+search patterns) at which to break each section.
+<i class="command">csplit</i> comes with System V, but there are also
+free versions available.
+</p>
+
+<p><a name="upt3-IDXTERM-3017" />
+<a name="upt3-IDXTERM-3018" />Let's
+look at search patterns first. Suppose you have an outline consisting
+of three main sections that start on lines with the Roman numerals
+<tt class="literal">I</tt>., <tt class="literal">II</tt>., and
+<tt class="literal">III</tt>.. You could create a separate file for each
+section by typing:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit outline /I./ /II./ /III./</b></tt>
+28      <i class="lineannotation">number of characters in each file</i>
+415                   .
+372                   .
+554                   .
+% <tt class="userinput"><b>ls</b></tt>
+outline
+xx00   <i class="lineannotation">  outline title, etc.</i>
+xx01   <i class="lineannotation">  Section I</i>
+xx02   <i class="lineannotation">  Section II</i>
+xx03   <i class="lineannotation">  Section III</i></pre></blockquote>
+
+<p>This command creates four new files (<em class="emphasis">outline</em>
+remains intact). <i class="command">csplit</i> displays the character
+counts for each file. Note that the first file
+(<em class="emphasis">xx00</em>) contains any text up to <em class="emphasis">but not
+including</em> the first pattern, and <em class="emphasis">xx01</em>
+contains the first section, as you'd expect. This is
+why the naming scheme begins with <em class="emphasis">00</em>. (If
+<em class="emphasis">outline</em> had begun immediately with a
+<tt class="literal">I</tt>., <em class="emphasis">xx01</em> would still contain
+Section I, but in this case <em class="emphasis">xx00</em> would be
+empty.)
+</p>
+
+<p>If you don't want to save the text that occurs
+before a specified pattern, use a percent sign as the pattern
+delimiter:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit outline %I.% /II./ /III./</b></tt>
+415
+372
+554
+% <tt class="userinput"><b>ls</b></tt>
+outline
+xx00 <i class="lineannotation">        Section I</i>
+xx01 <i class="lineannotation">        Section II</i>
+xx02 <i class="lineannotation">        Section III</i></pre></blockquote>
+
+<p>The preliminary text file has been suppressed, and the created files
+now begin where the actual outline starts (the file numbering is off,
+however).
+</p>
+
+<p>Let's make some further refinements.
+We'll use the
+<span class="option">-s</span><a name="IXT-21-5696" /><a name="IXT-21-5697" /> option to suppress the display of the
+character counts, and we'll use the
+<span class="option">-f</span> option to specify a file prefix other than the
+conventional <em class="emphasis">xx</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit -s -f part. outline /I./ /II./ /III./</b></tt>
+% <tt class="userinput"><b>ls</b></tt>
+outline
+part.00
+part.01
+part.02
+part.03</pre></blockquote>
+
+<p><a name="IXT-21-5698" />There's still a
+slight problem, though. In search patterns, a
+<a name="IXT-21-5699" />period is a <b class="emphasis-bold">metacharacter</b> (<a href="ch32_21.htm#upt3-CHP-32-SECT-21">Section 32.21</a>)
+that matches any single character, so the pattern
+<tt class="literal">/I./</tt> may inadvertently match words like
+<em class="emphasis">Introduction</em>. We need to escape the period with
+a backslash; however, the backslash has meaning both to the pattern
+and to the shell, so in fact, we need either to use a double
+backslash or to surround the pattern in <b class="emphasis-bold">quotes</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>). A
+subtlety, yes, but one that can drive you crazy if you
+don't remember it. Our command line becomes:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit -s -f part. outline "/I\./" /II./ /III./</b></tt></pre></blockquote>
+
+<p>You can also break a file at repeated occurrences of the same
+pattern. Let's say you have a file that describes 50
+ways to cook a chicken, and you want each method stored in a separate
+file. The sections begin with headings <em class="emphasis">WAY #1</em>,
+<em class="emphasis">WAY #2</em>, and so on. To divide the file, use
+<i class="command">csplit</i>'s repeat argument:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit -s -f cook. fifty_ways /^WAY/ "{49}"</b></tt></pre></blockquote>
+
+<p>This command splits the file at the first occurrence of
+<em class="emphasis">WAY</em>, and the number in braces tells
+<i class="command">csplit</i> to repeat the split 49 more times. Note
+that a <b class="emphasis-bold">caret</b> (<tt class="literal">^</tt>)
+(<a href="ch32_05.htm#upt3-CHP-32-SECT-5">Section 32.5</a>) is used to match the beginning of the
+line and the C shell requires quotes around the <b class="emphasis-bold">braces</b> (<a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a>). The
+command has created 50 files:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls cook.*</b></tt>
+cook.00
+cook.01
+  ...
+cook.48
+cook.49</pre></blockquote>
+
+<p>Quite often, when you want to split a file repeatedly, you
+don't know or don't care how many
+files will be created; you just want to make sure that the necessary
+number of splits takes place. In this case, it makes sense to specify
+a repeat count that is slightly higher than what you need (the
+maximum is 99). Unfortunately, if you tell <i class="command">csplit</i>
+to create more files than it's able to, this
+produces an "out of range" error.
+Furthermore, when <i class="command">csplit</i> encounters an error, it
+exits by removing any files it created along the way. (A bug, if you
+ask me.) This is where the <span class="option">-k</span> option comes in.
+Specify <span class="option">-k</span> to <em class="emphasis">k</em>eep the files
+around, even when the "out of
+range" message occurs.
+</p>
+
+<p><i class="command">csplit</i> allows you to break a file at some number
+of lines above or below a given search pattern. For example, to break
+a file at the line that is five lines below the one containing
+<em class="emphasis">Sincerely</em>, you could type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit -s -f letter. all_letters /Sincerely/+5</b></tt></pre></blockquote>
+
+<p>This situation might arise if you have a series of business letters
+strung together in one file. Each letter begins differently, but each
+one begins five lines after the previous letter's
+<em class="emphasis">Sincerely</em> line. Here's another
+example, adapted from AT&amp;T's <em class="emphasis">Unix
+User's Reference Manual</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit -s -k -f routine. prog.c '%main(%' '/^}/+1' '{99}'</b></tt></pre></blockquote>
+
+<p>The idea is that the file <em class="emphasis">prog.c</em> contains a
+group of C routines, and we want to place each one in a separate file
+(<em class="emphasis">routine.00</em>, <em class="emphasis">routine.01</em>,
+etc.). The first pattern uses <tt class="literal">%</tt> because we want to
+discard anything before <em class="emphasis">main</em>. The next argument
+says, "Look for a closing brace at the beginning of
+a line (the conventional end of a routine) and split on the following
+line (the assumed beginning of the next routine)."
+Repeat this split up to 99 times, using <span class="option">-k</span> to
+preserve the created files.<a href="#FOOTNOTE-62">[62]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-62" /><p> [62]In this case, the repeat
+can actually occur only 98 times, since we've
+already specified two arguments and the maximum number is 100.</p>
+</blockquote>
+
+<p>The <i class="command">csplit</i> command takes line-number arguments in
+addition to patterns. You can say:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit stuff 50 373 955</b></tt></pre></blockquote>
+
+<p>to create files split at some arbitrary line numbers. In that
+example, the new file <em class="emphasis">xx00</em> will have lines 1-49
+(49 lines total), <em class="emphasis">xx01</em> will have lines 50-372
+(323 lines total), <em class="emphasis">xx02</em> will have lines 373-954
+(582 lines total), and <em class="emphasis">xx03</em> will hold the rest
+of <em class="emphasis">stuff</em>.
+</p>
+
+<p><i class="command">csplit</i> works like <i class="command">split</i> if you
+repeat the argument. The command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>csplit top_ten_list 10 "{18}"</b></tt></pre></blockquote>
+
+<p>breaks the list into 19 segments of 10 <a name="IXTR3-5794" /> <a name="IXTR3-5795" />lines <a name="IXTR3-5796" /> <a name="IXTR3-5797" /> <a name="IXTR3-5798" /> <a name="IXTR3-5799" />each.<a href="#FOOTNOTE-63">[63]</a> <a name="IXTR3-5800" />
+</p><blockquote class="footnote"> <a name="FOOTNOTE-63" /><p> [63]Not really. The
+first file contains only nine lines (1-9); the rest contain 10. In
+this case, you're better off saying <tt class="literal">split
+-10 top_ten_list</tt>.</p> </blockquote>
+
+<p> <em class="emphasis">-- DG</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.9. Splitting Files at Fixed Points: split</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.11. Hacking on Characters with tr</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

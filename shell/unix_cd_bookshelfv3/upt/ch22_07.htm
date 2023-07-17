@@ -1,0 +1,116 @@
+<html><head><title>lensort: Sort Lines by Length (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch22_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch22_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">22.7. lensort: Sort Lines by Length</h2>
+
+<p><a name="IXT-22-1563" /><a name="IXT-22-1564" /><a name="IXT-22-1565" /><a name="IXT-22-1566" />A nice little script to sort
+lines from shortest to longest can be handy when
+you're writing and want to find your big words:
+</p>
+
+<p><tt class="literal">deroff</tt> <a href="ch16_09.htm#upt3-CHP-16-SECT-9">Section 16.9</a>, <tt class="literal">uniq</tt> <a href="ch21_20.htm#upt3-CHP-21-SECT-20">Section 21.20</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>deroff -w report | uniq -d | lensort</b></tt>
+a
+an
+  ...
+deoxyribonucleic</pre></blockquote>
+
+<p>Once I used it to sort a list of pathnames:</p>
+
+<p><tt class="literal">find</tt> <a href="ch09_01.htm#upt3-CHP-9-SECT-1">Section 9.1</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find adir -type f -print | lensort</b></tt>
+adir/.x
+adir/.temp
+   ...
+adir/subdir/part1/somefile
+adir/subdir/part1/a_test_case</pre></blockquote>
+
+<p>The script uses <b class="emphasis-bold">awk</b>
+(<a name="IXT-22-1567" /><a href="ch20_10.htm#upt3-CHP-20-SECT-10">Section 20.10</a>) to print
+each line's length, followed by the original line.
+Next, <i class="command">sort</i> sorts the lengths <b class="emphasis-bold">numerically</b> (<a href="ch22_05.htm#upt3-CHP-22-SECT-5">Section 22.5</a>).
+Then <b class="emphasis-bold">sed</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) strips off the lengths and the spaces and
+prints the lines:
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: lensort</p>
+
+<blockquote><pre class="code">#! /bin/sh
+awk 'BEGIN { FS=RS }
+{ print length, $0 }' $* |
+# Sort the lines numerically
+sort +0n -1 |
+# Remove the length and the space and print each line
+sed 's/^[0-9][0-9]* //'</pre></blockquote>
+
+<p>(Some <i class="command">awk</i>s require a semicolon after the first
+curly bracket -- that is, <tt class="literal">{ FS=RS };</tt>.)
+</p>
+
+<p><a name="IXT-22-1568" />Of course, you can also tackle this
+problem with Perl:
+</p>
+
+<blockquote><pre class="code">$ perl -lne '$l{$_}=length;END{for(sort{$l{$a}&lt;=&gt;$l{$b}}keys %l){print}}' \
+                <em class="replaceable"><tt>filename</tt></em></pre></blockquote>
+
+<p>This one-line wonder has the side effect of eliminating
+<a name="IXT-22-1569" /><a name="IXT-22-1570" /><a name="IXT-22-1571" />duplicate lines. If this seems a bit
+terse, that's because it's meant to
+be "write-only," that is, it is a
+bit of shell magic that you'd use to accomplish a
+short-term task. If you foresee needing this same procedure in the
+future, it's better to capture the magic in script.
+Scripts also tend to be easier to understand, debug, and expand. The
+following script does the same thing as the one-liner but a bit more
+clearly:
+</p>
+
+<blockquote><pre class="code">#!/usr/bin/perl
+
+my %lines;
+while(my $curr_line = &lt;STDIN&gt;){
+  chomp $curr_line;
+  $lines{$curr_line} = length $curr_line;
+}
+
+for my $line (sort{ $lines{$a} &lt;=&gt; $lines{$b} } keys %lines){
+  print $line, "\n";
+}</pre></blockquote>
+
+<p>This script reads in a line from standard input, removes the newline
+character and creates an associative array that maps whole line to
+its length in characters. After processing the whole file, the keys
+of the associative array is sorted in ascending numerical order by
+each key's value. It is then a simple matter to
+print the key, which is the line itself. More Perl tricks can be
+found in <a href="ch11_01.htm">Chapter 11</a>.
+</p>
+
+<p><em class="emphasis">--JP and JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch22_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch22_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">22.6. Miscellaneous sort Hints</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">22.8. Sorting a List of People by Last Name</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,141 @@
+<html><head><title>Extended Regular Expressions (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch32_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">32.15. Extended Regular Expressions</h2>
+
+<p><a name="IXT-32-4008" /> <a name="IXT-32-4009" /><a name="IXT-32-4010" />At least two programs use extended
+regular expressions:
+<i class="command">egrep</i><a name="IXT-32-4011" /> <a name="IXT-32-4012" /> and <i class="command">awk</i>.
+[<i class="command">perl</i> uses expressions that are even more
+extended.  <em class="emphasis">-- JP</em>] With these extensions,
+special characters preceded by a backslash no longer have special
+meaning: <tt class="literal">\{</tt>, <tt class="literal">\}</tt>,
+<tt class="literal">\&lt;</tt>, <tt class="literal">\&gt;</tt>,
+<tt class="literal">\(</tt>, <tt class="literal">\)</tt>, as well as
+<tt class="literal">\</tt><em class="replaceable"><tt>digit</tt></em>. There is a very
+good reason for this, which I will delay explaining to build up
+suspense.
+</p>
+
+<p><a name="IXT-32-4013" />The question mark
+(<tt class="literal">?</tt>) matches zero or one instance of the character
+set before it, and the <a name="IXT-32-4014" />plus sign (<tt class="literal">+</tt>)
+matches one or more copies of the character set. You
+can't use <tt class="literal">\{</tt> and
+<tt class="literal">\}</tt> in extended regular expressions, but if you
+could, you might consider <tt class="literal">?</tt> to be the same as
+<tt class="literal">\{0,1\}</tt> and <tt class="literal">+</tt> to be the same as
+<tt class="literal">\{1,\}</tt>.
+</p>
+
+<p>By now, you are wondering why the extended regular expressions are
+even worth using. Except for two abbreviations, there seem to be no
+advantages and a lot of disadvantages. Therefore, examples would be
+useful.
+</p>
+
+<p>The three important characters in the expanded regular expressions
+are <tt class="literal">(</tt>, <tt class="literal">|</tt>, and
+<tt class="literal">)</tt>. <a name="IXT-32-4015" /> <a name="IXT-32-4016" /><a name="IXT-32-4017" /> <a name="IXT-32-4018" />Parentheses are used to group
+expressions; the vertical bar acts an an OR operator. Together, they
+let you match a <em class="emphasis">choice</em> of patterns. As an
+example, you can use <i class="command">egrep</i> to print all
+<tt class="literal">From</tt>: and <tt class="literal">Subject</tt>: lines from
+your incoming mail [which may also be in
+<em class="filename">/var/spool/mail/$USER</em>.<em class="filename">
+</em> -- <em class="emphasis">JP</em>]:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>egrep '^(From|Subject): ' /usr/spool/mail/$USER</b></tt></pre></blockquote>
+
+<p>All lines starting with <tt class="literal">From</tt>: or
+<tt class="literal">Subject</tt>: will be printed. There is no easy way to
+do this with simple regular expressions. You could try something like
+<tt class="literal">^[FS][ru][ob][mj]e*c*t*</tt>: and hope you
+don't have any lines that start with
+<tt class="literal">Sromeet</tt>:. Extended expressions
+don't have the <tt class="literal">\&lt;</tt> and
+<tt class="literal">\&gt;</tt> characters. You can compensate by using the
+<a name="IXT-32-4019" /> <a name="IXT-32-4020" />alternation mechanism. Matching the
+word "the" in the beginning,
+middle, or end of a sentence or at the end of a line can be done with
+the extended regular expression <tt class="literal">(^|
+)the([^a-z]|$)</tt>. There are two choices before the word: a
+space or the beginning of a line. Following the word, there must be
+something besides a lowercase letter or else the end of the line. One
+extra bonus with extended regular expressions is the ability to use
+the <tt class="literal">*</tt>, <tt class="literal">+</tt>, and
+<tt class="literal">?</tt> modifiers after a <tt class="literal">(...)</tt>
+grouping.
+</p>
+
+<p>[If you're on a Darwin system and use Apple Mail or
+one of the many other clients, you can grep through your mail files
+locally. For Mail, look in your home directory's
+<em class="filename">Library/Mail/</em> directory. There should be a
+subdirectory there, perhaps named something like
+<tt class="literal">iTools:example@mail.example.com</tt>, with an IMAP
+directory tree beneath it. IMAP stores messages individually, not in
+standard Unix mbox format, so there is no way to look for all matches
+in a single mailbox by grepping a single file, but fortunately, you
+can use regular expressions to construct a file list to search.
+<tt class="literal">:-)</tt>  -- <em class="emphasis">SJC</em>]
+</p>
+
+<p>Here are two ways to match "a simple
+problem", "an easy
+problem", as well as "a
+problem"; the second expression is more exact:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>egrep "a[n]? (simple|easy)? ?problem" data</b></tt>
+% <tt class="userinput"><b>egrep "a[n]? ((simple|easy) )?problem" data</b></tt></pre></blockquote>
+
+<p>I promised to explain why the backslash characters
+don't work in extended regular expressions. Well,
+perhaps the <tt class="literal">\{...\}</tt> and <a name="IXT-32-4021" /><tt class="literal">\&lt;...\&gt;</tt> could be
+added to the extended expressions, but it might confuse people if
+those characters are added and the <tt class="literal">\(...\)</tt> are
+not. And there is no way to add that functionality to the extended
+expressions without changing the current usage. Do you see why?
+It's quite simple. If <tt class="literal">(</tt> has a
+special meaning, then <tt class="literal">\(</tt> must be the ordinary
+character. This is the opposite of the simple regular expressions,
+where <tt class="literal">(</tt> is ordinary and <tt class="literal">\(</tt> is
+special. The usage of the parentheses is incompatible, and any change
+could break old programs.
+</p>
+
+<p>If the extended expression used <tt class="literal">(...|...)</tt> as
+regular characters, and <tt class="literal">\(...\|...\)</tt> for
+specifying alternate patterns, then it is possible to have one set of
+regular expressions that has full functionality. This is exactly what
+<b class="emphasis-bold">GNU Emacs</b> (<a href="ch19_01.htm#upt3-CHP-19-SECT-1">Section 19.1</a>) does, by the way -- it combines all of the
+features of regular and extended expressions with one syntax.
+</p>
+
+<p> <em class="emphasis">-- BB</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch32_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">32.14. Regular Expressions: Potential Problems</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">32.16. Getting Regular Expressions Right</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

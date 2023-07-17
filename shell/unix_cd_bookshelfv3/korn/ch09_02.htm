@@ -1,0 +1,1698 @@
+<html><head><title>A Korn Shell Debugger (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.2. A Korn Shell Debugger</h2>
+
+<p>
+<a name="IXT-9-288189" />
+Commercially available debuggers give you much more functionality
+than the shell's <em class="emphasis">set</em> options and fake signals. The most
+advanced have fabulous graphical user interfaces,
+incremental compilers, symbolic evaluators, and other such
+amenities. But just about all modern debuggers -- even the
+more modest ones -- have features that enable you to
+"peek" into a program while it's running, to examine
+it in detail and in terms of its source language.
+
+Specifically, most debuggers let you do these things:
+</p>
+
+<ul>
+
+<li><p>
+Specify points at which the program stops execution and enters the
+debugger. These are called <em class="emphasis">breakpoints</em>.
+</p></li>
+
+
+<li><p>
+Execute only a bit of the program at a time, usually measured in
+source code statements. This ability is often called <em class="emphasis">stepping</em>.
+</p></li>
+
+
+<li><p>
+Examine and possibly change the state of the program (e.g., values
+of variables) in the middle of a run, i.e., when stopped at a breakpoint
+or after stepping.
+</p></li>
+
+<li><p>
+Specify variables whose values should be printed when they are changed
+or accessed.  These are often called <em class="emphasis">watchpoints</em>.
+</p></li>
+
+
+<li><p>
+Do all of the above without having to change the source code.
+</p></li>
+
+</ul>
+
+<p>
+
+<a name="korn2-IDXTERM-1899" />
+Our debugger, called <em class="emphasis">kshdb</em>, has these features and a few more.
+Although it's a basic tool,
+without too many bells and whistles, it is not a toy.
+<a name="IXT-9-288190" />
+<a name="IXT-9-288191" />
+<a name="IXT-9-288192" />
+
+This book's web site,
+<a href="http://www.oreilly.com/catalog/korn2/">http://www.oreilly.com/catalog/korn2/</a>,
+
+has a link for a downloadable copy of all the book's example
+programs, including <em class="emphasis">kshdb</em>.
+If you don't have access to the Internet,
+you can type or scan the code in.
+Either way, you can use
+<em class="emphasis">kshdb</em> to debug your own shell scripts, and you should feel free to
+enhance it.
+This is version 2.0 of the debugger.  It includes some changes
+suggested to us by Steve Alston, and the watchpoints feature is brand new.
+We'll suggest some enhancements at the end of this chapter.
+</p>
+
+<a name="korn2-CHP-9-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">9.2.1. Structure of the Debugger</h3>
+
+<p>
+
+The code for <em class="emphasis">kshdb</em> has several features worth explaining in
+some detail. The most important is the basic principle on which
+it works: it turns a shell script into
+a debugger for itself, by prepending debugger functionality
+to it; then it runs the new script.
+</p>
+
+<a name="korn2-CHP-9-SECT-2.1.1" /><div class="sect3">
+<h3 class="sect3">9.2.1.1. The driver script</h3>
+
+<p>
+<a name="IXT-9-288193" />
+
+Therefore the code has two parts: the part that implements the
+debugger's functionality, and the part that installs that
+functionality into the script being debugged. The second part,
+which we'll see first, is the script called <em class="emphasis">kshdb</em>.
+It's very simple:
+
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+# kshdb -- Korn Shell debugger
+# Main driver: constructs full script (with preamble) and runs it
+
+print "Korn Shell Debugger version 2.0 for ksh '${.sh.version}'" &gt;&amp;2
+_guineapig=$1
+if [[ ! -r $1 ]]; then      # file not found or readable
+    print "Cannot read $_guineapig." &gt;&amp;2
+    exit 1
+fi
+shift
+
+_tmpdir=/tmp
+_libdir=.                   # set to real directory upon installation
+_dbgfile=$_tmpdir/kshdb$$   # temp file for script being debugged (copy)
+cat $_libdir/kshdb.pre $_guineapig &gt; $_dbgfile
+exec ksh $_dbgfile $_guineapig $_tmpdir $_libdir "$@"
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">kshdb</em> takes as argument the name of the script being
+debugged, which, for the sake of brevity, we'll call the guinea pig.
+Any additional arguments are passed to the guinea pig as its
+positional parameters.
+Notice that <tt class="literal">${.sh.version}</tt> indicates
+the version of the Korn shell for the startup message.
+</p>
+
+<p>
+<a name="IXT-9-288194" />
+If the argument is invalid (the file isn't readable), <em class="emphasis">kshdb</em> exits
+with an error status. Otherwise,
+after an introductory message, it constructs
+a temporary filename like we saw in <a href="ch08_01.htm">Chapter 8</a>.
+
+If you don't have (or don't have access to) <em class="emphasis">/tmp</em>
+on your system, you can
+substitute a different directory for <tt class="literal">_tmpdir</tt>.<a href="#FOOTNOTE-130">[130]</a>
+Also, make sure that <tt class="literal">_libdir</tt> is set to the directory where
+the <em class="emphasis">kshdb.pre</em> and <em class="emphasis">kshdb.fns</em> files (which we'll see soon)
+reside.
+<a name="IXT-9-288195" />
+<em class="emphasis">/usr/share/lib</em> is a good choice if you have access to it.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-130" /><p> [130]
+All function names and variables (except those local to functions)
+in <em class="emphasis">kshdb</em> have names beginning with an underscore (_), to minimize
+the possibility of clashes with names in the guinea pig.
+A more <em class="emphasis">ksh93</em>-oriented solution would be to use a
+compound variable, e.g., <tt class="literal">_db.tmpdir</tt>,
+<tt class="literal">_db.libdir</tt>, and so on.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-9-288196" />
+
+The <em class="emphasis">cat</em> statement builds the temp file: it consists of
+a file that we'll see soon called <em class="emphasis">kshdb.pre</em>, which contains
+the actual debugger code, followed immediately
+by a copy of the guinea pig. Therefore
+the temp file contains a shell script that has been turned into
+a debugger for itself.
+<a name="IXTR3-409" />
+</p>
+</div>
+
+
+<a name="korn2-CHP-9-SECT-2.1.2" /><div class="sect3">
+<h3 class="sect3">9.2.1.2. exec</h3>
+
+<p>
+<a name="IXT-9-288197" />
+
+The last line runs this script with <em class="emphasis">exec</em>, a statement
+that we haven't seen yet. We've chosen to wait until now to introduce
+it because -- as we think you'll agree -- it can be dangerous.
+<em class="emphasis">exec</em> takes its arguments as a command line and runs the
+command in place of the current program, in the same
+process. In other words,
+the shell running the above script will <em class="emphasis">terminate immediately</em>
+and be replaced by <em class="emphasis">exec</em>'s arguments. The situations in
+which you would want to use <em class="emphasis">exec</em> are few, far between,
+and quite arcane -- though this is one of them.
+</p>
+
+<p>
+In this case, <em class="emphasis">exec</em> just runs the newly constructed shell
+script, i.e., the guinea pig with its debugger,
+in another Korn shell. It passes
+the new script three arguments -- the names of the original
+guinea pig (<tt class="literal">$_guineapig</tt>),
+the temp directory (<tt class="literal">$_tmpdir</tt>), and the directory where
+<em class="emphasis">kshdb.pre</em> and <em class="emphasis">kshdb.fns</em> are kept -- followed
+by the user's positional parameters, if any.
+</p>
+
+<p>
+<a name="IXT-9-288198" />
+<em class="emphasis">exec</em> can also be used with just an I/O redirector;
+this causes the redirector to take effect for the remainder of
+the script or login session.  For example, the line <tt class="literal">exec
+2&gt;errlog</tt> at the top of a script directs the shell's
+own standard error to the file <em class="emphasis">errlog</em> for the
+entire script.  This can also be used to move the input or output of
+a coprocess to a regular numbered file descriptor.  For example,
+<tt class="literal">exec 5&lt;&amp;p</tt> moves the coprocess's output
+(which is input to the shell) to file descriptor 5.  Similarly,
+<tt class="literal">exec 6&gt;&amp;p</tt> moves the coprocess's input (which
+is output from the shell) to file descriptor 6.  The predefined alias
+<tt class="literal">redirect='command exec'</tt> is more mnemonic.
+</p>
+
+</div>
+</div>
+
+<a name="korn2-CHP-9-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">9.2.2. The Preamble</h3>
+
+<p>
+Now we'll see the code that gets prepended to the script
+being debugged; we call this the <em class="emphasis">preamble</em>. It's
+kept in the following file, <em class="emphasis">kshdb.pre</em>, which is also fairly simple:
+<a name="IXT-9-288199" />
+</p>
+
+<p>
+<blockquote><pre class="code">
+# kshdb preamble for kshdb version 2.0
+# prepended to shell script being debugged
+# arguments:
+# $1 = name of original guinea-pig script
+# $2 = directory where temp files are stored
+# $3 = directory where kshdb.pre and kshdb.fns are stored
+
+_dbgfile=$0
+_guineapig=$1
+_tmpdir=$2
+_libdir=$3
+shift 3                         # move user's args into place
+
+. $_libdir/kshdb.fns            # read in the debugging functions
+_linebp=
+_stringbp=
+let _trace=0                    # initialize execution trace to off
+
+typeset -A _lines
+let _i=1                        # read guinea-pig file into lines array
+while read -r _lines[$_i]; do
+    let _i=$_i+1
+done &lt; $_guineapig
+
+trap _cleanup EXIT              # erase files before exiting
+let _steps=1                    # no. of stmts to run after trap is set
+LINENO=0
+trap '_steptrap $LINENO' DEBUG
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-9-288200" />
+The first few lines save the three fixed arguments in variables
+and shift them out of the way, so that the positional parameters
+(if any) are those that the user supplied on the command line
+as arguments to the guinea pig.
+Then the preamble reads in another file, <em class="emphasis">kshdb.fns</em>,
+that contains the meat of the debugger as function definitions.
+We put this code in a separate file to minimize the size of the temp file.
+We'll examine <em class="emphasis">kshdb.fns</em> shortly.
+</p>
+
+<p>
+Next, <em class="emphasis">kshdb.pre</em> initializes the two breakpoint lists
+to empty and execution tracing to off (see below), then
+reads the guinea pig
+into an array of lines. We do the latter so that
+the debugger can access lines in the script when performing
+certain checks, and so that the execution trace feature can
+print lines of code as they execute.
+We use an associative array to hold the shell script source, to
+avoid the built-in (if large) limit of 4096 elements for
+indexed arrays.
+(Admittedly our use is a bit unusual; we use line numbers as
+indices, but as far as the shell is concerned, these are just
+strings that happen to contain nothing but digits.)
+</p>
+
+<p>
+The real fun begins in the last group of code lines, where
+we set up the debugger to start working.
+<a name="IXT-9-288201" />
+
+We use two <em class="emphasis">trap</em>
+commands with fake signals. The first sets up a cleanup routine
+(which just erases the temporary file) to be called on EXIT,
+i.e., when the script terminates for any reason. The second,
+and more important, sets up the function <em class="emphasis">_steptrap</em> to be
+called before every statement.
+</p>
+
+<p>
+
+
+<em class="emphasis">_steptrap</em> gets an argument that evaluates to the number of the
+line in the guinea pig that was just executed. We use the same technique
+with the built-in variable <tt class="literal">LINENO</tt> that we saw earlier in the
+chapter, but with an added twist: if you assign a value
+to <tt class="literal">LINENO</tt>, it uses that as the <em class="emphasis">next</em> line number and increments
+from there. The statement <tt class="literal">LINENO=0</tt> re-starts line
+numbering so that the first line in the guinea pig is line 1.
+</p>
+
+<p>
+After the DEBUG trap is set, the preamble ends.
+The DEBUG trap executes <em class="emphasis">before</em> the next statement,
+which is the first statement of the guinea pig.
+The shell thus enters <em class="emphasis">_steptrap</em>
+for the first time. The variable <em class="emphasis">_steps</em> is set up so that
+<em class="emphasis">_steptrap</em> executes its
+last <tt class="literal">elif</tt> clause, as you'll
+see shortly, and enters the debugger. As a result, execution
+halts just before the first statement of the guinea pig is run,
+and the user sees a <tt class="literal">kshdb&gt;</tt> prompt; the debugger is
+now in full operation.
+</p>
+</div>
+
+<a name="korn2-CHP-9-SECT-2.3" /><div class="sect2">
+<h3 class="sect2">9.2.3. Debugger Functions</h3>
+
+<p>
+<a name="IXT-9-288202" />
+
+The function <em class="emphasis">_steptrap</em> is the entry point into the debugger;
+it is defined in the file <em class="emphasis">kshdb.fns</em>, listed in its
+entirety at the end of this chapter. Here is <em class="emphasis">_steptrap</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+# Here before each statement in script being debugged.
+# Handle single-step and breakpoints.
+function _steptrap {
+    _curline=$1                       # arg is no. of line that just ran
+    (( $_trace )) &amp;&amp; _msg "$PS4 line $_curline: ${_lines[$_curline]}"
+    if (( $_steps &gt;= 0 )); then       # if in step mode
+        let _steps="$_steps - 1"      # decrement counter
+    fi
+
+    # first check: if line num breakpoint reached
+    if _at_linenumbp; then
+        _msg "Reached line breakpoint at line $_curline"
+        _cmdloop                      # breakpoint, enter debugger
+
+    # second check: if string breakpoint reached
+    elif _at_stringbp; then
+        _msg "Reached string breakpoint at line $_curline"
+        _cmdloop                      # breakpoint, enter debugger
+
+    # if neither, check whether break condition exists and is true
+    elif [[ -n $_brcond ]] &amp;&amp; eval $_brcond; then
+        _msg "Break condition '$_brcond' true at line $_curline"
+        _cmdloop                      # break condition, enter debugger
+
+    # finally, check if step mode and number of steps is up
+    elif (( _steps == 0 )); then      # if step mode and time to stop
+        _msg "Stopped at line $_curline"
+        _cmdloop                      # enter debugger
+    fi
+}
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">_steptrap</em> starts by setting <tt class="literal">_curline</tt> to the number of the
+guinea pig line that just ran.
+<a name="IXT-9-288203" />
+If execution tracing is turned on,
+it prints the <tt class="literal">PS4</tt> execution trace prompt (a la <em class="emphasis">xtrace</em>
+mode), the line number, and the line of code itself.
+</p>
+
+<p>
+Then it does one of two things: enter the debugger, the heart of
+which is the function <em class="emphasis">_cmdloop</em>, or just return so that the
+shell can execute the next statement. It chooses the former if
+a <em class="emphasis">breakpoint</em> or <em class="emphasis">break condition</em> (see below)
+has been reached, or if the user stepped
+into this statement.
+</p>
+
+<a name="korn2-CHP-9-SECT-2.3.1" /><div class="sect3">
+<h3 class="sect3">9.2.3.1. Commands</h3>
+
+<p>
+<a name="korn2-IDXTERM-1915" />
+
+We'll explain shortly how <em class="emphasis">_steptrap</em> determines these things;
+now we'll look at <em class="emphasis">_cmdloop</em>.
+
+It's a typical command loop,
+resembling a combination of the <tt class="literal">case</tt> statements we saw in
+<a href="ch05_01.htm">Chapter 5</a> and the calculator loop we saw in <a href="ch08_01.htm">Chapter 8</a>.
+</p>
+
+<p>
+<blockquote><pre class="code">
+# Debugger command loop.
+# Here at start of debugger session, when breakpoint reached,
+# after single-step.  Optionally here inside watchpoint.
+function _cmdloop {
+    typeset cmd args
+
+    while read -s cmd"?kshdb&gt; " args; do
+        case $cmd in
+        \#bp ) _setbp $args ;;       # set breakpoint at line num or string.
+        \#bc ) _setbc $args ;;       # set break condition.
+        \#cb ) _clearbp ;;           # clear all breakpoints.
+        \#g  ) return ;;             # start/resume execution
+        \#s  ) let _steps=${args:-1} # single-step N times (default 1)
+               return ;;
+        \#wp ) _setwp $args ;;       # set a watchpoint
+        \#cw ) _clearwp $args ;;     # clear one or more watchpoints
+
+        \#x  ) _xtrace ;;            # toggle execution trace
+        \#\? | \#h ) _menu ;;        # print command menu
+        \#q  ) exit ;;               # quit
+        \#*  ) _msg "Invalid command: $cmd" ;;
+        *  ) eval $cmd $args ;;      # otherwise, run shell command
+        esac
+    done
+
+</pre></blockquote>
+</p>
+
+<p>
+At each iteration, <em class="emphasis">_cmdloop</em> prints a prompt, reads a command,
+and processes it.
+<a name="IXT-9-288204" />
+<a name="IXT-9-288205" />
+
+We use <em class="emphasis">read -s</em> so that the user
+can take advantage of command-line editing within <em class="emphasis">kshdb</em>.
+All <em class="emphasis">kshdb</em> commands start with <tt class="literal">#</tt> to prevent confusion
+with shell commands. Anything that isn't a <em class="emphasis">kshdb</em> command
+(and doesn't start with <tt class="literal">#</tt>) is passed off to the shell for execution.
+Using <tt class="literal">#</tt> as the command character prevents a mistyped command
+from having any ill effect when the last case catches it and runs it
+through <em class="emphasis">eval</em>.
+<a href="ch09_02.htm#korn2-CHP-9-TABLE-5">Table 9-5</a> summarizes the debugger commands.
+
+
+
+</p>
+
+<a name="korn2-CHP-9-TABLE-5" /><h4 class="objtitle">Table 9-5. kshdb commands</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Command</th>
+<th>Action</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">#bp</tt> <em class="replaceable"><tt>N</tt></em></td>
+<td>Set breakpoint at line <em class="emphasis">N</em>.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#bp</tt> <em class="replaceable"><tt>str</tt></em></td>
+<td>Set breakpoint at next line containing <em class="emphasis">str</em>.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#bp</tt></td>
+<td>List breakpoints and break condition.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#bc</tt> <em class="replaceable"><tt>str</tt></em></td>
+<td>Set break condition to <em class="emphasis">str</em>.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#bc</tt></td>
+<td>Clear break condition.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#cb</tt></td>
+<td>Clear all breakpoints.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#g</tt></td>
+<td>Start or resume execution (go).</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#s</tt> [<em class="replaceable"><tt>N</tt></em>]</td>
+<td>Step through <em class="emphasis">N</em> statements (default 1).</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#wp</tt> [<tt class="literal">-c</tt>] <em class="replaceable"><tt>var</tt></em> <tt class="literal">get</tt></td>
+<td><p>
+Set a watchpoint on variable <em class="emphasis">var</em> when the value is
+retrieved.
+With <em class="emphasis">-c</em>, enter the command loop from within the watchpoint.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">#wp</tt> [<tt class="literal">-c</tt>] <em class="replaceable"><tt>var</tt></em> <tt class="literal">set</tt></td>
+<td><p>
+Set a watchpoint on variable <em class="emphasis">var</em> when the value is
+assigned.
+With <em class="emphasis">-c</em>, enter the command loop from within the watchpoint.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">#wp</tt> [<tt class="literal">-c</tt>] <em class="replaceable"><tt>var</tt></em> <tt class="literal">unset</tt></td>
+<td><p>
+Set a watchpoint on variable <em class="emphasis">var</em> when the variable is unset.
+With <em class="emphasis">-c</em>, enter the command loop from within the watchpoint.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">#cw</tt> <em class="replaceable"><tt>var discipline</tt></em></td>
+<td>Clear the given watchpoint.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#cw</tt></td>
+<td>Clear all watchpoints.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#x</tt></td>
+<td>Toggle execution tracing.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#h</tt>, <tt class="literal">#?</tt></td>
+<td>Print a help menu.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#q</tt></td>
+<td>Quit.</td>
+</tr>
+
+
+</table><p>
+
+<p>
+Before we look at the individual commands, it is important that
+you understand how control passes through <em class="emphasis">_steptrap</em>, the
+command loop, and the guinea pig.
+</p>
+
+<p>
+
+<a name="IXT-9-288206" />
+<em class="emphasis">_steptrap</em> runs before every statement in the guinea pig
+as a result of the <tt class="literal">trap ... DEBUG</tt> statement in the preamble.
+If a breakpoint has been reached or the user
+previously typed in a step command (<tt class="literal">#s</tt>),
+<em class="emphasis">_steptrap</em> calls the command loop. In doing so,
+it effectively interrupts the shell that is
+running the guinea pig to hand control<?troff .ne 10?> over to the user.<a href="#FOOTNOTE-131">[131]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-131" /><p> [131]
+In fact, low-level systems programmers can think of the entire
+<em class="emphasis">trap</em> mechanism as quite similar to an interrupt-handling scheme.
+</p>
+</blockquote>
+
+<p>
+The user can invoke debugger commands as well as shell commands
+that run in the same shell as the guinea pig.
+This means that you can use shell commands to check values
+of variables, signal traps, and any other information local to
+the script being debugged.
+</p>
+
+<p>
+The command loop runs, and the user stays in control,
+until the user types <tt class="literal">#g</tt>,
+<tt class="literal">#s</tt>,
+or <tt class="literal">#q</tt>. Let's look in detail at what happens in each of
+these cases.
+</p>
+
+<p>
+
+<tt class="literal">#g</tt> has the effect of running
+the guinea pig uninterrupted until it finishes or hits a breakpoint.
+But actually, it simply exits the command loop and returns to
+<em class="emphasis">_steptrap</em>, which exits as well. The shell takes control
+back; it runs the next statement in the guinea pig script and calls
+<em class="emphasis">_steptrap</em> again. Assuming that there is no breakpoint, this time
+<em class="emphasis">_steptrap</em> just exits again, and the process repeats until there
+is a breakpoint or the guinea pig is done.
+</p>
+</div>
+
+
+<a name="korn2-CHP-9-SECT-2.3.2" /><div class="sect3">
+<h3 class="sect3">9.2.3.2. Stepping</h3>
+
+<p>
+<a name="IXT-9-288207" />
+
+When the user types <tt class="literal">#s</tt>, the command loop code sets the variable
+<tt class="literal">_steps</tt> to the number of steps the user wants to execute, i.e.,
+to the argument given. Assume at first that the user omits the argument,
+meaning that <tt class="literal">_steps</tt> is set to 1. Then the command
+loop exits and returns control to <em class="emphasis">_steptrap</em>, which (as above)
+exits and hands control back to the shell. The shell runs the next
+statement and returns to <em class="emphasis">_steptrap</em>, which sees that <tt class="literal">_steps</tt>
+is 1 and decrements it to 0. Then the third <tt class="literal">elif</tt> conditional
+sees that <tt class="literal">_steps</tt> is 0, so
+it prints a "stopped" message and calls the command loop.
+</p>
+
+<p>
+Now assume that the user supplies an argument to <tt class="literal">#s</tt>, say 3.
+<tt class="literal">_steps</tt> is set to 3. Then the following happens:
+
+</p>
+
+<ol>
+
+<li><p>
+After the next statement runs, <em class="emphasis">_steptrap</em>
+is called again. It enters the first <tt class="literal">if</tt>
+clause, since <tt class="literal">_steps</tt> is greater than 0. <em class="emphasis">_steptrap</em>
+decrements <tt class="literal">_steps</tt> to 2 and exits, returning control to
+the shell.
+</p></li>
+
+
+<li><p>
+This process repeats, another step in the guinea pig
+is run, and <tt class="literal">_steps</tt> becomes 1.
+</p></li>
+
+
+<li><p>
+A third statement is run
+and we're back in <em class="emphasis">_steptrap</em>. <tt class="literal">_steps</tt> is decremented to 0,
+the third <tt class="literal">elif</tt> clause is run, and
+<em class="emphasis">_steptrap</em> breaks out to the command loop again.
+</p></li>
+</ol>
+
+<p>
+The overall
+effect is that three steps run and then the debugger takes over again.
+<a name="IXTR3-410" />
+</p>
+
+<p>
+Finally, the <tt class="literal">#q</tt> command exits.
+The EXIT trap then calls
+the function <em class="emphasis">_cleanup</em>, which
+just erases the temp file and exits the entire program.
+</p>
+
+<p>
+All other debugger commands (<tt class="literal">#bp</tt>,
+<tt class="literal">#bc</tt>, <tt class="literal">#cb</tt>,
+<tt class="literal">#wp</tt>,
+<tt class="literal">#cw</tt>,
+<tt class="literal">#x</tt>,
+and shell commands) cause the shell to stay in the command loop,
+meaning that the user prolongs the interruption of the shell.
+</p>
+</div>
+
+
+<a name="korn2-CHP-9-SECT-2.3.3" /><div class="sect3">
+<h3 class="sect3">9.2.3.3. Breakpoints</h3>
+
+<p>
+<a name="korn2-IDXTERM-1921" />
+
+Now we'll examine the breakpoint-related commands and the breakpoint
+mechanism in general.
+
+The <tt class="literal">#bp</tt> command calls the function <em class="emphasis">_setbp</em>, which can
+set two kinds of breakpoints, depending on
+the type of argument given. If it is a number, it's
+treated as a line number; otherwise, it's interpreted as a string
+that the breakpoint line should contain.
+</p>
+
+<p>
+For example, the command
+<tt class="literal">#bp 15</tt> sets a breakpoint at line 15,
+and <tt class="literal">#bp grep</tt> sets a breakpoint at the next line
+that contains the string <em class="emphasis">grep</em> -- whatever number that turns
+out to be. Although
+you can always look at a numbered listing of a file,<a href="#FOOTNOTE-132">[132]</a>
+string arguments to <tt class="literal">#bp</tt> can make that unnecessary.
+<a name="IXTR3-411" />
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-132" /><p> [132]
+<a name="IXT-9-288208" />
+<a name="IXT-9-288209" />
+<a name="IXT-9-288210" />
+<a name="IXT-9-288211" />
+<tt class="literal">pr -n</tt> <em class="replaceable"><tt>filename</tt></em> prints a numbered listing
+to standard output on System V-derived versions of Unix.
+Some very old BSD-derived systems don't support it.
+If this doesn't work on your system,
+try <tt class="literal">cat -n</tt> <em class="replaceable"><tt>filename</tt></em>,
+or if that doesn't work, create a
+shell script with the single line
+<tt class="literal">awk '{ printf("%d\t%s\n", NR, $0 }' $1</tt>
+</p>
+</blockquote>
+
+<p>
+Here is the code for <em class="emphasis">_setbp</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+# Set breakpoint(s) at given line numbers or strings
+# by appending patterns to breakpoint variables
+function _setbp {
+    if [[ -z $1 ]]; then
+        _listbp
+    elif [[ $1 == +([0-9]) ]]; then  # number, set bp at that line
+        _linebp="${_linebp}$1|"
+        _msg "Breakpoint at line " $1
+    else                             # string, set bp at next line w/string
+        _stringbp="${_stringbp}$@|"
+        _msg "Breakpoint at next line containing '$@'."
+    fi
+}
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">_setbp</em> sets the breakpoints by storing them
+in the variables <tt class="literal">_linebp</tt> (line number breakpoints) and
+<tt class="literal">_stringbp</tt> (string breakpoints). Both have breakpoints separated by
+pipe character delimiters, for reasons that will become clear
+shortly. This implies that breakpoints are cumulative; setting new
+breakpoints does not erase the old ones.
+</p>
+
+<p>
+
+The only way to remove breakpoints is with the command
+<tt class="literal">#cb</tt>,
+which (in function <em class="emphasis">_clearbp</em>) clears all
+of them at once by simply resetting the two variables to null.
+
+If you don't remember what breakpoints you have set,
+the command <tt class="literal">#bp</tt> without arguments lists them.
+</p>
+
+<p>
+The functions <em class="emphasis">_at_linenumbp</em> and <em class="emphasis">_at_stringbp</em> are called
+by <em class="emphasis">_steptrap</em> after every statement; they check whether the
+shell has arrived at a line number or string breakpoint, respectively.
+</p>
+
+<p>
+Here is <em class="emphasis">_at_linenumbp</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+# See if next line no. is a breakpoint.
+function _at_linenumbp {
+    [[ $_curline == @(${_linebp%\|}) ]]
+}
+</pre></blockquote>
+</p>
+
+<p>
+
+<em class="emphasis">_at_linenumbp</em> takes advantage of the pipe character as the
+separator between line numbers: it constructs a regular expression
+of the form
+<tt class="literal">@(</tt><em class="replaceable"><tt>N1</em><tt class="literal">|</tt><em class="replaceable">N2</tt></em><tt class="literal">|</tt>...<tt class="literal">)</tt>
+by taking
+the list of line numbers <em class="emphasis">_linebp</em>,
+removing the trailing <tt class="literal">|</tt>,
+and surrounding it with <tt class="literal">@(</tt> and <tt class="literal">)</tt>. For example, if
+<tt class="literal">$_linebp</tt> is <tt class="literal">3|15|19|</tt>, the resulting expression is
+<tt class="literal">@(3|15|19)</tt>.
+</p>
+
+<p>
+
+If the current line is any of these numbers, the conditional
+becomes true, and <em class="emphasis">_at_linenumbp</em> also returns a "true"
+(0) exit status.
+</p>
+
+<p>
+The check for a string breakpoint works on the same principle,
+but it's slightly more complicated; here is <em class="emphasis">_at_stringbp</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+# Search string breakpoints to see if next line in script matches.
+function _at_stringbp {
+    [[ -n $_stringbp &amp;&amp; ${_lines[$_curline]} == *@(${_stringbp%\|})* ]]
+}
+</pre></blockquote>
+</p>
+
+<p>
+The conditional first checks if <tt class="literal">$_stringbp</tt> is non-null
+(meaning that string breakpoints have been defined).
+If not, the conditional evaluates to false, but if so, its
+value depends on the pattern match after the <tt class="literal">&amp;&amp;</tt> -- which
+tests the current line to see if it contains any of the
+breakpoint strings.
+</p>
+
+<p>
+
+The expression on the right side of the double equal sign is similar
+to the one in <em class="emphasis">_at_linenumbp</em> above, except that it has
+<tt class="literal">*</tt> before and after it. This gives expressions of the form
+<tt class="literal">*@(</tt><em class="replaceable"><tt>S1</em><tt class="literal">|</tt><em class="replaceable">S2</em><tt class="literal">|</tt>...<tt class="literal">)*</tt>, where the <em class="emphasis">S</tt></em>s
+are the string breakpoints. This expression matches any line
+that contains any one of the possibilities in the parentheses.
+</p>
+
+<p>
+
+The left side of the double equal sign is the text of the current line
+in the guinea pig. So, if this text matches the regular
+expression, we've reached a string breakpoint; accordingly,
+the conditional expression and <em class="emphasis">_at_stringbp</em> return exit
+status 0.
+</p>
+
+<p>
+<em class="emphasis">_steptrap</em> tests each condition separately, so that it can
+tell you which kind of breakpoint stopped execution.
+In both cases, it calls the main command loop.
+<a name="IXTR3-412" />
+
+</p>
+</div>
+
+
+<a name="korn2-CHP-9-SECT-2.3.4" /><div class="sect3">
+<h3 class="sect3">9.2.3.4. Break conditions</h3>
+
+<p>
+<em class="emphasis">kshdb</em> has another feature related to breakpoints: the
+<em class="emphasis">break condition</em>. This is a string that the user can specify
+that is evaluated as a command; if it is true
+(i.e., returns exit status 0), the debugger enters the command loop.
+Since the break condition can be
+any line of shell code, there's lots of flexibility in
+what can be tested. For example, you can break when a variable
+reaches a certain value (e.g., <tt class="literal">(( $x &lt; 0 ))</tt>) or when a particular
+piece of text has been written to a file
+(<tt class="literal">grep</tt> <em class="replaceable"><tt>string file</tt></em>).
+You will probably think of all kinds of uses for this feature.<a href="#FOOTNOTE-133">[133]</a>
+
+To set a break condition, type
+<tt class="literal">#bc</tt> <em class="replaceable"><tt>string</tt></em>.
+To remove it, type <tt class="literal">#bc</tt> without
+arguments -- this installs the null string, which is ignored.
+<em class="emphasis">_steptrap</em> evaluates the break
+condition <tt class="literal">$_brcond</tt>
+only if it's non-null.
+If the break condition evaluates to 0, the <tt class="literal">if</tt> clause
+is true and, once again, <em class="emphasis">_steptrap</em> calls the command loop.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-133" /><p> [133]
+<a name="IXT-9-288212" />
+Bear in mind that if your break condition produces any standard output
+(or standard error), you will see it before every statement.
+Also, make sure your break condition
+doesn't take a long time to run; otherwise your script will run
+very, very slowly.
+</p>
+</blockquote>
+</div>
+
+
+<a name="korn2-CHP-9-SECT-2.3.5" /><div class="sect3">
+<h3 class="sect3">9.2.3.5. Execution tracing</h3>
+
+<p>
+<a name="IXT-9-288213" />
+
+The next feature is execution tracing, available through
+the <tt class="literal">#x</tt>
+command. This feature is meant to overcome the fact that a
+<em class="emphasis">kshdb</em> user can't use <tt class="literal">set -o xtrace</tt> while debugging
+(by entering it as a shell command), because its scope is limited
+to the <em class="emphasis">_cmdloop</em> function.<a href="#FOOTNOTE-134">[134]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-134" /><p> [134]
+Actually, by entering <tt class="literal">typeset -ft</tt> <em class="replaceable"><tt>funcname</tt></em>,
+the user can enable tracing on a per-function basis, but it's probably better to
+have it all under the debugger's control.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-9-288214" />
+
+The function <em class="emphasis">_xtrace</em> toggles execution tracing by simply
+assigning to the variable <tt class="literal">_trace</tt>
+the logical "not" of its current value, so that it alternates
+between 0 (off) and 1 (on). The preamble initializes it to 0.
+</p>
+</div>
+
+<a name="korn2-CHP-9-SECT-2.3.6" /><div class="sect3">
+<h3 class="sect3">9.2.3.6. Watchpoints</h3>
+
+<p>
+<a name="IXT-9-288215" />
+
+<em class="emphasis">kshdb</em> takes advantage of the shell's discipline functions
+to provide watchpoints.  You can set a watchpoint on any variable when the
+variable's value is retrieved or changed, or when the variable is unset.
+Optionally, the watchpoint can be set up to drop into the command loop as well.
+
+You do this with the <tt class="literal">#wp</tt> command, which in turn calls
+<em class="emphasis">_setwp</em>:
+</p>
+
+<blockquote><pre class="code">
+# Set a watchpoint on a variable
+# usage: _setwp [-c] var discipline
+# $1 = variable
+# $2 = get|set|unset
+typeset -A _watchpoints
+function _setwp {
+    typeset funcdef do_cmdloop=0
+    if [[ $1 == -c ]]; then
+        do_cmdloop=1
+        shift
+    fi
+
+    funcdef="function $1.$2 { "
+
+    case $2 in
+    get)    funcdef+="_msg $1 \(\$$1\) retrieved, line \$_curline"
+            ;;
+    set)    funcdef+="_msg $1 set to "'${.sh.value}'", line \$_curline"
+            ;;
+    unset)  funcdef+="_msg $1 cleared at line \$_curline"
+            funcdef+=$'\nunset '"$1"
+            ;;
+    *)      _msg invalid watchpoint function $2
+            return 1
+            ;;
+    esac
+
+    if ((do_cmdloop)); then
+        funcdef+=$'\n_cmdloop'
+    fi
+    funcdef+=$'\n}'
+
+    eval "$funcdef"
+
+    _watchpoints[$1.$2]=1
+}
+</pre></blockquote>
+
+<p>
+This function illustrates several interesting techniques.
+The first thing it does is declare some local variables and check if
+it was invoked with the <em class="emphasis">-c</em> option.
+This indicates that the watchpoint should enter the command loop.
+</p>
+
+<p>
+The general idea is to build up the text of the appropriate
+discipline function in the variable <tt class="literal">funcdef</tt>.
+The initial value is the <tt class="literal">function</tt> keyword, the
+discipline function name, and the opening left curly brace.
+The space following the brace is important, so that the shell
+will correctly recognize it as a keyword.
+</p>
+
+<p>
+Then, for each kind of discipline function, the <tt class="literal">case</tt>
+construct appends the appropriate function body to the <tt class="literal">funcdef</tt>
+string.
+The code uses judiciously placed backslashes to get the
+correct mixture of immediate and delayed shell variable evaluation.
+Consider the <tt class="literal">get</tt> case:
+for the <tt class="literal">\(</tt>,
+the backslash stays intact for use as a quoting character inside the
+body of the discipline function. For <tt class="literal">\$$1</tt>,
+the quoting happens as follows: the <tt class="literal">\$</tt> becomes a
+<tt class="literal">$</tt> inside the function, while the <tt class="literal">$1</tt>
+is evaluated immediately inside the double quoted string.
+</p>
+
+<p>
+In the case that the <em class="emphasis">-c</em> option was supplied,
+it uses the <tt class="literal">$'...'</tt> notation to append a
+newline and a call to <em class="emphasis">_cmdloop</em> to the function body,
+and then at the end appends another newline and closing right brace.
+Finally, by using <em class="emphasis">eval</em>, it installs the newly
+created function.
+</p>
+
+<p>
+For example, if <tt class="literal">-c</tt> was used, the text of the
+generated <em class="emphasis">get</em> function for the variable <tt class="literal">count</tt>
+ends up looking like this:
+</p>
+
+<blockquote><pre class="code">
+function count.get { _msg count \($count\) retrieved, line $_curline
+_cmdloop
+}
+</pre></blockquote>
+
+<p>
+At the end of <em class="emphasis">_setwp</em>, <tt class="literal">_watchpoints[$1.$2]</tt> is set to 1.
+This creates an entry in the associative array <tt class="literal">_watchpoints</tt>
+indexed by discipline function name.  This conveniently stores the
+names of all watchpoints for when we want to clear them.
+</p>
+
+<p>
+Watchpoints are cleared with the <tt class="literal">#cw</tt> command, which in turn
+runs the <em class="emphasis">_clearwp</em> function. Here it is:
+</p>
+
+<blockquote><pre class="code">
+# Clear watchpoints:
+# no args: clear all
+# two args: same as for setting: var get|set|unset
+function _clearwp {
+    if [ $# = 0 ]; then
+        typeset _i
+        for _i in ${!_watchpoints[*]}; do
+            unset -f $_i
+            unset _watchpoints[$_i]
+        done
+    elif [ $# = 2 ]; then
+        case $2 in
+        get | set | unset)
+            unset -f $1.$2
+            unset _watchpoints[$1.$2]
+            ;;
+        *)  _msg $2: invalid watchpoint
+            ;;
+        esac
+    fi
+}
+</pre></blockquote>
+
+<p>
+When invoked with no arguments, <em class="emphasis">_clearwp</em> clears
+all the watchpoints, by looping over all the subscripts in the <tt class="literal">_watchpoints</tt>
+associative array.
+Otherwise, if invoked with two arguments, the variable name and discipline
+function, it unsets the function using <tt class="literal">unset -f</tt>.
+In either case, the entry in <tt class="literal">_watchpoints</tt> is also unset.
+<a name="IXTR3-413" />
+
+</p>
+
+</div>
+
+
+<a name="korn2-CHP-9-SECT-2.3.7" /><div class="sect3">
+<h3 class="sect3">9.2.3.7. Limitations</h3>
+
+<p>
+<a name="korn2-IDXTERM-1933" />
+<em class="emphasis">kshdb</em> was not designed to push the state of the debugger
+art forward or to have an overabundance of features. It has the
+most useful basic features; its implementation is compact and
+(we hope) comprehensible. But it does have some important limitations.
+The ones we know of are described in the list that follows:
+</p>
+
+<ul>
+
+<li><p>
+String breakpoints cannot begin with digits or
+contain pipe characters (<tt class="literal">|</tt>) unless they are properly escaped.
+</p></li>
+
+
+<li><p>
+You can only set breakpoints -- whether line number or string -- on lines
+in the guinea pig that contain what the shell's documentation calls
+<em class="emphasis">simple commands</em>, i.e., actual Unix commands, shell built-ins,
+function calls, or aliases. If you
+set a breakpoint on a line that contains only whitespace or a comment,
+the shell always skips over that breakpoint. More importantly,
+control keywords like <tt class="literal">while</tt>, <tt class="literal">if</tt>,
+<tt class="literal">for</tt>, <tt class="literal">do</tt>,
+<tt class="literal">done</tt>, and even conditionals
+(<tt class="literal">[[</tt>...<tt class="literal">]]</tt>
+and <tt class="literal">((</tt>...<tt class="literal">))</tt>) won't work
+either, unless a simple command is on the same line.
+</p></li>
+
+
+<li><p>
+<em class="emphasis">kshdb</em> does not "step down" into shell scripts that are called from
+the guinea pig. To do this, you have to edit your guinea
+pig and change a call to <em class="emphasis">scriptname</em>
+to <tt class="literal">kshdb</tt> <em class="replaceable"><tt>scriptname</tt></em>.
+</p></li>
+
+
+<li><p>
+<a name="IXT-9-288216" />
+Similarly, subshells are treated as one gigantic statement;
+you cannot step down into them at all.
+</p></li>
+
+
+<li><p>
+<a name="IXT-9-288217" />
+<a name="IXT-9-288218" />
+
+<a name="IXT-9-288219" />
+The guinea pig should not trap on the fake signals DEBUG or EXIT;
+otherwise the debugger won't work.
+</p></li>
+
+
+<li><p>
+<a name="IXT-9-288220" />
+Variables that are <em class="emphasis">typeset</em> (see <a href="ch04_01.htm">Chapter 4</a>)
+are not accessible in break conditions.
+
+However, you can use
+the shell command <em class="emphasis">print</em> to check their values.
+
+</p></li>
+
+
+<li><p>
+Command error handling is weak. For example,
+a non-numeric argument to <tt class="literal">#s</tt> will cause it to bomb.
+</p></li>
+
+<li><p>
+Watchpoints that invoke the command loop are fragile.
+For <em class="emphasis">ksh93m</em> under GNU/Linux, trying to unset a watchpoint
+when in the command loop invoked from the watchpoint causes the
+shell to core dump.
+But this does not happen on all platforms, and this will
+eventually be fixed.
+</p></li>
+</ul>
+
+<p>
+Many of these are not insurmountable; see the exercises.
+<a name="IXTR3-414" />
+</p>
+</div>
+</div>
+
+<a name="korn2-CHP-9-SECT-2.4" /><div class="sect2">
+<h3 class="sect2">9.2.4. A Sample kshdb Session</h3>
+
+<p>
+<a name="korn2-IDXTERM-1940" />
+Now we'll show a transcript of an actual session with <em class="emphasis">kshdb</em>,
+in which the guinea pig is (a slightly modified version of)
+the solution to <a href="ch06_05.htm#korn2-CHP-6-SIDEBAR-3">Task 6-3</a>.
+For convenience, here is a numbered listing of the script,
+which we'll call <em class="emphasis">lscol</em>.
+</p>
+
+<p>
+<blockquote><pre class="code">
+ 1    set -A filenames $(ls $1)
+ 2    typeset -L14 fname
+ 3    let numfiles=${#filenames[*]}
+ 4    let numcols=5
+ 5
+ 6    for ((count = 0; $count &lt; $numfiles ; )); do
+ 7        fname=${filenames[count]}
+ 8        print -n "$fname  "
+ 9        let count++
+10        if (( count % numcols == 0 )); then
+11            print           # newline
+12        fi
+13    done
+14    
+15    if (( count % numcols != 0 )); then
+16        print
+17    fi
+</pre></blockquote>
+</p>
+
+<p>
+Here is the <em class="emphasis">kshdb</em> session transcript:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ kshdb lscol book
+Korn Shell Debugger version 2.0 for ksh Version M 1993-12-28 m
+Stopped at line 1
+kshdb&gt; <tt class="userinput"><b>#bp 4</b></tt>
+Breakpoint at line  4
+kshdb&gt; <tt class="userinput"><b>#g</b></tt>
+Reached line breakpoint at line 4
+kshdb&gt; <tt class="userinput"><b>#s</b></tt>
+Stopped at line 6
+kshdb&gt; <tt class="userinput"><b>print $numcols</b></tt>
+5
+kshdb&gt; <tt class="userinput"><b>#bc (( count == 10 ))</b></tt>
+Break when true: (( count == 10 ))
+kshdb&gt; <tt class="userinput"><b>#g</b></tt>
+appa.xml        appb.xml        appc.xml        appd.xml        appf.xml
+book.xml        ch00.xml        ch01.xml        ch02.xml        ch03.xml
+Break condition '(( count == 10 ))' true at line 10
+kshdb&gt; <tt class="userinput"><b>#bc</b></tt>
+Break condition cleared.
+kshdb&gt; <tt class="userinput"><b>#bp newline</b></tt>
+Breakpoint at next line containing 'newline'.
+kshdb&gt; <tt class="userinput"><b>#g</b></tt>
+Reached string breakpoint at line 11
+kshdb&gt; <tt class="userinput"><b>print $count</b></tt>
+10
+kshdb&gt; <tt class="userinput"><b>let count=9</b></tt>
+kshdb&gt; <tt class="userinput"><b>#g</b></tt>
+
+ch03.xml        Reached string breakpoint at line 11
+kshdb&gt; <tt class="userinput"><b>#bp</b></tt>
+Breakpoints at lines:
+4
+Breakpoints at strings:
+newline
+Break on condition:
+
+kshdb&gt; <tt class="userinput"><b>#g</b></tt>
+
+ch04.xml        ch05.xml        ch06.xml        ch07.xml        ch08.xml
+Reached string breakpoint at line 11
+kshdb&gt; <tt class="userinput"><b>#g</b></tt>
+
+ch09.xml        ch10.xml        colo1.xml       copy.xml
+$
+</pre></blockquote>
+</p>
+
+<p>
+First, notice that we gave the guinea pig script the argument
+<tt class="literal">book</tt>, meaning that we want to list the files in that
+directory. We begin by setting a simple breakpoint at line 4
+and starting the script. It stops before executing line 4
+(<tt class="literal">let numcols=5</tt>).
+We issue the <tt class="literal">#s</tt> command to single step through
+the command (i.e., to actually execute it).
+Then we issue a shell <em class="emphasis">print</em> command to
+show that the variable <tt class="literal">numcols</tt> is
+indeed set correctly.
+</p>
+
+<p>
+Next, we set a break condition, telling the debugger to kick in
+when <tt class="literal">count</tt> is 10, and we resume execution. Sure enough,
+the guinea pig prints 10 filenames and stops at line 10, right after
+<tt class="literal">count</tt> is incremented. We clear the break condition by
+typing <tt class="literal">#bc</tt> without an argument, since otherwise the shell would
+stop after every statement until the condition becomes false.
+</p>
+
+<p>
+The next command shows how the string breakpoint mechanism works.
+We tell the debugger to break when it hits a line that contains
+the string <tt class="literal">newline</tt>.  This string is in a comment on line 11.
+Notice that it doesn't matter that the string is in a
+comment -- just that the line it's on contains an actual command.
+We resume execution, and the debugger hits the breakpoint at line 11.
+</p>
+
+<p>
+After that, we show how we can use the debugger to change the
+guinea pig's state while running. We see that <tt class="literal">$count</tt> is
+still greater than 10; we change it to 9. In the next iteration
+of the <tt class="literal">while</tt> loop, the script accesses the same filename
+that it just did (<em class="emphasis">ch03.xml</em>),
+increments <tt class="literal">count</tt> back to 10,
+and hits the string breakpoint again. Finally, we list breakpoints and
+step through to the end, at which point it exits.
+<a name="IXTR3-415" />
+
+</p>
+</div>
+
+<a name="korn2-CHP-9-SECT-2.5" /><div class="sect2">
+<h3 class="sect2">9.2.5. Exercises</h3>
+
+<p>
+We conclude this chapter with a few exercises, which are
+suggested enhancements to <em class="emphasis">kshdb</em>.
+</p>
+
+<ol>
+
+<li><p>
+Improve command error handling in these ways:
+</p>
+
+<ol>
+
+<li><p>
+For numeric arguments to <tt class="literal">#bp</tt>, check that they are
+valid line numbers for the particular guinea pig.
+</p></li>
+
+
+<li><p>
+Check that arguments to <tt class="literal">#s</tt> are valid numbers.
+</p></li>
+
+
+<li><p>
+Any other error handling you can think of.
+</p></li>
+</ol>
+
+</li>
+
+
+<li><p>
+Enhance the <tt class="literal">#cb</tt> command so that the user can delete
+specific breakpoints (by string or line number).
+</p></li>
+
+
+<li><p>
+Remove the major limitation in the breakpoint mechanism:
+</p>
+
+<ol>
+
+<li><p>
+Improve it so that if the line number selected
+does not contain an actual Unix command, the next closest line
+above it is used as the breakpoint instead.
+</p></li>
+
+
+<li><p>
+Do the same thing for string breakpoints. (Hint: first translate
+each string breakpoint command into one or more line-number
+breakpoint commands.)
+</p></li>
+</ol>
+
+</li>
+
+
+<li><p>
+Implement an option that causes a break into the debugger
+whenever a command exits with nonzero status:
+</p>
+
+<ol>
+
+<li><p>
+Implement it as the command-line option <em class="emphasis">-e</em>.
+</p></li>
+
+
+<li><p>
+Implement it as the debugger commands <tt class="literal">#be</tt> (to turn the option
+on) and <tt class="literal">#ne</tt> (to turn it off).
+
+
+(Hint: you won't be able to use
+the ERR trap, but bear in mind that when you enter
+<em class="emphasis">_steptrap</em>,
+<tt class="literal">$?</tt> is still the exit status of the last command that ran.)
+</p></li>
+</ol>
+
+</li>
+
+
+<li><p>
+Add the ability to "step down" into scripts that the guinea pig calls
+(i.e., shell subprocesses) as the command-line option <em class="emphasis">-s</em>.
+One way to implement this is to change the <em class="emphasis">kshdb</em> script
+so it plants recursive calls to <em class="emphasis">kshdb</em> in the guinea pig.
+<a name="IXT-9-288221" />
+<a name="IXT-9-288222" />
+
+<a name="IXT-9-288223" />
+You can do this by filtering the guinea pig through a loop that
+reads each line and determines, with the <tt class="literal">whence -v</tt>
+and <em class="emphasis">file</em>(1) (see the man page) commands, if the line
+is a call to another shell script.<a href="#FOOTNOTE-135">[135]</a>
+If so, prepend <tt class="literal">kshdb -s</tt>
+to the line and write it to the new file;
+if not, just pass it through as is.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-135" /><p> [135]
+Notice that this method should catch most separate shell scripts,
+but not all of them.
+<a name="IXT-9-288224" />
+<a name="IXT-9-288225" />
+
+For example, it won't catch shell
+scripts that follow semicolons (e.g., <tt class="literal">cmd1; cmd2</tt>).
+</p>
+</blockquote></li>
+
+
+<li><p>
+Add support for multiple break conditions, so that <em class="emphasis">kshdb</em> stops
+execution when any one of them becomes true and prints a message
+that says which one is true. Do this by storing the break conditions
+in a colon-separated list or an array. Try to make this as efficient
+as possible, since the checking has to take place before every statement.
+</p></li>
+
+
+<li><p>
+Add any other features you can think of.
+</p></li>
+</ol>
+
+<p>
+Finally, here is the complete source code for the debugger function
+file <em class="emphasis">kshdb.fns</em>:
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+# Here before each statement in script being debugged.
+# Handle single-step and breakpoints.
+function _steptrap {
+    _curline=$1                       # arg is no. of line that just ran
+    (( $_trace )) &amp;&amp; _msg "$PS4 line $_curline: ${_lines[$_curline]}"
+    if (( $_steps &gt;= 0 )); then       # if in step mode
+        let _steps="$_steps - 1"      # decrement counter
+    fi
+
+    # first check: if line num breakpoint reached
+    if _at_linenumbp; then
+        _msg "Reached line breakpoint at line $_curline"
+        _cmdloop                      # breakpoint, enter debugger
+
+    # second check: if string breakpoint reached
+    elif _at_stringbp; then
+        _msg "Reached string breakpoint at line $_curline"
+        _cmdloop                      # breakpoint, enter debugger
+
+    # if neither, check whether break condition exists and is true
+    elif [[ -n $_brcond ]] &amp;&amp; eval $_brcond; then
+        _msg "Break condition '$_brcond' true at line $_curline"
+        _cmdloop                      # break condition, enter debugger
+
+    # finally, check if step mode and number of steps is up
+    elif (( _steps == 0 )); then      # if step mode and time to stop
+        _msg "Stopped at line $_curline"
+        _cmdloop                      # enter debugger
+    fi
+}
+
+# Debugger command loop.
+# Here at start of debugger session, when breakpoint reached,
+# after single-step.  Optionally here inside watchpoint.
+function _cmdloop {
+    typeset cmd args
+
+    while read -s cmd"?kshdb&gt; " args; do
+        case $cmd in
+        \#bp ) _setbp $args ;;       # set breakpoint at line num or string.
+        \#bc ) _setbc $args ;;       # set break condition.
+        \#cb ) _clearbp ;;           # clear all breakpoints.
+        \#g  ) return ;;             # start/resume execution
+        \#s  ) let _steps=${args:-1} # single-step N times (default 1)
+               return ;;
+        \#wp ) _setwp $args ;;       # set a watchpoint
+        \#cw ) _clearwp $args ;;     # clear one or more watchpoints
+
+        \#x  ) _xtrace ;;            # toggle execution trace
+        \#\? | \#h ) _menu ;;        # print command menu
+        \#q  ) exit ;;               # quit
+        \#*  ) _msg "Invalid command: $cmd" ;;
+        *  ) eval $cmd $args ;;      # otherwise, run shell command
+        esac
+    done
+}
+
+# See if next line no. is a breakpoint.
+function _at_linenumbp {
+    [[ $_curline == @(${_linebp%\|}) ]]
+}
+
+# Search string breakpoints to see if next line in script matches.
+function _at_stringbp {
+    [[ -n $_stringbp &amp;&amp; ${_lines[$_curline]} == *@(${_stringbp%\|})* ]]
+}
+
+# Print the given message to standard error.
+function _msg {
+    print -r -- "$@" &gt;&amp;2
+}
+
+</pre></blockquote></p><p><blockquote><pre class="code">
+# Set breakpoint(s) at given line numbers or strings
+# by appending patterns to breakpoint variables
+function _setbp {
+    if [[ -z $1 ]]; then
+        _listbp
+    elif [[ $1 == +([0-9]) ]]; then  # number, set bp at that line
+        _linebp="${_linebp}$1|"
+        _msg "Breakpoint at line " $1
+    else                             # string, set bp at next line w/string
+        _stringbp="${_stringbp}$@|"
+        _msg "Breakpoint at next line containing '$@'."
+    fi
+}
+
+# List breakpoints and break condition.
+function _listbp {
+    _msg "Breakpoints at lines:"
+    _msg "$(print $_linebp | tr '|' ' ')"
+    _msg "Breakpoints at strings:"
+    _msg "$(print $_stringbp | tr '|' ' ')"
+    _msg "Break on condition:"
+    _msg "$_brcond"
+}
+
+# Set or clear break condition
+function _setbc {
+    if [[ $# = 0 ]]; then
+        _brcond=
+        _msg "Break condition cleared."
+    else
+        _brcond="$*"
+        _msg "Break when true: $_brcond"
+    fi
+}
+
+# Clear all breakpoints.
+function _clearbp {
+    _linebp=
+    _stringbp=
+    _msg "All breakpoints cleared."
+}
+
+# Toggle execution trace feature on/off
+function _xtrace {
+    let _trace="! $_trace"
+    if (( $_trace )); then
+        _msg "Execution trace on."
+    else
+        _msg "Execution trace off."
+    fi
+}
+
+</pre></blockquote></p><p><blockquote><pre class="code">
+# Print command menu
+function _menu {
+    _msg 'kshdb commands:
+    #bp N                     set breakpoint at line N
+    #bp str                   set breakpoint at next line containing str
+    #bp                       list breakpoints and break condition
+    #bc str                   set break condition to str
+    #bc                       clear break condition
+    #cb                       clear all breakpoints
+    #wp [-c] var discipline   set a watchpoint on a variable
+    #cw                       clear all watchpoints
+    #g                        start/resume execution
+    #s [N]                    execute N statements (default 1)
+    #x                        toggle execution trace on/off
+    #h, #?                    print this menu
+    #q                        quit'
+}
+
+# Erase temp files before exiting.
+function _cleanup {
+    rm $_dbgfile 2&gt;/dev/null
+}
+
+# Set a watchpoint on a variable
+# usage: _setwp [-c] var discipline
+# $1 = variable
+# $2 = get|set|unset
+typeset -A _watchpoints
+function _setwp {
+    typeset funcdef do_cmdloop=0
+    if [[ $1 == -c ]]; then
+        do_cmdloop=1
+        shift
+    fi
+
+    funcdef="function $1.$2 { "
+
+    case $2 in
+    get)    funcdef+="_msg $1 \(\$$1\) retrieved, line \$_curline"
+            ;;
+    set)    funcdef+="_msg $1 set to "'${.sh.value}'", line \$_curline"
+            ;;
+    unset)  funcdef+="_msg $1 cleared at line \$_curline"
+            funcdef+=$'\nunset '"$1"
+            ;;
+    *)      _msg invalid watchpoint function $2
+            return 1
+            ;;
+    esac
+
+    if ((do_cmdloop)); then
+        funcdef+=$'\n_cmdloop'
+    fi
+    funcdef+=$'\n}'
+
+    eval "$funcdef"
+
+    _watchpoints[$1.$2]=1
+}
+
+# Clear watchpoints:
+# no args: clear all
+# two args: same as for setting: var get|set|unset
+function _clearwp {
+    if [ $# = 0 ]; then
+        typeset _i
+        for _i in ${!_watchpoints[*]}; do
+            unset -f $_i
+            unset _watchpoints[$_i]
+        done
+    elif [ $# = 2 ]; then
+        case $2 in
+        get | set | unset)
+            unset -f $1.$2
+            unset _watchpoints[$1.$2]
+            ;;
+        *)  _msg $2: invalid watchpoint
+            ;;
+        esac
+    fi
+}
+</pre></blockquote>
+</p>
+
+<a name="IXTR3-416" />
+<a name="IXTR3-417" />
+<a name="IXTR3-418" />
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9. Debugging Shell Programs</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10. Korn Shell Administration</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

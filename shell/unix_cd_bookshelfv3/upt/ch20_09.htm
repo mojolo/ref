@@ -1,0 +1,133 @@
+<html><head><title>patch: Generalized Updating of Files That Differ (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch20_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">20.9. patch: Generalized Updating of Files That Differ</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: patch</p>
+
+<p><a name="IXT-20-260" /> <a name="IXT-20-261" />Like all of Larry
+Wall's widely used programs (including <b class="emphasis-bold">perl</b> (<a href="ch41_01.htm#upt3-CHP-41-SECT-1">Section 41.1</a>), a
+software configuration script called <i class="command">Configure</i>,
+and the <i class="command">rn</i> news reader), <i class="command">patch</i>
+betrays a whimsical intelligence of its own. Feed it any kind of
+<b class="emphasis-bold">diff listing</b>
+(<a name="IXT-20-262" /><a href="ch11_01.htm#upt3-CHP-11-SECT-1">Section 11.1</a>)
+(not just an editing script produced with the <span class="option">-e</span>
+option -- the typical way before <i class="command">patch</i> came
+around). <i class="command">patch</i> figures out what it needs to do to
+apply the diff, and updates the file, supplying all the while a
+breezy commentary on what it's doing:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>patch &lt; testfile.diff</b></tt>
+Hmm...  Looks like a normal diff to me...
+File to patch: <tt class="userinput"><b>testfile</b></tt>
+Patching file testfile using Plan A...
+Hunk #1 succeeded at 2.
+done</pre></blockquote>
+
+<p>As Larry once noted, <i class="command">patch</i> has done an awful lot
+to "change the culture of
+computing." Almost all free software is now updated
+by means of patches rather than complete new releases.
+<i class="command">patch</i> is smart enough to discard any leading or
+trailing garbage (such as mail headers or signatures), so a program
+source file can be updated by piping a mail message containing a diff
+listing between old and new versions directly to
+<i class="command">patch</i>.
+</p>
+
+<p>Here are a few of the other things <i class="command">patch</i> is smart
+enough to do:
+</p>
+
+<ul><li>
+<p>Figure out the name of the file to be updated and do it without
+asking (usually only if the diff file is a <b class="emphasis-bold">context diff</b> (<a href="ch11_03.htm#upt3-CHP-11-SECT-3">Section 11.3</a>)
+produced with the <span class="option">-c</span> option).
+</p>
+</li><li>
+<p>Look for a suitable <b class="emphasis-bold">RCS or CVS</b>
+(<a href="ch39_04.htm#upt3-CHP-39-SECT-4">Section 39.4</a>) file and check it out, if the filename
+itself can't be found.
+</p>
+</li><li>
+<p>Handle diff listings that don't quite match. This
+makes it possible for <i class="command">patch</i> to update a file that
+the recipient has already changed from the one that the diff was
+based on.
+</p>
+</li><li>
+<p>Save any pieces of the diff file that don't end up
+being used, in a file named by adding the suffix
+<em class="emphasis">.rej</em> (reject) to the name of the file being
+patched.
+</p>
+</li><li>
+<p>Back up the file that is being patched, appending the suffix
+<em class="emphasis">.orig</em> to the name of the file being patched.
+</p>
+</li><li>
+<p>Recognize that its input may actually apply to several files, and
+patch each of them separately. For example, a whole directory might
+be updated by a "patch" file that
+contained diff listings for each of the files in the directory. (By
+the way, the <span class="option">-d</span> option to <i class="command">patch</i>
+tells it to <i class="command">cd</i> to a specified directory before
+starting work.)
+</p>
+</li><li>
+<p><a name="IXT-20-263" />Recognize
+(or at least speculate) that a patch might have been created
+incorrectly, with the old and new files swapped. Larry says,
+"Yes, I'm afraid that does happen
+occasionally, human nature being what it is."
+<em class="emphasis">patch</em>'s <span class="option">-R</span>
+option will force <i class="command">patch</i> to reverse the sense of
+the patch; what's really amusing is to see
+<i class="command">patch</i> suggest that this might be the thing to do,
+when things seem out of sync.
+</p>
+</li></ul>
+<p>If you are a programmer, <i class="command">patch</i> is worth studying
+just to see how much a program can do to anticipate errors, deal with
+fuzzy input, and in general "make the computer do
+the dirty work." But if you're a
+programmer, you doubtless already know about
+<i class="command">patch</i>.
+</p>
+
+<p>One last note: <i class="command">patch</i> is so useful that
+it's been added to many Unix systems. Check to see
+if your system has it before installing the program. Some versions of
+<i class="command">patch</i> we've seen are limted
+versions or buggy when they come from software vendors, though. The
+one on the book's website is worth comparing to
+yours.
+</p>
+
+<p> <em class="emphasis">-- TOR</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch20_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">20.8. Batch Editing Gotcha: Editors Fail on Big Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">20.10. Quick Reference: awk</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

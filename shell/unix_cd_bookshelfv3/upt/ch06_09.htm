@@ -1,0 +1,128 @@
+<html><head><title>Listing the Current Resources for a Client: appres (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.9. Listing the Current Resources for a Client: appres</h2>
+
+<p><a name="IXT-6-911" /><a name="IXT-6-912" />The <i class="command">appres</i>
+(<em class="emphasis">app</em>lication <em class="emphasis">res</em>ource)
+program lists the resources that currently might apply to a client.
+These resources may be derived from several sources, including the
+user's <em class="filename">.Xresources</em> file and a
+system-wide application defaults file. The directory
+<em class="filename">/usr/lib/X11/app-defaults</em><a name="IXT-6-913" /><a name="IXT-6-914" /> contains application-default
+files for several clients. (Note that it may be in a different place
+depending on how your X11 is installed; on Mac OS X, which does not
+come with X by default, you might find it in
+<em class="filename">/usr/X11R6/etc/app-defaults</em> in one popular
+install or <em class="filename">/usr/local/lib/X11/app-defaults</em> in
+another.) The function of these files is discussed in the next
+section. For now, be aware that all of the resources contained in
+these files begin with the class name of the application.
+</p>
+
+<p>Also be aware that <i class="command">appres</i> has one serious
+limitation: it cannot distinguish between valid and invalid resource
+specifications. It lists all resources that might apply to a client,
+regardless of whether the resources are correctly specified.
+</p>
+
+<p><i class="command">appres</i> lists the resources that apply to a client
+having the <em class="replaceable"><tt>class_name</tt></em> and/or
+<em class="replaceable"><tt>instance_name</tt></em> you specify. Typically, you
+would use <i class="command">appres</i> before running a client program
+to find out what resources the client program will access.
+</p>
+
+<p>For example, say you want to run <i class="command">xterm</i>, but you
+can't remember the latest resources
+you've specified for it, whether
+you've loaded them, what some of the application
+defaults are, etc. You can use the <i class="command">appres</i> client
+to check the current <i class="command">xterm</i> resources. If you
+specify only a class name, as in this command line:<a href="#FOOTNOTE-32">[32]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-32" /><p> [32]The class name of <i class="command">xterm</i> starts with
+<em class="emphasis">two</em> uppercase letters; this is contrary to the
+naming scheme followed by most other application classes.</p>
+</blockquote>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>appres XTerm</b></tt></pre></blockquote>
+
+<p><i class="command">appres</i> lists the resources that any
+<i class="command">xterm</i> would load. In the case of
+<i class="command">xterm</i>, this is an extensive list, encompassing all
+of the system-wide application defaults, as well as any other
+defaults you have specified in a resource file.
+</p>
+
+<p>You can also specify an instance name to list the resources that
+applies to a particular instance of the client, as in:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>appres XTerm bigxterm</b></tt></pre></blockquote>
+
+<p>If you omit the class name, <i class="command">xappres</i> assumes the
+class <tt class="literal">-NoSuchClass-</tt>, which has no defaults, and
+returns only the resources that would be loaded by the particular
+instance of the client.
+</p>
+
+<p>Note that the instance can simply be the client name, e.g.,
+<tt class="literal">xterm</tt>. In that case none of the system-wide
+application defaults would be listed, since all begin with the class
+name <tt class="literal">XTerm</tt>. For example, the command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>appres xterm</b></tt></pre></blockquote>
+
+<p>might return resources settings similar to these:</p>
+
+<blockquote><pre class="code">xterm.vt100.scrollBar:  True
+xterm*PhonyResource:    youbet
+xterm*pointerShape:     gumby
+xterm*iconGeometry:     +50+50
+*VT100.Translations:    #override\
+    Button1 &lt;Btn3Down&gt;:   select-end(CLIPBOARD)\n\
+    ~Ctrl ~Meta &lt;Btn2Up&gt;: insert-selection(primary,CLIPBOARD)</pre></blockquote>
+
+<p>Most of these resources set obvious features of
+<i class="command">xterm</i>. The translation table sets up
+<i class="command">xterm</i> to use the
+<i class="command">xclipboard</i><a name="IXT-6-915" />. Notice also that
+<i class="command">appres</i> has returned an invalid resource called
+<tt class="literal">PhonyResource</tt> that we created for demonstration
+purposes. You can't rely on
+<i class="command">appres</i> to tell you what resources a client will
+actually load because the <i class="command">appres</i> program cannot
+distinguish a valid resource specification from an invalid one.
+Still, it can be fairly useful to jog your memory as to the defaults
+you've specified in your
+<em class="filename">.Xresources</em> file, as well as the system-wide
+application defaults.<a name="IXTR3-971" /> <a name="IXTR3-972" /> 
+</p>
+
+<p><em class="emphasis">--VQ and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.8. Setting Resources with xrdb</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.10. Starting Remote X Clients</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

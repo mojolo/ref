@@ -1,0 +1,149 @@
+<html><head><title>Limitations (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.8. Limitations</h2>
+
+<p>
+<a name="IXT-10-266197" />
+<a name="IXT-10-266198" />
+There are fixed limits within any awk implementation.  The only
+trouble is that the documentation seldom reports them.
+<a href="ch10_08.htm#sedawk-ch-10-tab-1">Table 10.1</a>
+lists the limitations as described in <em class="emphasis">The AWK Programming
+Language</em>.  These limitations are implementation-specific
+but they are good ballpark figures for most systems.</p>
+
+<a name="sedawk-ch-10-tab-1" /><h4 class="objtitle">Table 10.1. Limitations</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Item</th>
+<th>Limit</th>
+</tr>
+
+
+
+
+<tr>
+<td>Number of fields per record</td>
+<td>100</td>
+</tr>
+
+<tr>
+<td>Characters per input record</td>
+<td>3000</td>
+</tr>
+
+<tr>
+<td>Characters per output record</td>
+<td>3000</td>
+</tr>
+
+<tr>
+<td>Characters per field</td>
+<td>1024</td>
+</tr>
+
+<tr>
+<td>Characters per printf string</td>
+<td>3000
+
+<a name="IXT-10-266199" />
+<a name="IXT-10-266200" />
+<a name="IXT-10-266201" /></td>
+</tr>
+
+<tr>
+<td>Characters in literal string</td>
+<td>400</td>
+</tr>
+
+<tr>
+<td>Characters in character class</td>
+<td>400</td>
+</tr>
+
+<tr>
+<td>Files open</td>
+<td>15</td>
+</tr>
+
+<tr>
+<td>Pipes open</td>
+<td>1</td>
+</tr>
+
+
+</table><p>
+
+<blockquote><b>NOTE:</b> 
+Despite the number in <a href="ch10_08.htm#sedawk-ch-10-tab-1">Table 10.1</a>, experience
+has shown that most awks allow you to have more than one open pipe.</p>
+</blockquote>
+
+<p>In terms of numeric values, awk uses double-precision, floating-point
+numbers that are limited in size by the machine's architecture.</p>
+
+<p>Running into these limits can cause unanticipated problems with
+scripts.  In developing examples for the first edition of this book,
+Dale thought he'd write a search program that could look for a word or
+sequence of words in a single paragraph.  The idea was to read a
+document as a series of multiline records and if any of the fields
+contained the search term, print the record, which was a
+paragraph.  It could be used to search through mail files where blank
+lines delimit paragraphs.  The resulting program worked for small test
+files.  However, when tried on larger files, the program dumped core
+because it encountered a paragraph that was longer than the maximum
+input record size, which is 3000 characters.  (Actually, the file
+contained an included mail message where blank lines within the
+message were prefixed by "&gt;".)  Thus, when reading multiple lines
+as a single record, you better be sure that you don't anticipate
+records longer than 3000 characters.  By the way, there is no
+particular error message that alerts you to the fact that the problem
+is the size of the current record.</p>
+
+<p>
+<a name="IXT-10-266202" />
+<a name="IXT-10-266203" />
+<a name="IXT-10-266204" />
+<a name="IXT-10-266205" />
+Fortunately, gawk and mawk (see <a href="ch11_01.htm">Chapter 11, "A Flock of awks"</a>) don't
+have such small limits; for example, the number of fields in a record is
+limited in gawk to the maximum value that can be held in a C
+<b class="emphasis-bold">long</b>, and certainly records can be longer than 3000
+characters.  These versions allow you to have more open files and pipes.</p>
+
+<p>
+<a name="IXT-10-266206" />
+<a name="IXT-10-266207" />
+Recent versions of the Bell Labs awk have two options,
+<span class="option">-mf</span> <em class="replaceable"><tt>N</tt></em> and
+<span class="option">-mr</span> <em class="replaceable"><tt>N</tt></em>, that allow you to
+set the maximum number of fields and the maximum record size on the
+command line, as an emergency way to get around the default limits.</p>
+
+<p>(Sed implementations also have their own limits, which aren't
+documented.  Experience has shown that most UNIX versions of sed have
+a limit of 99 or 100 substitute (<b class="emphasis-bold">s</b>) commands.)</p>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.7. Debugging</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.9. Invoking awk Using the #! Syntax</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

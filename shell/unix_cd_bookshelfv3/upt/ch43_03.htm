@@ -1,0 +1,88 @@
+<html><head><title>Send (Only) Standard Error Down a Pipe (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch43_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch43_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">43.3. Send (Only) Standard Error Down a Pipe</h2>
+
+<p><a name="IXT-43-2255" /><a name="IXT-43-2256" /><a name="IXT-43-2257" /><a name="IXT-43-2258" />A vertical bar character
+(<tt class="literal">|</tt>) on a command line pipes the standard output of
+a process to another process. How can you pipe the standard error but
+not the standard output? You might want to put a long-running
+<i class="command">cruncher</i> command in <a name="IXT-43-2259" />the background, save the output to a file,
+and mail yourself a copy of the errors. In the C shell, run the
+command in a <b class="emphasis-bold">subshell</b> (<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>). The standard output of the command is
+redirected inside the subshell. All that's left
+outside the subshell is the standard error; the <b class="emphasis-bold">|&amp; operator</b> (<a href="ch43_05.htm#upt3-CHP-43-SECT-5">Section 43.5</a>)
+redirects it (along with the empty standard output) to the <b class="emphasis-bold">mail</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) program:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>(cruncher &gt; </b></tt><em class="replaceable"><tt>outputfile</em><tt class="userinput"><b>) |&amp; mail </b></tt> <em class="replaceable">yourname</tt></em> &amp;
+[1] 12345</pre></blockquote>
+
+<p>Of course, you don't need to put that job in the
+background. If you want the standard output to go to your terminal
+instead of a text file, use <a name="IXT-43-2260" /><b class="emphasis-bold">/dev/tty</b>
+(<a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a>) as the
+<em class="replaceable"><tt>outputfile</tt></em>.
+</p>
+
+<p><a name="IXT-43-2261" />The Bourne shell gives you a lot more
+flexibility and lets you do just what you need. The disadvantage is
+the <b class="emphasis-bold">more complicated syntax</b> (<a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a>). Here's how to run your
+<i class="command">cruncher</i> program, route the
+<em class="emphasis">stderr</em> through a pipe to the
+<i class="command">mail</i> program, and leave
+<em class="emphasis">stdout</em> going to your screen:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>(cruncher 3&gt;&amp;1 1&gt;&amp;2 2&gt;&amp;3 3&gt;&amp;-) | mail </b></tt><em class="replaceable"><tt>yourname</tt></em><tt class="userinput"><b> &amp;</b></tt>
+12345</pre></blockquote>
+
+<p><a name="IXT-43-2262" />If this example makes your head hurt a
+little, you're not alone. The key to understanding
+this arcana is to know that programs don't refer to
+files by name like users do. Instead, when a program wants to read or
+write to a file, it must ask the operating system for a file stream
+that has an integer <em class="emphasis">file descriptor</em> associated
+with it. Every program has three file streams opened by default:
+standard input, standard output, and standard error. The file
+descriptors associated with standard input and standard error are 1
+and 2, respectively. These file streams may be duplicated; that is,
+the data stream pointed by the file descriptor on the left will now
+go to data stream pointed to by the file descriptor on the right. If
+you wanted to redirect both standard error and standard output to
+<i class="command">more</i>, you might do this:
+</p>
+
+<blockquote><pre class="code">$ <em class="replaceable"><tt>command</tt></em> <tt class="userinput"><b>2&gt;&amp;1 | more</b></tt></pre></blockquote>
+
+<p>To redirect <em class="emphasis">stdout</em> to an output file and send
+<em class="emphasis">stderr</em> down a pipe, try this:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>(cruncher 3&gt;&amp;1 &gt;</b></tt><em class="replaceable"><tt>outputfile</em><tt class="userinput"><b> 2&gt;&amp;3 3&gt;&amp;-) | mail </b></tt><em class="replaceable">yourname</tt></em><tt class="userinput"><b> &amp;</b></tt>
+12345</pre></blockquote>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch43_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch43_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">43.2. One Argument with a cat Isn't Enough</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">43.4. Problems Piping to a Pager</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

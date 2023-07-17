@@ -1,0 +1,104 @@
+<html><head><title>Shell Scripts On-the-Fly from Standard Input (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_17.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_19.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">36.18. Shell Scripts On-the-Fly from Standard Input</h2>
+
+<p><img src="figs/bomb.gif" alt="Figure " width="24" /> <a href="ch36_17.htm#upt3-CHP-36-SECT-17">Section 36.17</a></p>
+
+<p><a name="IXT-36-3315" /><a name="IXT-36-3316" /><a name="IXT-36-3317" />The
+<a name="IXT-36-3318" />shell can read commands from
+its <a name="IXT-36-3319" />standard input or from a
+file. To run a series of commands that can change, you may want to
+use one program to create the command lines automatically -- and
+pipe that program's output to a shell, which will
+run those "automatic" commands.
+</p>
+
+<p><a name="IXT-36-3320" /><a name="IXT-36-3321" />Here's an
+example.<a href="#FOOTNOTE-113">[113]</a> You want to copy files
+from a subdirectory and all its subdirectories into a single
+directory. The filenames in the destination directory
+can't conflict; no two files can have the same name.
+An easy way to name the copies is to replace each slash
+(<tt class="literal">/</tt>) in the file's relative
+pathname with a minus sign (<tt class="literal">-</tt>).<a href="#FOOTNOTE-114">[114]</a> For instance, the file named
+<em class="emphasis">lib/glob/aprog.c</em> would be copied to a file named
+<em class="emphasis">lib-glob-aprog.c</em>. You can use <b class="emphasis-bold">sed</b> (<a href="ch34_02.htm#upt3-CHP-34-SECT-2">Section 34.2</a>) to convert
+the filenames and output <i class="command">cp</i> commands like these:
+</p><blockquote class="footnote"> <a name="FOOTNOTE-113" /><p> [113]This isn't recommended for
+systems with a 14-character filename limit. You may also want to
+watch out on Darwin, which, although it has the typical UNIX filename
+limits, only displays 31 characters on the Finder Desktop (munging
+the last few chars or inserting...to provide a unique
+&lt;32-character filename).</p> </blockquote><blockquote class="footnote"> <a name="FOOTNOTE-114" /><p> [114]A
+replacement like CTRL-a would make unique filenames (legal, but also
+harder to type).</p> </blockquote>
+
+<blockquote><pre class="code">cp <em class="replaceable"><tt>from</em>/lib/glob/aprog.c <em class="replaceable">to</tt></em>/lib-glob-aprog.c
+cp <em class="replaceable"><tt>from</em>/lib/glob/aprog.h <em class="replaceable">to</tt></em>/lib-glob-aprog.h
+    <i class="lineannotation">...</i></pre></blockquote>
+
+<p><a name="IXT-36-3322" />However,
+an even better solution can be developed using <b class="emphasis-bold">nawk</b> (<a href="ch20_11.htm#upt3-CHP-20-SECT-11">Section 20.11</a>). The
+following example uses <b class="emphasis-bold">find</b> (<a href="ch09_01.htm#upt3-CHP-9-SECT-1">Section 9.1</a>) to make a list of pathnames, one per line, in
+and below the <em class="emphasis">copyfrom</em> directory. Next it runs
+<i class="command">nawk</i> to create the destination file pathnames
+(like
+<em class="replaceable"><tt>to</tt></em><tt class="literal">/lib-glob-aprog.c</tt>)
+and write the completed command lines to the standard output. The
+shell reads the command lines from its standard input, through the
+pipe.
+</p>
+
+<p>This example is in a script file because it's a
+little long to type at a prompt. But you can type commands like these
+at a prompt, too, if you want to:
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+find copyfrom -type f -print |
+awk '{
+    out = $0
+    gsub("/", "-", out)
+    sub("^copyfrom-", "copyto/", out)
+    print "cp", $0, out
+}' |
+sh</pre></blockquote>
+
+<p><a name="IXT-36-3323" /> <a name="IXT-36-3324" /> <a name="IXT-36-3325" />If you change the last line to
+<tt class="literal">sh -v</tt>, the shell's <b class="emphasis-bold">verbose option</b> (<a href="ch37_01.htm#upt3-CHP-37-SECT-1">Section 37.1</a>)
+will show each command line before executing it. If the last line has
+<tt class="literal">sh -e</tt><a name="IXT-36-3326" />, the shell will quit immediately
+after any command returns a nonzero <b class="emphasis-bold">exit
+status</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>) -- that might
+happen, for instance, if the disk fills up and <i class="command">cp</i>
+can't make the copy. Finally, you may need to use
+<i class="command">nawk</i> rather than <i class="command">awk</i>, depending
+on your system.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_17.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_19.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.17. A Shell Can Read a Script from Its Standard Input, but...</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.19. Quoted hereis Document Terminators: sh Versus csh</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

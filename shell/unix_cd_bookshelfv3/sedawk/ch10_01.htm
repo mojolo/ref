@@ -1,0 +1,376 @@
+<html><head><title>The Bottom Drawer (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 10. The Bottom Drawer</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch10_01.htm#sect1">The getline Function</a><br />
+<a href="ch10_02.htm">The close() Function</a><br />
+<a href="ch10_03.htm">The system() Function</a><br />
+<a href="ch10_04.htm">A Menu-Based Command Generator</a><br />
+<a href="ch10_05.htm">Directing Output to Files and Pipes</a><br />
+<a href="ch10_06.htm">Generating Columnar Reports</a><br />
+<a href="ch10_07.htm">Debugging</a><br />
+<a href="ch10_08.htm">Limitations</a><br />
+<a href="ch10_09.htm">Invoking awk Using the #! Syntax</a><br /></p></div><p>This chapter is proof that not everything has its place.  Some things
+just don't seem to fit, no matter how you organize them.  This chapter
+is a collection of such things. It is tempting to label it "Advanced
+Topics," as if to explain its organization (or lack thereof), but some
+readers might feel they need to make more progress before reading
+it. We have therefore called it "The Bottom Drawer," thinking of the
+organization of a chest of drawers, with underwear, socks, and other
+day-to-day things in the top drawers and heavier things that are less frequently used, like
+sweaters, in the bottom drawers.  All of
+it is equally accessible, but you have to bend over to get things in
+the bottom drawer.  It requires a little more effort to get something,
+that's all.</p><p>In this chapter we cover a number of topics, including the
+following:</p><ul><li><p>The <b class="emphasis-bold">getline</b> function</p></li><li><p>The <b class="emphasis-bold">system()</b> function</p></li><li><p>Directing output to files and pipes</p></li><li><p>Debugging awk scripts</p></li></ul><div class="sect1"><a name="sedawk-ch-10-sect-1" />
+<h2 class="sect1"><a name="sect1" />10.1. The getline Function</h2>
+
+<p>
+<a name="ch10.get1" />
+<a name="ch10.get2" />
+<a name="ch10.get3" />
+<a name="ch10.get4" />
+The <b class="emphasis-bold">getline</b> function is used to read another line
+of input.  Not only can <b class="emphasis-bold">getline</b> read from the
+regular input data stream, it can also handle input from files and
+pipes.</p>
+
+<p>
+<a name="IXT-10-266141" />
+The <b class="emphasis-bold">getline</b> function
+is similar to awk's <b class="emphasis-bold">next</b> statement.  While both
+cause the next input line to be read, the <b class="emphasis-bold">next</b> statement passes 
+control back to the top of the script.  The <b class="emphasis-bold">getline</b>
+function gets the next line without changing control in the script. 
+Possible return values are:</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td>1</td>
+<td><p>If it was able to read a line.</p></td>
+</tr>
+
+<tr>
+<td>0</td>
+<td><p>If it encounters the end-of-file.</p></td>
+</tr>
+
+<tr>
+<td>-1</td>
+<td><p>If it encounters an error.</p></td>
+</tr>
+
+
+</table><blockquote><b>NOTE:</b> 
+Although <b class="emphasis-bold">getline</b> is called a function and it does
+return a value, its syntax resembles a statement.  Do not write
+<b class="emphasis-bold">getline()</b>; its syntax does not permit
+parentheses.</p>
+</blockquote>
+
+<p>In the previous chapter, we used a manual page source file as an
+example.  The <b class="emphasis-bold">-man</b> macros typically place the text
+argument on the next line.  Although the macro is the pattern that you
+use to find the line, it is actually the next line that you process.
+For instance, to extract the name of the command from the manpage,
+the following example matches the heading "Name," reads the
+next line, and prints the first field of it:</p>
+
+<blockquote><pre class="code"># getline.awk -- test getline function
+/^\.SH "?Name"?/ { 
+	getline # get next line
+	print $1 # print $1 of new line.
+}</pre></blockquote>
+
+<p>The pattern matches any line with ".SH" followed by "Name," which
+might be enclosed in quotes.  Once this line is matched, we use
+<b class="emphasis-bold">getline</b> to read the next input line.  When the new
+line is read, <b class="emphasis-bold">getline</b> assigns it $0 and parses it
+into fields.  The system variables <b class="emphasis-bold">NF</b>,
+<b class="emphasis-bold">NR</b>, and <b class="emphasis-bold">FNR</b> are also set.  Thus,
+the new line becomes the current line, and we are able to refer to
+"$1" and retrieve the first field.  Note that the previous line is no
+longer available as $0.  However, if necessary, you can assign the
+line read by <b class="emphasis-bold">getline</b> to a variable and avoid
+changing $0, as we'll see shortly.</p>
+
+<p>Here's an example that shows how the previous script works, printing
+out the first field of the line following ".SH Name."</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f getline.awk test</b></tt>
+XSubImage</pre></blockquote>
+
+<p>The <b class="emphasis-bold">sorter.awk</b> program that we demonstrated at the
+end of <a href="ch09_01.htm">Chapter 9, "Functions"</a>, could have used <b class="emphasis-bold">getline</b>
+to read all the lines after the heading "Related Commands."  We can
+
+test the return value of <b class="emphasis-bold">getline</b> in a
+<b class="emphasis-bold">while</b> loop to read a number of lines from the
+input.  The following procedure replaces the first two procedures in
+the <b class="emphasis-bold">sorter</b> program:</p>
+
+<blockquote><pre class="code"># Match "Related Commands" and collect them
+/^\.SH "?Related Commands"?/ {
+	print
+	while (getline &gt; 0)
+		commandList = commandList $0
+}</pre></blockquote>
+
+<p>The expression "getline &gt; 0" will be true as long as
+<b class="emphasis-bold">getline</b> successfully reads an input line.  When it
+gets to the end-of-file, <b class="emphasis-bold">getline</b> returns 0 and the
+loop is exited.</p>
+
+<a name="sedawk-ch-10-sect-1.1" /><div class="sect2">
+<h3 class="sect2">10.1.1. Reading Input from Files</h3>
+
+<p>
+<a name="IXT-10-266142" />
+<a name="IXT-10-266143" />
+Besides reading from the regular input stream, the
+<b class="emphasis-bold">getline</b> function allows you to read input from a
+file or a pipe.  For instance, the following statement reads the next
+line from the file <em class="filename">data</em>:</p>
+
+<blockquote><pre class="code">getline &lt; "data"</pre></blockquote>
+
+<p>Although the filename can be supplied through a variable, it is
+typically specified as a string constant, which must be enclosed in
+quotes.  The symbol "&lt;" is the same as the shell's input
+redirection symbol and will not be interpreted as the "less than"
+symbol.  We can use a <b class="emphasis-bold">while</b> loop to read all the
+lines from a file, testing for an end-of-file to exit the loop.  The
+following example opens the file <em class="emphasis">data</em> and prints
+all of its lines:</p>
+
+<blockquote><pre class="code">while ( (getline &lt; "data") &gt; 0 )
+	print</pre></blockquote>
+
+<p>(We parenthesize to avoid confusion; the "&lt;" is a redirection,
+while the "&gt;" is a comparison of the return value.)  The input can
+also come from standard input.  You can use <b class="emphasis-bold">getline</b>
+following a prompt for the user to enter information:</p>
+
+<blockquote><pre class="code">BEGIN { printf "Enter your name: "
+	getline &lt; "-"
+	print  
+}</pre></blockquote>
+
+<p>This sample code prints the prompt "Enter your name:"
+(<b class="emphasis-bold">printf</b> is used because we don't want a carriage
+return after the prompt), and then calls <b class="emphasis-bold">getline</b> to
+gather the user's response.<a href="#FOOTNOTE-66">[66]</a>
+The response is assigned to $0, and the <b class="emphasis-bold">print</b>
+statement outputs that value.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-66" /><p> [66]At least at one time, SGI
+versions of nawk did not support the use of "-" with
+<b class="emphasis-bold">getline</b> to read from standard input. Caveat emptor.</p>
+
+</blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-10-sect-1.2" /><div class="sect2">
+<h3 class="sect2">10.1.2. Assigning the Input to a Variable</h3>
+
+<p>
+<a name="IXT-10-266144" />
+<a name="IXT-10-266145" />
+<a name="IXT-10-266146" />
+The <b class="emphasis-bold">getline</b> function allows you to assign the input
+record to a variable.  The name of the variable is supplied as an
+argument.  Thus, the following statement reads the next line of input
+into the variable <b class="emphasis-bold">input</b>:</p>
+
+<blockquote><pre class="code">getline input</pre></blockquote>
+
+<p>
+<a name="IXT-10-266147" />
+<a name="IXT-10-266148" />
+<a name="IXT-10-266149" />
+<a name="IXT-10-266150" />
+Assigning the input to a variable does not affect the current input
+line; that is, $0 is not affected.  The new input line is not split
+into fields, and thus the variable <b class="emphasis-bold">NF</b> is also
+unaffected.  It does increment the record counters,
+<b class="emphasis-bold">NR</b> and <b class="emphasis-bold">FNR</b>.</p>
+
+<p>The previous example demonstrated how to prompt the user.  That
+example could be written as follows, assigning the user's response to
+the variable <b class="emphasis-bold">name</b>.</p>
+
+<blockquote><pre class="code">BEGIN { printf "Enter your name: "
+	getline name &lt; "-"
+	print name
+}</pre></blockquote>
+
+<p>Study the syntax for assigning the input data to a variable because it
+is a common mistake to instead write:</p>
+
+<blockquote><pre class="code">name = getline     # wrong</pre></blockquote>
+
+<p>which assigns the return value of <b class="emphasis-bold">getline</b> to the
+variable <b class="emphasis-bold">name</b>.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-10-sect-1.3" /><div class="sect2">
+<h3 class="sect2">10.1.3. Reading Input from a Pipe</h3>
+
+<p>
+<a name="ch10.pipe1" />
+<a name="ch10.pipe2" />
+You can execute a command and pipe the output into
+<b class="emphasis-bold">getline</b>.  For example, look at the following
+expression:</p>
+
+<blockquote><pre class="code">"who am i" | getline</pre></blockquote>
+
+<p>That expression sets "$0" to the output of the <b class="emphasis-bold">who am
+i</b> command.</p>
+
+<blockquote><pre class="code">dale       ttyC3        Jul 18 13:37</pre></blockquote>
+
+<p>The line is parsed into fields and the system variable <b class="emphasis-bold">NF</b>
+is set.  Similarly, you can assign the result to a variable:</p>
+
+<blockquote><pre class="code">"who am i" | getline me</pre></blockquote>
+
+<p>By assigning the output to a variable, you avoid
+setting $0 and <b class="emphasis-bold">NF</b>, but
+the line is not split into fields.</p>
+
+<p>The following script is a fairly simple example of piping the output
+of a command to <b class="emphasis-bold">getline</b>.  It uses the output from the
+<b class="emphasis-bold">who am i</b> command to get the user's name. It then looks up
+the name in <em class="filename">/etc/passwd</em>, printing out the fifth
+field of that file, the user's full name:</p>
+
+<blockquote><pre class="code">awk '# getname - print users fullname from /etc/passwd
+BEGIN { "who am i" | getline 
+	name = $1
+	FS = ":"
+}
+name ~ $1 { print $5 }
+' /etc/passwd</pre></blockquote>
+
+<p>The command is executed from the <b class="emphasis-bold">BEGIN</b> procedure,
+and it provides us with the name of the user that will be used to find
+the user's entry in <em class="filename">/etc/passwd</em>.  As explained
+above, <b class="emphasis-bold">who am i</b> outputs a single line, which
+<b class="emphasis-bold">getline</b> assigns to $0.  $1, the first field of that
+output, is then assigned to <b class="emphasis-bold">name</b>.</p>
+
+<p>The field separator is set to a colon (:) to allow us to access
+individual fields in entries in the <em class="filename">/etc/passwd</em>
+file.  Notice that <b class="emphasis-bold">FS</b> is set after
+<b class="emphasis-bold">getline</b> or else the parsing of the command's output
+would be affected.</p>
+
+<p>Finally, the main procedure is designed to test that the
+first field matches <b class="emphasis-bold">name</b>.  If it does, the fifth
+field of the entry is printed.  For instance, when Dale runs
+this script, it prints "Dale Dougherty."</p>
+
+<p>When the output of a command is piped to <b class="emphasis-bold">getline</b>
+and it contains multiple lines, <b class="emphasis-bold">getline</b> reads a
+line at a time.  The first time <b class="emphasis-bold">getline</b> is called
+it reads the first line of output.  If you call it again, it reads the
+second line.  To read all the lines of output, you must set up a loop
+that executes <b class="emphasis-bold">getline</b> until there is no more
+output.  For instance, the following example uses a
+<b class="emphasis-bold">while</b> loop to read each line of output and assign
+it to the next element of the array, <b class="emphasis-bold">who_out</b>:</p>
+
+<blockquote><pre class="code">while ("who" | getline)
+	who_out[++i] = $0</pre></blockquote>
+
+<p>Each time the <b class="emphasis-bold">getline</b> function is called, it reads
+the next line of output.  The <b class="emphasis-bold">who</b> command, however,
+is executed only once.</p>
+
+<p>The next example looks for "@date" in a document and replaces it with
+today's date:</p>
+
+<blockquote><pre class="code"># subdate.awk -- replace @date with todays date
+/@date/ {
+	"date +'%a., %h %d, %Y'" | getline today
+	gsub(/@date/, today)
+}
+{ print }</pre></blockquote>
+
+<p>The <b class="emphasis-bold">date</b> command, using its formatting options,<a href="#FOOTNOTE-67">[67]</a> 
+provides the date and <b class="emphasis-bold">getline</b> assigns it to the
+variable <b class="emphasis-bold">today</b>.  The
+<b class="emphasis-bold">gsub()</b> function replaces each instance of
+"@date" with today's date.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-67" /><p> [67]Older versions of <b class="emphasis-bold">date</b> don't support formatting
+options.  Particularly the one on SunOS 4.1.x systems; there you have
+to use <em class="filename">/usr/5bin/date</em>. Check your local
+documentation.</p>
+
+</blockquote>
+
+<p>This script might be used to insert the
+date in a form letter:</p>
+
+<blockquote><pre class="code">To: Peabody
+From: Sherman 
+Date: @date
+
+I am writing you on @date to 
+remind you about our special offer.</pre></blockquote>
+
+<p>All lines of the input file would be passed through as is, except
+the lines containing "@date", which are replaced with
+today's date:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f subdate.awk subdate.test</b></tt>
+To: Peabody
+From: Sherman
+Date: Sun., May 05, 1996
+
+I am writing you on Sun., May 05, 1996 to
+remind you about our special offer.</pre></blockquote>
+
+<a name="IXT-10-266151" />
+<a name="IXT-10-266152" />
+</div>
+
+
+
+
+<a name="IXT-10-266153" />
+<a name="IXT-10-266154" />
+<a name="IXT-10-266155" />
+<a name="IXT-10-266156" />
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.3. Writing Your Own Functions</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.2. The close() Function</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

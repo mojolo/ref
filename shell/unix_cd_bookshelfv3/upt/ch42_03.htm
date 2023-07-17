@@ -1,0 +1,375 @@
+<html><head><title>Python Basics (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch42_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch42_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">42.3. Python Basics</h2>
+
+<p><a name="upt3-IDXTERM-6855" />If you've written
+code in a procedural or functional language before, many parts of
+Python will seem familiar. Here's a quick overview
+of the flavor of the language. There is a lot of both reference and
+tutorial information available on the web (start at <a href="http://www.python.org">http://www.python.org</a>) as well as in books
+like O'Reilly's
+<em class="citetitle">Programming Python</em>. In fact, much of the
+information in this chapter was gleaned or paraphrased from the
+official Python reference documentation.
+</p>
+
+<a name="upt3-CHP-42-SECT-3.1" /><div class="sect2">
+<h3 class="sect2">42.3.1. Indentation</h3>
+
+<p><a name="IXT-42-2350" /><a name="IXT-42-2351" />The number
+one complaint of Python detractors is almost always its use of
+indentation as a significant part of its syntax. Most languages use
+begin/end tags or curly braces (<tt class="literal">{}</tt>) to mark
+<a name="IXT-42-2352" />blocks of code and have line
+termination punctuation (many use the semicolon
+(<tt class="literal">;</tt>) as a <a name="IXT-42-2353" />line termination marker). In Python,
+indentation is used to define blocks of code, and lines are
+terminated with a return. The actual amount of indentation within a
+block is arbitrary, but it must be consistent:
+</p>
+
+<blockquote><pre class="code">if a:
+    statement1
+    statement2    # Consistent indentation
+else:
+    statement3
+      statement4  # Inconsistent indentation (error)</pre></blockquote>
+
+<p>Python assumes eight-space tab characters. If you have your editor
+set to four-space tabs, for example, this can bite you if there are
+mixed spaces and tabs. Either use eight-space tabs, or stick to
+spaces.
+</p>
+
+<p>Long statements can span multiple lines by using the
+<a name="IXT-42-2354" />backslash (<tt class="literal">\</tt>) to
+continue the line:
+</p>
+
+<blockquote><pre class="code">&gt;&gt;&gt; <tt class="userinput"><b>a = math.cos( 3 * ( x - n ) ) + \</b></tt>
+... <tt class="userinput"><b>    math.sin( 3 * ( y - n ) )</b></tt></pre></blockquote>
+
+<p>Lines that are already grouped within triple-quotes, parentheses
+<tt class="literal">(</tt>...<tt class="literal">)</tt>, brackets
+<tt class="literal">[</tt>...<tt class="literal">],</tt> or braces
+<tt class="literal">{</tt>...<tt class="literal">}</tt> can span multiple lines
+without needing to use the backslash.
+</p>
+
+<p><a name="IXT-42-2355" />Python's
+indentation requirements take a little getting used to, but they
+guarantee a certain level of readability, and editors like vim and
+emacs can keep track of the details for you trivially. (vim has a
+syntax configuration for editing Python, and emacs and xemacs both
+have a python-mode specifically for dealing with Python.)
+</p>
+
+</div>
+<a name="upt3-CHP-42-SECT-3.2" /><div class="sect2">
+<h3 class="sect2">42.3.2. Functions</h3>
+
+<p><a name="IXT-42-2356" /><a name="IXT-42-2357" />Both
+procedural and functional <a name="IXT-42-2358" />languages organize programs by dividing
+them into smaller units called <em class="emphasis">functions</em>.
+Python's approach to functions is inspired by
+functional languages like Lisp and Scheme, where anonymous functions
+(<em class="emphasis">lambdas</em>) and operations like eval, apply, map,
+and reduce are fundamentals of the language.
+</p>
+
+<p><a name="IXT-42-2359" /><a name="IXT-42-2360" />Functions
+are defined with the <tt class="literal">def</tt> statement. To define an
+<tt class="literal">add</tt> function that adds together two arguments and
+returns the result:
+</p>
+
+<blockquote><pre class="code">&gt;&gt;&gt; <tt class="userinput"><b>def add(a, b):</b></tt>
+... <tt class="userinput"><b>    return a + b</b></tt></pre></blockquote>
+
+<p>This defines a function and attaches it to the name
+<tt class="literal">add</tt> in the current namespace; anything with access
+to this namespace can call this function by simply passing arguments
+to it:
+</p>
+
+<blockquote><pre class="code">&gt;&gt;&gt; <tt class="userinput"><b>print add(3, 5)</b></tt>
+8</pre></blockquote>
+
+<p><a name="IXT-42-2361" />Function arguments can be defined
+with default values, and variable-length argument lists and keyword
+arguments are also supported.
+</p>
+
+<p>Procedural programming languages like <a name="IXT-42-2362" /><a name="IXT-42-2363" />Perl and C generally leave functions at that.
+Functional languages like Lisp, Scheme, and Python take functions to
+the next level; functions are first-class objects and can be directly
+manipulated and stored.
+</p>
+
+<p><a name="IXT-42-2364" /><a name="IXT-42-2365" /> <a name="IXT-42-2366" />Anonymous functions, which are not
+automatically attached to the current namespace, are created with the
+<tt class="literal">lambda</tt> statement:
+</p>
+
+<blockquote><pre class="code">&gt;&gt;&gt; <tt class="userinput"><b>add = lambda a, b: a + b</b></tt></pre></blockquote>
+
+<p>Lambdas are very useful for traditional functional programming tricks
+such as using <tt class="literal">map( )</tt><a name="IXT-42-2367" />. <tt class="literal">map( )</tt> takes its
+first argument (which should be a function or lambda) and runs it
+over and over, passing each element of the list to the function in
+turn, generating a new list of the results:
+</p>
+
+<blockquote><pre class="code">&gt;&gt;&gt; <tt class="userinput"><b>def timesThree(a):</b></tt>
+... <tt class="userinput"><b>    return 3 * a</b></tt>
+&gt;&gt;&gt; <tt class="userinput"><b>def sum(x, y):</b></tt>
+... <tt class="userinput"><b>    return x + y</b></tt>
+
+&gt;&gt;&gt; <tt class="userinput"><b>ints = [1, 2, 3, 4, 5]</b></tt>
+&gt;&gt;&gt; <tt class="userinput"><b>multiples = map(timesThree, ints)</b></tt>
+&gt;&gt;&gt; <tt class="userinput"><b>print multiples</b></tt>
+[3, 6, 9, 12, 15]
+&gt;&gt;&gt; <tt class="userinput"><b>print reduce(sum, multiples)</b></tt>
+45</pre></blockquote>
+
+<p>If you use functions like <tt class="literal">map( )</tt> and its cousins
+<tt class="literal">apply( )</tt>, <tt class="literal">reduce( )</tt>, and
+<tt class="literal">filter( )</tt> a lot, your code can get pretty messy
+before long. Using a lambda allows you to use these functions without
+having to define a named function with <tt class="literal">def</tt>;
+instead <a name="IXT-42-2368" /><a name="IXT-42-2369" />you
+can just put the lambda right into the function call as an argument:
+</p>
+
+<blockquote><pre class="code">&gt;&gt;&gt; <tt class="userinput"><b>ints = [1, 2, 3, 4, 5]</b></tt>
+&gt;&gt;&gt; <tt class="userinput"><b>multiples = map(lambda a: 3 * a, ints)</b></tt>
+&gt;&gt;&gt; <tt class="userinput"><b>print multiples</b></tt>
+[3, 6, 9, 12, 15]
+&gt;&gt;&gt; <tt class="userinput"><b>print reduce(lambda x, y: x + y, multiples)</b></tt>
+45</pre></blockquote>
+
+<p><a name="IXT-42-2370" /><a name="IXT-42-2371" />Lambdas are
+limited to a single expression, though that expression may be
+complex. Multiple statements and nonexpression statements like
+<tt class="literal">print</tt> and <tt class="literal">while</tt>
+can't be used in a lambda.
+</p>
+
+</div>
+<a name="upt3-CHP-42-SECT-3.3" /><div class="sect2">
+<h3 class="sect2">42.3.3. Everything's an Object</h3>
+
+<p><a name="IXT-42-2372" /><a name="IXT-42-2373" />Everything
+in Python is an <em class="emphasis">object</em>. Each object has an
+<em class="emphasis">identity</em><a name="IXT-42-2374" /> <a name="IXT-42-2375" /><a name="IXT-42-2376" />, a
+<em class="emphasis">type</em>, and a <em class="emphasis">value</em>. For
+example, <tt class="literal">a = 42</tt> creates an object of type integer
+with the value 42. You can think of the identity of an object as its
+address in memory; in this case, we've given the
+name <tt class="literal">a</tt> to that identity. Python's
+built-in types include fundamental building blocks such as numbers,
+strings, lists, dictionaries, and files, as well as structuring types
+like functions, modules, lambdas, and metaclasses. (Yes, a function
+is an object; it's just an object that implements
+the "function call" operator.)
+</p>
+
+<p><a name="IXT-42-2377" />Python
+allows the creation of new types of objects via the
+<tt class="literal">class</tt> statement. User-defined classes can have
+<em class="emphasis">class
+variables</em><a name="IXT-42-2378" /> <a name="IXT-42-2379" /> <a name="IXT-42-2380" /> and
+<em class="emphasis">methods</em>, which are shared across all
+<em class="emphasis">instances</em> of that class. In Python,
+<a name="IXT-42-2381" /><a name="IXT-42-2382" />methods are just functions that happen
+to be associated with a class (and generally take an
+<a name="IXT-42-2383" />instance of that class as the first
+argument). Instances can also have their own <em class="emphasis">instance
+variables</em><a name="IXT-42-2384" /><a name="IXT-42-2385" />, specific to each instance.
+</p>
+
+<p><a name="IXT-42-2386" />Instances
+are created by calling the class object as if it were a function,
+which creates a new object and calls the <tt class="literal">_ _init_ _(
+)</tt><a name="IXT-42-2387" /> method of the class (if
+one is defined):
+</p>
+
+<blockquote><pre class="code">class Account:
+    "A simple example class"
+    kind = "Checking"
+    def _ _init_ _(self, accountHolder, startingBalance):
+        self.accountHolder = accountHolder;
+        self.balance = startingBalance;
+
+&gt;&gt;&gt; <tt class="userinput"><b>account = Account("Deb", 86753.09)</b></tt></pre></blockquote>
+
+<p>This creates a new <tt class="literal">Account</tt> object and sets the
+<tt class="literal">accountHolder</tt> instance variable to
+<tt class="literal">Deb</tt> and the <tt class="literal">balance</tt> instance
+variable to $86,753.09. Now, in order to be able to do anything with
+our <tt class="literal">Account</tt>, we need to define methods to allow
+manipulation of the balance:
+</p>
+
+<blockquote><pre class="code">class Account:
+    ...
+    def deposit(self, depositAmount):
+        "Deposit money"
+        self.balance = self.balance + depositAmount
+    def withdraw(self, withdrawalAmount):
+        "Withdraw money"
+        self.balance = self.balance - withdrawalAmount
+    def inquireBalance(self):
+        "Balance inquiry"
+        return self.balance
+
+&gt;&gt;&gt; <tt class="userinput"><b>account.deposit(1504.36)</b></tt>
+&gt;&gt;&gt; <tt class="userinput"><b>account.withdraw(40.00)</b></tt>
+&gt;&gt;&gt; <tt class="userinput"><b>print "Account balance is now $%.2f" % account.inquireBalance( )</b></tt>
+Account balance is now $88217.45</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-42-SECT-3.4" /><div class="sect2">
+<h3 class="sect2">42.3.4. Modules and Packages</h3>
+
+<p><em class="emphasis">Modules</em><a name="IXT-42-2388" /><a name="IXT-42-2389" /><a name="IXT-42-2390" />
+and <em class="emphasis">packages</em> allow you to organize your code
+more effectively. Generally, software for Python is also distributed
+as a module or a package. A module groups a set of functions and
+classes; a package is a collection of modules and subpackages.
+</p>
+
+<p>Any Python source file is a module, if you load it using the import
+statement. Importing a module creates an isolated
+<a name="IXT-42-2391" />namespace for the symbols within that
+file and attaches that namespace to the name of the module. It also
+executes the code within that module, defining variables, functions,
+and classes. For example, we might put our <tt class="literal">Account</tt>
+class in a file <em class="filename">account.py</em>, and then, in another
+file:
+</p>
+
+<blockquote><pre class="code">import account
+
+checking = account.Account("Deb", 86753.09)</pre></blockquote>
+
+<p>Note that we can't refer to
+<tt class="literal">Account</tt> directly; we have to refer to it through
+its imported name, <tt class="literal">account.Account</tt>. If, for
+convenience, we'd like to access the
+<tt class="literal">Account</tt> class directly, we can tell Python to
+import the class into our current namespace as well:
+</p>
+
+<blockquote><pre class="code">from account import Account
+
+checking = Account("Deb", 86753.09)</pre></blockquote>
+
+<p>Modules are compiled into bytecodes the first time they are imported,
+allowing them to run faster and be more compact.
+</p>
+
+<p>Given that a Python module is just a file, it will probably come as
+no surprise that a Python package is simply a directory with modules
+in it. To tag a directory as a package rather than just any
+directory, create a file called <em class="filename">_ _init_ _.py</em>
+(the same name as the method to initialize an object) within that
+directory. Code within <em class="filename">_ _init_ _.py</em> will get
+run whenever any part of its package is imported. Subpackages are, of
+course, just subdirectories with their own <em class="filename">_ _init_
+_.py</em> files.
+</p>
+
+</div>
+<a name="upt3-CHP-42-SECT-3.5" /><div class="sect2">
+<h3 class="sect2">42.3.5. I/O and Formatting</h3>
+
+<p><a name="IXT-42-2392" /><a name="IXT-42-2393" /> <a name="IXT-42-2394" />Dealing with input and output in
+Python is fairly straightforward; files are
+<a name="IXT-42-2395" />objects, and there is a set of methods
+for dealing with file objects that will be familiar to anyone
+who's ever done any Unix I/O.
+<a name="IXT-42-2396" />Files are opened with
+<tt class="literal">open( )</tt>, closed with <tt class="literal">close( )</tt>,
+and read with methods such as <tt class="literal">read( )</tt> and
+<tt class="literal">readline( )</tt>.
+</p>
+
+<p>Unix <a name="IXT-42-2397" /><a name="IXT-42-2398" /><a name="IXT-42-2399" />standard input, standard
+output and standard error are represented by file objects in the
+<tt class="literal">sys</tt> module:
+<tt class="literal">sys.stdin</tt><a name="IXT-42-2400" /> <a name="IXT-42-2401" /> <a name="IXT-42-2402" />,
+<tt class="literal">sys.stdout</tt>, and <tt class="literal">sys.stderr</tt>,
+respectively.
+</p>
+
+<p>The <tt class="literal">print</tt> statement prints its arguments to
+standard output. <tt class="literal">print</tt> can print any object by
+printing its
+<a name="IXT-42-2403" />string
+representation. Nicely formatted strings are generated using the
+string <a name="IXT-42-2404" />formatting (<tt class="literal">%</tt>)
+operator. <tt class="literal">%</tt> works a lot like C's
+<tt class="literal">sprintf( )</tt> routine; you provide a string with
+special keywords in it and the objects to format and you get back a
+formatted string:
+</p>
+
+<blockquote><pre class="code">&gt;&gt;&gt; <tt class="userinput"><b>print "Account balance is now $%.2f" % account.inquireBalance( )</b></tt>
+Account balance is now $86753.09
+&gt;&gt;&gt; <tt class="userinput"><b>print "Error:  %s(%s)." % (error, error.number)</b></tt>
+Error:  File not found(2)</pre></blockquote>
+
+<p><tt class="literal">%</tt> takes a string and a list of arguments. (If
+there's only one argument, it can be any object
+instead of a list.) Any place that you might want to use a string,
+you can use the string formatting operator. For example:
+</p>
+
+<blockquote><pre class="code">&gt;&gt;&gt; <tt class="userinput"><b>obj.name = "MyObject: %s" % name</b></tt>
+&gt;&gt;&gt; <tt class="userinput"><b>url = urlopen("%s://%s:%d/%s" % (protocol, host, port, path))</b></tt></pre></blockquote>
+
+</div>
+<a name="upt3-CHP-42-SECT-3.6" /><div class="sect2">
+<h3 class="sect2">42.3.6. wxPython</h3>
+
+<p><a name="IXT-42-2405" /><a name="IXT-42-2406" /><a name="IXT-42-2407" /><a name="IXT-42-2408" />Python has a
+couple of ways to build graphical user interfaces. The first was to
+use Tk, the GUI toolkit from Tcl. More recently, a Python interface
+to the wxWindows toolkit has been developed and has become very
+popular.
+</p>
+
+<p>Extensive information about wxPython is available at <a href="http://wxpython.org">http://wxpython.org</a> including documentation
+and the wxPython distribution itself.
+</p>
+
+<p> <em class="emphasis">-- DJPH<a name="IXTR3-2442" /></em> 
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch42_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch42_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">42.2. Installation and Distutils</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">42.4. Python and the Web</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,543 @@
+<html><head><title>Editing with ex  (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.2. Editing with ex </h2>
+
+<p>
+<a name="ch05.exediting1" />
+<a name="ch05.exediting2" />
+Many <em class="emphasis">ex</em> commands that perform normal editing operations have an
+equivalent in <em class="emphasis">vi</em> that does the job more simply.
+Obviously, you will use <tt class="literal">dw</tt> or <tt class="literal">dd</tt> to delete a single word
+or line rather than using the <tt class="literal">delete</tt> command in <em class="emphasis">ex</em>.
+However, when you want to make changes that affect numerous lines, you
+will find the <em class="emphasis">ex</em> commands more useful.
+They allow you to modify large blocks of text with a single command.</p>
+
+<p>These <em class="emphasis">ex</em> commands are listed below, along with abbreviations
+for those commands.
+Remember that in <em class="emphasis">vi</em> each <em class="emphasis">ex</em> command must be preceded
+with a colon.
+You can use the full command
+name or the abbreviation, whichever is easier to remember.
+<a name="IXT-5-280821" />
+<a name="IXT-5-280822" />
+<a name="IXT-5-280823" />
+<a name="IXT-5-280824" />
+<a name="IXT-5-280825" />
+<a name="IXT-5-280826" />
+<a name="IXT-5-280827" />
+<a name="IXT-5-280828" />
+<a name="IXT-5-280829" />
+<a name="IXT-5-280830" />
+<a name="IXT-5-280831" /></p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><tt class="literal">delete</tt></td>
+<td><tt class="literal">d</tt></td>
+<td>Delete lines.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">move</tt></td>
+<td><tt class="literal">m</tt></td>
+<td>Move lines.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">copy</tt></td>
+<td><tt class="literal">co</tt></td>
+<td>Copy lines.</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><tt class="literal">t</tt></td>
+<td>Copy lines (a synonym for <tt class="literal">co</tt>).</td>
+</tr>
+
+
+</table><p><p>
+<p>
+You can separate the different elements of an <em class="emphasis">ex</em> command
+with spaces, if you find the command easier to read that way.
+For example, you can separate line addresses, patterns, and commands
+in this way.
+You cannot, however, use a space as a separator inside a pattern
+or at the end of a substitute command.</p>
+
+<a name="vi6-ch-5-sect-2.1" /><div class="sect2">
+<h3 class="sect2">5.2.1. Line Addresses </h3>
+
+<p>
+<a name="IXT-5-280832" />
+<a name="IXT-5-280833" />
+For each <em class="emphasis">ex</em> editing command, you have to tell <em class="emphasis">ex</em>
+which line number(s) to edit.
+And for the <em class="emphasis">ex</em> <tt class="literal">move</tt>
+and <tt class="literal">copy</tt> commands, you also need to tell <em class="emphasis">ex</em> where to
+move or copy the text to.</p>
+
+<p>You can specify line addresses in several ways:</p>
+
+<ul><li><p>With explicit line numbers</p></li><li><p>With symbols that help you specify line numbers relative to
+your current position in the file</p></li><li><p>With search patterns as <em class="emphasis">addresses</em> that identify the lines to
+be affected</p></li></ul><p>Let's look at some examples.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-5-sect-2.2" /><div class="sect2">
+<h3 class="sect2">5.2.2. Defining a Range of Lines </h3>
+
+<p>
+<a name="IXT-5-280834" />
+<a name="IXT-5-280835" />
+<a name="IXT-5-280836" />
+<a name="IXT-5-280837" />
+<a name="IXT-5-280838" />
+<a name="IXT-5-280839" />
+<a name="IXT-5-280840" />
+You can use line numbers to explicitly define a line or range of lines. 
+Addresses that use explicit numbers are called <em class="emphasis">absolute</em> line
+addresses. For example:</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><tt class="literal">:3,18d</tt></td>
+<td><p>Delete lines 3 through 18.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">:160,224m23</tt></td>
+<td><p>Move lines 160 through 224 to follow line 23.
+(Like <tt class="literal">delete</tt> and <tt class="literal">put</tt> in <em class="emphasis">vi</em>.)</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">:23,29co100</tt></td>
+<td><p>Copy lines 23 through 29 and put after line 100.
+(Like <tt class="literal">yank</tt> and <tt class="literal">put</tt> in <em class="emphasis">vi</em>.)</p></td>
+</tr>
+
+
+</table><p><p>
+<p>
+To make editing with line numbers easier, you can also display all line
+numbers on the left of the screen.
+The command:</p>
+
+<blockquote><pre class="code">:set number</pre></blockquote>
+
+<p>or its abbreviation:</p>
+
+<blockquote><pre class="code">:set nu</pre></blockquote>
+
+<p>displays line numbers.
+The file <em class="filename">practice</em> then appears:</p>
+
+<blockquote><pre class="code">1  With a screen editor
+  2  you can scroll the page,
+  3  move the cursor, delete lines,
+  4  insert characters and more</pre></blockquote>
+
+<p>The displayed line numbers are not saved when you write a file,
+and they do not print if you print the file.
+Line numbers are displayed either until you
+quit the <em class="emphasis">vi</em> session or until you disable the
+<tt class="literal">set</tt> option:
+<a name="IXT-5-280841" />
+<a name="IXT-5-280842" /></p>
+
+<blockquote><pre class="code">:set nonumber</pre></blockquote>
+
+
+<?troff .Nd 10?><p>or:</p>
+
+<blockquote><pre class="code">:set nonu</pre></blockquote>
+
+<p>
+<a name="IXT-5-280843" />
+<a name="IXT-5-280844" />
+<a name="IXT-5-280845" />
+To temporarily display the line numbers for a set of lines, you can use
+the <tt class="literal">#</tt> sign.
+For example:</p>
+
+<blockquote><pre class="code">:1,10#</pre></blockquote>
+
+<p>would display the line numbers from line one to line ten.</p>
+
+<p>As described in <a href="ch03_01.htm">Chapter 3</a>,
+you can also
+use the
+<a name="IXT-5-280846" />
+<span class="keycap">CTRL-G</span> command to
+display the current line number. You can thus identify the line
+numbers corresponding to the start and end of a block of text by
+moving to the start of the block, typing
+<span class="keycap">CTRL-G</span>, then moving to the end of the block and typing
+<span class="keycap">CTRL-G</span> again.</p>
+
+<p>
+<a name="IXT-5-280847" />
+<a name="IXT-5-280848" />
+Yet another way to identify line numbers is with the <em class="emphasis">ex</em>
+<tt class="literal">=</tt> command:</p>
+
+<dl>
+<dt><tt class="literal">:=</tt></dt><dd>Print the total number of lines.</p></dd>
+
+
+<dt><tt class="literal">:.=</tt></dt><dd>Print the line number of the current line.</p></dd>
+
+
+<dt><tt class="literal">:/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/=</tt></dt><dd>Print the line number of the first line that matches <em class="emphasis">pattern</em></tt>.</p></dd>
+
+</dl>
+</div>
+
+
+
+
+<a name="vi6-ch-5-sect-2.3" /><div class="sect2">
+<h3 class="sect2">5.2.3. Line Addressing Symbols </h3>
+
+<p>
+<a name="IXT-5-280849" />
+<a name="IXT-5-280850" />
+<a name="IXT-5-280851" />
+<a name="IXT-5-280852" />
+<a name="IXT-5-280853" />
+<a name="IXT-5-280854" />
+<a name="IXT-5-280855" />
+<a name="IXT-5-280856" />
+<a name="IXT-5-280857" />
+You can also use symbols for line addresses.
+A dot (<tt class="literal">.</tt>) stands for the current line;
+<tt class="literal">$</tt> stands for the
+last line of the file.
+<a name="IXT-5-280858" />
+<a name="IXT-5-280859" />
+<tt class="literal">%</tt> stands for every line in the file;  it's the same as the
+combination <tt class="literal">1,$</tt>.
+These symbols can also be combined with absolute line addresses.
+For example:</p>
+
+<dl>
+<dt><tt class="literal">:.,$d</tt></dt><dd>Delete from current line to end of file.</p></dd>
+
+
+<dt><tt class="literal">:20,.m$</tt></dt><dd>Move from line 20 through the current line to the end of the file.</p></dd>
+
+
+<dt><tt class="literal">:%d</tt></dt><dd>Delete all the lines in a file.</p></dd>
+
+
+<dt><tt class="literal">:%t$</tt></dt><dd>Copy all lines and place them at the end of the file (making a
+consecutive duplicate).</p></dd>
+
+</dl>
+
+<?troff .Nd 20?><p>
+<a name="IXT-5-280860" />
+<a name="IXT-5-280861" />
+<a name="IXT-5-280862" />
+<a name="IXT-5-280863" />
+<a name="IXT-5-280864" />
+<a name="IXT-5-280865" />
+<a name="IXT-5-280866" />
+<a name="IXT-5-280867" />
+In addition to an absolute line address, you can specify an address
+relative to the current line.
+The symbols <tt class="literal">+</tt> and <tt class="literal">-</tt>
+work like arithmetic operators.
+When placed before a number,
+<?troff .ne 10?>
+these symbols add or subtract the value that follows. For example:</p>
+
+<dl>
+<dt><tt class="literal">:.,.+20d</tt></dt><dd>Delete from current line through the next 20 lines.</p></dd>
+
+
+<dt><tt class="literal">:226,$m.-2</tt></dt><dd>Move lines 226 through the end of the
+file to two lines above the current line.</p></dd>
+
+
+<dt><tt class="literal">:.,+20#</tt></dt><dd>Display line numbers from the current line
+to 20 lines further on in the file.</p></dd>
+
+</dl>
+
+
+<p>In fact, you don't need to type the dot (.)
+when you use <tt class="literal">+</tt> or <tt class="literal">-</tt>,
+because the current line is the assumed starting position.</p>
+
+<p>Without a number following them, <tt class="literal">+</tt> and
+<tt class="literal">-</tt> are equivalent to +1 and -1, respectively.<a href="#FOOTNOTE-16">[16]</a>
+Similarly, <tt class="literal">++</tt>
+and <tt class="literal">--</tt> each extend the range by
+an additional line, and so on.
+The <tt class="literal">+</tt> and <tt class="literal">-</tt> can also be used with
+search patterns, as shown in the next section.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-16" /><p> [16]In a relative address, you shouldn't separate the plus or minus
+symbol from the number that follows it.
+For example, <tt class="literal">+10</tt> means "10 lines following," but <tt class="literal">+</tt> <tt class="literal">10</tt>
+means "11 lines following (<tt class="literal">1</tt> <tt class="literal">+</tt> <tt class="literal">10</tt>),"
+which is probably not what you mean (or want).</p>
+
+</blockquote>
+
+<p>The number <tt class="literal">0</tt> stands for the top of the file (imaginary line 0).
+<tt class="literal">0</tt> is equivalent to <tt class="literal">1-</tt>,
+and both allow you to move or copy lines to the very start of a file,
+before the first line of existing text. For example:</p>
+
+<dl>
+<dt><tt class="literal">:-,+t0</tt></dt><dd>Copy three lines (the line above the cursor through the line below the
+cursor) and put them at the top of the file.</p></dd>
+
+</dl>
+</div>
+
+
+
+
+<a name="vi6-ch-5-sect-2.4" /><div class="sect2">
+<h3 class="sect2">5.2.4. Search Patterns </h3>
+
+<p>
+<a name="IXT-5-280868" />
+<a name="IXT-5-280869" />
+<a name="IXT-5-280870" />
+<a name="IXT-5-280871" />
+Another way that <em class="emphasis">ex</em></tt> can address lines is by using search
+patterns.
+For example:</p>
+
+<dl>
+<dt><tt class="literal">:/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/d</tt></dt><dd>Delete the next line containing <em class="emphasis">pattern</em></tt>.</p></dd>
+
+
+<dt><tt class="literal">:</tt>/<tt><em class="replaceable">pattern</em></tt><tt class="literal">/+d</tt></dt><dd>Delete the line <em class="emphasis">below</em></tt> the next line containing <em class="emphasis">pattern</em></tt>.
+(You could also use <tt class="literal">+1</tt> instead of <tt class="literal">+</tt> alone.)</p></dd>
+
+
+<dt><tt class="literal">:</tt>/<tt><em class="replaceable">pattern1</em></tt><tt class="literal">/,/</tt><tt><em class="replaceable">pattern2</em></tt><tt class="literal">/d</tt></dt><dd>Delete from the first line containing <em class="emphasis">pattern1</em></tt> through the
+first line containing <em class="emphasis">pattern2</em>.</p></dd>
+
+
+<dt><tt class="literal">:.,/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/m23</tt></dt><dd>Take the text from the current line (<tt class="literal">.</tt>) through the first
+line containing <em class="emphasis">pattern</em></tt> and put it after line 23.</p></dd>
+
+</dl>
+
+<p>Note that patterns are delimited by a slash both <em class="emphasis">before</em></tt> and <em class="emphasis">after</em></tt>.</p>
+
+<p>If you make deletions by pattern with <em class="emphasis">vi</em></tt> and <em class="emphasis">ex</em></tt>, there is
+a difference in the way the two editors operate.
+Suppose your file <em class="filename">practice</em></tt> contains the lines:
+<?graphic_args "" "" .815?>
+<img src="figs/vi.0501.gif" alt="Figure " width="334" /></p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<th>Keystrokes</th>
+<th>Results</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">d/while</tt></td>
+<?graphic_args "" "" 1.19 -.35?>
+<td><img src="figs/vi.0502.gif" alt="Figure " width="334" /><p>
+<?troff .sp -1v?>The <em class="emphasis">vi</em></tt> delete to <em class="emphasis">pattern</em></tt> command deletes from the cursor up
+to the word <em class="emphasis">while</em></tt>, but leaves the remainder of both lines.</p></td>
+</tr>
+
+<?troff .sp .5v?><tr>
+<td><tt class="literal">:.,/while/d</tt></td>
+<?graphic_args "" "" 1.19 -.35?>
+<td><img src="figs/vi.0503.gif" alt="Figure " width="334" /><p>
+<?troff .sp -1v?>The <em class="emphasis">ex</em></tt> command deletes the entire range of addressed lines;
+in this case both the current line and the line containing the pattern.
+All lines are deleted in their entirety.</p></td>
+</tr>
+
+
+</table><p><p>
+</div>
+
+
+
+
+<a name="vi6-ch-5-sect-2.5" /><div class="sect2">
+<h3 class="sect2">5.2.5. Redefining the Current Line Position </h3>
+
+<p>
+<a name="IXT-5-280872" />
+<a name="IXT-5-280873" />
+<a name="IXT-5-280874" />
+Sometimes, using a relative line address in a command
+can give you unexpected results.
+For example, suppose the cursor is on
+line 1, and you want to print line 100 plus the
+five lines below it. If you type:</p>
+
+<blockquote><pre class="code">:100,+5 p</pre></blockquote>
+
+<p>
+<a name="IXT-5-280875" />
+<a name="IXT-5-280876" />
+<a name="IXT-5-280877" />
+<a name="IXT-5-280878" />
+<a name="IXT-5-280879" />
+you'll get an error message saying, 
+"First address exceeds second."  The reason the command fails is that the second
+address is calculated relative to the current cursor
+position (line 1), so your command is really saying this:</p>
+
+<blockquote><pre class="code">:100,6 p</pre></blockquote>
+
+<p>What you need is some way to tell the command to think of
+line 100 as the "current line," even though the cursor is
+on line 1.</p>
+
+<p>
+<a name="IXT-5-280880" />
+<a name="IXT-5-280881" />
+<em class="emphasis">ex</em></tt> provides such a way.
+When you use a semicolon instead of a comma,
+the first line address is recalculated as the current line.
+For example, the command:</p>
+
+<blockquote><pre class="code">:100;+5 p</pre></blockquote>
+
+<p>prints the desired lines. The +5 is now calculated
+relative to line 100. A semicolon is useful with
+search patterns as well as absolute addresses.
+For example,
+to print the next line containing <em class="emphasis">pattern</em></tt>, plus
+the 10 lines that follow it, enter the command:</p>
+
+<blockquote><pre class="code">:/pattern/;+10 p</pre></blockquote>
+</div>
+
+
+
+
+<a name="vi6-ch-5-sect-2.6" /><div class="sect2">
+<h3 class="sect2">5.2.6. Global Searches </h3>
+
+<p>
+<a name="IXT-5-280882" />
+<a name="IXT-5-280883" />
+<a name="IXT-5-280884" />
+<a name="IXT-5-280885" />
+You already know how to use <tt class="literal">/</tt> (slash) in <em class="emphasis">vi</em></tt> to search for
+patterns of characters in your files.
+<em class="emphasis">ex</em></tt> has a global command, <tt class="literal">g</tt>, that lets you search for
+a pattern and display all lines containing the pattern when it finds
+them.
+The command <tt class="literal">:g!</tt> does the opposite of <tt class="literal">:g</tt>.  Use
+<tt class="literal">:g!</tt> (or its synonym <tt class="literal">:v</tt>) to search for all lines that
+do <em class="emphasis">not</em></tt> contain <em class="emphasis">pattern</em></tt>.</p>
+
+<p>You can use the global command on all lines in the file, or you can
+use line addresses to limit a global search to specified lines or to a
+range of lines.</p>
+
+<dl>
+<dt><tt class="literal">:g/</tt><tt><em class="replaceable">pattern</em></tt></dt><dd>Finds (moves to) the last occurrence of <em class="emphasis">pattern</em></tt> in the file.</p></dd>
+
+
+<dt><tt class="literal">:g/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/p</tt></dt><dd>Finds and displays all lines in the file containing <em class="emphasis">pattern</em></tt>.</p></dd>
+
+
+<dt><tt class="literal">:g!/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/nu</tt></dt><dd>Finds and displays all lines in the file that don't contain
+<em class="emphasis">pattern</em>; also displays the line number for
+each line found.</p></dd>
+
+
+<dt><tt class="literal">:60,124g/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/p</tt></dt><dd>Finds and displays any lines between lines 60 and 124 containing
+<em class="emphasis">pattern</em></tt>.</p></dd>
+
+</dl>
+
+<p>As you might expect, <tt class="literal">g</tt> can also be used for global
+replacements. We'll talk about that in <a href="ch06_01.htm">Chapter 6</a>.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-5-sect-2.7" /><div class="sect2">
+<h3 class="sect2">5.2.7. Combining ex Commands </h3>
+
+<p>
+<a name="IXT-5-280886" />
+<a name="IXT-5-280887" />
+<a name="IXT-5-280888" />
+You don't always need to type a colon to begin a new <em class="emphasis">ex</em></tt>
+command. In <em class="emphasis">ex</em></tt>, the vertical bar (<tt class="literal">|</tt>)
+is a command separator, allowing you to
+combine multiple commands from the same <em class="emphasis">ex</em></tt> prompt (in much
+the same way that a semicolon separates multiple commands at the
+UNIX shell prompt). When you use the <tt class="literal">|</tt>,
+keep track of the line addresses you specify.
+If one command affects the order of lines in the file,
+the next command does its work using the new line positions.
+For example:</p>
+
+<dl>
+<dt><tt class="literal">:1,3d&#160;|&#xA0;s/thier/their/</tt></dt><dd>Delete lines 1 through 3 (leaving you now on the top line of the
+file); then make a substitution on the current line (which was
+line 4 before you invoked the <em class="emphasis">ex</em> prompt).</p></dd>
+
+
+<dt><tt class="literal">:1,5&#160;m&#xA0;10&#xA0;|&#xA0;g/<tt><em class="replaceable">pattern</em></tt>/nu</tt></dt><dd>Move lines 1 through 5 after line 10, and then display all
+lines (with numbers) containing <em class="emphasis">pattern</em></tt>.</p></dd>
+
+</dl>
+
+<p>Note the use of spaces to make the commands easier to read.</p>
+</div>
+
+
+
+
+<a name="IXT-5-280889" />
+<a name="IXT-5-280890" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5. Introducing
+the ex Editor</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.3. Saving and Exiting Files </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,143 @@
+<html><head><title>Invoking awk Using the #! Syntax (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.9. Invoking awk Using the #! Syntax</h2>
+
+<p>
+<a name="ch10.hash1" />
+<a name="ch10.hash2" />
+The "#!" syntax is an alternative syntax for invoking awk from a shell
+script.  It has the advantage of allowing you to specify awk
+parameters and filenames on the shell-script command line.  The "#!"
+syntax is recognized on modern UNIX systems, but is not typically
+found in older System V systems.  The best way to use this syntax is
+to put the following line as the first line<a href="#FOOTNOTE-71">[71]</a> 
+of the shell script:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-71" /><p> [71]Note that the pathname to use is system-specific.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">#!/bin/awk -f</pre></blockquote>
+
+<p>"#!" is followed by the pathname that locates your version of awk
+and then the <span class="option">-f</span> option.  After this line, 
+you specify the awk script:</p>
+
+<blockquote><pre class="code">#!/bin/awk -f
+{ print $1 }</pre></blockquote>
+
+<p>Note that no quotes are necessary around the script.  All lines in the
+file after the first one will be executed as though they were
+specified in a separate script file.</p>
+
+<p>A few years ago, there was an interesting discussion on the Net
+about the use of the "#!" syntax that clarified how it works.  The
+discussion was prompted by a 4.2BSD user's observation that the shell
+script below fails:</p>
+
+<blockquote><pre class="code">#!/bin/awk
+{ print $1 }</pre></blockquote>
+
+<p>while the one below works:</p>
+
+<blockquote><pre class="code">#!/bin/sh
+/bin/awk '{ print $1 }'</pre></blockquote>
+
+<p>The two responses that we saw were by Chris Torek and Guy Harris and we
+will try to summarize their explanation.  The first script fails
+because it passes the filename of the script as the first parameter
+(<b class="emphasis-bold">argv[1]</b> in C) and awk interprets it as the input
+file and not the script file.  Because no script has been supplied,
+awk produces a syntax error message.  In other words, if the name of
+the shell script is "myscript," then the first script executes as:</p>
+
+<blockquote><pre class="code">/bin/awk myscript</pre></blockquote>
+
+<p>If the script was changed to add the <span class="option">-f</span> option, it
+looks like this:</p>
+
+<blockquote><pre class="code">#!/bin/awk -f
+{ print $1 }</pre></blockquote>
+
+<p>Then you enter the following command:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>myscript myfile</b></tt></pre></blockquote>
+
+<p>It then executes as though you had typed:</p>
+
+<blockquote><pre class="code">/bin/awk -f myscript myfile</pre></blockquote>
+
+<blockquote><b>NOTE:</b> 
+You can put only one parameter on the "#!" line. This line is
+processed directly by the UNIX kernel; it is not processed by the shell
+and thus cannot contain arbitrary shell constructs.</p>
+</blockquote>
+
+<p>The "#!" syntax allows you to create shell scripts that pass
+command-line parameters transparently to awk.  In other words, you can
+pass awk parameters from the command line that invokes the shell
+script.</p>
+
+<p>For instance, we demonstrate passing parameters by changing
+our sample awk script to expect a parameter <b class="emphasis-bold">n</b>:</p>
+
+<blockquote><pre class="code">{ print $1*n }</pre></blockquote>
+
+<p>Assuming that we have a test file in which the first field contains a
+number that can be multiplied by <b class="emphasis-bold">n</b>, we can invoke
+the program, as follows:</p>
+
+<blockquote><pre class="code">$ <b class="emphasis-bold">myscript n=4 myfile</b></pre></blockquote>
+
+<p>This spares us from having to pass "$1" as a shell variable and
+assigning it to <b class="emphasis-bold">n</b> as an awk parameter inside the
+shell script.</p>
+
+<p>The <b class="emphasis-bold">masterindex</b>, described in
+<a href="ch12_01.htm">Chapter 12, "Full-Featured Applications"</a>, uses
+the "#!"  syntax to invoke awk.  If your system does not support this
+syntax, you can change the script by removing the "#!", placing single
+quotes around the entire script, and ending the script with "$*", which
+expands to all shell command-line parameters.</p>
+
+<p>Well, we've quite nearly cleaned out this bottom drawer.  The
+material in this chapter has a lot to do with how awk interfaces with
+the UNIX operating system, invoking other utilities, opening and
+closing files, and using pipes.  And, we have discussed some of
+the admittedly crude techniques for debugging awk scripts.</p>
+
+<p>We have covered all of the features of the awk programming
+language.  We have concentrated on the POSIX specification for awk,
+with only an occasional mention of actual awk implementations.  The
+next chapter covers the differences among various awk versions.  
+<a href="ch12_01.htm">Chapter 12, "Full-Featured Applications"</a> is devoted to breaking down two large,
+complex applications: a document spellchecker and an indexing program.
+<a href="ch13_01.htm">Chapter 13, "A Miscellany of Scripts"</a>, presents a variety of user-contributed
+programs that provide additional examples of how to write programs.</p>
+
+<a name="IXT-10-266208" />
+<a name="IXT-10-266209" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.8. Limitations</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11. A Flock of awks</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

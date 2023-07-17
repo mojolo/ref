@@ -1,0 +1,175 @@
+<html><head><title>More CVS (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch39_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch40_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">39.8. More CVS</h2>
+
+<p>Here's a slightly more complex example of how to use
+CVS. I'm working on this book, via CVS, with my two
+main coauthors (who are on the east and west coasts of the United
+States). The repository, which has almost 1,000 files, is on a
+computer in the O'Reilly office in Massachusetts.
+</p>
+
+<ol><li>
+<p><a name="IXT-39-2910" /><a name="IXT-39-2911" /><a name="IXT-39-2912" /><a name="IXT-39-2913" />From the command line or
+in a <b class="emphasis-bold">shell setup file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>), I need to set an <b class="emphasis-bold">environment variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) named
+<em class="emphasis">CVSROOT</em><a name="IXT-39-2914" /> <a name="IXT-39-2915" /> that
+tells CVS where the <a name="IXT-39-2916" />repository is and what my username is on
+that machine. In the C shell, for instance, I'd
+execute a command that sets my username to
+<em class="emphasis">jpeek</em>, the server hostname to
+<em class="emphasis">bserver.east.oreilly.com</em>, and the repository to
+<em class="emphasis">/books/cvs</em>. I'm also using
+<i class="command">ssh</i> for secure access to the server, so I need to
+set the <a name="IXT-39-2917" /> <a name="IXT-39-2918" /><em class="emphasis">CVS_RSH</em>
+environment variable and tell CVS to use the
+"ext" connection method:
+</p>
+
+<blockquote><pre class="code">setenv CVSROOT :ext:jpeek@bserver.east.oreilly.com:/books/cvs
+setenv CVS_RSH ssh</pre></blockquote>
+
+</li><li>
+<p>I have a directory where I keep my local copies of the book files. To
+start, I check out my copy of the <em class="emphasis">ulpt3</em>
+repository from the server:
+</p>
+<p><tt class="literal">!$</tt> <a href="ch30_03.htm#upt3-CHP-30-SECT-3">Section 30.3</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd books</b></tt>
+% <tt class="userinput"><b>cvs checkout ulpt3</b></tt>
+cvs checkout: updating ulpt3
+U ulpt3/0001.sgm
+U ulpt3/0007.sgm
+U ulpt3/0023.sgm
+   <i class="lineannotation">...more...</i>
+% <tt class="userinput"><b>cd !$</b></tt>
+cd ulpt3</pre></blockquote>
+</li>
+
+<li>
+<p>Now my <em class="emphasis">ulpt3</em> subdirectory has the same files
+that the repository does. I can edit any of them, just as
+I'd edit files that aren't in
+CVS -- but my changes don't make it back to the
+repository until I use the CVS command to do that.
+</p>
+
+<p>Let's say I edit the file
+<em class="emphasis">0123.sgm</em>. I'd like to write it
+back to the repository, where the other authors can grab it in case
+they're printing that part of the book. First I
+should update my <a name="IXT-39-2919" /><a name="IXT-39-2920" />workspace. This brings in any changes by
+other authors. If another author has updated
+<em class="emphasis">0123.sgm</em> and put it in the archive before I do,
+CVS will <a name="IXT-39-2921" />merge the two files and expect me to
+resolve the differences:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>vi 0123.sgm</b></tt>
+   <i class="lineannotation">...edit the file...</i>
+% <tt class="userinput"><b>cvs update</b></tt>
+cvs update: updating .
+U ulpt/0075.sgm
+RCS file: /books/cvs/ulpt3/0123.sgm,v
+retrieving revision 3.6
+retrieving revision 3.7
+Merging differences between 3.6 and 3.7 into 0123.sgm
+rcsmerge: warning: conflicts during merge
+cvs update: conflicts found in 0123.sgm
+C 0123.sgm
+%</pre></blockquote>
+
+<p>The <tt class="literal">U</tt> line shows that another author changed file
+<em class="emphasis">0075.sgm</em>; CVS is updating my copy of it. As it
+happens, another author edited <em class="emphasis">0123.sgm</em> while I
+did -- and committed his changes to the repository before I got
+there. CVS sees that the copy in the repository is newer than the one
+I fetched a while ago, so it merges the two versions. If the changes
+had been to different parts of the file, CVS
+wouldn't have complained, just warned me that
+<em class="emphasis">0123.sgm</em> had been merged. As luck would have it
+(something to do with this being an example, I think
+<tt class="literal">;-)</tt>) both changes were in the same place and CVS
+warned me that the merge failed; there was a conflict.
+</p>
+</li><li>
+<p>This step only applies if there was a conflict during the update.
+Edit the file and search for a string of less-than signs
+(<tt class="literal">&lt;&lt;&lt;&lt;</tt>). You'll see
+something like this:
+</p>
+
+<blockquote><pre class="code">  &lt;para&gt;
+  &lt;indexterm&gt;&lt;primary&gt;serial line modes&lt;/primary&gt;&lt;/indexterm&gt;
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; 0123.sgm
+  But there is some overlap. For example, a terminal can be unusable
+  because a program has left either the serial line modes or the
+  terminal itself in an unexpected state. For this reason,
+  &lt;link linkend="UPT-ART-0079"&gt;terminal initialization&lt;/link&gt;,
+  as performed by the &lt;command&gt;tset&lt;/command&gt; and
+=======
+  But there is some overlap. For example, a terminal can be unusable
+  because a program has left the terminal in an "wedged"
+  or unexpected state. The serial modes may be wrong too. This is why
+  &lt;link linkend="UPT-ART-0079"&gt;terminal initialization&lt;/link&gt;,
+  as performed by the &lt;command&gt;tset&lt;/command&gt; and
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 3.7
+  &lt;command&gt;tput&lt;/command&gt; programs,
+  initializes both the terminal and the serial line interface.</pre></blockquote>
+
+<p>The text from your working file is at the top, after the
+<tt class="literal">&lt;&lt;&lt;&lt;</tt> characters. The conflicting text
+is after the <tt class="literal">====</tt> characters. You decide that your
+text is better written, so you simply delete the markers and the
+second chunk of text. [In a slightly less contrived example, there
+would probably be a process for this. You might use <em class="emphasis">cvs
+log</em><a name="IXT-39-2922" /> <a name="IXT-39-2923" /> to look at the log message on the
+conflicting change, talk to the author of the conflicting change or
+both. Sometimes you might have to look at <em class="emphasis">cvs
+log</em> to figure out who checked in the conflicting change,
+because there may have been several changes.  -- DJPH]
+</p>
+</li><li>
+<p>Things look good. Now tell CVS to put all your changes from your
+local workspace into the repository by
+<em class="emphasis">committing</em>. You should give a message that
+describes the changes you made. You can give the message either as an
+argument to the <span class="option">-m</span> option or by typing it into your
+text editor, like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cvs commit</b></tt>
+cvs commit: Examining .
+  <i class="lineannotation">...your text editor runs...</i>
+Checking in 0123.sgm;
+/books/cvs/ulpt3/0123.sgm,v &lt;-- 0123.sgm
+new revision: 3.8; previous revision: 3.7
+done</pre></blockquote>
+</li></ol>
+<p><em class="emphasis">--JP and <a name="IXTR3-2927" /> <a name="IXTR3-2928" /> <a name="IXTR3-2929" />DJPH<a name="IXTR3-2930" /></em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch39_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch40_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">39.7. CVS Basics</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">40. Software Installation</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

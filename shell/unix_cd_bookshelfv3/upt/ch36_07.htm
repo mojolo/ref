@@ -1,0 +1,153 @@
+<html><head><title>Parameter Substitution (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">36.7. Parameter Substitution</h2>
+
+<p><a name="IXT-36-3218" /><a name="IXT-36-3219" />The Bourne shell has a handy set
+of operators for testing and setting shell variables.
+They're listed in <a href="ch36_07.htm#upt3-CHP-36-TABLE-1">Table 36-1</a>.
+</p>
+
+<a name="upt3-CHP-36-TABLE-1" /><h4 class="objtitle">Table 36-1. Bourne shell parameter substitution operators </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Operator</p>
+</th>
+<th>
+<p>Explanation</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:-</tt><em class="replaceable">default</tt></em><tt class="literal">}</tt>
+</p>
+</td>
+<td>
+<p>If <em class="emphasis">var</em> is not set or is empty, use
+<em class="emphasis">default</em> instead.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:=</tt><em class="replaceable">default</tt></em><tt class="literal">}</tt>
+</p>
+</td>
+<td>
+<p>If <em class="emphasis">var</em> is not set or is empty, set it to
+<em class="emphasis">default</em> and use that value.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:+</tt><em class="replaceable">instead</tt></em><tt class="literal">}</tt>
+</p>
+</td>
+<td>
+<p>If <em class="emphasis">var</em> is set and is not empty, use
+<em class="emphasis">instead</em>. Otherwise, use nothing (null string).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">:?</tt><em class="replaceable">message</tt></em><tt class="literal">}</tt>
+</p>
+</td>
+<td>
+<p>If <em class="emphasis">var</em> is set and is not empty, use its value.
+Otherwise, print <em class="emphasis">message</em>, if any, and exit from
+the shell. If <em class="emphasis">message</em> is missing, print a
+default message (which depends on your shell).
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p><a name="IXT-36-3221" /> <a name="IXT-36-3222" />If you omit the colon (:) from the
+expressions in <a href="ch36_07.htm#upt3-CHP-36-TABLE-1">Table 36-1</a>, the shell
+doesn't check for an empty parameter. In other
+words, the substitution happens whenever the parameter is set.
+(That's how some early Bourne shells work: they
+don't understand a colon in parameter substitution.)
+</p>
+
+<p><a name="IXT-36-3223" />To see how parameter
+substitution works, here's another version of the
+<b class="emphasis-bold">bkedit script</b> (<a href="ch35_13.htm#upt3-CHP-35-SECT-13">Section 35.13</a>, <a href="ch35_16.htm#upt3-CHP-35-SECT-16">Section 35.16</a>):
+</p>
+
+<blockquote><pre class="code">+#!/bin/sh
+if cp "$1" "$1.bak"
+then
+    ${VISUAL:-/usr/ucb/vi} "$1"
+    exit   # Use status from editor
+else
+    echo "`basename $0` quitting: can't make backup?" 1&gt;&amp;2
+    exit 1
+fi</pre></blockquote>
+
+<p>If the <b class="emphasis-bold">VISUAL</b> (<a href="ch35_05.htm#upt3-CHP-35-SECT-5">Section 35.5</a>) environment variable is set and is not empty,
+its value (such as <em class="filename">/usr/local/bin/emacs</em>) is used
+and the command line becomes <tt class="literal">/usr/local/bin/emacs
+"$1"</tt>. If <em class="emphasis">VISUAL</em> isn't
+set, the command line defaults to <tt class="literal">/usr/ucb/vi
+"$1"</tt>.
+</p>
+
+<p>You can use parameter substitution operators in any command line.
+You'll see them used with the <b class="emphasis-bold">colon (:) operator</b> (<a href="ch36_06.htm#upt3-CHP-36-SECT-6">Section 36.6</a>), checking or setting default values.
+There's an example below. The first substitution
+(<tt class="literal">${nothing=default}</tt>) leaves
+<tt class="literal">$nothing</tt> empty because the variable has been set.
+The second substitution sets <tt class="literal">$nothing</tt> to
+<em class="emphasis">default</em> because the variable has been set but is
+empty. The third substitution leaves <tt class="literal">$something</tt>
+set to <em class="emphasis">stuff</em>:</p>
+
+<blockquote><pre class="code">+nothing=
+something=stuff
+: ${nothing=default}
+: ${nothing:=default}
+: ${something:=default}</pre></blockquote>
+
+<p><a name="IXT-36-3224" /><a name="IXT-36-3225" /><a name="IXT-36-3226" /><a name="IXT-36-3227" />Several Bourne-type shells have
+similar string editing operators, such as
+<tt class="literal">${</tt><em class="replaceable"><tt>var</em>##<em class="replaceable">pattern</tt></em><tt class="literal">}</tt>.
+They're useful in shell programs, as well as on the
+command line and in shell setup files. See your
+shell's manual page for more details.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.6. The Unappreciated Bourne Shell ":" Operator</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.8. Save Disk Space and Programming: Multiple Names for a Program</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,153 @@
+<html><head><title>Groups and Group Ownership (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch49_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch49_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">49.6. Groups and Group Ownership</h2>
+
+<p><a name="upt3-IDXTERM-7807" /> <a name="upt3-IDXTERM-7808" /> <a name="upt3-IDXTERM-7809" />Group membership is an important part
+of Unix security. All users are members of one or more groups, as
+determined by their entries in <em class="emphasis">/etc/passwd</em> and
+the <em class="emphasis">/etc/group</em> files.
+</p>
+
+<p>To find the <a name="IXT-49-404" />GID number of your
+<a name="IXT-49-405" />primary
+group, <em class="filename">grep</em> your entry in
+<em class="filename">/etc/passwd</em>:
+</p>
+
+<blockquote><pre class="code">&gt; <tt class="userinput"><b>grep shelleyp /etc/passwd</b></tt>
+shelleyp:*:1000:1000:Shelley Powers:/usr/home/shelleyp:/bin/tcsh&lt;/screen&gt;</pre></blockquote>
+
+<p>The fourth field (the second number) is your <em class="emphasis">primary group
+ID</em>. Look up this number in the
+<em class="filename">/etc/group</em> file:
+</p>
+
+<blockquote><pre class="code">&gt; <tt class="userinput"><b>grep 1000 /etc/group</b></tt>
+&gt; <tt class="userinput"><b>shelleyp:*:1000:</b></tt></pre></blockquote>
+
+<p>On my FreeBSD system, my primary group is a group of which
+I'm the only member, <em class="emphasis">shelleyp</em>.
+Therefore, when I log in, my group ID is set to 1000.
+</p>
+
+<p>To see what other groups you belong to, use the
+<i class="command">groups</i><a name="IXT-49-406" /> command if your Unix version has it. If
+not, you can get <i class="command">groups</i> from the Free Software
+Directory at <a href="http://www.gnu.org/directory/index.html">http://www.gnu.org/directory/index.html</a>.
+Otherwise, look for your name in <em class="filename">/etc/group</em>:
+</p>
+
+<blockquote><pre class="code">&gt; <tt class="userinput"><b>grep shelleyp /etc/group</b></tt>
+wheel:*:0:root,shelleyp
+webadmin:*:900:shelleyp,burningbird
+ftpadmin:*:901:shelleyp,burningbird
+mailadmin:*:903:shelleyp,burningbird
+sysadmin:*:905:shelleyp,burningbird
+pkgadmin:*:906:shelleyp,burningbird
+shelleyp:*:1000:</pre></blockquote>
+
+<p>In the output, you can see that I'm a member of
+several groups, including <em class="emphasis">wheel</em>,
+<em class="emphasis">webadmin</em>, and so on. These are my secondary
+groups. The output also shows that the user
+"burningbird" is also a member of
+several of the same groups as myself.
+</p>
+
+<p>On <a name="IXT-49-407" />BSD-derived Unix systems (OpenBSD,
+FreeBSD, Darwin, and so on), you're always a member
+of all your groups. This means that I can access files that are owned
+by <em class="emphasis">webadmin</em>, <em class="emphasis">wheel</em>, and so
+on, without doing anything in particular. Under
+<a name="IXT-49-408" />System V Unix,
+you can only be "in" one group at a
+time, even though you can be a member of several.
+</p>
+
+<p>Within System V and
+<a name="IXT-49-409" /><a name="IXT-49-410" />Linux, if you
+need to access files that are owned by another group, use the
+<em class="filename">newgrp</em> command to change your primary group:
+</p>
+
+<blockquote><pre class="code">&gt; <tt class="userinput"><b>newgrp</b></tt> <em class="replaceable"><tt>groupname</tt></em></pre></blockquote>
+
+<p>The <em class="filename">newgrp</em> command starts a subshell. When
+you're done, type <tt class="literal">exit</tt> to leave
+the subshell. <em class="filename">newgrp</em> can be important for
+another reason: your primary group may own any new files you create.
+So <em class="filename">newgrp</em> is useful on any system where you want
+to set your group (for creating files, for example, when you
+aren't using a directory that sets its own group).
+If you can't use <em class="filename">newgrp</em>, the
+<em class="filename">chgrp</em> command will change a
+file's group owner.
+</p>
+
+<p>The <em class="emphasis">ls -l</em> command shows a
+file's owner (and, in many versions, the
+<em class="emphasis">filefs</em> group too; if yours
+doesn't, add the <span class="option">-g</span> option). The
+GNU <em class="emphasis">ls -nl</em> option shows a
+file's numeric UID and GID instead of the username
+and group name:
+</p>
+
+<blockquote><pre class="code">$ ls -l
+total 38
+-rw-r--r--  1 root      weblog.burningbi  33922 May 23 13:52 access_log
+-rw-r-----  1 shelleyp  weblog.burningbi   3995 May 12 11:08 analog.cfg
+-rw-r--r--  1 root      weblog.burningbi      0 May 23 12:01 error_log
+$ ls -ln
+total 37
+-rw-r--r--  1 0     501  32890 May 23 13:50 access_log
+-rw-r-----  1 1000  501   3995 May 12 11:08 analog.cfg
+-rw-r--r--  1 0     501      0 May 23 12:01 error_log</pre></blockquote>
+
+<p>(System V-based Unixes even let you change to groups that you
+don't belong to. In this case, you have to give a
+group password. Group passwords are rarely used: usually the password
+field is filled with a <em class="filename">*</em>, which effectively says
+that there are no valid passwords for this group.)
+</p>
+
+<p>On most systems, there are groups for major projects or departments,
+groups for system administration, and maybe one or two groups for
+visitors. BSD-based systems often have a
+<em class="emphasis">wheel</em><a name="IXT-49-411" /> group; to become root, you must belong
+to <em class="filename">wheel</em>. Many systems make terminals writable
+only by the owner and a special group named <em class="emphasis">tty</em>;
+this prevents other users from sending characters to your terminal
+without using an approved <em class="filename">setgid</em> program
+<a name="IXTR3-435" />
+<a name="IXTR3-436" />
+<a name="IXTR3-437" />like
+<em class="filename">write</em>.
+</p>
+
+<p><em class="emphasis">--JP, SP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch49_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch49_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">49.5. Group Permissions in a Directory with the setgid Bit</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">49.7. Add Users to a Group to Deny Permissions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

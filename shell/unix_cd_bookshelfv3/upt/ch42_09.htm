@@ -1,0 +1,101 @@
+<html><head><title>mod_python (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch42_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch42_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">42.9. mod_python</h2>
+
+<p><tt class="literal">mod_python</tt><a name="IXT-42-2435" /> <a name="IXT-42-2436" /><a name="IXT-42-2437" /><a name="IXT-42-2438" /> is
+an Apache
+<a name="IXT-42-2439" />module
+for running Python within the Apache webserver. It's
+much faster than CGI scripts and generally uses less resources
+overall. <tt class="literal">mod_python</tt> also allows advanced
+functionality such as maintaining persistent database connections
+across web requests and access to internal Apache APIs. Information
+on <tt class="literal">mod_python</tt> and distributions are available at
+<a href="http://www.modpython.org">http://www.modpython.org</a>.
+</p>
+
+<p>Apache's basic methodology for handling web requests
+is to deal with them in phases. There is a phase for each significant
+element of handling the request, including authentication, content
+generation, and logging. Apache modules can provide a seperate
+handler for each phase; <tt class="literal">mod_python</tt> simply allows
+you to write those handlers in Python. This allows complete control
+over everything Apache does to process a request.
+</p>
+
+<p>A <tt class="literal">mod_python</tt> handler is a function that takes the
+<tt class="literal">Request</tt> object as an argument; a
+<tt class="literal">Request</tt> represents a single web request and
+contains all the information Apache knows about that request
+(requested URL, method, headers, and so forth).
+</p>
+
+<p>Each phase's handler has a specific name that Apache
+recognizes (and uses in its configuration file):
+<tt class="literal">PythonHandler</tt>,
+<tt class="literal">PythonAuthenHandler</tt>,
+<tt class="literal">PythonLogHandler</tt> and so forth. Most
+<tt class="literal">mod_python</tt> scripts need to implement only the main
+handler, <tt class="literal">PythonHandler</tt>.
+</p>
+
+<p><tt class="literal">mod_python</tt> finds the appropriate function to call
+by dropping the leading <tt class="literal">Python</tt> from the handler
+name, and using an all-lowercase function name. Thus, most
+<tt class="literal">mod_python</tt> scripts will look something like this:
+</p>
+
+<blockquote><pre class="code">
+from mod_python import apache
+
+def handler(request):
+    request.content_type = "text/plain"
+    request.send_http_header( )
+    request.write("Hello World!")
+    return apache.OK</pre></blockquote>
+
+<p>This handler simply imports the <tt class="literal">apache</tt> API and
+then responds to every request with a plain text <tt class="literal">Hello
+World!</tt>. It returns <tt class="literal">apache.OK</tt> to tell
+Apache that the request was successful.
+</p>
+
+<p>For more information on dealing with <tt class="literal">mod_python</tt>,
+read the documentation.
+</p>
+
+<a name="ch42-5-fm2xml" /><blockquote><b>NOTE:</b> 
+One gotcha: <tt class="literal">mod_python</tt>'s way of
+installing a <tt class="literal">mod_python</tt> handler is a little
+counterintuitive due to the way Apache handlers work. Make sure you
+understand how <tt class="literal">mod_python</tt> finds which module to
+import.
+</p>
+</blockquote>
+
+<p> <em class="emphasis">-- DJPH</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch42_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch42_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">42.8. cgi</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">42.10. What About Perl?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

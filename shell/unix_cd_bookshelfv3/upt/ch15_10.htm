@@ -1,0 +1,111 @@
+<html><head><title>Save Space in Executable Files with strip (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch15_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">15.10. Save Space in Executable Files with strip</h2>
+
+<p><a name="IXT-15-6187" /> <a name="IXT-15-6188" /> <a name="IXT-15-6189" /> <a name="IXT-15-6190" />After
+you compile and debug a program, there's a part of
+the executable binary that you can delete to save disk space. The
+<i class="command">strip</i> command does the job. Note that once you
+strip a file, you can't use a symbolic debugger like
+<i class="command">dbx</i> or <i class="command">gdb</i> on it!
+</p>
+
+<p>Here's an example. I'll compile a C
+program and list it. Then I'll strip it and list it
+again. How much space you save depends on several factors, but
+you'll almost always save something.
+</p>
+
+<p><tt class="literal">-s</tt> <a href="ch09_14.htm#upt3-CHP-9-SECT-14">Section 9.14</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cc -o echoerr echoerr.c</b></tt>
+% <tt class="userinput"><b>ls -ls echoerr</b></tt>
+  52 -rwxr-xr-x   1 jerry    24706 Nov 18 15:49 echoerr
+% <tt class="userinput"><b>strip echoerr</b></tt>
+% <tt class="userinput"><b>ls -ls echoerr</b></tt>
+  36 -rwxr-xr-x   1 jerry    16656 Nov 18 15:49 echoerr</pre></blockquote>
+
+<p>The GNU <i class="command">strip</i> has a number of options to control
+what symbols and sections are stripped from the binary file. Check
+the <i class="command">strip</i> manpage for specific details of the
+version you have.
+</p>
+
+<p>If you know that you want a file stripped when you compile it, your
+compiler probably has a <span class="option">-s</span> option (which is passed
+to <i class="command">ld</i> after compilation is complete). If you use
+<i class="command">ld</i> directly -- say, in a <b class="emphasis-bold">makefile</b> (<a href="ch11_10.htm#upt3-CHP-11-SECT-10">Section 11.10</a>) -- use the <span class="option">-s</span> option
+there.
+</p>
+
+<p><a name="IXT-15-6191" /><a name="IXT-15-6192" />Here's
+a shell script named <i class="command">stripper</i> that finds all the
+unstripped executable files in <b class="emphasis-bold">your
+bin</b> <b class="emphasis-bold">directory</b> (<a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a>) and strips them. It's a
+quick way to save space on your account. (The same script, searching
+the whole filesystem, will save even more space for system
+administrators -- but watch out for unusual filenames):
+</p>
+<p><tt class="literal">xargs</tt> <a href="ch28_17.htm#upt3-CHP-28-SECT-17">Section 28.17</a></p>
+
+<blockquote><pre class="code">#! /bin/sh
+skipug="! -perm -4000 ! -perm -2000"  # SKIP SETUID, SETGID FILES
+find $HOME/bin -type f \( -perm -0100 $skipug \) -print |
+xargs file |
+sed -n '/executable .*not stripped/s/: TAB .*//p' |
+xargs -rpl strip</pre></blockquote>
+
+<p>The <b class="emphasis-bold">find</b> (<a href="ch09_02.htm#upt3-CHP-9-SECT-2">Section 9.2</a>) finds all executable files that
+aren't setuid or setgid and runs <b class="emphasis-bold">file</b> (<a href="ch12_06.htm#upt3-CHP-12-SECT-6">Section 12.6</a>) to get a
+description of each. The <i class="command">sed</i> command skips shell
+scripts and other files that can't be stripped.
+<i class="command">sed</i> searches for lines from
+<i class="command">file</i> like the following:
+</p>
+
+<blockquote><pre class="code">/usr/local/bin/xemacs: TAB<em class="replaceable"><tt> xxx</tt></em>... executable
+<em class="replaceable"><tt>xxx</tt></em>... not stripped</pre></blockquote>
+
+<p>with the word "executable" followed
+by "not stripped."
+<i class="command">sed</i> removes the colon, tab, and description, then
+passes the filename to <i class="command">strip</i>.
+</p>
+
+<p>The final <i class="command">xargs</i> command uses the options
+<span class="option">-r</span> (to not run <i class="command">strip</i> if
+<i class="command">sed</i> outputs no names to strip),
+<span class="option">-p</span> (to be interactive, asking before each
+<i class="command">strip</i>), and <span class="option">-l</span> (to process one
+filename at a time). None of those options are required; if you
+don't want them, you might at least use
+<span class="option">-t</span> so the script will list the files
+it's stripping.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch15_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">15.9. Compressing a Directory Tree: Fine-Tuning</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">15.11. Disk Quotas</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

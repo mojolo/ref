@@ -1,0 +1,200 @@
+<html><head><title>Wildcards (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">1.13. Wildcards</h2>
+
+<p>The shells <a name="upt3-IDXTERM-217" />provide
+a number of <em class="emphasis">wildcards</em> that you can use to
+abbreviate filenames or refer to groups of files. For example,
+let's say you want to delete all filenames ending in
+<em class="emphasis">.txt</em> in the <b class="emphasis-bold">current
+directory</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>). You could delete
+these files one by one, but that would be boring if there were only 5
+and <em class="emphasis">very</em> boring if there were 100. Instead, you
+can use a wildcarded name to say, "I want all files
+whose names end with <em class="emphasis">.txt</em>, regardless of what
+the first part is." The wildcard is the
+"regardless" part. Like a wildcard
+in a poker game, a wildcard in a filename can have any value.
+</p>
+
+<p><a name="IXT-1-1317" /><a name="IXT-1-1318" />The wildcard you see most often is
+<tt class="literal">*</tt> (an asterisk), but we'll start
+with something simpler: <tt class="literal">?</tt> (a question mark). When
+it appears in a filename, the <tt class="literal">?</tt> matches any single
+character. For example, <tt class="literal">letter?</tt> refers to any
+filename that begins with <em class="emphasis">letter</em> and has exactly
+one character after that. This would include
+<em class="emphasis">letterA</em>, <em class="emphasis">letter1</em>, as well
+as filenames with a nonprinting character as their last letter, such
+as <em class="emphasis">letter</em>^C.
+</p>
+
+<p>The <tt class="literal">*</tt> wildcard matches any character or group of
+zero or more characters. For example, <tt class="literal">*.txt</tt>
+matches all files whose names end with <em class="emphasis">.txt</em>;
+<tt class="literal">c*</tt> matches all files whose names start with
+<em class="emphasis">c</em>; <tt class="literal">c*b*</tt> matches names
+starting with <em class="emphasis">c</em> and containing at least one
+<em class="emphasis">b</em>; and so on.
+</p>
+
+<p>The <tt class="literal">*</tt> and <tt class="literal">?</tt> wildcards are
+sufficient for 90 percent of the situations that you will find.
+However, there are some situations that they can't
+handle. For example, you may want to list files whose names end with
+<em class="emphasis">.txt</em>, <em class="emphasis">mail</em>, or
+<em class="emphasis">let</em>. There's no way to do this
+with a single <tt class="literal">*</tt>; it won't let you
+exclude the files you don't want. In this situation,
+use a separate <tt class="literal">*</tt> with each filename ending:
+</p>
+
+<blockquote><pre class="code">*.txt *mail *let</pre></blockquote>
+
+<p>Sometimes you need to match a particular group of characters. For
+example, you may want to list all filenames that begin with digits or
+all filenames that begin with uppercase letters.
+Let's assume that you want to work with the files
+<tt class="literal">program</tt>.<em class="replaceable"><tt>n</tt></em>, where
+<em class="replaceable"><tt>n</tt></em> is a single-digit number. Use the
+filename:
+</p>
+
+<blockquote><pre class="code">program.[0123456789]</pre></blockquote>
+
+<p>In other words, the wildcard
+<tt class="literal">[</tt><em class="replaceable"><tt>character-list</tt></em><tt class="literal">]</tt>
+matches any single character that appears in the list. The character
+list can be any group of ASCII characters; however, if they are
+consecutive (e.g., A-Z, a-z, 0-9, or 3-5, for that matter), you can
+use a hyphen as shorthand for the range. For example,
+<tt class="literal">[a-zA-Z]</tt> means any alphabetic English character.
+</p>
+
+<p><a name="IXT-1-1319" />There is one exception to these
+wildcarding rules. Wildcards never match <tt class="literal">/</tt>, which
+is both the name of the <b class="emphasis-bold">filesystem
+root</b> (<a href="ch01_14.htm#upt3-CHP-1-SECT-14">Section 1.14</a>) and the character used
+to separate directory names in a <b class="emphasis-bold">path</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>). The only
+way to match on this character is to <em class="emphasis">escape it</em>
+using the backslash character ( <tt class="literal">\)</tt>. However,
+you'll find it difficult to use the forward slash
+within a filename anyway (the system will keep trying to use it as a
+directory command).
+</p>
+
+<p>If you are new to computers, you probably will catch on to Unix
+wildcarding quickly. If you have used any other computer system, you
+have to watch out for one important detail. Virtually all computer
+systems except for Unix consider a period (.) a special
+<a name="IXT-1-1320" />character within a filename. Many
+operating systems even require a filename to have a period in it.
+With these operating systems, a <tt class="literal">*</tt> does not match a
+period; you have to say <tt class="literal">*.*</tt>. Therefore, the
+equivalent of <tt class="literal">rm *</tt> does virtually nothing on some
+operating systems. Under Unix, it is dangerous: it means
+"delete all the files in the current directory,
+regardless of their name." You only want to give
+this command when you really mean it.
+</p>
+
+<p><a name="IXT-1-1321" />But here's the exception
+to the exception. The shells and the <em class="emphasis">ls</em> command
+consider a . special if it is the first character of a filename. This
+is often used to hide initialization files and other files with which
+you aren't normally concerned; the
+<i class="command">ls</i> command doesn't show these
+files unless you <b class="emphasis-bold">ask</b> (<a href="ch08_09.htm#upt3-CHP-8-SECT-9">Section 8.9</a>) for them. If a file's name
+begins with ., you always have to type the . explicitly. For example,
+<tt class="literal">.*rc</tt> matches all files whose names begin with .
+and end with <em class="emphasis">rc</em>. This is a common convention for
+the names of Unix initialization files.
+</p>
+
+<p><a href="ch01_13.htm#upt3-CHP-1-TABLE-3">Table 1-3</a> has a summary of common wildcards.</p>
+
+<a name="upt3-CHP-1-TABLE-3" /><h4 class="objtitle">Table 1-3. Common shell wildcards </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Wildcard</p>
+</th>
+<th>
+<p>Matches</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>?</p>
+</td>
+<td>
+<p>Any single character</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>*</p>
+</td>
+<td>
+<p>Any group of zero or more characters</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>[ab]</p>
+</td>
+<td>
+<p>Either a or b</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>[a-z]</p>
+</td>
+<td>
+<p>Any character between a and z, inclusive</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>Wildcards can be used at any point or points within a path. Remember,
+wildcards only match names that already exist. You
+can't use them to <b class="emphasis-bold">create new
+files</b> (<a href="ch28_03.htm#upt3-CHP-28-SECT-3">Section 28.3</a>) -- though many
+shells have <a name="IXT-1-1322" /><a name="IXT-1-1323" />curly
+braces (<tt class="literal">{}</tt>) for doing that. <a href="ch33_03.htm#upt3-CHP-33-SECT-3">Section 33.3</a> explains how wildcards are handled, and
+<a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a> has more about wildcards,
+including specialized wildcards in each of the shells.<a name="IXTR3-1377" />
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.12. Filename Extensions</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.14. The Tree Structure of the Filesystem</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

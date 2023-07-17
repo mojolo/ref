@@ -1,0 +1,142 @@
+<html><head><title>On-Demand Incremental Backups of a Project (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch38_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">38.9. On-Demand Incremental Backups of a Project</h2>
+
+<p><a name="upt3-IDXTERM-6256" />
+<a name="upt3-IDXTERM-6257" />As I was working on this book, I was
+constantly editing lots of random files all through a directory tree.
+I archived some of the files in a <b class="emphasis-bold">revision
+control system</b> (<a href="ch39_04.htm#upt3-CHP-39-SECT-4">Section 39.4</a>), but those
+archives, as well as the nonarchived files, still would be vulnerable
+if my disk crashed. (And naturally, close to a deadline, one hard
+disk started making whining noises...)
+</p>
+
+<p>The answer I came up with was easy to use and simple to set up.
+It's a script named
+<i class="command">ptbk</i><a name="IXT-38-3011" /><a name="IXT-38-3012" />,
+and this article explains it. To run the script, I just type its
+name. It searches my directory tree for files that have been modified
+since the last time I ran <i class="command">ptbk</i>. Those files are
+copied into a dated compressed <i class="command">tar</i> archive and
+copied to a remote system using <i class="command">scp</i>. The process
+looks like this:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ptbk</b></tt>
+upt/upt3_changes.html
+upt/BOOKFILES
+upt/art/0548.sgm
+upt/art/1420.sgm
+upt/art/1430.sgm
+upt/art/0524.sgm
+upt/BOOKIDS
+upt/ulpt3_table
+Now copying this file to bserver:
+-rw-rw-r--    1 jpeek    323740 Jan  3 23:08 /tmp/upt-200101032308.tgz
+upt-200101032308.tgz     |     316 KB |  63.2 kB/s | ETA: 00:00:00 | 100%</pre></blockquote>
+
+<p><a name="IXT-38-3013" /><a name="IXT-38-3014" /><a name="IXT-38-3015" />The script actually
+doesn't copy <em class="emphasis">all</em> of the files
+in my directory tree. I've set up a
+<i class="command">tar</i> exclude file that makes the script skip some
+files that don't need backing up. For instance, it
+skips any filename that starts with a comma (,).
+Here's the file, named
+<em class="filename">ptbk.exclude</em>:
+</p>
+
+<blockquote><pre class="code">upt/ptbk.exclude
+upt/tarfiles
+upt/gmatlogs
+upt/drv-jpeek-jpeek.ps
+upt/drv-jpeek.3l
+upt/BOOKFILES~
+upt/ch*.ps.gz
+upt/ch*.ps
+upt/,*
+upt/art/,*</pre></blockquote>
+
+<p>After the script makes the tar file, it <i class="command">touch</i>es a
+timestamp file named <em class="filename">ptbk.last</em>. The next time
+the script runs, it uses <b class="emphasis-bold">find -newer</b>
+(<a name="IXT-38-3016" /><a href="ch09_08.htm#upt3-CHP-9-SECT-8">Section 9.8</a>) to get
+only the files that have been modified since the timestamp file was
+touched.
+</p>
+
+<p><a name="IXT-38-3017" /><a name="IXT-38-3018" />The script uses
+<i class="command">scp</i><a name="IXT-38-3019" /><a name="IXT-38-3020" /><a name="IXT-38-3021" /> and <i class="command">ssh-agent</i> to copy
+the archive without asking for a password. You could hack it to use
+another method. For instance, it could copy using <b class="emphasis-bold">rcp</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) or simply
+copy the file to another system with <i class="command">cp</i> via an
+<span class="acronym">NFS</span>-mounted filesystem (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>). 
+</p>
+
+<p>This doesn't take the place of regular backups, if
+only because re-creating days' worth of work from
+the little individual archives would be tedious. But this system
+makes it painless to take snapshots, as often as I want, by typing a
+four-letter command. Here's the
+<i class="command">ptbk</i> script:
+</p>
+
+<p><tt class="literal">||</tt> <a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a>, <tt class="literal">'...'</tt> <a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a></p>
+
+<blockquote><pre class="code">#!/bin/sh
+# ptbk - back up latest UPT changes, scp to $remhost
+
+dirbase=upt
+dir=$HOME/$dirbase
+timestamp=$dir/ptbk.last     # the last time this script was run
+exclude=$dir/ptbk.exclude    # file with (wildcard) pathnames to skip
+remhost=bserver              # hostname to copy the files to
+remdir=tmp/upt_bak/.         # remote directory (relative to $HOME)
+cd $dir/.. || exit           # Go to parent directory of $dir
+datestr=`date '+%Y%m%d%H%M'`
+outfile=/tmp/upt-$datestr.tgz
+
+# Don't send vim recovery files (.*.swp):
+tar czvlf $outfile -X $exclude \
+     `find $dirbase -type f -newer $timestamp ! -name '.*.swp' -print`
+mv -f $timestamp $dir/,ptbk.last
+echo "Timestamp file for $0.  Don't modify." &gt; $timestamp
+echo "Now copying this file to $remhost:"
+ls -l $outfile
+scp $outfile ${remhost}:${remdir}</pre></blockquote>
+
+<p>If the copy fails (because the remote machine is down, for instance),
+I have to either copy the archive somewhere else or wait and remember
+to copy the archive later. If you have an unreliable connection, you
+might want to modify the script to touch the timestamp file only if
+the copy succeeds -- at the possible cost of losing a data file
+that was modified while the previous archive was (not?) being
+transferred to the remote host.<a name="IXTR3-3051" /> <a name="IXTR3-3052" /> 
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch38_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">38.8. Using GNU tar with a Remote Tape Drive</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">38.10. Using Wildcards with tar</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

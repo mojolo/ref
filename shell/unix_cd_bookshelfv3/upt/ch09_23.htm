@@ -1,0 +1,229 @@
+<html><head><title>Using Shell Arrays to Browse Directories (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_22.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_24.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.23. Using Shell Arrays to Browse Directories</h2>
+
+<p><a name="upt3-IDXTERM-1646" /> <a name="upt3-IDXTERM-1647" /> <a name="upt3-IDXTERM-1648" />Even
+a graphical file manager might not be enough to help you step through
+a complicated directory tree with multiple layers of subdirectories.
+Which directories have you visited so far, and which are left to go?
+This article shows a simple way, using shell arrays, to step through
+a tree directory-by-directory. The technique is also good for
+stepping through lists of files -- or almost any collection of
+things, over a period of time -- of which you
+don't want to miss any. At the end are a couple of
+related tips on using arrays.
+</p>
+
+<a name="upt3-CHP-9-SECT-23.1" /><div class="sect2">
+<h3 class="sect2">9.23.1. Using the Stored Lists</h3>
+
+<p>Let's start with a quick overview of expanding array
+values; then we'll look at specifics for each shell.
+A dollar sign (<tt class="literal">$</tt>) before the name of a shell
+variable gives you its value. In the C shells and
+<em class="filename">zsh</em>, that gives all members of an array. But, in
+the Korn shell and <em class="filename">bash2</em>, expanding an array
+value without the index gives just the first member. To pick out a
+particular member, put its number in square brackets after the name;
+in <em class="filename">ksh</em> and <em class="filename">bash2</em>, you also
+need to use curly braces (<tt class="literal">{}</tt>). A hash mark
+(<tt class="literal">#</tt>) gives the number of members. Finally, you can
+use range operators to choose several members of an array.
+</p>
+
+<p>Here's a practical example that you might use,
+interactively, at a shell prompt. You're cleaning
+your home directory tree. You store all the directory names in an
+array named <tt class="literal">d</tt>. When you've
+cleaned one directory, you go to the next one. This way, you
+don't miss any directories. (To keep this simple,
+I'll show an example with just four directories.)
+</p>
+
+<a name="ch09-11-fm2xml" /><blockquote><b>NOTE:</b> 
+If you don't want to use shell commands to browse
+the directories, you could use a command to launch a graphical file
+browser on each directory in the array. For instance, make the
+<em class="filename">nextdir</em> alias launch Midnight Commander with
+<em class="filename">mc $d[1]</em>.
+</p>
+</blockquote>
+
+<p>Let's start with the <a name="IXT-9-154" />C shell:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>set d=(`find $home -type d -print`)</b></tt>
+% <tt class="userinput"><b>echo $#d directories to search: $d</b></tt>
+4 directories to search: /u/ann /u/ann/bin /u/ann/src /u/ann/lib
+% <tt class="userinput"><b>alias nextdir 'shift d; cd $d[1]; pwd; ls -l'</b></tt>
+% <tt class="userinput"><b>cd $d[1]</b></tt>
+   ...clean up first directory...
+% <tt class="userinput"><b>nextdir</b></tt>
+/u/ann/bin
+total 1940
+lrwxrwxrwx    1 ann    users      14 Feb  7  2002 ] -&gt; /usr/ucb/reset
+-r-xr-xr-x    1 ann    users    1134 Aug 23  2001 addup
+   ...clean up bin directory...
+% <tt class="userinput"><b>nextdir</b></tt>
+/u/ann/src
+   ...do other directories, one by one...
+% <tt class="userinput"><b>nextdir</b></tt>
+d: Subscript out of range.</pre></blockquote>
+
+<p>You store the array, list the number of directories, and show their
+names. You then create a <em class="filename">nextdir</em> alias that
+changes to the next directory to clean. First, use the
+<a name="IXT-9-155" />C shell's
+<em class="filename">shift</em> command; it "throws
+away" the first member of an array so that the
+second member becomes the first member, and so on. Next,
+<em class="filename">nextdir</em><a name="IXT-9-156" /> changes the current directory to the
+next member of the array and lists it. (Note that members of a
+<a name="IXT-9-157" />C shell array are indexed starting at
+1 -- unlike the C language, which the C shell emulates, where
+indexes start at 0. So the alias uses <em class="filename">cd $d[1]</em>.)
+At the end of our example, when there's not another
+array member to <em class="filename">shift</em> away, the command
+<em class="filename">cd $d[1]</em> fails; the rest of the
+<em class="filename">nextdir</em> alias isn't executed.
+</p>
+
+<p><a name="IXT-9-158" />Bourne-type
+shells have a different array syntax than the C shell. They
+don't have a <em class="filename">shift</em> command for
+arrays, so we'll use a variable named
+<tt class="literal">n</tt> to hold the array
+<a name="IXT-9-159" />index. Instead of aliases,
+let's use a more powerful shell function.
+We'll show
+<em class="filename">ksh</em><a name="IXT-9-160" /><a name="IXT-9-161" /> and
+<em class="filename">bash2</em> arrays, which are indexed starting at 0.
+(By default, the first
+<em class="filename">zsh</em><a name="IXT-9-162" /> array
+member is number 1.) The first command that follows, to store the
+array, is different in <em class="filename">ksh</em> and
+<em class="filename">bash2</em> -- but the rest of the example is the
+same on both shells.
+</p>
+
+<blockquote><pre class="code">bash2$ <tt class="userinput"><b>d=(`find $HOME -type d -print`)</b></tt>
+ksh$ <tt class="userinput"><b>set -A d `find $HOME -type d -print`</b></tt>
+  
+$ <tt class="userinput"><b>echo ${#d[*]} directories to search: ${d[*]}</b></tt>
+4 directories to search: /u/ann /u/ann/bin /u/ann/src /u/ann/lib
+$ <tt class="userinput"><b>n=0</b></tt>
+$ <tt class="userinput"><b>nextdir( ) {</b></tt>
+&gt;   <tt class="userinput"><b>if [ $((n += 1)) -lt ${#d[*]} ]</b></tt>
+&gt;   <tt class="userinput"><b>then cd ${d[$n]}; pwd; ls -l</b></tt>
+&gt;   <tt class="userinput"><b>else echo no more directories</b></tt>
+&gt;   <tt class="userinput"><b>fi</b></tt>
+&gt; <tt class="userinput"><b>}</b></tt>
+$ <tt class="userinput"><b>cd ${d[0]}</b></tt>
+   ...clean up first directory...
+$ <tt class="userinput"><b>nextdir</b></tt>
+/u/ann/bin
+total 1940
+lrwxrwxrwx    1 ann    users      14 Feb  7  2002 ] -&gt; /usr/ucb/reset
+-r-xr-xr-x    1 ann    users    1134 Aug 23  2001 addup
+   ...do directories, as in C shell example...
+$ <tt class="userinput"><b>nextdir</b></tt>
+no more directories</pre></blockquote>
+
+<p>If you aren't a programmer, this may look
+intimidating -- like something you'd never type
+interactively at a shell prompt. But this sort of thing starts to
+happen -- without planning, on the spur of the moment -- as you
+learn more about Unix and what the shell can do.
+</p>
+
+</div>
+<a name="upt3-CHP-9-SECT-23.2" /><div class="sect2">
+<h3 class="sect2">9.23.2. Expanding Ranges</h3>
+
+<p>We don't use quite all the
+<a name="IXT-9-163" /><a name="IXT-9-164" /><a name="IXT-9-165" /><a name="IXT-9-166" />array-expanding operators in the
+previous examples, so here's a quick overview of the
+rest. To expand a range of members in
+<em class="filename">ksh</em><a name="IXT-9-167" /> and <a name="IXT-9-168" /><em class="filename">bash2</em>, give the
+first and last indexes with a dash (<tt class="literal">-</tt>) between
+them. For instance, to expand the second, third, and fourth members
+of array <tt class="literal">arrname</tt>, use
+<em class="filename">${arrname[1-3]}</em>. In
+<em class="filename">zsh</em><a name="IXT-9-169" />, use a comma (,) instead -- and
+remember that the first <em class="filename">zsh</em> array member is
+number 1; so you'd use
+<em class="filename">${arrname[2-4]}</em> in <em class="filename">zsh</em>.
+<a name="IXT-9-170" />C shell wants
+<em class="filename">$arrname[2-4]</em>. If the last number of a range is
+omitted (like <em class="filename">${arrname[2-]}</em> or
+<em class="filename">$arrname[2-]</em>), this gives you all members from 2
+through the last.
+</p>
+
+<p><a name="IXT-9-171" />Finally, in all shells
+except <em class="filename">zsh</em>, remember that expanded values are
+split into words at space characters. So if members of an array have
+spaces in their values, be careful to quote them. For instance, Unix
+directory names can have spaces in them -- so we really should
+have used <tt class="literal">cd "$d[1]"</tt> in the
+<em class="filename">newdir</em> alias and <tt class="literal">cd
+"${d[$n]}"</tt> in the <em class="filename">newdir</em>
+function.<a href="#FOOTNOTE-39">[39]</a> If we hadn't done this,
+the <i class="command">cd</i> command could have gotten multiple argument
+words. But it would only pay attention to the first argument, so it
+would probably fail.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-39" /><p> [39]We didn't do so because
+the syntax was already messy enough for people getting
+started.</p> </blockquote>
+
+<p>To expand a range of members safely, such as
+<tt class="literal">${foo[1-3]}</tt> in <em class="filename">bash2</em> and
+<em class="filename">ksh</em>, you need ugly expressions without range
+operators, such as <tt class="literal">"${foo[1]}"</tt>
+<tt class="literal">"${foo[2]}" "${foo[3]}"</tt>. The C shell has a
+<tt class="literal">:q</tt><a name="IXT-9-172" /> string modifier that says
+"quote each word," so in
+<em class="filename">csh</em> you can safely use
+<tt class="literal">$foo[1-3]:q</tt>. It's hard to quote
+array values, though, if you don't know ahead of
+time how many there are! So, using <tt class="literal">${foo[*]}</tt> to
+give all members of the <em class="filename">foo</em> array suffers from
+word-splitting in <em class="filename">ksh</em> and
+<em class="filename">bash2</em> (but not in <em class="filename">zsh</em>, by
+default). In <em class="filename">ksh</em> and <em class="filename">bash2</em>,
+though, you can use <tt class="literal">"${foo[@]}"</tt>, which expands
+into a quoted list of the members; each member isn't
+split into separate words. In <em class="filename">csh</em>,
+<tt class="literal">$foo[*]:q</tt><em class="filename"> </em> does the
+trick.<a name="IXTR3-197" />
+<a name="IXTR3-198" />
+<a name="IXTR3-199" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_22.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_24.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.22. lookfor: Which File Has That Word?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.24. Finding the (Hard) Links to a File</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

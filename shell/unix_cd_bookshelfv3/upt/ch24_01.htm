@@ -1,0 +1,113 @@
+<html><head><title>Starting, Stopping, and Killing Processes (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 24. Starting, Stopping, and Killing Processes</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch24_01.htm#sect1">What's in This Chapter</a><br />
+<a href="ch24_02.htm">fork and exec</a><br />
+<a href="ch24_03.htm">Managing Processes: Overall Concepts</a><br />
+<a href="ch24_04.htm">Subshells</a><br />
+<a href="ch24_05.htm">The ps Command</a><br />
+<a href="ch24_06.htm">The Controlling Terminal</a><br />
+<a href="ch24_07.htm">Tracking Down Processes</a><br />
+<a href="ch24_08.htm">Why ps Prints Some Commands in Parentheses</a><br />
+<a href="ch24_09.htm">The /proc Filesystem</a><br />
+<a href="ch24_10.htm">What Are Signals?</a><br />
+<a href="ch24_11.htm">Killing Foreground Jobs</a><br />
+<a href="ch24_12.htm">Destroying Processes with kill</a><br />
+<a href="ch24_13.htm">Printer Queue Watcher: A Restartable Daemon Shell Script</a><br />
+<a href="ch24_14.htm">Killing All Your Processes</a><br />
+<a href="ch24_15.htm">Killing Processes by Name?</a><br />
+<a href="ch24_16.htm">Kill Processes Interactively</a><br />
+<a href="ch24_17.htm">Processes Out of Control? Just STOP Them</a><br />
+<a href="ch24_18.htm">Cleaning Up an Unkillable Process</a><br />
+<a href="ch24_19.htm">Why You Can't Kill a Zombie</a><br />
+<a href="ch24_20.htm">The Process Chain to Your Window</a><br />
+<a href="ch24_21.htm">Terminal Windows Without Shells</a><br />
+<a href="ch24_22.htm">Close a Window by Killing Its Process(es)</a><br /></p></div><div class="sect1"><a name="upt3-CHP-24-SECT-1" />
+<h2 class="sect1"><a name="sect1" />24.1. What's in This Chapter</h2>
+
+<blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Summary Box</h4>
+<p>We've already talked about so many of the topics in
+this chapter, here or there, that it may seem like a real hodgepodge.
+It's a grab-bag of important things to know about
+processes -- which you can think of as programs that are actually
+running, rather than sitting on the disk somewhere.
+</p>
+&nbsp;
+<p>The chapter starts out with a couple of conceptual articles. They
+define some important terms that you're likely to
+encounter in this chapter.
+</p>
+&nbsp;
+<p>Then we talk about the <i class="command">ps</i> command, which tells you
+what processes you have running and just what they are up to
+(<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>, <a href="ch24_06.htm#upt3-CHP-24-SECT-6">Section 24.6</a>,
+<a href="ch24_08.htm#upt3-CHP-24-SECT-8">Section 24.8</a>).
+</p>
+&nbsp;
+<p>The next few articles cover signals, which are one way processes
+communicate with one another. We cover topics like:
+</p>
+&nbsp;
+<ul><li>
+<p>What are signals (<a href="ch24_10.htm#upt3-CHP-24-SECT-10">Section 24.10</a>)?</p>
+</li><li>
+<p>How to send signals from the keyboard (<a href="ch24_11.htm#upt3-CHP-24-SECT-11">Section 24.11</a> and <a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>; also see
+<a href="ch05_08.htm#upt3-CHP-5-SECT-8">Section 5.8</a>).
+</p>
+</li><li>
+<p>How shell programs can "handle"
+signals (<a href="ch24_13.htm#upt3-CHP-24-SECT-13">Section 24.13</a> and <a href="ch35_17.htm#upt3-CHP-35-SECT-17">Section 35.17</a>). 
+</p>
+</li></ul>
+<p>We go from there to a more general discussion of ways to kill
+processes:
+</p>
+&nbsp;
+<ul><li>
+<p>How to kill all your processes (<a href="ch24_14.htm#upt3-CHP-24-SECT-14">Section 24.14</a>).</p>
+</li><li>
+<p>How to kill processes by name rather than by process ID (<a href="ch24_16.htm#upt3-CHP-24-SECT-16">Section 24.16</a>).
+</p>
+</li><li>
+<p>How to stop runaway jobs (<a href="ch24_17.htm#upt3-CHP-24-SECT-17">Section 24.17</a>).</p>
+</li><li>
+<p>Why some processes don't seem to go away when you
+kill them (<a href="ch24_18.htm#upt3-CHP-24-SECT-18">Section 24.18</a>, <a href="ch24_19.htm#upt3-CHP-24-SECT-19">Section 24.19</a>). 
+</p>
+</li><li>
+<p>How to get rid of a frozen window (<a href="ch24_22.htm#upt3-CHP-24-SECT-22">Section 24.22</a>). 
+</p>
+</li><li>
+<p>How to make sure processes
+<em class="emphasis">don't</em> die when you log out
+(<a href="ch23_10.htm#upt3-CHP-23-SECT-10">Section 23.10</a>).
+</p>
+</li></ul>
+<p> <em class="emphasis">-- TOR</em></p>
+</td></tr></table><p></blockquote>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">23.13. Stopping Remote Login Sessions</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.2. fork and exec</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

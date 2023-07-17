@@ -1,0 +1,119 @@
+<html><head><title>Compound Searches (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.10. Compound Searches</h2>
+
+<p><a name="IXT-13-5898" /> <a name="IXT-13-5899" />You may recall that you can search for
+lines containing "this"
+<em class="emphasis">or</em> "that"
+using the <b class="emphasis-bold">egrep</b> (<a href="ch13_04.htm#upt3-CHP-13-SECT-4">Section 13.4</a>) <tt class="literal">|</tt> metacharacter:
+</p>
+
+<blockquote><pre class="code">egrep 'this|that' <em class="replaceable"><tt>files</tt></em></pre></blockquote>
+
+<p>But how do you grep for "this"
+<em class="emphasis">and</em> "that"?
+Conventional regular expressions don't support an
+<em class="emphasis">and</em> operator because it breaks the rule of
+patterns matching one consecutive string of text. Well, <b class="emphasis-bold">agrep</b> (<a href="ch13_06.htm#upt3-CHP-13-SECT-6">Section 13.6</a>) is one
+version of <i class="command">grep</i> that breaks all the rules. If
+you're lucky enough to have it installed, just use
+this:
+</p>
+
+<blockquote><pre class="code">agrep 'cat;dog;bird' <em class="replaceable"><tt>files</tt></em></pre></blockquote>
+
+<p>If you don't have <i class="command">agrep</i>, a common
+technique is to <a name="IXT-13-5900" />filter the
+text through several <i class="command">grep</i>s so that only lines
+containing all the keywords make it through the pipeline intact:
+</p>
+
+<blockquote><pre class="code">grep cat <em class="replaceable"><tt>files</tt></em> | grep dog | grep bird</pre></blockquote>
+
+<p>But can it be done in one command? The closest you can come with
+<i class="command">grep</i> is this idea:
+</p>
+
+<blockquote><pre class="code">grep 'cat.*dog.*bird' <em class="replaceable"><tt>files</tt></em></pre></blockquote>
+
+<p>which has two limitations -- the words must appear in the given
+order, and they cannot overlap. (The first limitation can be overcome
+using <tt class="literal">egrep 'cat.*dog|dog.*cat'</tt>, but this trick is
+not really scalable to more than two terms.)
+</p>
+
+<p>As usual, the problem can also be solved by moving beyond the grep
+family to the more powerful tools. Here is how to do a
+<a name="IXT-13-5901" /> <a name="IXT-13-5902" /> <a name="IXT-13-5903" /><a name="IXT-13-5904" />line-by-line <em class="emphasis">and</em>
+search using <i class="command">sed</i>, <i class="command">awk</i>, or
+<i class="command">perl</i>:<a href="#FOOTNOTE-44">[44]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-44" /><p> [44]Some versions of
+<i class="command">nawk</i> require an explicit <tt class="literal">$0~</tt> in
+front of each pattern.</p> </blockquote>
+
+<blockquote><pre class="code">sed '/cat/!d; /dog/!d; /bird/!d' <em class="replaceable"><tt>files</tt></em>
+awk '/cat/ &amp;&amp; /dog/ &amp;&amp; /bird/' <em class="replaceable"><tt>files</tt></em>
+perl -ne 'print if /cat/ &amp;&amp; /dog/ &amp;&amp; /bird/' <em class="replaceable"><tt>files</tt></em></pre></blockquote>
+
+<p>Okay, but what if you want to find where all the words occur in the
+same <em class="emphasis">paragraph</em>? Just turn on paragraph mode by
+setting <tt class="literal">RS=""</tt> in <i class="command">awk</i> or by
+giving the <span class="option">-00</span> option to <i class="command">perl</i>:
+</p>
+
+<blockquote><pre class="code">awk '/cat/ &amp;&amp; /dog/ &amp;&amp; /bird/ {print $0 ORS}' RS= <em class="replaceable"><tt>files</tt></em>
+perl -n00e 'print "$_\n" if /cat/ &amp;&amp; /dog/ &amp;&amp; /bird/' <em class="replaceable"><tt>files</tt></em></pre></blockquote>
+
+<p>And if you just want a list of the <em class="replaceable"><tt>files</tt></em>
+that contain all the words anywhere in them? Well,
+<i class="command">perl</i> can easily slurp in entire files if you have
+the memory and you use the <span class="option">-0</span> option to set the
+record separator to something that won't occur in
+the file (like <em class="emphasis">NUL</em>):
+</p>
+
+<blockquote><pre class="code">perl -ln0e 'print $ARGV if /cat/ &amp;&amp; /dog/ &amp;&amp; /bird/' <em class="replaceable"><tt>files</tt></em></pre></blockquote>
+
+<p>(Notice that as the problem gets harder, the less powerful commands
+drop out.)
+</p>
+
+<p>The <i class="command">grep</i> filter technique shown earlier also works
+on this problem. Just add a <span class="option">-l</span> option and the
+<b class="emphasis-bold">xargs command</b>
+(<a name="IXT-13-5905" /><a href="ch27_17.htm#upt3-CHP-27-SECT-17">Section 27.17</a>) to
+make it pass filenames, rather than text lines, through the pipeline:
+</p>
+
+<blockquote><pre class="code">grep -l cat <em class="replaceable"><tt>files</tt></em> | xargs grep -l dog | xargs grep -l bird</pre></blockquote>
+
+<p>(<i class="command">xargs</i> is basically the glue used when one program
+produces output needed by another program as command-line arguments.)
+</p>
+
+<p> <em class="emphasis">-- GU</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.9. A Multiline Context grep Using sed</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.11. Narrowing a Search Quickly</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,349 @@
+<html><head><title>Shell Function Basics (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch29_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch29_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">29.11. Shell Function Basics</h2>
+
+<p><a name="IXT-29-4435" />Most <a name="upt3-IDXTERM-4517" /> <a name="upt3-IDXTERM-4518" />
+<a name="upt3-IDXTERM-4519" />shells
+<a name="IXT-29-4436" />have <b class="emphasis-bold">aliases</b>
+(<a name="IXT-29-4437" /><a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>).
+Almost all Bourne-type shells have functions, which are like aliases,
+but richer and more flexible. Here are four examples.
+</p>
+
+<a name="upt3-CHP-29-SECT-11.1" /><div class="sect2">
+<h3 class="sect2">29.11.1. Simple Functions: ls with Options</h3>
+
+<p>Let's start with two aliases from <a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>, changed into shell functions:
+<a name="IXT-29-4438" /> <a name="IXT-29-4439" /> <a name="IXT-29-4440" /><a name="IXT-29-4441" />The <i class="command">la</i> function
+includes "hidden" files in
+<i class="command">ls</i> listings. The
+<i class="command">lf</i><a name="IXT-29-4442" /> function labels the names as
+directories, executable files, and so on.
+</p>
+
+<blockquote><pre class="code">function la ( ) { ls -a "$@"; }
+function lf ( ) { ls -F "$@"; }</pre></blockquote>
+
+<p>The <a name="IXT-29-4443" /> <a name="IXT-29-4444" />spaces and the semicolon
+(<tt class="literal">;</tt>) are important. You don't need
+them on some shells, but writing functions this way (or in the
+multiline format in later examples) is more portable.<a href="#FOOTNOTE-92">[92]</a>
+The <tt class="literal">function</tt> keyword is not needed in the original
+Bourne shell but is required in later versions of
+<i class="command">bash</i>. The <b class="emphasis-bold">"$@"</b>
+(<a name="IXT-29-4445" /><a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>) is
+replaced by any arguments (other options, or directory and filenames)
+you pass to the function:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-92" /><p> [92]A function is a Bourne shell list construct.</p> </blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>la -l somedir</b></tt>            <i class="lineannotation">...runs </i>ls -a -l somedir</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-29-SECT-11.2" /><div class="sect2">
+<h3 class="sect2">29.11.2. Functions with Loops: Internet Lookup</h3>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: mx.sh</p>
+
+<p><a name="IXT-29-4446" />The
+<i class="command">mx</i> function <a name="IXT-29-4447" /><a name="IXT-29-4448" /> <a name="IXT-29-4449" />uses
+<i class="command">dig</i><a name="IXT-29-4450" /> to look up the <a name="IXT-29-4451" />DNS MX (mail exchanger) record for a host,
+then <b class="emphasis-bold">sed</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) to pull out the "ANSWER
+SECTION", which has the hostname or hostnames:
+</p>
+<p><tt class="literal">for</tt> <a href="ch35_21.htm#upt3-CHP-35-SECT-21">Section 35.21</a></p>
+
+<blockquote><pre class="code">function mx( ) {
+# Look up mail exchanger for host(s)
+for host
+do
+    echo "==== $host ===="
+    dig "$host" mx in |
+    sed -n '/^;; ANSWER SECTION:/,/^$/{
+            s/^[^;].* //p
+    }'
+done
+}</pre></blockquote>
+
+<p><i class="command">mx</i> takes one or more hostname arguments; it runs
+<i class="command">dig</i> and <i class="command">sed</i> on each hostname.
+For example, the mail exchangers for <em class="emphasis">oreilly.com</em>
+are <em class="emphasis">smtp2.oreilly.com</em> and
+<em class="emphasis">smtp.oreilly.com</em>. The mail exchanger for
+<em class="emphasis">hesketh.com</em> is
+<em class="emphasis">mail.hesketh.com</em>:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>mx oreilly.com hesketh.com</b></tt>
+==== oreilly.com ====
+smtp2.oreilly.com.
+smtp.oreilly.com.
+==== hesketh.com ====
+mail.hesketh.com.</pre></blockquote>
+
+<p><a name="IXT-29-4452" />This example shows how to write a
+function with more than one line. In that style, with the ending
+curly brace on its own line, you don't need a
+semicolon after the last command. (The curly braces in the middle of
+the function are inside quotes, so they're passed to
+<i class="command">sed</i> as part of its script.)
+</p>
+
+<p>The <i class="command">mx</i> function looks like a little <b class="emphasis-bold">shell program</b> (<a href="ch35_02.htm#upt3-CHP-35-SECT-2">Section 35.2</a>).
+Shell functions have the same syntax as a <a name="IXT-29-4453" />shell script, except for the enclosing
+function name and curly braces. In fact, <b class="emphasis-bold">a
+shell function can be defined and used within a shell
+script</b> (<a href="ch35_30.htm#upt3-CHP-35-SECT-30">Section 35.30</a>). But, as
+we've seen, it's also handy for
+interactive use.
+</p>
+
+</div>
+<a name="upt3-CHP-29-SECT-11.3" /><div class="sect2">
+<h3 class="sect2">29.11.3. Setting Current Shell Environment: The work Function</h3>
+
+<p>Like aliases, functions run in the current shell process -- not in
+a subprocess as shell scripts do. So they can change your
+shell's current directory, reset shell and
+environment variables, and do basically anything you could do at a
+shell prompt. (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a> has details.)
+</p>
+
+<p><a name="IXT-29-4454" /><a name="IXT-29-4455" /><a name="IXT-29-4456" />This next function is for a
+group of people who are all working on a project. A directory named
+<em class="emphasis">/work</em> has <b class="emphasis-bold">symbolic
+links</b> (<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>) named for each
+worker -- <em class="emphasis">/work/ann</em>,
+<em class="emphasis">/work/joe</em>, etc. -- and each link points to
+the directory where that person is working. Each worker makes a
+function named <em class="emphasis">work</em> that, by default,
+<i class="command">cd</i>s to her directory and summarizes it. If the
+person gives an argument to the function -- like <tt class="literal">work
+todo</tt>, for instance -- the script edits the file named
+<em class="filename">.todo</em> in that directory. This setup also lets
+people quickly find out where others in the group are working.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: work.sh</p>
+
+<p>Okay, I admit that I made this up as a demonstration for this
+article, as a way to show a lot of features in a small amount of
+space. Anyway, here's the function:</p>
+
+<p><tt class="literal">if</tt> <a href="ch35_13.htm#upt3-CHP-35-SECT-13">Section 35.13</a>, <tt class="literal">'...'</tt> <a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>, <tt class="literal">wc</tt> <a href="ch16_06.htm#upt3-CHP-16-SECT-6">Section 16.6</a></p>
+
+
+<blockquote><pre class="code">function work ( ) {
+    local status=0
+    if [ $# -eq 1 -a "$1" = todo ]
+    then
+        ${VISUAL-vi} /work/$USER/.todo
+        status=$?  # return status from editor
+    elif [ $# -ne 0 ]
+    then
+        echo "Usage: work [todo]" 1&gt;&amp;2
+        status=1
+    else
+        cd /work/$USER
+        echo "You're in your work directory `pwd`."
+        echo "`ls | wc -w` files to edit."
+        status=0
+    fi
+    return $status
+}</pre></blockquote>
+
+<p>There are three points I should make about this example. First, the
+<i class="command">local</i><a name="IXT-29-4457" /> command defines a shell variable named
+<em class="emphasis">status</em> that's local to the
+function -- which means its value isn't available
+outside the function, so it's guaranteed not to
+conflict with variables set other places in the shell.
+I've also set the value to 0, but this
+isn't required. (In the original Korn shell, use the
+<i class="command">typeset</i> command to set a local variable.) Second,
+when you run a function, the first
+<a name="IXT-29-4458" />argument you pass it is stored in
+<b class="emphasis-bold">$1</b><a name="IXT-29-4459" />, the second in <b class="emphasis-bold">$2</b>, and so on (<a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>).
+Shell and environment variables set outside of the function, and
+nonlocal variables set within the function, are passed to and from
+the function. Finally, the
+<i class="command">return</i><a name="IXT-29-4460" /> command returns a <b class="emphasis-bold">status</b>
+(<a name="IXT-29-4461" /><a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>) to the
+calling shell. (Without <i class="command">return</i>, the function
+returns the status from the last command in the function.) For a
+function you use interactively, like this one, you may not care about
+the status. But you also can use <i class="command">return</i> in the
+middle of a function to end execution and return to the calling shell
+immediately.</p>
+</div>
+
+<a name="upt3-CHP-29-SECT-11.4" /><div class="sect2">
+<h3 class="sect2">29.11.4. Functions Calling Functions: Factorials</h3>
+
+<p><a name="upt3-IDXTERM-4546" /> <a name="upt3-IDXTERM-4547" /> <a name="upt3-IDXTERM-4548" /> <a name="upt3-IDXTERM-4549" />Okay, students, this example is
+"extra credit"
+<tt class="literal">;-)</tt>...You can ignore this ramble unless you want
+some esoterica. (I'm actually not trying to waste
+your time. There are some useful bits of info in here about the
+internal workings of the shells.) Functions can call each other
+recursively, and local variables are passed to functions they call,
+but changes in a called function are not passed back to the calling
+function. When I say "recursion,"
+I've gotta show the classic demonstration: a
+factorial function.<a href="#FOOTNOTE-93">[93]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-93" /><p> [93]Factorial is the product of all
+integers from some nonnegative number through one. So the factorial
+of 6, written <tt class="literal">6!</tt>, is 6 &#215; 5 &#215;
+4 &#215; 3 &#215; 2 &#215; 1 or 720. Also, zero
+factorial (<tt class="literal">0!</tt>) is defined as 1. In recursion, a
+function typically calls itself to get "the next
+value," then waits for that value to be returned and
+returns <em class="emphasis">its</em> answer to the function that called
+it. If you ask a function to calculate 6!, it will call itself and
+ask for 5!, then call itself and ask for 4!, and so on. This can be
+confusing if you haven't seen it before, but
+there's information about it in almost every
+computer science textbook on basic programming techniques. It is also
+worth mentioning that recursion is a pretty poor way to calculate
+factorials in most languages, namely, those that lack support for
+tail recursion.</p> </blockquote>
+
+<p>The <i class="command">fac</i> function calculates the factorial of the
+number passed in <em class="emphasis">$1</em>. It writes the result to
+standard output, for two reasons. First, doing so lets you type
+<tt class="literal">fac</tt> <em class="replaceable"><tt>n</tt></em> at the command
+line (why you'd need to calculate a factorial very
+often, though, I'm not sure!). Second, if the
+shells' <i class="command">return</i> command works like
+the Unix exit statuses (and I haven't checked all
+versions of all shells), the values are only eight bits -- so
+it's better to return a string, which lets us handle
+bigger integers. I could put in more error checking, but since this
+is all theoretical anyway, here's the simple version
+of <i class="command">fac</i>:
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: fac.sh</p>
+
+<blockquote><pre class="code">function fac ( ) {
+    if [ "$1" -gt 0 ]
+    then echo $(($1 * `fac $(($1 - 1))`))
+    else echo 1
+    fi
+}</pre></blockquote>
+
+<p>Then you can play:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>fac 0</b></tt>
+1
+$ <tt class="userinput"><b>fac 15</b></tt>
+2004310016
+$ <tt class="userinput"><b>fac 18</b></tt>
+-898433024</pre></blockquote>
+
+<p>Oops: overflow. Try <i class="command">zsh</i><a name="IXT-29-4462" /> <a name="IXT-29-4463" /> instead of
+<i class="command">bash</i> or <i class="command">ksh</i>;
+<i class="command">zsh</i> built-in arithmetic seems to have more
+capacity:
+</p>
+
+<blockquote><pre class="code">zsh$ <tt class="userinput"><b>fac 18</b></tt>
+6402373705728000</pre></blockquote>
+
+<p>You can do some simple tracing by typing <b class="emphasis-bold">set
+-x</b> (<a href="ch27_15.htm#upt3-CHP-27-SECT-15">Section 27.15</a>) at a shell prompt. Then
+the shell will display the commands it executes. (This works best in
+<i class="command">bash</i> because it puts one <tt class="literal">+</tt>
+character at the left edge of each line to show each level of
+recursion.) You also can add some <a name="IXT-29-4464" />tracing code that uses a local
+variable, <em class="emphasis">level</em>, to store the depth of
+recursion. The code <i class="command">echo</i>es
+<a name="IXT-29-4465" />debugging messages that show
+the depth of recursion of each call. Note that because the
+"returned value" of each function
+is written to its standard output, these debugging messages have to
+be on the <a name="IXT-29-4466" />standard error! (To see what happens
+otherwise, remove the <b class="emphasis-bold">1&gt;&amp;2
+operator</b> (<a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a>).)
+Here's <i class="command">fac</i> with debugging code:
+</p>
+
+<p><tt class="literal">${..-..}</tt> <a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+
+<blockquote><pre class="code">fac ( ) {
+local level=${level-0}
+echo "debug: recursion level is $((level += 1)).  Doing fac of $1" 1&gt;&amp;2
+if [ "$1" -gt 0 ]
+then echo $(($1 * `fac $(($1 - 1))`))
+else echo 1
+fi
+echo "debug: leaving level $level." 1&gt;&amp;2
+}</pre></blockquote>
+
+<p>Let's run the code with tracing. Note that changes
+to the value of <em class="emphasis">level</em> at deeper levels
+doesn't affect the value at higher levels -- and
+that <em class="emphasis">level</em> isn't set at all in
+the top-level shell:
+</p>
+
+<a name="IXTR3-4520" /><a name="IXTR3-4521" /><a name="IXTR3-4522" /><a name="IXTR3-4523" /><blockquote><pre class="code">$ <tt class="userinput"><b>fac 3</b></tt>
+debug: recursion level is 1.  Doing fac of 3
+debug: recursion level is 2.  Doing fac of 2
+debug: recursion level is 3.  Doing fac of 1
+debug: recursion level is 4.  Doing fac of 0
+debug: leaving level 4.
+debug: leaving level 3.
+debug: leaving level 2.
+6
+debug: leaving level 1.
+$ <tt class="userinput"><b>echo $level</b></tt>
+$
+
+
+</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-29-SECT-11.5" /><div class="sect2">
+<h3 class="sect2">29.11.5. Conclusion</h3>
+
+<p>The next two articles cover specifics about functions in particular
+shells, and <a href="ch29_14.htm#upt3-CHP-29-SECT-14">Section 29.14</a> shows how to
+simulate functions in shells that don't have them.
+</p>
+
+<p><a name="IXT-29-4467" /><a name="IXT-29-4468" />Here's another overall
+note. Each shell has its own commands for working with functions, but
+in general, the <i class="command">typeset</i><a name="IXT-29-4469" /> <a name="IXT-29-4470" /><a name="IXT-29-4471" /> -<span class="option">f</span> command lists
+the functions you've defined, and
+<i class="command">unset</i> -<span class="option">f</span>
+<em class="emphasis">funcname</em> deletes the definition of the function
+named <em class="emphasis">funcname</em>.</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch29_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch29_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">29.10. Fix Quoting in csh Aliases with makealias and quote</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">29.12. Shell Function Specifics</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

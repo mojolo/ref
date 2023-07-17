@@ -1,0 +1,83 @@
+<html><head><title>Unset PWD Before Using Emacs (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch19_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch19_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">19.9. Unset PWD Before Using Emacs</h2>
+
+<p><a name="IXT-19-6039" /> <a name="IXT-19-6040" /> <a name="IXT-19-6041" />I've
+seen a number of strange situations in which Emacs
+can't find files unless you type a <b class="emphasis-bold">complete ("absolute")
+pathname</b>
+(<a name="IXT-19-6042" /> <a name="IXT-19-6043" /><a name="IXT-19-6044" /><a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>), starting
+from the root (<em class="emphasis">/</em> ). When you try to visit a
+file, you'll get the message <tt class="literal">File</tt>
+<tt class="literal">not</tt> <tt class="literal">found</tt> and
+<tt class="literal">directory doesn't</tt>
+<tt class="literal">exist</tt>.
+</p>
+
+<p>In my experience, this usually means that the <a name="IXT-19-6045" /><b class="emphasis-bold">C
+shell's PWD environment variable</b> (<a href="ch35_05.htm#upt3-CHP-35-SECT-5">Section 35.5</a>) has been incorrectly set. There are a few
+(relatively pathological) ways of tricking the C shell into making a
+mistake. More commonly, though, I've seen a few
+systems on which the C shell sticks an extra slash into
+<em class="emphasis">PWD</em>: that is, its value will be something like
+<em class="emphasis">/home/mike//Mail</em> rather than
+<em class="emphasis">/home/mike/Mail</em>. Unix doesn't
+care; it lets you stack up extra slashes without any trouble. But
+Emacs interprets <em class="emphasis">//</em> as the root
+directory -- that is, it discards everything to the left of the
+double slash. So if you're trying to edit the file
+<em class="emphasis">/home/mike//Mail/output.txt</em>, Emacs will look for
+<em class="emphasis">/Mail/output.txt</em>. Even if this file exists,
+it's not what you want. [This also happens when
+Emacs is called from a (Bourne) shell script that has changed its
+current directory without changing <em class="emphasis">PWD</em>.
+ -- <em class="emphasis">JP</em>]
+</p>
+
+<p>This problem is particularly annoying because the shell will
+automatically reset <em class="emphasis">PWD</em> every time you change
+directories. The obvious solution, sticking <tt class="literal">unsetenv
+PWD</tt> in your <em class="emphasis">.cshrc</em> file,
+doesn't do any good.
+</p>
+
+<p>What will work is defining an <b class="emphasis-bold">alias</b>
+(<a href="ch29_01.htm#upt3-CHP-29-SECT-1">Section 29.1</a>):
+</p>
+
+<p><tt class="literal">(..)</tt> <a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a></p>
+
+<blockquote><pre class="code">alias gmacs "(unsetenv PWD; emacs \!*)"</pre></blockquote>
+
+<p>A better solution might be to switch to another shell that
+doesn't have this problem. The Bourne shell
+(<i class="command">sh</i>) obviously doesn't, since it
+doesn't keep track of your current directory.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch19_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch19_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">19.8. Rational Searches</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">19.10. Inserting Binary Characters into Files</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

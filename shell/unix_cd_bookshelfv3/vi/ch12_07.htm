@@ -1,0 +1,196 @@
+<html><head><title>Extended Regular Expressions (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.7. Extended Regular Expressions</h2>
+
+<p>
+<a name="ch12.regexp1" />
+<a name="ch12.regexp2" />
+<a name="ch12.regexp3" />
+<a name="ch12.regexp4" />
+<a name="ch12.regexp5" />
+Extended regular expressions were introduced in
+<a href="ch08_04.htm#vi6-ch-8-sect-4">Section 8.4</a>.
+<em class="emphasis">vile</em> provides essentially the same facilities
+as <em class="emphasis">nvi</em>'s <tt class="literal">extended</tt>
+option. The syntax is somewhat different though, relying upon
+additional backslash-escaped characters:</p>
+
+<dl>
+<dt><tt class="literal">\|</tt></dt><dd>Indicates alternation, <tt class="literal">house\|home</tt>.
+<a name="IXT-12-282028" />
+<a name="IXT-12-282029" />
+<a name="IXT-12-282030" />
+<a name="IXT-12-282031" /></p></dd>
+
+
+<dt><tt class="literal">\+</tt></dt><dd>Matches one or more of the preceding regular expression.
+<a name="IXT-12-282032" />
+<a name="IXT-12-282033" />
+<a name="IXT-12-282034" /></p></dd>
+
+
+<dt><tt class="literal">\?</tt></dt><dd>Matches zero or one of the preceding regular expression.
+<a name="IXT-12-282035" />
+<a name="IXT-12-282036" />
+<a name="IXT-12-282037" /></p></dd>
+
+
+<dt><tt class="literal">\(...\)</tt></dt><dd>
+<a name="IXT-12-282038" />
+<a name="IXT-12-282039" />
+<a name="IXT-12-282040" />
+<a name="IXT-12-282041" />
+<a name="IXT-12-282042" />
+Provides grouping for <tt class="literal">*</tt>, <tt class="literal">\+</tt>,
+and <tt class="literal">\?</tt>, as well as making matched sub-texts
+available in the replacement part of a substitute command
+(<tt class="literal">\1</tt>, <tt class="literal">\2</tt>, etc.).</p></dd>
+
+
+<dt><tt class="literal">\s&#160;\S</tt></dt><dd>Match whitespace and non-whitespace characters, respectively.
+<a name="IXT-12-282043" />
+<a name="IXT-12-282044" /></p></dd>
+
+
+<dt><tt class="literal">\w&#160;\W</tt></dt><dd>
+<a name="IXT-12-282045" />
+<a name="IXT-12-282046" />
+Match "word-constituent" characters (alphanumerics and
+the underscore, `_') and non-word-constituent
+characters, respectively. For example, <tt class="literal">\w\+</tt>
+would match C/C++ identifiers and keywords.<a href="#FOOTNOTE-60">[60]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-60" /><p> [60]For the pedantic among you,
+it also matches identifiers that start with a leading
+digit; usually this isn't much of a problem.</p>
+
+</blockquote></dd>
+
+
+<dt><tt class="literal">\d&#160;\D</tt></dt><dd>Match digits and non-digits, respectively.
+<a name="IXT-12-282047" />
+<a name="IXT-12-282048" /></p></dd>
+
+
+<dt><tt class="literal">\p&#160;\P</tt></dt><dd>
+<a name="IXT-12-282049" />
+<a name="IXT-12-282050" />
+Match printable and non-printable characters respectively.
+Whitespace is considered to be printable.</p></dd>
+
+</dl>
+
+<p><em class="emphasis">vile</em> allows the escape sequences
+<tt class="literal">\b</tt>, <tt class="literal">\f</tt>, <tt class="literal">\r</tt>,
+<tt class="literal">\t</tt>, and <tt class="literal">\n</tt> to appear in the
+replacement part of a substitute command. They stand for
+backspace, formfeed, carriage return, tab and newline, respectively.
+Also, from the <em class="emphasis">vile</em> documentation:</p>
+
+
+<p>Note that <em class="emphasis">vile</em> mimics
+<em class="emphasis">perl</em>'s
+handling of <tt class="literal">\u\L\1\E</tt> instead of
+<em class="emphasis">vi</em>'s.
+Given <tt class="literal">:s/\(abc\)/\u\L\1\E/</tt> <em class="emphasis">vi</em> will
+replace with <em class="emphasis">abc</em> whereas <em class="emphasis">vile</em>
+and <em class="emphasis">perl</em> will replace with <em class="emphasis">Abc</em>.
+This is somewhat more useful for capitalizing words.</p>
+
+
+
+<blockquote><table border="1" cellpadding="6"><tr><td><h4 class="objtitle">Example .vilemenu File</h4>
+
+<blockquote><pre class="code"># lines beginning with 'C' define a menu heading
+C:Xvile
+# the following four entries are Buttons invoking menu
+# system builtins
+B:New:new_xvile
+B:Edit .vilerc:edit_rc
+B:Parse .vilerc:parse_rc
+B:Edit .vilemenu:edit_mrc
+B:Quit:quit
+#
+C:Editing
+B:Search Forward...:cmd search-forward
+B:Search Backward...:cmd search-reverse
+# lines beginning with S are separators
+S
+B:Manual for...:29
+S
+# where the command to be executed is given as a number, like the
+#  two above and the three below, the menu system will translate
+#  this to an invocation of the command execute-macro-&lt;number&gt;.
+B:Indent Level...:31
+B:Window Title...:35
+B:Font...:36
+#
+C:Buffers
+# run a command name (in this case "toggle-buffer") by simply
+# naming it
+B:Toggle Show:toggle-buffer
+# one line starting with 'L' is allowed, at the end of a menu --
+# it causes a buffer list menu to be created.
+L:list_buff
+#
+C:Fonts
+B:5x8:setv $font 5x8
+B:7x14:setv $font 7x14
+B:8x13:setv $font 8x13
+B:8x16:setv $font 8x16
+B:9x15:setv $font 9x15
+B:10x20:setv $font 10x20
+B:12x24:setv $font 12x24
+#
+C:Attributes
+B:C/C++:30
+B:Pascal:32
+C:Help:help
+B:About:version
+S
+B:General:help
+B:Bindings:describe-bindings
+B:Motions:describe-motions
+B:Operators:describe-operators
+S
+# prefixing a command with "cmd" will force it to be run as from
+#  the ':' line, so that it can prompt for input correctly.
+B:Apropos...:cmd apropos
+B:Apropos...:apropos set
+B:On Function...:cmd describe-function
+B:On Key...:describe-key &amp;gts
+S
+B:Settings:setall
+B:Variables:show-variables
+B:Registers:show-registers</pre></blockquote>
+
+</td></tr></table><p><p></blockquote>
+<a name="IXT-12-282051" />
+<a name="IXT-12-282052" />
+<a name="IXT-12-282053" />
+<a name="IXT-12-282054" />
+<a name="IXT-12-282055" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.6. GUI Interfaces</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12.8. Improved Editing Facilities</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

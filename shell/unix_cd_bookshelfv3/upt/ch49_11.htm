@@ -1,0 +1,151 @@
+<html><head><title>Providing Superpowers with sudo (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch49_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch49_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">49.11. Providing Superpowers with sudo</h2>
+
+<p><a name="IXT-49-425" /> <a name="IXT-49-426" /><a name="IXT-49-427" />You may not want to give people
+access to the root password just to give them access to specific
+superuser powers. In cases such as this, you should consider using
+<em class="filename">sudo</em> -- an application that enables specified
+users to execute applications that normally require
+<a name="IXT-49-428" />root privileges.
+</p>
+
+<p>The <em class="filename">sudo</em> application isn't
+installed by default on all systems, but it is available for most.
+You can find out if it's installed on your system by
+typing <tt class="literal">sudo</tt> at the command line. If it
+isn't installed, check online for versions that run
+on your machine. The application's home is at
+<a href="http://www.courtesan.com/sudo/index.html">http://www.courtesan.com/sudo/index.html</a>.
+</p>
+
+<p>The <em class="filename">sudo</em> configuration file is called
+<em class="filename">sudoers</em> and is installed in the
+<em class="filename">/etc</em> subdirectory. In Darwin, the default
+<em class="filename">sudoers</em> file has the following settings:
+</p>
+
+<blockquote><pre class="code">root  ALL=(ALL) ALL
+%admin ALL=(ALL) ALL</pre></blockquote>
+
+<p>In the file, root has open access to all applications. In addition,
+all members of the <em class="emphasis">admin</em> group (equivalent to
+<em class="emphasis">wheel</em> within Darwin) can also run all commands.
+</p>
+
+<p>Without getting into too much detail (an online
+<em class="filename">sudoers</em> manual is at <a href="http://www.courtesan.com/sudo/man/sudoers.html">http://www.courtesan.com/sudo/man/sudoers.html</a>),
+the <em class="filename">sudoers</em> file can consist of a set of
+aliases, used to define groups of people, commands, hosts, or run as
+options. It then defines rules by which specific users or group of
+users can run specific commands. There are four types of aliases:
+</p>
+
+<dl>
+<dt><i>User_Alias</i></dt>
+<dd>
+List of specific users</p>
+</dd>
+
+
+<dt><i>Runas_Alias</i></dt>
+<dd>
+List of users to emulate</p>
+</dd>
+
+
+<dt><i>Host_Alias</i></dt>
+<dd>
+List of servers</p>
+</dd>
+
+
+<dt><i>Cmnd_Alias</i></dt>
+<dd>
+Command list</p>
+</dd>
+
+</dl>
+
+<p>Examples of aliases are:</p>
+
+<blockquote><pre class="code">User_Alias     SYSADMINS = shelleyp, mike, tomd
+Runas_Alias    OP = root
+Host_Alias     BB = burningbird
+Cmnd_Alias     SU = /usr/bin/su</pre></blockquote>
+
+<p>Following the aliases are override rules in reference to system
+defaults. For instance, warnings and
+"lectures" can be attached to
+certain commands to ensure that people are aware of the repercussions
+of their actions. However, people who are sysadmins
+shouldn't be subjected to these rules; the lectures
+can be turned off for them:
+</p>
+
+<blockquote><pre class="code">Defaults:SYSADMINS       !lecture</pre></blockquote>
+
+<p>Neither aliases nor default overriding rules are required in the
+<em class="filename">sudoers</em> file. The only statements that are
+required are the command rules. In the Darwin file, the rules allowed
+root and <em class="filename">admin</em> access of all commands. Other
+rules that can be created are:
+</p>
+
+<blockquote><pre class="code"># sysadmins can run all commands, without password
+SYSADMINS   ALL = NOPASSWD: ALL
+
+# chris can run anything on the burningbird machine as OP (root)
+chris       BB = (OP) ALL
+
+# joe can run SU on burningbird as root
+joe         BB = (root) SU</pre></blockquote>
+
+<p>To edit the <em class="filename">sudoers</em> file, you use a specialized
+editing tool, <em class="filename">visudo</em> (see manual at <a href="http://www.courtesan.com/sudo/man/visudo.html">http://www.courtesan.com/sudo/man/visudo.html</a>),
+while logged in as root. The editor prevents collision between
+multiple authors and also verifies the correctness of the edits.
+</p>
+
+<p>To work with <em class="filename">sudo</em> (manual at <a href="http://www.courtesan.com/sudo/man/sudo.html">http://www.courtesan.com/sudo/man/sudo.html</a>),
+type <tt class="literal">sudo</tt> and the command you want to exit:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sudo vi test</b></tt></pre></blockquote>
+
+<p>Depending on your setup, you'll get a warning or a
+password prompt, or the command will fail or execute.
+</p>
+
+<p>One interesting side effect of <em class="filename">sudo</em> is that if
+you allow root access to an application that has shell escape, such
+as <em class="filename">vi</em>, you are indirectly giving that person
+access to a root shell. Use <em class="filename">sudo</em> with caution.
+</p>
+
+<p> <em class="emphasis">-- SP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch49_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch49_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">49.10. Never Log In as root</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">49.12. Enabling Root in Darwin</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

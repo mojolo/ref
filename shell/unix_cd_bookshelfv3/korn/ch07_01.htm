@@ -1,0 +1,943 @@
+<html><head><title>Input/Output and Command-Line Processing (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 7. Input/Output and  Command-Line Processing</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch07_01.htm#sect1">I/O Redirectors</a><br />
+<a href="ch07_02.htm">String I/O</a><br />
+<a href="ch07_03.htm">Command-Line Processing</a><br /></p></div><p>
+The past few chapters have gone into detail about various shell
+programming techniques, mostly focused on the flow of data and
+control through shell programs. In this chapter,
+we'll switch the focus to two related topics.
+The first is the shell's mechanisms for doing file-oriented input
+and output. We present information that expands on what you
+already know about the shell's basic I/O redirectors.
+</p><p>
+Second, we zoom in and talk about I/O at the line and word level.
+This is a fundamentally different topic, since it involves moving
+information between the domains of files/terminals and shell variables.
+<em class="emphasis">print</em> and
+command substitution are two ways of doing this that we've seen so far.
+</p><p>
+Our discussion of line and word I/O then leads into a more detailed
+explanation of how the shell processes command lines.
+This information is necessary so that you can understand exactly
+how the shell deals with <em class="emphasis">quotation</em>, and so that you can appreciate
+the power of an advanced command called <em class="emphasis">eval</em>, which we cover
+at the end of the chapter.
+</p><div class="sect1"><a name="korn2-CHP-7-SECT-1" />
+<h2 class="sect1"><a name="sect1" />7.1. I/O Redirectors</h2>
+
+<p>
+<a name="korn2-IDXTERM-1395" />
+In <a href="ch01_01.htm">Chapter 1</a> you learned about the shell's basic I/O redirectors,
+<tt class="literal">&lt;</tt>, <tt class="literal">&gt;</tt>, and <tt class="literal">|</tt>.
+Although these are enough to get you
+through 95% of your Unix life, you should know that the Korn shell
+supports a total of 20 I/O redirectors.
+<a href="ch07_01.htm#korn2-CHP-7-TABLE-1">Table 7-1</a>
+lists them, including the three we've already seen.
+Although some of the rest are useful, others are mainly for
+systems programmers.
+
+We will wait until the next chapter to discuss
+the last three, which,
+along with <tt class="literal">&gt;|</tt> and <tt class="literal">&lt;&lt;&lt;</tt>, are not present in most Bourne shell
+versions.
+
+<a name="IXT-7-287872" />
+<a name="IXT-7-287873" />
+
+<a name="IXT-7-287874" />
+<a name="IXT-7-287875" />
+
+
+<a name="IXT-7-287876" />
+
+<a name="IXT-7-287877" />
+<a name="IXT-7-287878" />
+<a name="IXT-7-287879" />
+<a name="IXT-7-287880" />
+
+</p>
+
+<a name="korn2-CHP-7-TABLE-1" /><h4 class="objtitle">Table 7-1. I/O redirectors</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Redirector</th>
+<th>Function</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">&gt;</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td>Direct standard output to <em class="emphasis">file</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td>Take standard input from <em class="emphasis">file</em></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>cmd1</em> <tt class="literal">|</tt> <em class="replaceable">cmd2</tt></em></td>
+<td><p>
+Pipe; take standard output of <em class="emphasis">cmd1</em> as standard input to
+<em class="emphasis">cmd2</em>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&gt;&gt;</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><p>
+Direct standard output to <em class="emphasis">file</em>;
+append to <em class="emphasis">file</em> if it already exists
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&gt;|</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><p>
+Force standard output to <em class="emphasis">file</em> even if <em class="emphasis">noclobber</em> is set
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;&gt;</tt> <em class="replaceable"><tt>file</tt></em></td>
+<td><p>
+Open <em class="emphasis">file</em> for both reading and writing on standard input<a href="#FOOTNOTE-90">[90]</a>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;&lt;</tt> <em class="replaceable"><tt>label</tt></em></td>
+<td>Here-document; see text</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;&lt;-</tt> <em class="replaceable"><tt>label</tt></em></td>
+<td>Here-document variant; see text</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;&lt;&lt;</tt> <em class="replaceable"><tt>label</tt></em></td>
+<td>Here-string; see text</td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>n</em><tt class="literal">&gt;</tt> <em class="replaceable">file</tt></em></td>
+<td>Direct output file descriptor <em class="emphasis">n</em> to <em class="emphasis">file</em></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>n</em><tt class="literal">&lt;</tt> <em class="replaceable">file</tt></em></td>
+<td>Set <em class="emphasis">file</em> as input file descriptor <em class="emphasis">n</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;&amp;</tt><em class="replaceable"><tt>n</tt></em></td>
+<td>Duplicate standard input from file descriptor <em class="emphasis">n</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&gt;&amp;</tt><em class="replaceable"><tt>n</tt></em></td>
+<td>Duplicate standard output to file descriptor <em class="emphasis">n</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;&amp;</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">-</tt></td>
+<td>Move file descriptor <em class="emphasis">n</em> to standard input</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&gt;&amp;</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">-</tt></td>
+<td>Move file descriptor <em class="emphasis">n</em> to standard output</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;&amp;-</tt></td>
+<td>Close the standard input</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&gt;&amp;-</tt></td>
+<td>Close the standard output</td>
+</tr>
+
+<tr>
+<td><tt class="literal">|&amp;</tt></td>
+<td>Background process with I/O from parent shell</td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>n</tt></em><tt class="literal">&lt;&amp;p</tt></td>
+<td><p>
+Move input from coprocess to file descriptor <em class="emphasis">n</em>
+</p></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>n</tt></em><tt class="literal">&gt;&amp;p</tt></td>
+<td><p>
+Move output to coprocess to file descriptor <em class="emphasis">n</em>
+</p></td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-90" /><p> [90]
+Normally, files opened with <tt class="literal">&lt;</tt> are opened read-only.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-7-287881" />
+Notice that some of the redirectors in
+<a href="ch07_01.htm#korn2-CHP-7-TABLE-1">Table 7-1</a>
+contain a digit <em class="emphasis">n</em>
+and that their descriptions contain the term <em class="emphasis">file descriptor</em>;
+we'll cover that in a little while.
+(In fact, any redirector that starts with <tt class="literal">&lt;</tt> or
+<tt class="literal">&gt;</tt> may be used with a file descriptor; this is omitted
+from the table for simplicity.)
+</p>
+
+<p>
+
+The first two new redirectors, <tt class="literal">&gt;&gt;</tt> and <tt class="literal">&gt;|</tt>, are simple
+variations on the standard output redirector <tt class="literal">&gt;</tt>. The <tt class="literal">&gt;&gt;</tt>
+appends to the output file (instead of overwriting it)
+if it already exists; otherwise it acts
+exactly like <tt class="literal">&gt;</tt>.
+
+A common use of <tt class="literal">&gt;&gt;</tt> is for adding
+a line to an initialization file (such as <em class="emphasis">.profile</em> or
+<em class="emphasis">.mailrc</em>) when you don't want to bother with a text editor. For example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cat &gt;&gt; .mailrc</b></tt>
+&gt; <tt class="userinput"><b>alias fred frederick@longmachinename.longcompanyname.com</b></tt>
+&gt; <tt class="userinput"><b>^D</b></tt>
+$
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-7-287882" />
+As we saw in <a href="ch01_01.htm">Chapter 1</a>,
+<em class="emphasis">cat</em> without an argument uses standard input as its input. This
+allows you to type the input and end it with CTRL-D on its own line.
+The <tt class="literal">alias</tt> line will be appended to the file <em class="emphasis">.mailrc</em>
+if it already exists; if it doesn't, the file is created with
+that one line.
+</p>
+
+<p>
+<a name="IXT-7-287883" />
+
+Recall from <a href="ch03_01.htm">Chapter 3</a> that you can prevent the shell from
+overwriting a file with <tt class="literal">&gt;</tt> <em class="replaceable"><tt>file</tt></em>
+by typing <tt class="literal">set -o noclobber</tt>.
+The <tt class="literal">&gt;|</tt> operator overrides <em class="emphasis">noclobber</em> -- it's
+the "Do it anyway, darn it!" redirector.
+</p>
+
+<p>
+Unix systems allow you to open files read-only, write-only, and read-write.
+The <tt class="literal">&lt;</tt> redirector opens the input file read-only; if a program attempts
+to write on standard input, it will receive an error.
+Similarly, the <tt class="literal">&gt;</tt> redirector opens the output file write-only; attempting
+to read from standard output generates an error.
+The <tt class="literal">&lt;&gt;</tt> redirector opens a file for both reading and writing, by
+default on standard input.  It is up to the invoked program to
+notice this and take advantage of the fact, but it is useful in the case where a program
+may want to update data in a file "in place."
+This operator is most used for writing networking clients; see
+<a href="ch07_01.htm#korn2-CHP-7-SECT-1.4">Section 7.1.4</a>, later in this chapter
+for an example.
+</p>
+
+<a name="korn2-CHP-7-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">7.1.1. Here-Documents</h3>
+
+<p>
+<a name="korn2-IDXTERM-1408" />
+The <tt class="literal">&lt;&lt;</tt> <em class="replaceable"><tt>label</tt></em> redirector
+essentially forces the input to a
+command to be the shell program's text, which is read until there is
+a line that contains only <em class="emphasis">label</em>. The input in between is called
+a <em class="emphasis">here-document</em>.
+Here-documents aren't very interesting when used from the command prompt.
+In fact, it's the same as the normal use of standard input except
+for the label.
+
+We could have used a here-document in the previous example
+of <tt class="literal">&gt;&gt;</tt>, like this (EOF, for "end of file,"
+is an often-used label):
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cat &gt;&gt; .mailrc &lt;&lt; EOF</b></tt>
+&gt; <tt class="userinput"><b>alias fred frederick@longmachinename.longcompanyname.com</b></tt>
+&gt; <tt class="userinput"><b>EOF</b></tt>
+$
+</pre></blockquote>
+</p>
+
+<p>
+Here-documents are meant to be used from within shell scripts;
+they let you specify "batch" input to programs.
+<a name="korn2-IDXTERM-1409" />
+A common use of here-documents is with simple text editors like <em class="emphasis">ed</em>(1).
+<a href="ch07_01.htm#korn2-CHP-7-SIDEBAR-1">Task 7-1</a>
+uses a here-document in this way.
+</p>
+
+<a name="korn2-CHP-7-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 7-1</h4>
+
+<p>
+<a name="IXT-7-287884" />
+<a name="IXT-7-287885" />
+
+The <tt class="literal">s</tt> <em class="replaceable"><tt>file</tt></em> command
+in <em class="emphasis">mail</em>(1) saves the current
+message in <em class="emphasis">file</em>.
+<a name="IXT-7-287886" />
+If the message came over a network (such
+as the Internet), it has several prepended header lines
+that give information about network routing.
+You need this information because you're trying to solve some
+network routing problems.
+Write a shell script that extracts just the header lines from the file.
+</p>
+
+</td></tr></table><p></blockquote>
+<p>
+We can use <em class="emphasis">ed</em> to delete the body lines, leaving
+just the header.
+To do this, we need to know something about the syntax of mail messages,
+specifically, that there is always a blank line between the header lines
+and the message text.
+The <em class="emphasis">ed</em> command <tt class="literal">/^$/,$d</tt> does the trick: it means,
+"Delete from the first blank line<a href="#FOOTNOTE-91">[91]</a>
+through the last line of the file."
+We also need the <em class="emphasis">ed</em> commands
+<tt class="literal">w</tt> (write the changed file)
+and <tt class="literal">q</tt> (quit).
+Here is the code that solves the task:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-91" /><p> [91]
+The line has to be completely empty; no spaces or TABs.
+That's OK: mail message headers are separated from their bodies by
+exactly this kind of blank line.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+ed $1 &lt;&lt; \EOF
+/^$/,$d
+w
+q
+EOF
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-299" />
+</p>
+
+<p>
+
+<a name="IXT-7-287887" />
+<a name="IXT-7-287888" />
+
+Normally,
+the shell does parameter (variable) substitution,
+command substitution, and arithmetic substitution on text in a
+here-document, meaning that you can use shell variables and commands to
+customize the text.
+This evaluation is disabled if any part of the delimiter is
+quoted, as done in the previous example.
+(This prevents the shell from treating <tt class="literal">$d</tt>
+as a variable substitution.)
+</p>
+
+<p>
+Often though, you do want the shell to perform its evaluations:
+perhaps the most common use of here-documents is for
+providing templates for form generators or program text for
+program generators.
+<a href="ch07_01.htm#korn2-CHP-7-SIDEBAR-2">Task 7-2</a>
+is a simple task for system administrators
+that shows how this works.
+</p>
+
+<a name="korn2-CHP-7-SIDEBAR-2" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 7-2</h4>
+
+<p>
+<a name="IXT-7-287889" />
+
+Write a script that sends a mail message to a set of users saying
+that a new version of a certain program has been installed in
+a certain directory.
+</p>
+</td></tr></table><p></blockquote>
+
+<p>
+<a name="IXT-7-287890" />
+<a name="IXT-7-287891" />
+
+You can get a list of all users on the system in various ways;
+perhaps the easiest is to use <em class="emphasis">cut</em> to
+extract the first field of <em class="emphasis">/etc/passwd</em>,
+the file that contains all user account information.  Fields in
+this file are separated by colons (<tt class="literal">:</tt>).<a href="#FOOTNOTE-92">[92]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-92" /><p> [92]
+There are a few possible problems with this; for example, <em class="emphasis">/etc/passwd</em>
+usually contains information on "accounts" that aren't associated with
+people, like <tt class="literal">uucp</tt>, <tt class="literal">lp</tt>, and <tt class="literal">daemon</tt>. We'll
+ignore such problems for the purpose of this example.
+</p>
+
+</blockquote>
+
+<p>
+Given such a list of users, the following code does the trick:
+</p>
+
+<p>
+<blockquote><pre class="code">
+pgmname=$1
+for user in $(cut -f1 -d: /etc/passwd); do
+    mail $user &lt;&lt; EOF
+Dear $user,
+
+A new version of $pgmname has been installed in $(whence pgmname).
+
+Regards,
+Your friendly neighborhood sysadmin.
+EOF
+done
+</pre></blockquote>
+</p>
+
+<p>
+The shell substitutes the appropriate values for the name of
+the program and its directory.
+</p>
+
+<p>
+The redirector <tt class="literal">&lt;&lt;</tt> has two variations. First, you can
+prevent the shell from doing parameter, command and arithmetic substitution by surrounding
+the <em class="emphasis">label</em> in single or double quotes. 
+(Actually, it's enough to quote just one
+character in the <em class="emphasis">label</em>.) We saw this in the
+solution to <a href="ch07_01.htm#korn2-CHP-7-SIDEBAR-1">Task 7-1</a>.
+</p>
+
+<p>
+<a name="IXT-7-287892" />
+The second variation is <tt class="literal">&lt;&lt;-</tt>, which deletes leading TABs
+(but not spaces) from the here-document and the label line.
+This allows you to indent the here-document's text, making the
+shell script more readable:
+</p>
+
+<p>
+<blockquote><pre class="code">
+pgmname=$1
+for user in $(cut -f1 -d: /etc/passwd); do
+    mail $user &lt;&lt;- EOF
+        Dear $user,
+
+        A new version of $pgmname has been installed in $(whence pgmname).
+
+        Regards,
+
+        Your friendly neighborhood sysadmin.
+        EOF
+done
+</pre></blockquote>
+</p>
+
+<p>
+Of course, you need to choose your <em class="emphasis">label</em> so that it
+doesn't appear as an actual input line.
+<a name="IXTR3-300" />
+</p>
+</div>
+
+<a name="korn2-CHP-7-SECT-1.2" /><div class="sect2">
+<h3 class="sect2">7.1.2. Here-Strings</h3>
+
+<p>
+A common idiom in shell programming is to use <em class="emphasis">print</em>
+to generate some text to be further processed by one or more commands:
+</p>
+
+<blockquote><pre class="code">
+# start with a mild interrogation
+print -r "$name, $rank, $serial_num" | interrogate -i mild
+</pre></blockquote>
+
+<p>
+This could be rewritten to use a here-document, which is
+slightly more efficient, although not necessarily any
+easier to read:
+</p>
+
+<blockquote><pre class="code">
+# start with a mild interrogation
+interrogate -i mild &lt;&lt; EOF
+$name, $rank, $serial_num
+EOF
+</pre></blockquote>
+
+<?troff .Nd 10?>
+
+<p>
+Starting with <em class="emphasis">ksh93n</em>,<a href="#FOOTNOTE-93">[93]</a>
+the Korn shell provides a new
+form of here-document, using three less-than signs:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-93" /><p> [93]
+Thanks to David Korn for providing me prerelease access to the
+version with this feature. ADR.
+</p>
+</blockquote>
+
+<blockquote><pre class="code">
+<em class="replaceable"><tt>program</em> &lt;&lt;&lt; <em class="replaceable">WORD</tt></em>
+</pre></blockquote>
+
+<p>
+In this form, the text of <em class="emphasis">WORD</em>
+(followed by a trailing newline) becomes
+the input to the program.
+For example:
+</p>
+
+<blockquote><pre class="code">
+# start with a mild interrogation
+interrogate -i mild &lt;&lt;&lt; "$name, $rank, $serial_num"
+</pre></blockquote>
+
+<p>
+This notation first originated in the Unix version of the <em class="emphasis">rc</em>
+shell, where it is called a "here string."
+It was later picked up by the Z shell, <em class="emphasis">zsh</em>
+(see <a href="appa_01.htm">Appendix A</a>), from which the Korn shell borrowed it.
+This notation is simple, easy to use, efficient, and visually distinguishable
+from regular here-documents.
+</p>
+
+</div>
+
+<a name="korn2-CHP-7-SECT-1.3" /><div class="sect2">
+<h3 class="sect2">7.1.3. File Descriptors</h3>
+
+<p>
+<a name="korn2-IDXTERM-1421" />
+The next few redirectors in
+<a href="ch07_01.htm#korn2-CHP-7-TABLE-1">Table 7-1</a>
+depend on the notion of a
+<em class="emphasis">file descriptor</em>.
+
+This is a low-level Unix I/O concept that
+is vital to understand when programming in C or C++.  It
+appears at the shell level when you want to do anything that
+doesn't involve standard input, standard output and standard error.
+You can get by with a few basic facts about them; for
+the whole story, look at the
+<em class="emphasis">open</em>(2),
+<em class="emphasis">creat</em>(2),
+<em class="emphasis">read</em>(2),
+<em class="emphasis">write</em>(2),
+<em class="emphasis">dup</em>(2),
+<em class="emphasis">dup2</em>(2),
+<em class="emphasis">fcntl</em>(2),
+and
+<em class="emphasis">close</em>(2)
+entries in the Unix manual.
+(As the manual entries are aimed at the C programmer, their
+relationship to the shell concepts won't necessarily be obvious.)
+</p>
+
+<p>
+File descriptors are integers starting at 0 that index
+an array of file information within a process. When a
+process starts, it has three file descriptors open.
+
+These correspond to the three <em class="emphasis">standards</em>: standard input (file descriptor
+0), standard output (1), and standard error (2). If a process
+opens Unix files for input or output,
+they are assigned to the
+next available file descriptors, starting with 3.
+</p>
+
+<p>
+By far the most common use of file descriptors with the Korn shell
+is in saving standard error in a file. For example, if you want
+to save the error messages from a long job in a file so that they
+don't scroll off the screen, append <tt class="literal">2&gt;</tt> <em class="replaceable"><tt>file</tt></em>
+to your command.
+If you also want to save standard output, append
+<tt class="literal">&gt;</tt> <em class="replaceable"><tt>file1</tt></em>
+<tt class="literal">2&gt;</tt> <em class="replaceable"><tt>file2</tt></em>.
+</p>
+
+<p>
+This leads to <a href="ch07_01.htm#korn2-CHP-7-SIDEBAR-3">Task 7-3</a>.
+</p>
+
+<a name="korn2-CHP-7-SIDEBAR-3" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 7-3</h4>
+
+<p>
+
+<a name="IXT-7-287893" />
+
+
+You want to start a long job in the background (so that your terminal
+is freed up) and save
+both standard output and standard error in a single log file.
+Write a function that does this.
+</p>
+
+</td></tr></table><p></blockquote>
+<p>
+<a name="IXT-7-287894" />
+
+</p>
+
+<p>
+We'll call this function <em class="emphasis">start</em>. The code is very terse:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function start {
+    "$@" &gt; logfile 2&gt;&amp;1 &amp;
+}
+</pre></blockquote>
+</p>
+
+<p>
+This line executes whatever command and parameters follow <em class="emphasis">start</em>.
+(The command cannot contain pipes or output redirectors.)
+It first sends the command's standard output to <em class="emphasis">logfile</em>.
+</p>
+
+<p>
+<a name="IXT-7-287895" />
+<a name="IXT-7-287896" />
+
+Then, the redirector <tt class="literal">2&gt;&amp;1</tt> says, "Send standard error (file descriptor
+2) to the same place as standard output (file descriptor 1)."
+<tt class="literal">2&gt;&amp;1</tt> is actually a combination of two redirectors in
+<a href="ch07_01.htm#korn2-CHP-7-TABLE-1">Table 7-1</a>:
+<em class="replaceable"><tt>n</em><tt class="literal">&gt;</tt> <em class="replaceable">file</tt></em> and
+<tt class="literal">&gt;&amp;</tt><em class="replaceable"><tt>n</tt></em>.
+Since standard output is redirected to <em class="emphasis">logfile</em>, standard error
+will go there too.
+The final <tt class="literal">&amp;</tt> puts the job in the background so that you get
+your shell prompt back.
+</p>
+
+<p>
+As a small variation on this theme, we can send
+both standard output and standard error into a <em class="emphasis">pipe</em> instead
+of a file: <em class="replaceable"><tt>command</tt></em> <tt class="literal">2&gt;&amp;1 | ...</tt> does this.
+(Why this works is described shortly.)
+Here is a function that sends both standard output and
+standard error to the logfile (as above) and to the terminal:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function start {
+    "$@" 2&gt;&amp;1 | tee logfile &amp;
+}
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-7-287897" />
+The command <em class="emphasis">tee</em>(1) takes its standard input and copies it
+to standard output <em class="emphasis">and</em> the file given as argument.
+</p>
+
+<p>
+These functions have one shortcoming: you must remain logged in until
+the job completes.
+Although you can always type <tt class="literal">jobs</tt> (see
+<a href="ch01_01.htm">Chapter 1</a>) to check on progress, you can't leave your office for the day
+unless you want to risk a breach
+of security or waste electricity. We'll see how to solve this problem in
+<a href="ch08_01.htm">Chapter 8</a>.
+</p>
+
+<p>
+
+The other file-descriptor-oriented redirectors
+(e.g., <tt class="literal">&lt;&amp;</tt><em class="replaceable"><tt>n</tt></em>)
+are usually used for reading input from (or writing output to)
+more than one file at the same time. We'll see an example later in this chapter. Otherwise, they're
+mainly meant for systems programmers, as are
+<tt class="literal">&lt;&amp;-</tt> (force standard input to close) and <tt class="literal">&gt;&amp;-</tt>
+(force standard output to close),
+<tt class="literal">&lt;&amp;</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">-</tt>
+(move file descriptor <em class="emphasis">n</em> to standard input)
+and
+<tt class="literal">&gt;&amp;</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">-</tt>
+(move file descriptor <em class="emphasis">n</em> to standard output).
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+Finally,
+we should just note that
+<tt class="literal">0&lt;</tt> is the same as <tt class="literal">&lt;</tt>,
+and
+<tt class="literal">1&gt;</tt> is the same as <tt class="literal">&gt;</tt>.
+(In fact, 0 is the default for any operator that begins with <tt class="literal">&lt;</tt>,
+and 1 is the default for any operator that begins with <tt class="literal">&gt;</tt>.)
+<a name="IXTR3-301" />
+<a name="IXTR3-302" />
+</p>
+
+<a name="korn2-CHP-7-SECT-1.3.1" /><div class="sect3">
+<h3 class="sect3">7.1.3.1. Redirector ordering</h3>
+
+<p>
+The shell processes I/O redirections in a specific order.
+Once you understand how this works, you can take advantage of it, particularly for
+managing the disposition of standard output and standard error.
+</p>
+
+<p>
+The first thing the shell does is set up the standard input and output for pipelines as
+indicated by the <tt class="literal">|</tt> character.
+After that, it processes the changing of individual file descriptors.
+As we just saw,
+the most common idiom that takes advantage of this is to send both standard output
+and standard error down the same pipeline to a pager program, such
+as <em class="emphasis">more</em> or <em class="emphasis">less</em>.<a href="#FOOTNOTE-94">[94]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-94" /><p> [94]
+<em class="emphasis">less</em> is a nonstandard but commonly available paging program that has more features
+than <em class="emphasis">more</em>.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>mycommand -h fred -w wilma 2&gt;&amp;1 | more</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+In this example, the shell first sets the standard output of <em class="emphasis">mycommand</em> to
+be the pipe to <em class="emphasis">more</em>.
+It then redirects standard error (file descriptor 2) to be the same as standard
+output (file descriptor 1), i.e., the pipe.
+</p>
+
+<p>
+When working with just redirectors, they are processed left-to-right, as they occur on the
+command line.  An example similar to the following has been in the shell man page since the
+original Version 7 Bourne shell:
+</p>
+
+<p>
+<blockquote><pre class="code">
+program &gt; file1 2&gt;&amp;1          <i class="lineannotation">Standard output and standard error to file1</i>
+program 2&gt;&amp;1 &gt; file1          <i class="lineannotation">Standard error to terminal and standard output to file1</i>
+</pre></blockquote>
+</p>
+
+<p>
+In the first case, standard output is sent to
+<em class="emphasis">file1</em>, and standard error is then sent to
+where standard output is, i.e., <em class="emphasis">file1</em>.
+In the second case, standard error is sent to where standard output is, which is still the terminal.
+The standard output is then redirected to <em class="emphasis">file1</em>, but only the standard output.
+If you understand this, you
+probably know all you need to know about file descriptors.
+</p>
+
+</div>
+</div>
+
+<a name="korn2-CHP-7-SECT-1.4" /><div class="sect2">
+<h3 class="sect2">7.1.4. Special Filenames</h3>
+
+<p>
+Normally, when you provide a pathname after an I/O redirector such as
+<tt class="literal">&lt;</tt> or <tt class="literal">&gt;</tt>, the shell tries to
+open an actual file that has the given filename.  However, there are two
+kinds of pathnames where the shell instead treats the pathnames specially.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+The first kind of pathname is <tt class="literal">/dev/fd/</tt><em class="replaceable"><tt>N</tt></em>,
+where <em class="emphasis">N</em> is the file descriptor number
+of an <em class="emphasis">already open</em> file.
+For example:
+</p>
+
+<blockquote><pre class="code">
+# assume file descriptor 6 is already open on a file
+print 'something meaningful' &gt; /dev/fd/6   # same as 1&gt;&amp;6
+</pre></blockquote>
+
+<p>
+This works even on systems that don't have a <em class="emphasis">/dev/fd</em> directory.
+This kind of pathname may also be used with the various file attribute test operators
+of the <tt class="literal">[[</tt>...<tt class="literal">]]</tt> command.
+</p>
+
+<p>
+The second kind of pathname allows access to Internet services via either
+the TCP or UDP protocol.  The pathnames are:
+</p>
+
+<dl>
+
+<dt><b>
+<tt class="literal">/dev/tcp/</tt><tt><em class="replaceable"><tt>host</em></tt><tt class="literal">/</tt><tt><em class="replaceable">port</tt></em></tt>
+</b></dt>
+<dd>
+Using TCP, connect to remote host <em class="emphasis">host</em> on remote port <em class="emphasis">port</em>.
+The <em class="emphasis">host</em> may be given as an IP address in dotted-decimal
+notation (1.2.3.4) or as a hostname (<em class="emphasis">www.oreilly.com</em>).
+Similarly, the <em class="emphasis">port</em> for the desired service may be a symbolic name (typically as
+found in <em class="emphasis">/etc/services</em>) or a numeric port number.<a href="#FOOTNOTE-95">[95]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-95" /><p> [95]
+The ability to use hostnames was added in <em class="emphasis">ksh93f</em>;
+use of service names was added in <em class="emphasis">ksh93m</em>.
+</p>
+</blockquote></dd>
+
+
+
+<dt><b>
+<tt class="literal">/dev/udp/</tt><tt><em class="replaceable"><tt>host</em></tt><tt class="literal">/</tt><tt><em class="replaceable">port</tt></em></tt>
+</b></dt>
+<dd>
+This is the same, but using UDP.
+</p></dd>
+
+
+</dl>
+
+<p>
+To use these files for two-way I/O, open a new file descriptor using the
+<em class="emphasis">exec</em> command (which is described in
+<a href="ch09_01.htm">Chapter 9</a>), using the "read and write"
+operator, <tt class="literal">&lt;&gt;</tt>.
+Then use <em class="emphasis">read -u</em> and
+<em class="emphasis">print -u</em> to read from and write to the
+new file descriptor.
+(The <em class="emphasis">read</em> command and the <em class="emphasis">-u</em>
+option to <em class="emphasis">read</em> and <em class="emphasis">print</em> are
+described later in this chapter.)
+</p>
+
+<p>
+The following example, courtesy of David Korn, shows how to do this.
+It implements the <em class="emphasis">whois</em>(1) program, which
+provides information about the registration of Internet domain names:
+</p>
+
+<blockquote><pre class="code">
+host=rs.internic.net
+port=43
+exec 3&lt;&gt; /dev/tcp/$host/$port
+print -u3 -f "%s\r\n" "$@"
+cat &lt;&amp;3
+</pre></blockquote>
+
+<p>
+Using the <em class="emphasis">exec</em> built-in command
+(see <a href="ch09_01.htm">Chapter 9</a>), this program uses the
+"read-and-write" operator, <tt class="literal">&lt;&gt;</tt>, to open a two-way
+connection to the host <em class="emphasis">rs.internic.net</em>
+on TCP port 43, which provides the <em class="emphasis">whois</em> service.
+(The script could have used <tt class="literal">port=whois</tt> as well.)
+It then uses the <em class="emphasis">print</em> command to send the
+argument strings<?troff .ne 10?> to the <em class="emphasis">whois</em> server.
+Finally, it reads the returned result using <em class="emphasis">cat</em>.
+Here is a sample run:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>whois.ksh kornshell.com</b></tt>
+
+Whois Server Version 1.3
+
+Domain names in the .com, .net, and .org domains can now be registered
+with many different competing registrars. Go to http://www.internic.net
+for detailed information.
+
+   Domain Name: KORNSHELL.COM
+   Registrar: NETWORK SOLUTIONS, INC.
+   Whois Server: whois.networksolutions.com
+   Referral URL: http://www.networksolutions.com
+   Name Server: NS4.PAIR.COM
+   Name Server: NS0.NS0.COM
+   Updated Date: 02-dec-2001
+
+
+&gt;&gt;&gt; Last update of whois database: Sun, 10 Feb 2002 05:19:14 EST &lt;&lt;&lt;
+
+The Registry database contains ONLY .COM, .NET, .ORG, .EDU domains and
+Registrars.
+</pre></blockquote>
+
+<p>
+Network programming is beyond the scope of this book.  But for most things, you will probably
+want to use TCP connections instead of UDP connections if you do write any networking
+programs in <em class="emphasis">ksh</em>.
+</p>
+
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.5. typeset</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.2. String I/O</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

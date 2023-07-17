@@ -1,0 +1,161 @@
+<html><head><title>Understanding Expressions (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch32_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">32.3. Understanding Expressions</h2>
+
+<p><a name="IXT-32-3925" /><a name="IXT-32-3926" />You are probably familiar with
+the kinds of expressions that a calculator interprets. Look at the
+following <a name="IXT-32-3927" />arithmetic expression:
+</p>
+
+<blockquote><pre class="code">2 + 4</pre></blockquote>
+
+<p>"Two plus four" consists of several
+constants or literal values and an
+<a name="IXT-32-3928" />operator.
+A calculator program must recognize, for instance, that 2 is a
+numeric constant and that the plus sign represents an operator, not
+to be interpreted as the <tt class="literal">+</tt> character.
+</p>
+
+<p>An expression tells the computer how to produce a result. Although it
+is the sum of "two plus four" that
+we really want, we don't simply tell the computer to
+return a six. We instruct the computer to evaluate the expression and
+return a value.
+</p>
+
+<p>An expression can be more complicated than 2+4; in fact, it might
+consist of multiple simple expressions, such as the following:
+</p>
+
+<blockquote><pre class="code">2 + 3 * 4</pre></blockquote>
+
+<p><a name="IXT-32-3929" />A
+calculator normally evaluates an expression from left to right.
+However, certain <a name="IXT-32-3930" />operators
+have <a name="IXT-32-3931" />precedence over others: that is, they
+will be performed first. Thus, the above expression evaluates to 14
+and not 20 because multiplication takes precedence over addition.
+Precedence can be overridden by placing the simple expression in
+<a name="IXT-32-3932" />parentheses. Thus,
+(2+3)*4 or "the sum of two plus three times
+four" evaluates to 20. The parentheses are symbols
+that instruct the calculator to change the order in which the
+expression is evaluated.
+</p>
+
+<p>A regular expression, by contrast, is descriptive of a pattern or
+sequence of characters. <a name="IXT-32-3933" />Concatenation is the basic operation
+implied in every regular expression. That is, a pattern matches
+adjacent characters. Look at the following example of a regular
+expression:
+</p>
+
+<blockquote><pre class="code">ABE</pre></blockquote>
+
+<p>Each literal character is a regular expression that matches only that
+single character. This expression describes "an
+<tt class="literal">A</tt> followed by a <tt class="literal">B</tt> followed by
+an <tt class="literal">E</tt>" or simply the string
+<tt class="literal">ABE</tt>. The term
+"<a name="IXT-32-3934" />string"
+means each character concatenated to the one preceding it. That a
+<a name="IXT-32-3935" />regular expression
+describes a <em class="emphasis">sequence</em> of characters
+can't be emphasized enough. (Novice users are
+inclined to think in higher-level units such as words, and not
+individual characters.) Regular expressions are
+<a name="IXT-32-3936" />case-sensitive;
+<tt class="literal">A</tt> does not match <tt class="literal">a</tt>.
+</p>
+
+<p>Programs such as <b class="emphasis-bold">grep</b>
+(<a name="IXT-32-3937" /><a href="ch13_02.htm#upt3-CHP-13-SECT-2">Section 13.2</a>) that accept regular expressions must first
+evaluate the syntax of the regular expression to produce a pattern.
+They then read the input, line by line, trying to match the pattern.
+An input line is a string, and to see if a
+<a name="IXT-32-3938" /><a name="IXT-32-3939" />string matches the pattern, a program
+compares the first character in the string to the first character of
+the pattern. If there is a match, it compares the second character in
+the string to the second character of the pattern. Whenever it fails
+to make a match, it compares the next character in the string to the
+first character of the pattern. <a href="ch32_03.htm#upt3-CHP-32-FIG-1">Figure 32-1</a>
+illustrates this process, trying to match the pattern
+<tt class="literal">abe</tt> on an input line.
+</p>
+
+<a name="upt3-CHP-32-FIG-1" /><div class="figure"><img src="figs/upt3_3201.gif" alt="Figure 32-1" width="435" /></div><h4 class="objtitle">Figure 32-1. Interpreting a regular expression</h4>
+
+<p>A regular expression is not limited to literal characters. There is,
+for <a name="IXT-32-3941" /><a name="IXT-32-3942" />instance, a
+<a name="IXT-32-3943" /><a name="IXT-32-3944" />metacharacter -- the
+dot (.) -- that can be used as a
+"wildcard" to match any single
+character. You can think of this wildcard as analogous to a blank
+tile in Scrabble<img src="figs/U2122.gif" alt="Figure " width="18" /> where it means any letter. Thus,
+we can specify the regular expression <tt class="literal">A.E</tt>, and it
+will match <tt class="literal">ACE</tt>, <tt class="literal">ABE</tt>, and
+<tt class="literal">ALE</tt>. It matches any character in the position
+following <tt class="literal">A</tt>.
+</p>
+
+<p><a name="IXT-32-3945" /><a name="IXT-32-3946" /><a name="IXT-32-3947" />The metacharacter
+<tt class="literal">*</tt> (the asterisk) is used to match zero or more
+occurrences of the <em class="emphasis">preceding</em> regular expression,
+which typically is a single character. You may be familiar with
+<tt class="literal">*</tt><a name="IXT-32-3948" /> as a <em class="emphasis">shell</em>
+metacharacter, where it also means "zero or more
+characters." But that meaning is very different from
+<tt class="literal">*</tt> in a regular expression. By itself, the
+metacharacter <tt class="literal">*</tt> does not match anything in a
+regular expression; it modifies what goes before it. The regular
+expression <tt class="literal">.*</tt> matches any number of characters.
+The regular expression <tt class="literal">A.*E</tt> matches any string
+that matches <tt class="literal">A.E</tt> but it also matches any number of
+characters between <tt class="literal">A</tt> and <tt class="literal">E</tt>:
+<tt class="literal">AIRPLANE</tt>, <tt class="literal">A</tt>,
+<tt class="literal">FINE</tt>, <tt class="literal">AE</tt>, <tt class="literal">A</tt>
+<tt class="literal">34-cent</tt> <tt class="literal">S.A.S.E</tt>, or
+<tt class="literal">A</tt> <tt class="literal">LONG</tt> <tt class="literal">WAY</tt>
+<tt class="literal">HOME</tt>, for example.
+</p>
+
+<p>If you understand the difference between . and <tt class="literal">*</tt>
+in regular expressions, you already know about the two basic types of
+metacharacters: those that can be evaluated to a single character,
+and those that modify how characters that precede it are evaluated.
+</p>
+
+<p>It should also be apparent that by use of metacharacters you can
+expand or limit the possible matches. You have more control over what
+is matched and what is not. In <a href="ch32_04.htm#upt3-CHP-32-SECT-4">Section 32.4</a>
+and after, Bruce Barnett explains in detail how to use regular
+expression metacharacters.
+</p>
+
+<p> <em class="emphasis">-- DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch32_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">32.2. Don't Confuse Regular Expressions with Wildcards</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">32.4. Using Metacharacters in Regular Expressions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

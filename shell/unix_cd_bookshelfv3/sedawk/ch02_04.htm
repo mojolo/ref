@@ -1,0 +1,257 @@
+<html><head><title>Using awk (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">2.4. Using awk</h2>
+
+<p>
+<a name="ch02.awk" />
+Like sed, awk executes a set of instructions for each line of input.
+You can specify instructions on the command line or create a script
+file.</p>
+
+<a name="sedawk-ch-2-sect-4.1" /><div class="sect2">
+<h3 class="sect2">2.4.1. Running awk</h3>
+
+<p>
+<a name="IXT-2-265405" />
+<a name="IXT-2-265406" />
+For command lines, the syntax is:</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>awk '</b></tt><em class="replaceable"><tt>instructions</em><tt class="userinput"><b>' </b></tt><em class="replaceable">files</tt></em></pre></blockquote><p>
+<a name="IXT-2-265407" />
+Input is read a line at a time from one or more
+<em class="emphasis">files</em> or from standard input.  The
+<em class="emphasis">instructions</em> must be enclosed in single
+quotes to protect them from the shell.  (Instructions almost always
+contain curly braces and/or dollar signs, which are interpreted as
+special characters by the shell.)  Multiple command lines can be
+entered in the same way as shown for sed: separating commands with
+semicolons or using the multiline input capability of the Bourne
+shell.</p>
+
+<p>Awk programs are usually placed in a file where they can be tested and
+modified.  The syntax for invoking awk with a script file is:</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>awk -f </b></tt><em class="replaceable"><tt>script</em> <em class="replaceable">files</tt></em></pre></blockquote><p>The <span class="option">-f</span> option works the same way as it does with sed.</p>
+
+<p>
+<a name="IXT-2-265408" />
+While awk instructions have the same structure as sed, consisting of
+<em class="emphasis">pattern</em> and
+<em class="emphasis">procedure</em> sections, the procedures
+themselves are quite different.  Here is where awk looks less like an
+editor and more like a programming language.  There are statements and
+functions instead of one- or two-character command sequences.  For
+instance, you use the <b class="emphasis-bold">print</b> statement to print the
+value of an expression or to print the contents of the current input
+line.</p>
+
+<p>
+<a name="IXT-2-265409" />
+<a name="IXT-2-265410" />
+<a name="IXT-2-265411" />
+<a name="IXT-2-265412" />
+<a name="IXT-2-265413" />
+Awk, in the usual case, interprets each input line as a record and
+each word on that line, delimited by spaces or tabs, as a field.
+(These defaults can be changed.)  One or more consecutive spaces
+or tabs count as a single delimiter.  Awk allows you to reference these
+fields, in either patterns or procedures.  $0 represents the entire
+input line.  $1, $2, ... refer to the individual fields on the input
+line.  Awk splits the input record before the script is applied.
+Let's look at a few examples, using the sample input file
+<em class="filename">list</em>.</p>
+
+<p>The first example contains a single instruction that prints the first
+field of each line in the input file.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk '{ print $1 }' list</b></tt>
+John
+Alice
+Orville
+Terry
+Eric
+Hubert
+Amy
+Sal</pre></blockquote>
+
+<p>"$1" refers to the value of the first field on each input line.
+Because there is no pattern specified, the print statement is applied
+to all lines.  In the next example, a pattern "/MA/" is
+specified but there is no procedure.  The default action is to print
+each line that matches the pattern.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk '/MA/' list</b></tt>
+John Daggett, 341 King Road, Plymouth MA
+Eric Adams, 20 Post Road, Sudbury MA
+Sal Carpenter, 73 6th Street, Boston MA</pre></blockquote>
+
+<p>Three lines are printed.  As mentioned in the first chapter, an awk
+program can be used more like a query language, extracting useful
+information from a file.  We might say that the pattern placed a
+condition on the selection of records to be included in a report,
+namely that they must contain the string "MA".  Now we can also
+specify what portion of a record to include in the report.  The
+next example uses a <b class="emphasis-bold">print</b> statement to limit the
+output to the first field of each record.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk '/MA/ { print $1 }' list</b></tt>
+John
+Eric
+Sal</pre></blockquote>
+
+<p>
+<a name="IXT-2-265414" />
+<a name="IXT-2-265415" />
+It helps to understand the above instruction if we try to read it
+aloud: <em class="emphasis">Print the first word of each line containing the
+string "MA".</em> We can say "word" because by default
+awk separates the input into fields using either spaces or tabs as the field
+separator.</p>
+
+<p>
+<a name="IXT-2-265416" />
+In the next example, we use the <span class="option">-F</span> option to change
+the field separator to a comma.  This allows us to retrieve 
+any of three fields:  the full name, the street address, 
+or the city and state.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -F, '/MA/ { print $1 }' list</b></tt>
+John Daggett
+Eric Adams
+Sal Carpenter</pre></blockquote>
+
+<p>Do not confuse the <span class="option">-F</span> option to change the field
+separator with the <span class="option">-f</span> option to specify the name of
+a script file.</p>
+
+<p>
+<a name="IXT-2-265417" />
+<a name="IXT-2-265418" />
+<a name="IXT-2-265419" />
+<a name="IXT-2-265420" />
+<a name="IXT-2-265421" />
+In the next example, we print each field on its own line.  Multiple
+commands are separated by semicolons.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -F, '{ print $1; print $2; print $3 }' list</b></tt>
+John Daggett
+ 341 King Road
+ Plymouth MA
+Alice Ford
+ 22 East Broadway
+ Richmond VA
+Orville Thomas
+ 11345 Oak Bridge Road
+ Tulsa OK
+Terry Kalkas
+ 402 Lans Road
+ Beaver Falls PA
+Eric Adams
+ 20 Post Road
+ Sudbury MA
+Hubert Sims
+ 328A Brook Road
+ Roanoke VA
+Amy Wilde
+ 334 Bayshore Pkwy
+ Mountain View CA
+Sal Carpenter
+ 73 6th Street
+ Boston MA</pre></blockquote>
+
+<p>Our examples using sed changed the content of incoming data.  Our examples
+using awk rearrange the data.  In the preceding awk example, note how
+the leading blank is now considered part of the second and third
+fields.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-2-sect-4.2" /><div class="sect2">
+<h3 class="sect2">2.4.2. Error Messages</h3>
+
+<p>
+<a name="IXT-2-265422" />
+<a name="IXT-2-265423" />
+Each implementation of awk gives you
+different error messages when it encounters problems in your program.
+Thus, we won't quote a particular version's messages here; it'll be
+obvious when there's a problem.  Messages can be caused by any of the
+following:</p>
+
+<ul><li><p>Not enclosing a procedure within braces ({})</p></li><li><p>Not surrounding the instructions within single quotes ('')</p></li><li><p>Not enclosing regular expressions within slashes (//)</p></li></ul>
+</div>
+
+
+
+
+<a name="sedawk-ch-2-sect-4.3" /><div class="sect2">
+<h3 class="sect2">2.4.3. Summary of Options</h3>
+
+<p>
+<a name="IXT-2-265424" />
+<a name="IXT-2-265425" />
+<a href="ch02_04.htm#sedawk-ch-2-tab-2">Table 2.2</a> summarizes the awk command-line options.</p>
+
+<a name="sedawk-ch-2-tab-2" /><h4 class="objtitle">Table 2.2. Command-Line Options for awk</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><span class="option">-f</span></td>
+<td><p>Filename of script follows.</p></td>
+</tr>
+
+<tr>
+<td><span class="option">-F</span></td>
+<td><p>Change field separator.</p></td>
+</tr>
+
+<tr>
+<td><span class="option">-v</span></td>
+<td><p><em class="emphasis">var=value</em> follows.</p></td>
+</tr>
+
+
+</table><p>
+
+<p>The <span class="option">-v</span> option for specifying parameters
+on the command line is discussed in <a href="ch07_01.htm">Chapter 7, "Writing Scripts
+for awk"</a>.</p>
+</div>
+
+
+
+
+<a name="IXT-2-265426" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2.3. Using sed</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.5. Using sed and awk Together</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

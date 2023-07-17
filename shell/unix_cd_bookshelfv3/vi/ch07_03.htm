@@ -1,0 +1,984 @@
+<html><head><title>Saving Commands  (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.3. Saving Commands </h2>
+
+<p>
+<a name="ch07.comsave1" />
+<a name="ch07.comsave2" />
+Often you type the same long phrases over and over in a file.
+<em class="emphasis">vi</em> and <em class="emphasis">ex</em> have a number of different ways of saving long
+sequences of commands, both in command mode and in insert mode.
+When you call up one of these saved sequences to execute
+it, all you do is type a few characters (or even only one), and the
+entire sequence is executed as if you had entered the whole sequence
+of commands one by one.</p>
+
+<a name="vi6-ch-7-sect-3.1" /><div class="sect2">
+<h3 class="sect2">7.3.1. Word Abbreviation </h3>
+
+<p>
+<a name="IXT-7-281018" />
+<a name="IXT-7-281019" />
+<a name="IXT-7-281020" />
+You can define abbreviations that <em class="emphasis">vi</em> will automatically
+expand into the full text whenever you type the abbreviation in insert mode.
+To define an abbreviation, use the <em class="emphasis">ex</em> command:
+<a name="IXT-7-281021" /></p>
+
+<blockquote><pre class="code">:ab <em class="replaceable"><tt>abbr phrase</tt></em></pre></blockquote>
+
+<p><em class="emphasis">abbr</em> is an abbreviation for the specified
+<em class="emphasis">phrase</em>.
+The sequence of characters that make up the abbreviation will be
+expanded in insert mode only if you type it as a full word;
+<em class="emphasis">abbr</em> will not be expanded within a word.</p>
+
+<p>Suppose in the file <em class="filename">practice</em> you want to enter text that
+contains a frequently recurring phrase such as a difficult product
+or company name. The command:
+
+<blockquote><pre class="code">:ab imrc International Materials Research Center</pre></blockquote>
+
+
+abbreviates <em class="emphasis">International Materials Research Center</em>
+to the initials <em class="emphasis">imrc</em>.
+Now whenever you type <em class="emphasis">imrc</em> in insert mode,
+<em class="emphasis">imrc</em> expands to the full text.</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<th>Keystrokes</th>
+<th>Results</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">ithe imrc</tt></td>
+<?graphic_args "" "" 1.19 -.35?><td><img src="figs/vi.0706.gif" alt="Figure " width="334" /></td>
+</tr>
+
+
+</table><p><p>Abbreviations expand as soon as you press a non-alphanumeric character
+(e.g., punctuation), a space, a carriage return, or
+<span class="keycap">ESC</span>
+(returning to command mode).
+When you are choosing abbreviations, choose combinations of
+characters that don't ordinarily occur while you are typing text.
+If you create an abbreviation that ends up expanding in places
+where you don't want it to, you can disable the abbreviation by
+typing:</p>
+
+<blockquote><pre class="code">:unab <em class="replaceable"><tt>abbr</tt></em></pre></blockquote>
+
+
+<?troff .Nd 10?><p>To list your currently defined abbreviations, type:</p>
+
+<blockquote><pre class="code">:ab</pre></blockquote>
+
+<p>The characters that compose your abbreviation
+cannot also appear at the end of your phrase.
+For example, if you issue the command:</p>
+
+<blockquote><pre class="code">:ab PG This movie is rated PG</pre></blockquote>
+
+<p>you'll get the message "No tail recursion,"
+and the abbreviation won't be set.
+The message means that you have tried to define something that will
+expand itself repeatedly, creating an infinite loop.
+ 
+If you issue the command:</p>
+
+<blockquote><pre class="code">:ab PG the PG rating system</pre></blockquote>
+
+<p>you may or may not produce an infinite loop, but in either case
+you won't get a warning message.
+For example, when the above command was tested on a System V version
+of UNIX, the expansion worked.
+Circa 1990
+on a Berkeley version,
+the abbreviation expanded repeatedly, like this:</p>
+
+<blockquote><pre class="code">the the the the the ...</pre></blockquote>
+
+<p>until a memory error occurred and <em class="emphasis">vi</em> quit.</p>
+
+<p>When tested, we obtained the following results
+on these <em class="emphasis">vi</em> versions:</p>
+
+<dl>
+<dt><i>Solaris 2.6 <em class="emphasis">vi</em></tt></i></dt><dd>
+<a name="IXT-7-281022" />
+The tail recursive version is not allowed, while the version
+with the name in the middle of the expansion only expands once.</p></dd>
+
+
+<dt><i><em class="emphasis">nvi</em></tt> 1.79</i></dt><dd>
+<a name="IXT-7-281023" />
+Both versions exceed an internal expansion limit, the
+expansion stops, and <em class="emphasis">nvi</em> produces an error message.</p></dd>
+
+
+<dt><i><em class="emphasis">elvis</em></tt> 2.0</i></dt><dd>
+<a name="IXT-7-281024" />
+The tail recursive version runs infinitely until the editor is
+interrupted. The version with the name in the middle eventually
+stops expanding, but without any error message.</p></dd>
+
+
+<dt><i><em class="emphasis">vim</em></tt> 5.0 and 5.1</i></dt><dd>Both forms are detected and only expand once.
+<a name="IXT-7-281025" /></p></dd>
+
+
+<dt><i><em class="emphasis">vile</em></tt> 7.4 and 8.0</i></dt><dd>Both forms are detected and only expand once.
+<a name="IXT-7-281026" /></p></dd>
+
+</dl>
+
+<p>We recommend that you avoid repeating your abbreviation
+as part of the defined phrase.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.2" /><div class="sect2">
+<h3 class="sect2">7.3.2. Using the map Command </h3>
+
+<p>
+<a name="ch07.map0" />
+<a name="ch07.map1" />
+<a name="ch07.map2" />
+<a name="ch07.map3" />
+While you're editing, you may find that you are using a command sequence
+frequently, or you may occasionally use a very complex command
+sequence.
+To save yourself keystrokes, or the time that it takes
+to remember the sequence, you can assign the sequence to an unused key
+by using the <tt class="literal">map</tt> command.</p>
+
+<p>The <tt class="literal">map</tt> command acts a lot like <tt class="literal">ab</tt>
+except that you define a macro for <em class="emphasis">vi</em></tt>'s command
+mode instead of for insert mode.</p>
+
+<dl>
+<dt><tt class="literal">:map</tt>&#160;<tt><em class="replaceable">x&#xA0;sequence</em></tt></dt><dd>Define character <em class="emphasis">x</em></tt> as a <em class="emphasis">sequence</em></tt> of editing commands.</p></dd>
+
+
+<dt><tt class="literal">:unmap</tt>&#160;<tt><em class="replaceable">x</em></tt></dt><dd>Disable the <em class="emphasis">sequence</em></tt> defined for <em class="emphasis">x</em></tt>.</p></dd>
+
+
+<dt><tt class="literal">:map</tt></dt><dd>List the characters that are currently mapped.</p></dd>
+
+</dl>
+
+<p>Before you can start creating your own maps, you need to know the
+keys not used in command mode that are available for user-defined
+commands:</p>
+
+<dl>
+<dt><i>Letters</i></dt><dd><tt class="literal">g K q V v</tt></p></dd>
+
+
+<dt><i>Control keys</i></dt><dd><tt class="literal">^A ^K ^O ^W ^X</tt></p></dd>
+
+
+<dt><i>Symbols</i></dt><dd><tt class="literal">_ * \ =</tt></p></dd>
+
+</dl>
+
+<blockquote><b>NOTE:</b> 
+The <tt class="literal">=</tt> is used by <em class="emphasis">vi</em></tt> if Lisp mode is set,
+and to do text formatting by several of the clones.
+In many modern versions of <em class="emphasis">vi</em></tt>, the <tt class="literal">_</tt>
+is equivalent to the <tt class="literal">^</tt> command, and
+<em class="emphasis">elvis</em></tt> and <em class="emphasis">vim</em></tt>
+have a "visual mode" that uses the
+<tt class="literal">v</tt>, <tt class="literal">V</tt>, and
+<tt class="literal">^V</tt> keys. The moral is to test
+your version carefully.</p>
+</blockquote>
+
+<p>Depending on your terminal, you may also be able to associate map
+sequences with special function keys.</p>
+
+<p>
+<a name="IXT-7-281027" />
+<a name="IXT-7-281028" />
+<a name="IXT-7-281029" />
+With maps you can create simple or complex command sequences.
+As a simple example, you could define a command to reverse the order of
+words.
+In <em class="emphasis">vi</em></tt>, with the cursor as shown:</p>
+
+<blockquote><pre class="code">you can <u class="emphasis-underline">t</u>he scroll page</pre></blockquote>
+
+
+<?troff .Nd 25?><p>the sequence to put <em class="emphasis">the</em></tt> after
+<em class="emphasis">scroll</em></tt> would be <tt class="literal">dwelp</tt>:
+delete word, <tt class="literal">dw</tt>;  move to the end of next word,
+<tt class="literal">e</tt>; move one space to the right, <tt class="literal">l</tt>;
+put the deleted word there, <tt class="literal">p</tt>. Saving this sequence:</p>
+
+<blockquote><pre class="code">:map v dwelp</pre></blockquote>
+
+<p>enables you to reverse the order of two words at any time in the editing
+session with the single keystroke <tt class="literal">v</tt>.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.3" /><div class="sect2">
+<h3 class="sect2">7.3.3. Protecting Keys from Interpretation by ex </h3>
+
+<p>
+<a name="IXT-7-281030" />
+Note that when defining a map, you cannot simply type certain keys,
+such as
+<span class="keycap">RETURN</span>,
+<span class="keycap">ESC</span>,
+<span class="keycap">BACKSPACE</span>,
+and
+<span class="keycap">DELETE</span>
+as part of the command to be mapped, because
+these keys already have meaning within <em class="emphasis">ex</em></tt>.
+If you want to include one of these keys as part of the command
+sequence, you must escape the normal meaning
+by preceding the key with <span class="keycap">CTRL-V</span>.
+The keystroke <tt class="literal">^V</tt> appears in the map as the ^ character.
+Characters following the <tt class="literal">^V</tt> also
+do not appear as you expect.
+For example, a carriage return appears as <tt class="literal">^M</tt>, escape as <tt class="literal">^[</tt>, backspace as
+<tt class="literal">^H</tt>, and so on.</p>
+
+<p>On the other hand, if you want to use a control character as the
+character to be mapped,
+in most cases all you have to do is hold down the
+<span class="keycap">CTRL</span>
+key and press the letter key at the same time.
+So, for example, all you need to do in order to map <tt class="literal">^A</tt> is to type:</p>
+
+<blockquote><pre class="code">:map <span class="keycap">CTRL-A</span> <tt><em class="replaceable"><tt>sequence</tt></em></tt></pre></blockquote>
+
+<p>There are, however, three control characters that must be
+escaped with a <tt class="literal">^V</tt>.  They are
+<tt class="literal">^T</tt>, <tt class="literal">^W</tt>, and <tt class="literal">^X</tt>.
+So, for example, if you want to map <tt class="literal">^T</tt>, you must type:</p>
+
+<blockquote><pre class="code">:map <span class="keycap">CTRL-V</span> <span class="keycap">CTRL-T</span> <tt><em class="replaceable"><tt>sequence</tt></em></tt></pre></blockquote>
+
+<p>The use of
+<span class="keycap">CTRL-V</span>
+applies to any <em class="emphasis">ex</em></tt> command, not just a map command.
+This means that you can type a carriage return in an abbreviation
+or a substitution command. For example, the abbreviation:</p>
+
+<blockquote><pre class="code">:ab 123 one^Mtwo^Mthree</pre></blockquote>
+
+<p>expands to this:</p>
+
+<blockquote><pre class="code">one
+two
+three</pre></blockquote>
+
+<p>(Here we show the sequence
+<span class="keycap">CTRL-V</span>
+<span class="keycap">RETURN</span>
+as <tt class="literal">^M</tt>, the way it would appear on your screen.)</p>
+
+<p>You can also globally add lines at certain locations.
+ 
+The command:</p>
+
+<blockquote><pre class="code">:g/^Section/s//As you recall, in^M&amp;/</pre></blockquote>
+
+<p>inserts, before all lines beginning with the word <em class="emphasis">Section</em></tt>,
+a phrase on a separate line. The <tt class="literal">&amp;</tt> restores the search pattern.</p>
+
+<p>Unfortunately,
+one character always has special meaning in <em class="emphasis">ex</em></tt> commands,
+even if you try to quote it with
+<span class="keycap">CTRL-V</span>.
+Recall that the vertical bar (<tt class="literal">|</tt>)
+has special meaning as a separator of multiple <em class="emphasis">ex</em></tt> commands.
+You cannot use a vertical bar in insert mode maps.</p>
+
+<p>Now that you've seen how to use
+<span class="keycap">CTRL-V</span>
+to protect certain keys inside <em class="emphasis">ex</em></tt> commands, you're ready to
+define some powerful map sequences.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.4" /><div class="sect2">
+<h3 class="sect2">7.3.4. Complex Mapping Example </h3>
+
+<p>
+<a name="IXT-7-281031" />
+<a name="IXT-7-281032" />
+Assume that you have a glossary with entries like this:</p>
+
+<blockquote><pre class="code">map - an ex command which allows you to associate
+a complex command sequence with a single key.</pre></blockquote>
+
+<p>You would like to convert this glossary list to <em class="emphasis">troff</em></tt>
+format, so that it looks like this:</p>
+
+<blockquote><pre class="code">.IP "map" 10 n
+An ex command...</pre></blockquote>
+
+<p>The best way to define a complex map is to do the edit once manually,
+writing down each keystroke that you have to type.
+Then recreate these keystrokes as a map.
+You want to:</p>
+
+<ol><li><p>Insert the MS macro for an indented paragraph at the beginning of the line.
+Insert the first quotation mark as well (<tt class="literal">I.IP "</tt>).</p></li><li><p>Press
+<span class="keycap">ESC</span>
+to terminate insert mode.</p></li><li><p>Move to the end of the first word (<tt class="literal">e</tt>) and add a second
+quotation mark,
+followed by a space and the size of the indent (<tt class="literal">a" 10n</tt>).</p></li><li><p>Press
+<span class="keycap">RETURN</span>
+to insert a new line.</p></li><li><p>Press
+<span class="keycap">ESC</span>
+to terminate insert mode.</p></li><li><p>Remove the hyphen and two surrounding spaces (<tt class="literal">3x</tt>) and capitalize the next word (~).</p></li></ol><p>That will be quite an editing chore if you have to repeat it more
+than just a few times.</p>
+
+<?troff .Nd 10?><p>With <tt class="literal">:map</tt> you can save the entire sequence so that it
+can be re-executed with a single keystroke:</p>
+
+<blockquote><pre class="code">:map g I.IP "^[ea" 10n^M^[3x~</pre></blockquote>
+
+<p>Note that you have to "quote" both the
+<span class="keycap">ESC</span>
+and
+<span class="keycap">RETURN</span>
+characters with
+<span class="keycap">CTRL-V</span>.
+<tt class="literal">^[</tt> is the sequence that appears when you type
+<span class="keycap">CTRL-V</span>
+followed by
+<span class="keycap">ESC</span>.
+<tt class="literal">^M</tt> is the sequence shown when you type
+<span class="keycap">CTRL-V</span>
+<span class="keycap">RETURN</span>.</p>
+
+<p>Now, simply typing <tt class="literal">g</tt> will perform the entire series of edits.
+At a slow baud rate you can actually see the edits happening individually.
+At a fast baud rate it will seem to happen by magic.</p>
+
+<p>Don't be discouraged if your first attempt at key mapping fails.
+A small error in defining the map can give very different results
+from the ones you expect.
+Type <tt class="literal">u</tt> to undo the edit, and try again.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.5" /><div class="sect2">
+<h3 class="sect2">7.3.5. More Examples of Mapping Keys </h3>
+
+<p>
+<a name="ch07.useful0" />
+<a name="ch07.useful1" />
+<a name="ch07.useful2" />
+<a name="ch07.useful3" />
+These examples will give you an idea of the clever
+shortcuts possible when defining keyboard maps:</p>
+
+<ol><li><p>Add text whenever you move to the end of a word:</p>
+
+<blockquote><pre class="code">:map e ea</pre></blockquote>
+
+<p>Most of the time, the only reason you want to move to the end of
+a word is to add text. This map sequence puts you in insert mode
+automatically.
+Note that the mapped key, <tt class="literal">e</tt>, has meaning in <em class="emphasis">vi</em></tt>.
+You're allowed to map a key that is already used by <em class="emphasis">vi</em></tt>,
+but the key's normal function will be unavailable as long
+as the map is in effect. This isn't so bad in this case, since
+the <tt class="literal">E</tt> command is often identical to <tt class="literal">e</tt>.</p></li><li><p>
+<a name="IXT-7-281033" />
+<a name="IXT-7-281034" />
+<a name="IXT-7-281035" />
+Transpose two words:</p>
+
+<blockquote><pre class="code">:map K dwElp</pre></blockquote>
+
+<p>We discussed this sequence earlier in the chapter, but now
+you need to use <tt class="literal">E</tt>
+(assume here, and in the remaining examples,
+that the <tt class="literal">e</tt> command is mapped to <tt class="literal">ea</tt>).
+Remember that the cursor begins on the first of the two words.
+Unfortunately, because of the <tt class="literal">l</tt> command, this sequence
+(and the earlier version)
+doesn't work if the two words are at the end of a line:
+during the sequence, the cursor ends up at the end of the line,
+and <tt class="literal">l</tt> cannot move further right.
+Here's a better solution:</p>
+
+<blockquote><pre class="code">:map K dwwP</pre></blockquote>
+
+<p>You could also use <tt class="literal">W</tt> instead of <tt class="literal">w</tt>.</p></li><li><p>
+<a name="IXT-7-281036" />
+<a name="IXT-7-281037" />
+<a name="IXT-7-281038" />
+Save a file and edit the next one in a series:</p>
+
+<blockquote><pre class="code">:map q :w^M:n^M</pre></blockquote>
+
+<p>Notice that you can map keys to <em class="emphasis">ex</em></tt> commands, but be sure
+to finish each <em class="emphasis">ex</em></tt> command with a carriage return.
+This sequence makes it easy to move from one file to the next
+and is useful when you've opened many short files with one <em class="emphasis">vi</em></tt>
+command. Mapping the letter <tt class="literal">q</tt> helps you
+remember that the sequence is similar to a "quit."</p></li><li><p>
+<a name="IXT-7-281039" />
+<a name="IXT-7-281040" />
+Put <em class="emphasis">troff</em></tt> emboldening codes around a word:</p>
+
+<blockquote><pre class="code">:map v i\fB^[e\fP^[</pre></blockquote>
+
+<p>This sequence assumes that the cursor is at the beginning of the
+word. First, you enter insert mode, then you type the code for the
+bold font. In map commands, you don't need to type two backslashes to
+produce one backslash. Next, you return to command mode
+by typing a "quoted"
+<span class="keycap">ESC</span>.
+Finally, you append the closing <em class="emphasis">troff</em></tt> code at the
+end of the word, and you return to command mode.
+Notice that when we appended to the end of the word,
+we didn't need to use <tt class="literal">ea</tt>, since this sequence is itself
+mapped to the single letter <tt class="literal">e</tt>.
+This shows you that map sequences are allowed to contain
+other mapped commands. (The ability to use nested map sequences is
+controlled by <em class="emphasis">vi</em></tt>'s <tt class="literal">remap</tt> option, which is normally
+enabled.)</p></li><li><p>Put <em class="emphasis">troff</em></tt> emboldening codes around a word, even when the
+cursor is not at the beginning of the word:</p>
+
+<blockquote><pre class="code">:map V lbi\fB^[e\fP^[</pre></blockquote>
+
+<p>This sequence is the same as the previous one, except that it
+uses <tt class="literal">lb</tt> to
+handle the additional task of positioning the cursor at the
+beginning of the word. The cursor might be in the middle of the
+word, so you want to move to the beginning with the <tt class="literal">b</tt>
+command. But if the cursor were already at the beginning of the
+word, the <tt class="literal">b</tt> command would move the cursor to the previous
+word instead. To guard against that case,
+type an <tt class="literal">l</tt> before moving back with <tt class="literal">b</tt>, so that
+the cursor never starts on the first letter of the word.
+You can define variations of this sequence by replacing the
+<tt class="literal">b</tt> with <tt class="literal">B</tt> and the <tt class="literal">e</tt> with <tt class="literal">Ea</tt>.
+In all cases, though, the <tt class="literal">l</tt> command prevents this sequence
+from working if the cursor is at the end of a line.
+(You could append a space to get around this.)</p></li>
+<?troff .wcon_off?><li><p>
+<a name="IXT-7-281041" />
+<a name="IXT-7-281042" />
+<a name="IXT-7-281043" />
+<a name="IXT-7-281044" />
+<a name="IXT-7-281045" />
+Repeatedly find and remove parentheses from around a word or phrase:
+<a href="#FOOTNOTE-31">[31]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-31" /><p> [31]From the article by Walter Zintz, in <em class="citetitle">UNIX World</em></tt>, April 1990.</p>
+
+</blockquote>
+
+<?troff .sp -.25?><blockquote><pre class="code">:map = xf)xn</pre></blockquote>
+
+<p>This sequence assumes that you first
+found an open parenthesis, by typing <tt class="literal">/(</tt> followed by
+<span class="keycap">RETURN</span>.</p>
+
+<p>If you choose to remove the parentheses, then use the map command:
+delete the open parenthesis with <tt class="literal">x</tt>, find the
+closing one with <tt class="literal">f)</tt>, delete it with <tt class="literal">x</tt>, and
+then repeat your search for an open parenthesis with <tt class="literal">n</tt>.</p>
+
+<p>If you don't want to remove the parentheses (for example,
+if they're being used correctly), then don't use the map command:
+press <tt class="literal">n</tt> instead to find the next open parenthesis.</p>
+
+<p>You could also modify the map sequence above to handle matching
+pairs of quotes.</p></li><li><p>
+<a name="IXT-7-281046" />
+<a name="IXT-7-281047" />
+<a name="IXT-7-281048" />
+Place C/C++ comments around an entire line:</p>
+
+<blockquote><pre class="code">:map g I/* ^[A */^[</pre></blockquote>
+
+<p>This sequence inserts <tt class="literal">/*</tt> at the line's beginning
+and appends <tt class="literal">*/</tt> at the line's end.
+You could also map a substitute command to do the same thing:</p>
+
+<blockquote><pre class="code">:map g :s;.*;/* &amp; */;^M</pre></blockquote>
+
+<p>Here, you match the entire line (with <tt class="literal">.*</tt>), and when you
+replay it (with <tt class="literal">&amp;</tt>), you surround the line with the
+comment symbols. Note the use of semicolon delimiters, to avoid
+having to escape the <tt class="literal">/</tt>
+in the comment.</p></li><li><p>
+<a name="IXT-7-281049" />
+<a name="IXT-7-281050" />
+<a name="IXT-7-281051" />
+<a name="IXT-7-281052" />
+<a name="IXT-7-281053" />
+<a name="IXT-7-281054" />
+Safely repeat a long insertion:</p>
+
+<blockquote><pre class="code">:map ^J :set wm=0^M.:set wm=10^M</pre></blockquote>
+
+<p>We mentioned in <a href="ch02_01.htm">Chapter 2</a>, that
+<em class="emphasis">vi</em></tt> occasionally has difficulty repeating long insertions
+of text when <tt class="literal">wrapmargin</tt> is set.
+This map command is a useful workaround. It temporarily turns off
+the wrapmargin (by setting it to 0), gives the repeat command, and
+then restores the wrapmargin.
+Note that a map sequence can combine <em class="emphasis">ex</em></tt> and <em class="emphasis">vi</em></tt> commands.</p></li></ol><p>In the previous example,
+even though <tt class="literal">^J</tt> is a <em class="emphasis">vi</em></tt> command (it moves the cursor
+down a line), this key is safe to map because
+it's really the same as the <tt class="literal">j</tt> command.
+There are many keys that either perform the same tasks as other
+keys or that are rarely used. However, you should be familiar
+with the <em class="emphasis">vi</em></tt> commands before you boldly disable
+their normal use by using them in map definitions.</p>
+
+<a name="IXT-7-281055" />
+<a name="IXT-7-281056" />
+<a name="IXT-7-281057" />
+<a name="IXT-7-281058" />
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.6" /><div class="sect2">
+<h3 class="sect2">7.3.6. Mapping Keys for Insert Mode </h3>
+
+<p>
+<a name="IXT-7-281059" />
+<a name="IXT-7-281060" />
+<a name="IXT-7-281061" />
+<a name="IXT-7-281062" />
+Normally, maps apply only to command mode&#8212;after all, in insert mode,
+keys stand for themselves and shouldn't be mapped as commands.
+However, by adding an exclamation mark (<tt class="literal">!</tt>) to the <tt class="literal">map</tt> command,
+you can force it to override the ordinary meaning of a key and produce
+the map in insert mode. This feature is useful when you find
+yourself in insert mode but need to escape briefly to command
+mode, run a command, and then return to insert mode.</p>
+
+<p>For example, suppose you just typed a word but forgot to
+italicize it (or place quotes around it, etc.).
+You can define this map:</p>
+
+<blockquote><pre class="code">:map! + ^[bi&lt;I&gt;^[ea&lt;/I&gt;</pre></blockquote>
+
+<p>Now, when you type a <tt class="literal">+</tt> at the end of a word, you will surround
+the word with HTML italicization codes. The <tt class="literal">+</tt> won't show up
+in the text.</p>
+
+<p>The sequence above escapes to command mode (<tt class="literal">^[</tt>),
+backs up to insert the first code (<tt class="literal">bi&lt;I&gt;</tt>),
+escapes again (<tt class="literal">^[</tt>), and moves ahead to append the
+second code (<tt class="literal">ea&lt;/I&gt;</tt>).
+Since the map sequence
+begins and ends in insert mode, you can continue entering text after
+marking the word.</p>
+
+<p>Here's another example.
+Suppose that you've been typing your text, and you realize
+that the previous line should have ended with a colon.
+You can correct that by defining this map sequence:<a href="#FOOTNOTE-32">[32]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-32" /><p> [32]From an article by Walter Zintz, in <em class="citetitle">UNIX World</em></tt>,
+April 1990.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">:map! % ^[kA:^[jA</pre></blockquote>
+
+<p>Now, if you type a <tt class="literal">%</tt> anywhere along your current line,
+you'll append a colon to the end of the previous line.
+This command escapes to command mode, moves up a line, and
+appends the colon (<tt class="literal">^[kA:</tt>). The command then
+escapes again,
+moves down to the line you were on,
+and leaves you in insert mode (<tt class="literal">^[jA</tt>).</p>
+
+<p>Note that we wanted to use uncommon characters (<tt class="literal">%</tt> and
+<tt class="literal">+</tt>) for the previous map commands.
+When a character is mapped for insert mode, you
+can no longer type that character as text.</p>
+
+<p>To reinstate a character for normal typing, use the command:</p>
+
+<blockquote><pre class="code">:unmap! <tt><em class="replaceable"><tt>x</tt></em></tt></pre></blockquote>
+
+<p>where <em class="emphasis">x</em></tt> is the character that was previously mapped for
+insert mode.
+(Although <em class="emphasis">vi</em></tt> will expand <em class="emphasis">x</em></tt> on the
+command line as you type it, making it look like you are unmapping the expanded
+text, it will correctly unmap the character.)</p>
+
+<p>Insert-mode mapping is often more
+appropriate for tying character strings to special keys
+that you wouldn't otherwise use.
+It is especially useful with programmable function keys.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.7" /><div class="sect2">
+<h3 class="sect2">7.3.7. Mapping Function Keys </h3>
+
+<p>
+<a name="ch07.special1" />
+<a name="ch07.special2" />
+<a name="ch07.special3" />
+<a name="ch07.special4" />
+Many terminals have programmable function keys
+(which are faithfully emulated by today's terminal emulators
+on bitmapped workstations).
+You can usually set
+up these keys to print whatever character or characters you want using
+a special setup mode on the terminal.
+However, keys programmed using a terminal's setup mode only work on
+that terminal; they may also
+limit the action of programs that want to
+set up those function keys themselves.</p>
+
+<p><em class="emphasis">ex</em></tt> allows you to map function keys by number, using the syntax:</p>
+
+<blockquote><pre class="code">:map #1 <tt><em class="replaceable"><tt>commands</tt></em></tt></pre></blockquote>
+
+<p>for function key number 1, and so on.
+(It can do this because the
+editor has access to the entry for that terminal found in either the
+<em class="emphasis">terminfo</em></tt> or <em class="emphasis">termcap</em></tt> database and knows the
+escape sequence normally put out by the function key.)</p>
+
+<p>As with other keys, maps apply by default to command mode, but by
+using the <tt class="literal">map!</tt> commands as well, you can define two separate
+values for a function key&#8212;one to be used in command mode, the other in
+insert mode.
+For example, if you are an HTML user, you might
+want to put font-switch codes on function keys.
+For example:</p>
+
+<blockquote><pre class="code">:map #1 i&lt;I&gt;^[
+:map! #1 &lt;I&gt;</pre></blockquote>
+
+<p>If you are in command mode, the first function key will enter insert
+mode, type in the three characters <tt class="literal">&lt;I&gt;</tt>, and return to command mode.
+If you are already in insert mode,
+the key will simply type the
+three-character HTML code.</p>
+
+<blockquote><b>NOTE:</b> 
+If function keys have been redefined in the terminal's setup
+mode, the <tt class="literal">#</tt><tt><em class="replaceable"><tt>n</tt></em></tt>
+syntax might not work since the function keys no longer put
+out the expected control
+or escape sequence as described in its terminal database entry.
+You will need to examine the <em class="emphasis">terminfo</em></tt> source
+(or <em class="emphasis">termcap</em></tt> entry)
+for your terminal and check the definitions for the function keys.
+In addition, there are some terminals whose function keys perform only
+local actions and don't actually send any characters to the computer.
+Such function keys can't be mapped.</p>
+</blockquote>
+
+<p>The terminal capabilities <tt class="literal">k1</tt>, <tt class="literal">k2</tt>
+through <tt class="literal">k0</tt> describe the first ten function keys.
+The capabilities <tt class="literal">l1</tt>, <tt class="literal">l2</tt> through
+<tt class="literal">l0</tt> describe the remaining function keys.
+Using your terminal's setup mode, you can change the control
+or escape sequence output by the function key to correspond with
+the <em class="emphasis">terminfo</em></tt> or <em class="emphasis">termcap</em></tt> entry.
+(For more information, see <em class="emphasis">termcap &amp; terminfo</em></tt>,
+published by O'Reilly &amp; Associates.)</p>
+
+<p>If the sequence contains <tt class="literal">^M</tt>, which is a carriage return,
+press
+<span class="keycap">CTRL-M</span>.
+For instance, in order to have function key 1 available for
+mapping, the terminal database entry for your terminal must
+have a definition of <tt class="literal">k1</tt>, such as:</p>
+
+<blockquote><pre class="code">k1=^A@^M</pre></blockquote>
+
+<p>In turn, the definition:</p>
+
+<blockquote><pre class="code">^A@^M</pre></blockquote>
+
+<p>must be what is output when you press that key.</p>
+
+<p>
+
+To see what the function key puts out, use the <em class="emphasis">od</em></tt> (octal dump)
+command with the <tt class="literal">-c</tt> option (show each character).
+You will need to press
+<span class="keycap">RETURN</span>
+after the function key, and then
+<span class="keycap">CTRL-D</span>
+to get <em class="emphasis">od</em></tt> to print the information.
+For example:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>od -c
+^[[[A
+^D</b></tt>
+0000000 033   [   [   A  \n
+0000005</pre></blockquote>
+
+<p>Here, the function key sent Escape, two left brackets,
+and an <em class="emphasis">A</em></tt>.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.8" /><div class="sect2">
+<h3 class="sect2">7.3.8. Mapping Other Special Keys </h3>
+
+<p>
+<a name="IXT-7-281063" />
+<a name="IXT-7-281064" />
+<a name="IXT-7-281065" />
+Many keyboards have special keys, such as
+<span class="keycap">HOME</span>,
+<span class="keycap">END</span>,
+<span class="keycap">PAGE UP</span>,
+and
+<span class="keycap">PAGE DOWN</span>
+that duplicate commands in <em class="emphasis">vi</em></tt>.
+If the terminal's <em class="emphasis">terminfo</em></tt> or <em class="emphasis">termcap</em></tt> description is
+complete,
+<em class="emphasis">vi</em></tt> will be able to recognize these keys.
+But if it isn't, you can use the <tt class="literal">map</tt> command to make them
+available to <em class="emphasis">vi</em></tt>.
+These keys generally send an escape sequence to the computer&#8212;an
+escape character followed by a string of one or more other characters.
+In order to trap the escape, you should press <tt class="literal">^V</tt> before
+pressing the special key in the map.
+For example, to map the
+<span class="keycap">HOME</span>
+key on the keyboard of an IBM PC to a reasonable <em class="emphasis">vi</em></tt> equivalent,
+you might define the following map:</p>
+
+<blockquote><pre class="code">:map&#160;<span class="keycap">CTRL-V</span>&#xA0;<span class="keycap">HOME</span>&#xA0;1G</pre></blockquote>
+
+<p>This appears on your screen as:</p>
+
+<blockquote><pre class="code">:map ^[[H 1G</pre></blockquote>
+
+<p>Similar map commands display as follows:</p>
+
+
+<blockquote><pre class="code">:map <span class="keycap">CTRL-V</span> <span class="keycap">END</span> &#160;G 	    <i class="lineannotation">displays</i>    :map ^[[Y G
+:map <span class="keycap">CTRL-V</span> <span class="keycap">PAGE&#160;UP</span> &#xA0;^F	   <i class="lineannotation">displays</i>    :map ^[[V ^F
+:map <span class="keycap">CTRL-V</span> <span class="keycap">PAGE&#160;DOWN</span> &#xA0;^B	   <i class="lineannotation">displays</i>    :map ^[[U ^B</pre></blockquote>
+
+<?troff .Nd 10?><p>You'll probably want to place these maps in your <em class="filename">.exrc</em></tt> file.
+Note that if a special key generates a long escape sequence
+(containing multiple non-printing characters),
+<tt class="literal">^V</tt> quotes only the initial escape
+character, and the map doesn't work.
+You will have to find the entire escape sequence (perhaps
+from the terminal manual) and type it in manually, quoting at the
+appropriate points, rather than simply pressing <tt class="literal">^V</tt> and then the key.</p>
+
+<a name="IXT-7-281066" />
+<a name="IXT-7-281067" />
+<a name="IXT-7-281068" />
+<a name="IXT-7-281069" />
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.9" /><div class="sect2">
+<h3 class="sect2">7.3.9. Mapping Multiple Input Keys</h3>
+
+<p>Mapping multiple key strokes is not restricted just to function keys.
+You can also map sequences of regular keystrokes.
+This can help make it easier to enter certain kinds of text, such
+as SGML or HTML.</p>
+
+<p>Here are some <tt class="literal">:map</tt> commands, thanks to Jerry Peek, 
+co-author of O'Reilly's
+<em class="emphasis">Learning the UNIX Operating System</em></tt>,
+which make it easier to enter SGML markup. (The lines beginning
+with a double quote are comments. This is discussed below in
+<a href="ch07_04.htm#vi6-ch-7-sect-4.4">Section 7.4.4</a>.)</p>
+
+
+<blockquote><pre class="code">" ADR: need this
+:set noremap
+" bold:
+map! =b &lt;/emphasis&gt;^[F&lt;i&lt;emphasis role=bold&gt;
+map =B i&lt;emphasis role=bold&gt;^[
+map =b a&lt;/emphasis&gt;^[
+" Move to end of next tag:
+map! =e ^[f&gt;a
+map =e f&gt;
+" footnote (tacks opening tag directly after cursor in text-input mode):
+map! =f &lt;footnote&gt;^M&lt;para&gt;^M&lt;/para&gt;^M&lt;/footnote&gt;^[kO
+" Italics ("emphasis"):
+map! =i &lt;/emphasis&gt;^[F&lt;i&lt;emphasis&gt;
+map =I i&lt;emphasis&gt;^[
+map =i a&lt;/emphasis&gt;^[
+" paragraphs:
+map! =p ^[jo&lt;para&gt;^M&lt;/para&gt;^[O
+map =P O&lt;para&gt;^[
+map =p o&lt;/para&gt;^[
+" less-than:
+map! *l &amp;lt;
+...</pre></blockquote>
+
+<p>Using these commands, to enter a footnote you would enter insert mode,
+and type <tt class="literal">=f</tt>.  <em class="emphasis">vi</em></tt> would then insert the opening
+and closing tags, and leave you in insert mode between them:</p>
+
+<blockquote><pre class="code">All the world's a stage.&lt;footnote&gt;
+&lt;para&gt;
+_
+&lt;/para&gt;
+&lt;/footnote&gt;</pre></blockquote>
+
+<p>Needless to say, these macros proved quite useful during the
+development of this book.</p>
+
+<a name="IXT-7-281070" />
+<a name="IXT-7-281071" />
+<a name="IXT-7-281072" />
+<a name="IXT-7-281073" />
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.10" /><div class="sect2">
+<h3 class="sect2">7.3.10. @-Functions </h3>
+
+<p>
+<a name="ch07.buffer1" />
+<a name="ch07.buffer2" />
+<a name="IXT-7-281074" />
+<a name="IXT-7-281075" />
+<a name="IXT-7-281076" />
+Named buffers provide yet another way to create "macros"&#8212;complex
+command sequences that you can repeat with only a few keystrokes.</p>
+
+<p>If you type a command line in your text (either a <em class="emphasis">vi</em></tt> sequence
+or an <em class="emphasis">ex</em></tt> command <em class="emphasis">preceded by a colon</em></tt>), then delete it
+into a named buffer, you can execute the contents of that buffer with
+the <tt class="literal">@</tt> command.
+For example, open a new line and enter:</p>
+
+<?graphic_args "" "" .815?><img src="figs/vi.0707.gif" alt="Figure 7.3.10" width="334" /><p>This will appear as:</p>
+
+<blockquote><pre class="code">cwgadfly^[</pre></blockquote>
+
+<p>on your screen.
+Press
+<span class="keycap">ESC</span>
+again to exit insert mode, then delete the line
+into buffer <tt class="literal">g</tt> by typing <tt class="literal">"gdd</tt>.
+Now whenever you place the cursor at the beginning of a word and
+type <tt class="literal">@g</tt>, that word in your text will be changed to
+<em class="emphasis">gadfly</em></tt>.</p>
+
+<p>Since <tt class="literal">@</tt> is interpreted as a <em class="emphasis">vi</em></tt> command,
+a dot (.) will repeat the entire sequence, even if the buffer
+contains an <em class="emphasis">ex</em></tt> command.
+<tt class="literal">@@</tt> repeats the last <tt class="literal">@</tt>, and <tt class="literal">u</tt> or <tt class="literal">U</tt> can
+be used to undo the effect of <tt class="literal">@</tt>.</p>
+
+<p>This is a simple example.
+@-functions are useful because they can be adapted to very specific
+commands.
+They are especially useful when you are editing between files, because
+you can store the commands in their named buffers
+and access them from any file you edit.
+@-functions are also useful in combination with the global
+replacement commands discussed in <a href="ch06_01.htm">Chapter 6</a>.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-3.11" /><div class="sect2">
+<h3 class="sect2">7.3.11. Executing Buffers from ex</h3>
+
+<p>
+<a name="IXT-7-281077" />
+You can also execute text saved in a buffer from <em class="emphasis">ex</em></tt> mode.
+In this case, you would enter an <em class="emphasis">ex</em></tt> command, delete
+it into a named buffer, and then use the <tt class="literal">@</tt> command from
+the <em class="emphasis">ex</em></tt> colon prompt. For example, enter the following text:</p>
+
+<blockquote><pre class="code">ORA publishes great books.
+ORA is my favorite publisher.
+1,$s/ORA/O'Reilly \&amp; Associates/g</pre></blockquote>
+
+<p>With your cursor on the last line, delete the command into the
+<tt class="literal">g</tt> buffer: <tt class="literal">"gdd</tt>.
+Move your cursor to the first line: <tt class="literal">kk</tt>.
+Then execute the buffer from the colon command line:
+<tt class="literal">:@g</tt><span class="keycap">RETURN</span>.
+Your screen should now look like this:</p>
+
+<blockquote><pre class="code">O'Reilly &amp; Associates publishes great books.
+O'Reilly &amp; Associates is my favorite publisher.</pre></blockquote>
+
+<p>Some versions treat <tt class="literal">*</tt> identically to
+<tt class="literal">@</tt> when used from the <em class="emphasis">ex</em></tt> command line.
+In addition, if the buffer character supplied after the
+<tt class="literal">@</tt> or <tt class="literal">*</tt> command
+is <tt class="literal">*</tt>,
+the command will be taken from the default (unnamed) buffer.</p>
+
+<a name="IXT-7-281078" />
+<a name="IXT-7-281079" />
+</div>
+
+
+
+
+<a name="IXT-7-281080" />
+<a name="IXT-7-281081" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.2. Executing UNIX Commands </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.4. Using ex Scripts </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,202 @@
+<html><head><title>CPAN (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch41_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">41.11. CPAN</h2>
+
+<p>The Comprehensive Perl Archive Network (CPAN), whose URL is
+<a href="http://www.cpan.org">http://www.cpan.org</a>, is the place
+to get modules, scripts, and the Perl source code. This system is
+mirrored all over the world, so consult <a href="http://www.cpan.org/SITES.html">http://www.cpan.org/SITES.html</a> or <a href="http://mirror.cpan.org">http://mirror.cpan.org</a> for the server nearest
+you. There is a really complete CPAN FAQ that can be found at
+<a href="http://www.cpan.org/misc/cpan-faq.html">http://www.cpan.org/misc/cpan-faq.html</a>.
+</p>
+
+<p>This section covers obtaining and installing modules from CPAN. If
+your installation of Perl is up to date, module installation is
+trivial. If you've got a
+"unique" system, you may need to
+take matters into your own hands.
+</p>
+
+<a name="upt3-CHP-41-SECT-11.1" /><div class="sect2">
+<h3 class="sect2">41.11.1. Installing Modules the Easy Way</h3>
+
+<p>In a fit of inspired genius (or madness), the CPAN module was created
+to automate the task of fetching and installing modules. If you want
+to install the Text::AutoFormat suite, it's as easy
+as becoming superuser on your system and typing:
+</p>
+
+<blockquote><pre class="code"># perl -MCPAN -e 'install Text::AutoFormat'</pre></blockquote>
+
+<p>Perl has many command-line switches. Here, <tt class="literal">-M</tt>
+(equivalent to <tt class="literal">use</tt>
+<em class="replaceable"><tt>module</tt></em>) and <tt class="literal">-e</tt> (execute
+the next argument as <em class="emphasis">perl</em> code) are used. If
+you've never run the CPAN module before, be prepared
+to answer a lot of questions about your network setup and where
+certain system binaries are. Luckily, you can usually accept the
+defaults safely. Once that's done, the CPAN module
+will go to the CPAN mirror you specified; find the latest version of
+the module you asked for; and download, unpack, configure, and
+install it for you with no additional typing. Now
+that's twenty-first-century library management! If
+your module depends on other modules not installed on your system,
+CPAN will attempt to fetch and install the missing modules. In fact,
+you can update the CPAN module itself with:
+</p>
+
+<blockquote><pre class="code"># perl -MCPAN -e 'install Bundle::CPAN'</pre></blockquote>
+
+<p>The CPAN module also has an interactive shell you can access like
+this:
+</p>
+
+<blockquote><pre class="code">$ perl -MCPAN -e shell</pre></blockquote>
+
+<p>Why bother with the interactive shell? Sometimes you want to install
+several unrelated modules at once. This is done more conveniently in
+the CPAN shell. Alternately, you may want only to download module
+archives without actualling installing them. The entire range of
+shell options can be found with the <tt class="literal">h</tt> command
+inside the shell. One of the most useful shell functions, the search
+function, can be used to look up available CPAN modules. For
+instance:
+</p>
+
+<blockquote><pre class="code">$ sudo perl -MCPAN -e shell
+
+cpan shell -- CPAN exploration and modules installation (v1.59)
+ReadLine support enabled
+
+cpan&gt; i /Text/
+CPAN: Storable loaded ok
+Going to read /usr/local/cpan/Metadata
+Module          AddressBook::DB::Text (D/DL/DLEIGH/AddressBook-0.16.tar.gz)
+Module          AnyData::Format::Text (J/JZ/JZUCKER/AnyData-0.05.tar.gz)
+Module          Apache::PrettyText (C/CH/CHTHORMAN/Apache-PrettyText-1.03...
+...
+
+401 items found
+cpan&gt; quit</pre></blockquote>
+
+<p>Here, we use the <tt class="literal">i</tt> command to search for the
+regular expression <tt class="literal">/Text/</tt> in all the module names.
+</p>
+
+<p>When you first run the CPAN module, you will be asked a series of
+configuration questions. The first question you'll
+be asked when configuring CPAN is to name a CPAN build and cache
+directory (where CPAN unpacks fetched module archives and builds
+them). Put this in a sensible place where you and other users can can
+get to it, such as <em class="filename">/usr/local/cpan</em>.
+You'll be asked to name the maximum size for the
+cache directory (the default is 10MB). The next question will ask
+when to perform size checks on the cache, <tt class="literal">atstart</tt>
+or <tt class="literal">never</tt>. Unless you have a compelling reason not
+to remove old module builds, accept the default of
+<tt class="literal">atstart</tt>. You then be asked whether CPAN metadata
+should be cached, and again, accept the default of
+<tt class="literal">yes</tt>.
+</p>
+
+<p>The next question asks about what character set your terminal
+expects. Again, you should accept the default of
+<tt class="literal">yes</tt>. The configuration then asks what it should do
+when unfulfilled dependencies are encountered during a module
+installation. CPAN can automatically fetch the missing modules
+(<tt class="literal">follow</tt>), ask for confirmation before downloading
+them (<tt class="literal">ask</tt>), or do nothing
+(<tt class="literal">ignore</tt>). If you are on a fast Internet
+connection, you may want to set the policy to
+<tt class="literal">follow</tt>. The safest policy, and one that guards
+against runaway module fetching sessions, is <tt class="literal">ask</tt>.
+</p>
+
+<p>The next several questions ask for the location of certain binaries
+(like <i class="command">lynx</i>, <i class="command">make</i>,
+<i class="command">gzip</i>, etc.). Answer these appropriately. The next
+set of questions ask for additional <i class="command">make</i>
+parameters. Again, accept the defaults. You will then be asked about
+your network setup. If you are behind a firewall that uses SOCKs or
+proxy servers for FTP and HTTP, you will need to enter those server
+names. CPAN will ask you to pick a CPAN mirror closest to you, by
+asking you for continent and country information.
+You'll be presented with a list of CPAN mirrors, and
+you can enter the numbers of the URLs in which you are interested.
+Generally, you'll only need to give one or two
+mirrors. The last question is about the WAIT system, to which you can
+safely accept the default. This concludes the CPAN configuration.
+</p>
+
+</div>
+<a name="upt3-CHP-41-SECT-11.2" /><div class="sect2">
+<h3 class="sect2">41.11.2. Installing Modules the Hard Way</h3>
+
+<p>Most modules on CPAN are gzipped <i class="command">tar</i> archives that
+have some common files in them that makes installing them fairly
+simple. To install a CPAN module, unpack your archive and
+<em class="emphasis">cd</em> to the new directory that was just created.
+Now type:
+</p>
+
+<blockquote><pre class="code">$ perl Makefile.PL &amp;&amp; make test</pre></blockquote>
+
+<p>This is a similiar configure and compile idiom to the one shown in
+<a href="ch41_03.htm#upt3-CHP-41-SECT-3">Section 41.3</a>. If the tests all succeed, change to
+root and install the module with:
+</p>
+
+<blockquote><pre class="code"># make install</pre></blockquote>
+
+<p>The module is now available to your system.</p>
+
+</div>
+<a name="upt3-CHP-41-SECT-11.3" /><div class="sect2">
+<h3 class="sect2">41.11.3. Browsing the CPAN Web Site</h3>
+
+<p>There's something to be said for browsing the CPAN
+archive with a web browser. In fact, there are all kinds of ancillary
+tidbits that are available only on the web site. However,
+CPAN's main purpose is to store and serve modules.
+</p>
+
+<p>Modules on CPAN are arranged by author name, module name, category,
+and recentness. Of these, module name and category are perhaps the
+most useful for CPAN newbies. The full Perl documentation is linked
+to from CPAN, but you should have this on your system already. Of
+course, no serious web site these days is missing a search engine,
+and CPAN is no exception. In fact, the search engine has its own URL:
+<a href="http://search.cpan.org">http://search.cpan.org</a>. This is
+an excellent resource for quickly finding modules that may solve your
+problem.
+</p>
+
+<p>CPAN is an ocean of code that awaits your exploration.</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch41_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">41.10. Perl Boot Camp, Part 7: perldoc</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">41.12. Make Custom grep Commands (etc.) with Perl</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

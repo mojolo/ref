@@ -1,0 +1,175 @@
+<html><head><title>Preprompt, Pre-execution, and Periodic Commands (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.16. Preprompt, Pre-execution, and Periodic Commands</h2>
+
+<p><a name="IXT-4-6871" /><i class="command">bash</i>,
+<a name="IXT-4-6872" /><a name="IXT-4-6873" /><a name="IXT-4-6874" /><i class="command">tcsh</i>, and
+<i class="command">zsh</i> can run a Unix command, or multiple commands,
+before printing each prompt.
+<i class="command">tcsh</i><a name="IXT-4-6875" /><a name="IXT-4-6876" /> and <i class="command">zsh</i> also can
+do something you specify before executing the command
+you've typed at a prompt. Finally,
+<i class="command">tcsh</i> and <i class="command">zsh</i> can do something
+periodically (every <em class="emphasis">n</em> seconds) before whatever
+prompt comes next. (<a href="ch04_15.htm#upt3-CHP-4-SECT-15">Section 4.15</a> shows how to
+execute commands periodically in the original Bourne shell.) These
+commands don't have anything to do with setting the
+prompt itself, though they can. The command could do some system
+checking, reset shell variables, or almost anything that you could
+type at a shell prompt. If the commands run slowly,
+they'll delay whatever else you're
+doing, so keep that in mind.
+</p>
+
+<p>Let's start with
+<i class="command">precmd</i><a name="IXT-4-6877" />, the <i class="command">tcsh</i>
+alias that's run after your command line is read and
+before the command is executed. In <i class="command">zsh</i>, the same
+thing is done by the shell function named
+<em class="emphasis">preexec</em>. Shell history is available, so you can
+use <b class="emphasis-bold">history substitution</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>) inside the alias or function.
+<a name="IXT-4-6878" /><a name="IXT-4-6879" />Here's a nice example
+adapted from the <i class="command">tcsh</i> manual page: showing the
+command line you're running in your
+<i class="command">xterm</i> window titlebar. It's ugly
+because it has ESC and CTRL-g characters embedded directly in the
+alias; I'd rather store the escape sequences in
+shell variables, as shown in the <b class="emphasis-bold">xterm</b> <b class="emphasis-bold">titlebar
+article</b> (<a href="ch04_08.htm#upt3-CHP-4-SECT-8">Section 4.8</a>). The
+<i class="command">if</i> sets the alias only if you're
+using an <em class="emphasis">xterm</em> terminal:
+</p>
+
+<blockquote><pre class="code"># Show each command line in xterm title bar:
+if ($TERM == xterm) alias postcmd 'echo -n "^[ ]2;\!#^G"'</pre></blockquote>
+
+<p><a name="IXT-4-6880" /><a name="IXT-4-6881" />Next,
+let's look at running a command periodically.
+You'd like to watch the load average by running
+<b class="emphasis-bold">uptime</b><a name="IXT-4-6882" /> (<a href="ch26_04.htm#upt3-CHP-26-SECT-4">Section 26.4</a>) every
+minute, before a prompt. Here's how to do it in
+<i class="command">zsh</i>: put code like this in your
+<a name="IXT-4-6883" /><b class="emphasis-bold">.zshrc</b>
+<b class="emphasis-bold">file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>)
+(or just type it at a prompt to try it). The
+<em class="emphasis">PERIOD</em><a name="IXT-4-6884" /> shell variable is the interval, in
+seconds, between runs of the <em class="emphasis">periodic</em> function
+as shown in the following code:
+</p>
+
+<blockquote><pre class="code"># Run "uptime" every 60 seconds; put blank line before:
+periodic( ) {echo "\n==&gt; $(uptime) &lt;==";}
+PERIOD=60</pre></blockquote>
+
+<p>Here's how it looks:</p>
+
+<blockquote><pre class="code">jpeek@ruby$ <tt class="userinput"><b>pwd</b></tt>
+/u/jpeek/pt
+
+==&gt;   5:16pm  up  4:07,  6 users,  load average: 0.22, 0.15, 0.08 &lt;==
+jpeek@ruby$ <tt class="userinput"><b>lpr xrefs</b></tt>
+jpeek@ruby$ <tt class="userinput"><b>mail -s "xrefs list" jan &lt; xrefs</b></tt>
+
+==&gt;   5:17pm  up  4:08,  7 users,  load average: 1.29, 0.55, 0.23 &lt;==
+jpeek@ruby$</pre></blockquote>
+
+<p><a name="IXT-4-6885" /><a name="IXT-4-6886" /><a name="IXT-4-6887" />Finally,
+here's how to set preprompt commands. These are run
+before each shell prompt is printed. In <i class="command">tcsh</i>,
+define a <i class="command">precmd</i> alias. In <i class="command">zsh</i>,
+define a <i class="command">precmd</i> function. In
+<i class="command">bash</i>, store the command(s) in the
+<em class="emphasis">PROMPT_COMMAND</em><a name="IXT-4-6888" /> <a name="IXT-4-6889" /> shell variable.
+Let's look at <i class="command">bash</i> this time.
+Here's a silly example that I used to have in my
+<b class="emphasis-bold">bash</b> <b class="emphasis-bold">setup
+file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>):
+</p>
+
+<p><tt class="literal">IFS</tt> <a href="ch36_23.htm#upt3-CHP-36-SECT-23">Section
+36.23</a>, <tt class="literal">set</tt> <a href="ch35_25.htm#upt3-CHP-35-SECT-25">Section 35.25</a>, <tt class="literal">shift
+$#</tt> <a href="ch36_10.htm#upt3-CHP-36-SECT-10">Section 36.10</a></p>
+
+<blockquote><pre class="code">PROMPT_COMMAND='
+# Save old $IFS; set IFS to tab:
+OIFS="$IFS"; IFS="   "
+# Put x in $1, face in $2, explanation[s] in $3[, $4, ...]:
+set x `smiley`
+# Put face into $face and explanation(s) into $explan:
+face="$2"; shift 2; explan="$*"
+# Restore shell environment:
+shift $#; IFS="$OIFS"'
+
+# Prompt I use (includes the latest $face):
+PS1='\u@\h $face '</pre></blockquote>
+
+<p><a name="IXT-4-6890" />The first part is a series
+of shell commands that are stored in the
+<em class="emphasis">PROMPT_COMMAND</em> variable;
+they're surrounded by a pair of single quotes
+(<tt class="literal">'' '</tt>), one on the first line
+(after the <tt class="literal">=</tt>) and the other after
+<tt class="literal">IFS</tt> is reset. That series of commands is executed
+before every prompt. It sets two shell variables,
+<tt class="literal">$face</tt> and <tt class="literal">$explan</tt>, with new
+values before each prompt is set. The prompt is set on the last line;
+it includes the value of <tt class="literal">$face</tt>.
+</p>
+
+<p>Here's what my screen looked like with this
+ridiculous setup. Notice that the prompt keeps changing as the
+<em class="emphasis">PROMPT_COMMAND</em> resets <tt class="literal">$face</tt>
+and <tt class="literal">$explan</tt>. If I wanted the explanation of a face
+I saw as I went along, I could type <tt class="literal">echo
+&lt;"&gt;$explan&lt;"&gt;</tt>:
+</p>
+
+<blockquote><pre class="code">jerry@ruby :-{) <tt class="userinput"><b>echo "$explan"</b></tt>
+normal smiling face with a moustache
+jerry@ruby +&lt;||-) <tt class="userinput"><b>vi proj.cc</b></tt>
+   ...
+jerry@ruby :-O <tt class="userinput"><b>echo "$explan"</b></tt>
+Mr. Bill
+        Wow!
+        ohh, big mouth, Mick Jagger
+        uh oh
+jerry@ruby :-)   &lt; <tt class="userinput"><b>g++ -Wall proj.cc</b></tt>
+   ...</pre></blockquote>
+
+<p>(It was even more useless than <b class="emphasis-bold">psychoanalyze-pinhead</b> (<a href="ch19_13.htm#upt3-CHP-19-SECT-13">Section 19.13</a>), but it was fun while it lasted.) Seriously
+now, I'll say again: preprompt commands do
+<em class="emphasis">not</em> have to be used to set a prompt. You can use
+them to do anything. If the commands in
+<em class="emphasis">PROMPT_COMMAND</em> -- or any of the other
+functions or aliases we've covered -- write to
+standard output or standard error, you'll see that
+text on your screen, before or after the prompt, at the point where
+the commands are executed.<a name="IXTR3-6911" /> 
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.15. External Commands Send Signals to Set Variables</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.17. Running Commands When You Log Out</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

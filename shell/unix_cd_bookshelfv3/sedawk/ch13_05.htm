@@ -1,0 +1,432 @@
+<html><head><title>adj--Adjust Lines for Text Files (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.5. adj--Adjust Lines for Text Files</h2>
+
+<p><em class="emphasis">Contributed by Norman Joseph</em></p>
+
+<p>
+<a name="ch13.b" />
+[Because the author used his program to format his mail message
+before sending it, we're preserving the linebreaks and
+indented paragraphs in presenting it here as the program's example.
+This program is similar to the BSD <b class="emphasis-bold">fmt</b> program.]</p>
+
+<blockquote><pre class="code">        Well, I decided to take you up on your offer.  I'm sure there are
+more sophisticated gurus out there than me, but I do have a nawk script
+that I'm kind of fond of, so I'm sending it in.
+
+        Ok, here's the low down.  When I'm writing e-mail, I often make a
+lot of changes to the text (especially if I'm going to post on the net).
+So what starts out as a nicely adjusted letter or posting usually ends up
+looking pretty sloppy by the time I'm done adding and deleting lines.  So
+I end up spending a lot of time joining and breaking lines all through my
+document so as to get a nice right-hand margin.  So I say to myself,
+"This is just the kind of tedious work a program would be good for."
+
+        Now, I know I can use <b class="emphasis-bold">nroff</b> to filter my document through and
+adjust the lines, but it has lousy defaults (IMHO) for simple text like
+this.  So, with a view to sharpening my nawk skills I wrote <b class="emphasis-bold">adj.nawk</b>
+and the accompanying shell script wrapper <b class="emphasis-bold">adj</b>.  
+
+Here's the syntax for the nawk filter <b class="emphasis-bold">adj</b>:
+
+
+<b class="emphasis-bold">adj </b>[<span class="option">-l|c|r|b</span>] [<span class="option">-w</span> <em class="replaceable"><tt>n</em>] [<span class="option">-i</span> <em class="replaceable">n</em>] [<em class="replaceable">files ...</tt></em>]
+
+
+The options are:</pre></blockquote>
+
+<dl>
+<dt><span class="option">-l</span></i></dt><dd>Lines are left adjusted, right ragged (default).</p></dd>
+
+
+<dt><span class="option">-c</span></i></dt><dd>Lines are centered.</p></dd>
+
+
+<dt><span class="option">-r</span></i></dt><dd>Lines are right adjusted, left ragged.</p></dd>
+
+
+<dt><span class="option">-b</span></i></dt><dd>Lines are left and right adjusted.</p></dd>
+
+
+<dt><span class="option">-w</span> <tt><em class="replaceable"><tt>n</em></tt></i></dt><dd>Sets line width to <tt><em class="replaceable">n</tt></em></tt> characters (default is 70).</p></dd>
+
+
+<dt><span class="option">-i</span> <tt><em class="replaceable"><tt>n</em></tt></i></dt><dd>Sets initial indent to <tt><em class="replaceable">n</tt></em></tt> characters (default is 0).</p></dd>
+
+</dl>
+
+<blockquote><pre class="code">        So, whenever I'm finished with this letter (I'm using <b class="emphasis-bold">vi</b>) I will
+give the command <b class="emphasis-bold">:%!adj -w73</b> (I like my lines a little longer) and
+all the breaking and joining will be done by a program (the way the Good
+Lord intended :-).  Indents and blank lines are preserved, and two spaces
+are given after any end-of-sentence punctuation.
+
+        The program is naive about tabs, and when computing line lengths,
+it considers a tab character to be one space wide.
+
+        The program is notable for its use of command-line parameter
+assignment, and some of the newer features of awk (nawk), such as the
+match and split built-in functions, and for its use of support functions.</pre></blockquote>
+
+<blockquote><pre class="code">#! /bin/sh
+#
+# adj - adjust text lines
+#
+# usage: adj [-l|c|r|b] [-w n] [-i n] [files ...]
+#
+# options:
+#    -l    - lines are left adjusted, right ragged (default)
+#    -c    - lines are centered
+#    -r    - lines are right adjusted, left ragged
+#    -b    - lines are left and right adjusted
+#    -w n  - sets line width to &lt;n&gt; characters (default: 70)
+#    -i n  - sets initial indent to &lt;n&gt; characters (default: 0)
+#
+# note:
+#    output line width is -w setting plus -i setting
+#
+# author:
+#    Norman Joseph (amanue!oglvee!norm)
+
+adj=l
+wid=70
+ind=0
+
+set -- `getopt lcrbw:i: $*`
+if test $? != 0
+then
+    printf 'usage: %s [-l|c|r|b] [-w n] [-i n] [files ...]' $0
+    exit 1
+fi
+
+for arg in $*
+do
+    case $arg in
+    -l) adj=l;  shift;;
+    -c) adj=c;  shift;;
+    -r) adj=r;  shift;;
+    -b) adj=b;  shift;;
+    -w) wid=$2;  shift 2;;
+    -i) ind=$2;  shift 2;;
+    --) shift;  break;;
+    esac
+done
+
+exec nawk -f adj.nawk type=$adj linelen=$wid indent=$ind $*</pre></blockquote>
+
+<p>Here's the <b class="emphasis-bold">adj.nawk</b> script that's called by the shell script <b class="emphasis-bold">adj</b>.
+<blockquote><pre class="code"># adj.nawk -- adjust lines of text per options
+#
+# NOTE:  this nawk program is called from the shell script "adj"
+#    see that script for usage &amp; calling conventions
+#
+# author:
+#    Norman Joseph (amanue!oglvee!norm)
+
+BEGIN  {
+    FS = "\n"
+    blankline  = "^[ \t]*$"
+    startblank = "^[ \t]+[^ \t]+"
+    startwords = "^[^ \t]+"
+}
+
+$0 ~ blankline {
+    if ( type == "b" )
+        putline( outline "\n" )
+    else
+        putline( adjust( outline, type ) "\n" )
+    putline( "\n" )
+    outline = ""
+}
+
+$0 ~ startblank {
+    if ( outline != "" ) {
+        if ( type == "b" )
+            putline( outline "\n" )
+        else
+            putline( adjust( outline, type ) "\n" )
+    }
+
+    firstword = ""
+    i = 1
+    while ( substr( $0, i, 1 ) ~ "[ \t]" ) {
+        firstword = firstword substr( $0, i, 1 )
+        i++
+    }
+    inline = substr( $0, i )
+    outline = firstword
+
+    nf = split( inline, word, "[ \t]+" )
+
+    for ( i = 1;  i &lt;= nf;  i++ ) {
+        if ( i == 1 ) {
+            testlen = length( outline word[i] )
+        } else {
+            testlen = length( outline " " word[i] )
+            if ( match( ".!?:;", "\\" substr( outline,
+                    length( outline ), 1 )) )
+                testlen++
+        }
+
+        if ( testlen &gt; linelen ) {
+            putline( adjust( outline, type ) "\n" )
+            outline = ""
+        }
+
+        if ( outline == "" )
+            outline = word[i]
+        else if ( i == 1 )
+            outline = outline word[i]
+        else {
+            if ( match( ".!?:;", "\\" substr( outline,
+                   length( outline ), 1 )) )
+                outline = outline "  " word[i]     # 2 spaces
+            else
+                outline = outline " " word[i]      # 1 space
+        }
+    }
+}
+
+$0 ~ startwords  {
+    nf = split( $0, word, "[ \t]+" )
+
+    for ( i = 1;  i &lt;= nf;  i++ ) {
+        if ( outline == "" )
+            testlen = length( word[i] )
+        else {
+            testlen = length( outline " " word[i] )
+            if ( match( ".!?:;", "\\" substr( outline,
+                   length( outline ), 1 )) )
+                testlen++
+        }
+
+        if ( testlen &gt; linelen ) {
+            putline( adjust( outline, type ) "\n" )
+            outline = ""
+        }
+
+        if ( outline == "" )
+            outline = word[i]
+        else {
+            if ( match( ".!?:;", "\\" substr( outline,
+                   length( outline ), 1 )) )
+                outline = outline "  " word[i]     # 2 spaces
+            else
+                outline = outline " " word[i]      # 1 space
+        }
+    }
+}
+
+END  {
+    if ( type == "b" )
+        putline( outline "\n" )
+    else
+        putline( adjust( outline, type ) "\n" )
+}
+
+
+#
+# -- support functions --
+#
+
+function putline( line,    fmt )
+{
+    if ( indent ) {
+        fmt = "%" indent "s%s"
+        printf( fmt, " ", line )
+    } else
+        printf( "%s", line )
+}
+
+
+function adjust( line, type,    fill, fmt )
+{
+    if ( type != "l" )
+        fill = linelen - length( line )
+
+    if ( fill &gt; 0 ) {
+        if        ( type == "c" ) {
+            fmt = "%" (fill+1)/2 "s%s"
+            line = sprintf( fmt, " ", line )
+        } else if ( type == "r" ) {
+            fmt = "%" fill "s%s"
+            line = sprintf( fmt, " ", line )
+        } else if ( type == "b" ) {
+            line = fillout( line, fill )
+        }
+    }
+
+    return line
+}
+
+
+function fillout( line, need,    i, newline, nextchar, blankseen )
+{
+    while ( need ) {
+        newline = ""
+        blankseen = 0
+
+        if ( dir == 0 ) {
+            for ( i = 1;  i &lt;= length( line );  i++ ) {
+                nextchar = substr( line, i, 1 )
+                if ( need ) {
+                    if ( nextchar == " " ) {
+                        if ( ! blankseen ) {
+                            newline = newline " "
+                            need--
+                            blankseen = 1
+                        }
+                    } else {
+                        blankseen = 0
+                    }
+                }
+                newline = newline nextchar
+            }
+
+        } else if ( dir == 1 ) {
+            for ( i = length( line );  i &gt;= 1;  i-- ) {
+                nextchar = substr( line, i, 1 )
+                if ( need ) {
+                    if ( nextchar == " " ) {
+                        if ( ! blankseen ) {
+                            newline = " " newline
+                            need--
+                            blankseen = 1
+                        }
+                    } else {
+                        blankseen = 0
+                    }
+                }
+                newline = nextchar newline
+            }
+        }
+
+        line = newline
+
+        dir = 1 - dir
+    }
+
+    return line
+}</pre></blockquote>
+
+<a name="sedawk-ch-13-sect-0.0.0.5" /><div class="sect2">
+<h3 class="sect2">13.5.1. Program Notes for adj</h3>
+
+<p>This small text formatter is a nifty program for those of us
+who use text editors.  It allows you to set the maximum line width
+and justify paragraphs and thus can be used to format mail
+messages or simple letters.</p>
+
+<p>The <b class="emphasis-bold">adj</b> shell script does all the option setting,
+although it could have been done by reading <b class="emphasis-bold">ARGV</b> 
+in the <b class="emphasis-bold">BEGIN</b> action.  Using the shell to establish command-line
+parameters is probably easier
+for those who are already familiar with the shell.</p>
+
+<p>The lack of comments in the <b class="emphasis-bold">adj.awk</b> script makes this
+script more difficult to read than some of the others. 
+The <b class="emphasis-bold">BEGIN</b> procedure assigns three regular expressions to
+variables:  <b class="emphasis-bold">blankline</b>, <b class="emphasis-bold">startblank</b>,
+<b class="emphasis-bold">startwords</b>.  This is a good technique
+(one that you'll see used in <b class="emphasis-bold">lex</b> specifications)
+because regular expressions can be difficult to read
+and the name of the variable makes it clear what it matches.
+Remember that modern awks lets you supply a regular expression as
+a string, in a variable.</p>
+
+<p>There are three main procedures, which can be named by the variable
+they match.  The first is <b class="emphasis-bold">blankline</b>, a procedure
+which handles collected
+text once a blank line is encountered.  The second is <b class="emphasis-bold">startblank</b>,
+which handles lines that begin with whitespace (spaces or tabs).  The third
+is <b class="emphasis-bold">startwords</b>, which handles a line of text. 
+The basic procedure is to read a line of text and determine how many
+of the words in that line will fit, given the line width, outputting
+those that will fit and saving those that will not in the variable
+<b class="emphasis-bold">outline</b>.  When the next input line is read, the contents of
+<b class="emphasis-bold">outline</b> must be output before that line is output.</p>
+
+<p>The <b class="emphasis-bold">adjust()</b> function does the work of justifying the text
+based on a command-line option specifying the format type.
+All types except "l" (left-adjusted, right-ragged) need
+to be filled.  Therefore, the first thing this function does
+is figure out how much "fill" is needed by subtracting
+the length of the current line from the specified line length. 
+It makes excellent use of the <b class="emphasis-bold">sprintf()</b> function
+to actually do the positioning of the text.  For instance,
+to center text, the value of <b class="emphasis-bold">fill</b> (plus 1) is divided by
+2 to determine the amount of padding needed on each side of the
+line.  This amount is passed through the <b class="emphasis-bold">fmt</b> variable
+as the argument to <b class="emphasis-bold">sprintf()</b>:</p>
+
+<blockquote><pre class="code">fmt = "%" (fill+1)/2 "s%s"
+            line = sprintf( fmt, " ", line )</pre></blockquote>
+
+<p>Thus, the space will be used to pad a field that is
+the length of half the amount of fill needed.</p>
+
+<p>If text is right-justified, the value of <b class="emphasis-bold">fill</b> itself is used
+to pad the field.  Finally, if the format type is "b" (block),
+then the function <b class="emphasis-bold">fillout</b> is called to determine
+where to add spaces that will fill out the line.</p>
+
+<p>In looking over the design of the program,
+you can see, once again, how the use of functions helps
+to clarify what a program is doing. 
+It helps to think of the main procedure 
+as controlling the flow of input through the program
+while procedures handle
+the operations performed on the input.
+Separating the "operations" from the flow control makes
+the program readable and more easily maintained.</p>
+
+<p>In passing, we're not sure why <b class="emphasis-bold">FS</b>, the field separator, is set
+to newline
+in the <b class="emphasis-bold">BEGIN</b> procedure.  This means that the field and record 
+separators are the same (i.e., $0 and $1 are the same). 
+The <b class="emphasis-bold">split()</b> function is
+called to break the line into fields using tabs or spaces
+as the delimiter.</p>
+
+<blockquote><pre class="code">nf = split( $0, word, "[ \t]+" )</pre></blockquote>
+
+<p>It would seem that the field separator could have been set 
+to the same regular expression, as follows:</p>
+
+<blockquote><pre class="code">FS = "[ \t]+"</pre></blockquote>
+
+<p>It would be more efficient to use the default field parsing.</p>
+
+<p>Finally, using the <b class="emphasis-bold">match()</b> function to find punctuation is inefficient;
+it would have been better to use <b class="emphasis-bold">index()</b>.</p>
+</div>
+
+
+
+
+<a name="IXT-13-266391" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.4. mailavg--Check Size of Mailboxes</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.6. readsource--Format Program Source Files for troff</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,142 @@
+<html><head><title>Searching for Patterns Split Across Lines (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_17.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_19.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.18. Searching for Patterns Split Across Lines</h2>
+
+<p><a name="upt3-IDXTERM-5321" /> <a name="upt3-IDXTERM-5322" /> <a name="upt3-IDXTERM-5323" />[<a href="ch13_09.htm#upt3-CHP-13-SECT-9">Section 13.9</a> introduced a script called
+<em class="filename">cgrep</em><a name="upt3-IDXTERM-5324" />
+<a name="upt3-IDXTERM-5325" />
+<a name="upt3-IDXTERM-5326" />, a
+general-purpose, <em class="filename">grep</em>-like program built with
+<em class="filename">sed</em>. It allows you to look for one or more words
+that appear on one line or across several lines. This article
+explains the <em class="filename">sed</em> tricks that are necessary to do
+this kind of thing. It gets into territory that is essential for any
+advanced applications of this obscure yet wonderful editor. <a href="ch34_14.htm#upt3-CHP-34-SECT-14">Section 34.14</a> through <a href="ch34_17.htm#upt3-CHP-34-SECT-17">Section 34.17</a>
+have background information. -- <em class="emphasis">JP</em>]
+</p>
+
+<p>Let's review the two examples from <a href="ch13_09.htm#upt3-CHP-13-SECT-9">Section 13.9</a>. The first command below finds all lines
+containing the word <em class="emphasis">system</em> in the file
+<em class="emphasis">main.c</em> and shows 10 additional lines of context
+above and below each match. The second command finds all occurrences
+of the word "awk" where it is
+followed by the word "perl"
+somewhere within the next 3 lines:
+</p>
+
+<blockquote><pre class="code">cgrep -10 system main.c
+cgrep -3 "awk.*perl"</pre></blockquote>
+
+<p>Now the script, followed by an explanation of how it works:</p>
+<p><tt class="literal">case</tt> <a href="ch35_11.htm#upt3-CHP-35-SECT-11">Section 35.11</a>, <tt class="literal">expr</tt> <a href="ch36_21.htm#upt3-CHP-36-SECT-21">Section 36.21</a>, <tt class="literal">shift</tt> <a href="ch35_22.htm#upt3-CHP-35-SECT-22">Section 35.22</a>, <tt class="literal">${?}</tt> <a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a>, <tt class="literal">\~..~</tt> <a href="ch34_08.htm#upt3-CHP-34-SECT-8">Section 34.8</a>, <tt class="literal">"$@"</tt> <a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a></p>
+
+<blockquote><pre class="code">#!/bin/sh
+#  cgrep - multiline context grep using sed
+#  Usage: cgrep [-context] pattern [file...]
+
+n=3
+case $1 in -[1-9]*)
+    n=`expr 1 - "$1"`
+    shift
+esac
+re=${1?}; shift
+
+sed -n "
+    1b start
+    : top
+    \~$re~{
+        h; n; p; H; g
+        b endif
+    }
+        N
+        : start
+        //{ =; p; }
+    : endif
+    $n,\$D
+    b top
+" "$@"</pre></blockquote>
+
+
+<p>The <i class="command">sed</i> script is embedded in a bare-bones
+<b class="emphasis-bold">shell wrapper</b>
+(<a name="IXT-34-789" /><a href="ch35_19.htm#upt3-CHP-35-SECT-19">Section 35.19</a>) to
+parse out the initial arguments because, unlike
+<i class="command">awk</i> and <i class="command">perl</i>,
+<i class="command">sed</i> cannot directly access command-line
+parameters. If the first argument looks like a
+<span class="option">-context</span> option, variable <em class="emphasis">n</em> is
+reset to one more than the number of lines specified, using a little
+trick -- the argument is treated as a negative number and
+subtracted from <tt class="literal">1</tt>. The pattern argument is then
+stored in <tt class="literal">$re</tt>, with the <tt class="literal">${1?}</tt>
+syntax causing the shell to abort with an error message if no pattern
+was given. Any remaining arguments are passed as filenames to the
+<i class="command">sed</i> command.
+</p>
+
+<p>So that the <tt class="literal">$re</tt> and <tt class="literal">$n</tt>
+parameters can be embedded, the <i class="command">sed</i> script is
+enclosed in <b class="emphasis-bold">double quotes</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>). We use the <span class="option">-n</span> option
+because we don't want to print out every line by
+default, and because we need to use the <tt class="literal">n</tt> command
+in the script without its side effect of outputting a line.
+</p>
+
+<p>The <i class="command">sed</i> script itself looks rather unstructured
+(it was actually designed using a flowchart), but the basic algorithm
+is easy enough to understand. We keep a
+"window" of <em class="emphasis">n</em>
+lines in the pattern space and scroll this window through the input
+stream. If an occurrence of the pattern comes into the window, the
+entire window is printed (providing <em class="emphasis">n</em> lines of
+previous context), and each subsequent line is printed until the
+pattern scrolls out of view again (providing <em class="emphasis">n</em>
+lines of following context). The <i class="command">sed</i> idiom
+<tt class="literal">N;D</tt> is used to advance the window, with the
+<tt class="literal">D</tt> not kicking in until the first
+<em class="emphasis">n</em> lines of input have been accumulated.
+</p>
+
+<p>The core of the script is basically an
+<a name="IXT-34-790" />if-then-else construct that
+decides whether we are currently "in
+context." (The regular expression here is delimited
+by tilde (<tt class="literal">~</tt>) characters because tildes are less
+likely to occur in the user-supplied pattern than slashes.) <b class="emphasis-bold">If</b> we are still in context, <b class="emphasis-bold">then</b> the next line of input is read and
+output, temporarily using the hold space to save the window (and
+effectively doing an <tt class="literal">N</tt> in the process). <b class="emphasis-bold">Else</b> we append the next input line
+(<tt class="literal">N</tt>) and search for the pattern again (an empty
+regular expression means to reuse the last pattern). If
+it's now found, the pattern must have just come into
+view -- so we print the current line number followed by the
+contents of the window. Subsequent iterations will take the
+"then" branch until the pattern
+scrolls out of the <a name="IXTR3-829" /> <a name="IXTR3-830" /> <a name="IXTR3-831" />window.<a name="IXTR3-832" /> <a name="IXTR3-833" /> <a name="IXTR3-834" /> 
+</p>
+
+<p> <em class="emphasis">-- GU</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_17.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_19.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.17. The Deliberate Scrivener</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.19. Multiline Delete</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

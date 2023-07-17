@@ -1,0 +1,154 @@
+<html><head><title>Restoring Files from Tape with tar (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch38_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">38.6. Restoring Files from Tape with tar</h2>
+
+<p><a name="IXT-38-2977" /> <a name="IXT-38-2978" /> <a name="IXT-38-2979" /> <a name="IXT-38-2980" />When you <a name="IXT-38-2981" />create an archive, there are several
+ways to specify the directory. If the directory is under the current
+directory, you could type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar c project</b></tt></pre></blockquote>
+
+<p>A similar way to specify the same directory is:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar c ./project</b></tt></pre></blockquote>
+
+<p>If you are currently in the directory you want archived, you can type:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar c .</b></tt></pre></blockquote>
+
+<p>Another way to archive the current directory is to type:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar c *</b></tt></pre></blockquote>
+
+<p>Here, the shell expands the asterisk (<tt class="literal">*</tt>) to the
+files in the current directory. However, it does not match files
+starting with a dot (.), which is why the previous technique is
+preferred.
+</p>
+
+<p>This causes a problem when restoring a directory from a
+<i class="command">tar</i> archive. You may not know whether an archive
+was created using . or the directory name.
+</p>
+
+<p>I always check the names of the files before restoring an archive:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar t</b></tt></pre></blockquote>
+
+<p>If the archive loads the files into the current directory, I create a
+new directory, change to it, and extract the files.
+</p>
+
+<p>If the archive restores the directory by name, then I restore the
+files into the current directory.
+</p>
+
+<a name="upt3-CHP-38-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">38.6.1. Restoring a Few Files</h3>
+
+<p><a name="IXT-38-2982" /> <a name="IXT-38-2983" />If you want to restore a single file, get
+the <a name="IXT-38-2984" />pathname of the file as
+<i class="command">tar</i> knows it, using the <a name="IXT-38-2985" /><span class="option">t</span> flag. You must
+specify the exact filename, because <em class="filename">filename</em> and
+<em class="filename">./filename</em> are not the same to
+<i class="command">tar</i>. You can combine these two steps into one
+command by using:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar xvf /dev/rst0 `tar tf /dev/rst0 | grep </b></tt><em class="replaceable"><tt>filename`</tt></em></pre></blockquote>
+
+<p>Note that this may run very slowly, though, as the entire tar file
+has to be read once (and the tape rewound) before any restoration can
+happen. Be careful: you may also get a lot more than you expected;
+for example, if you're looking for
+<em class="filename">README</em> using this technique,
+you'd also get <em class="filename">README.Solaris</em>
+and everything in the <em class="filename">doc/READMEs</em> directory,
+possibly overwriting files you wanted to keep.
+</p>
+
+<p>Whenever you use <i class="command">tar</i> to restore a directory, you
+must always specify <em class="emphasis">some</em> filename. If none is
+specified, no files are restored.
+</p>
+
+<p><a name="IXT-38-2986" />There is still the problem
+of restoring a directory whose pathname starts with a slash
+(<tt class="literal">/</tt>). Because <i class="command">tar</i> restores a
+file to the pathname specified in the archive, you cannot change
+<em class="emphasis">where</em> the file will be restored. The danger is
+that either you may overwrite some existing files or you will not be
+able to restore the files because you don't have
+permission.
+</p>
+
+<p><a name="IXT-38-2987" />You can ask the system administrator to
+rename a directory and temporarily create a symbolic link pointing to
+a directory where you can restore the files. Other solutions exist,
+including editing the <i class="command">tar</i> archive and creating a
+new directory structure with a C program executing the
+<em class="emphasis">chroot</em>(2) system call. Another solution is to
+use <b class="emphasis-bold">GNU tar</b> (<a href="ch39_03.htm#upt3-CHP-39-SECT-3">Section 39.3</a>), which allows you to remap pathnames starting
+with slash (<tt class="literal">/</tt>). It also allows you to create
+archives that are too large for a single tape, incremental archives,
+and a dozen other advantages.
+</p>
+
+<p>But the best solution is never to create an archive of a directory
+that starts with slash (<tt class="literal">/</tt>) or <b class="emphasis-bold">tilde</b> (<tt class="literal">~</tt>) (<a href="ch31_11.htm#upt3-CHP-31-SECT-11">Section 31.11</a>) (since the shell will expand
+<tt class="literal">~</tt> into an absolute path that starts with a
+<tt class="literal">/</tt>).
+</p>
+
+</div>
+<a name="upt3-CHP-38-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">38.6.2. Remote Restoring</h3>
+
+<p><a name="IXT-38-2988" /> <a name="IXT-38-2989" />To restore a
+<a name="IXT-38-2990" /> <a name="IXT-38-2991" />directory from a remote host, use the
+following command:
+</p>
+
+<p><tt class="literal">rsh</tt> <a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a></p>
+
+<blockquote><pre class="code">%<tt class="userinput"><b> rsh -n </b></tt><em class="replaceable"><tt>host</em> <tt class="userinput"><b>dd if=/dev/rst0 bs=20b | tar xvBfb - 20</b></tt> <em class="replaceable">files</tt></em></pre></blockquote>
+
+<p>This runs <i class="command">dd</i><a name="IXT-38-2992" /> on the remote host, reading from
+<em class="filename">/dev/rst0</em> with a blocksize of twenty blocks, and
+pipes it to a local <i class="command">tar</i>. It is difficult to read
+fixed-size blocks over a network. This is why <i class="command">tar</i>
+uses the <span class="option">B</span> flag to force it to read from the pipe
+until a block is completely filled. Some versions of
+<i class="command">tar</i>, including GNU <i class="command">tar</i>,
+<b class="emphasis-bold">handle remote drives automatically</b>
+(<a href="ch38_08.htm#upt3-CHP-38-SECT-8">Section 38.8</a>).
+</p>
+
+<p> <em class="emphasis">-- BB</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch38_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">38.5. How to Make Backups to a Local Device</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">38.7. Using tar to a Remote Tape Drive</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

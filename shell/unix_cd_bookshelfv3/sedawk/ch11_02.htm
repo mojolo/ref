@@ -1,0 +1,1137 @@
+<html><head><title>Freely Available awks (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">11.2. Freely Available awks</h2>
+
+<p>There are three versions of awk whose source code is freely available.
+They are the Bell Labs awk, GNU awk, and mawk, by Michael Brennan.
+This section discusses the extensions that are common to two or more
+of them, and then looks at each version in detail and describes how to
+obtain it.</p>
+
+<a name="sedawk-ch-11-sect-2.1" /><div class="sect2">
+<h3 class="sect2">11.2.1. Common Extensions</h3>
+
+<p>
+<a name="ch11.ext1" />
+<a name="ch11.ext2" />
+This section discusses extensions to the awk language that are available
+in two or more of the freely available awks.<a href="#FOOTNOTE-73">[73]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-73" /><p> [73]As the maintainer of gawk and the author of many of the extensions
+described here and in the section below on gawk, my opinion about the
+usefulness of these extensions may be biased. <img src="figs/smile.gif" alt="Figure " />  You should
+make your own evaluation. [A.R.]</p>
+
+</blockquote>
+
+<a name="sedawk-ch-11-sect-2.1.1" /><div class="sect3">
+<h3 class="sect3">11.2.1.1. Deleting all elements of an array</h3>
+
+<p>
+<a name="IXT-11-266243" />
+<a name="IXT-11-266244" />
+<a name="IXT-11-266245" />
+All three free awks extend
+the <b class="emphasis-bold">delete</b> statement, making it possible to delete
+all the elements of an array at one time.
+The syntax is:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">delete</b> <em class="replaceable"><tt>array</tt></em></pre></blockquote><p>Normally, to delete every element from an array, you have to use a
+loop, like this.</p>
+
+<blockquote><pre class="code">for (i in data)
+	delete data[i]</pre></blockquote>
+
+<p>With the extended version of the <b class="emphasis-bold">delete</b> statement, you can simply use</p>
+
+<blockquote><pre class="code">delete data</pre></blockquote>
+
+<p>This is particularly useful for arrays with lots of subscripts; this
+version is considerably faster than the one using a loop.</p>
+
+<p>Even though it no longer has any elements, you cannot use
+the array name as a simple variable. Once an array, always an array.</p>
+
+<p>This extension appeared first in gawk, then in mawk and the Bell Labs awk.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.1.2" /><div class="sect3">
+<h3 class="sect3">11.2.1.2. Obtaining individual characters</h3>
+
+<p>
+<a name="IXT-11-266246" />
+<a name="IXT-11-266247" />
+<a name="IXT-11-266248" />
+<a name="IXT-11-266249" />
+<a name="IXT-11-266250" />
+<a name="IXT-11-266251" />
+All three awks extend field splitting and array splitting as follows.
+If the value of <b class="emphasis-bold">FS</b> is the empty string, then each character of
+the input record becomes a separate field.  This greatly simplifies
+cases where it's necessary to work with individual
+characters.</p>
+
+<p>
+<a name="IXT-11-266252" />
+Similarly, if the third argument to the <b class="emphasis-bold">split()</b> function is
+the empty string, each character in the original string will become a
+separate element of the target array.</p>
+
+<p>
+<a name="IXT-11-266253" />
+Without these extensions, you have to use repeated calls to the
+<b class="emphasis-bold">substr()</b> function to obtain individual characters.</p>
+
+<p>This extension appeared first in mawk, then in gawk and the Bell Labs awk.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.1.3" /><div class="sect3">
+<h3 class="sect3">11.2.1.3. Flushing buffered output</h3>
+
+<p>
+<a name="IXT-11-266254" />
+<a name="IXT-11-266255" />
+<a name="IXT-11-266256" />
+<a name="IXT-11-266257" />
+The 1993 version of the Bell Labs awk introduced a new function that
+is not in the
+POSIX standard, <b class="emphasis-bold">fflush()</b>.  Like <b class="emphasis-bold">close()</b>, the argument to
+<b class="emphasis-bold">fflush()</b> is the name of an open file or pipe.
+Unlike <b class="emphasis-bold">close()</b>, the <b class="emphasis-bold">fflush()</b> function only works on
+<em class="emphasis">output</em> files and pipes.</p>
+
+<p>Most programs <em class="emphasis">buffer</em> their output, storing data
+to be written to a file or pipe in an internal chunk of memory until
+there's enough to send on to the destination. Occasionally, it's
+useful for the programmer to be able to explicitly
+<em class="emphasis">flush</em> the buffer, that is, force all buffered
+data to actually be delivered. This is the purpose of the
+<b class="emphasis-bold">fflush()</b> function.</p>
+
+<p>This function appeared first in the Bell Labs awk, then in gawk and mawk.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.1.4" /><div class="sect3">
+<h3 class="sect3">11.2.1.4. Special filenames</h3>
+
+<p>
+<a name="IXT-11-266258" />
+<a name="IXT-11-266259" />
+<a name="IXT-11-266260" />
+<a name="IXT-11-266261" />
+<a name="IXT-11-266262" />
+<a name="IXT-11-266263" />
+With any version of awk, you can write directly to the special UNIX file,
+<em class="filename">/dev/tty</em>, that is a name for the user's terminal.
+This can be used to direct prompts or messages to the user's
+attention when the output of the program is directed to a file:</p>
+
+<blockquote><pre class="code">printf "Enter your name:" &gt;"/dev/tty"</pre></blockquote>
+
+<p>This prints "Enter your name:" directly on the terminal, no matter
+where the standard output and the standard error are directed.</p>
+
+<p>The three free awks support
+several special filenames, as listed in <a href="ch11_02.htm#sedawk-ch-11-tab-3">Table 11.4</a>.</p>
+
+<a name="sedawk-ch-11-tab-3" /><h4 class="objtitle">Table 11.4. Special Filenames</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Filename</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><em class="emphasis">/dev/stdin</em></td>
+<td>Standard input (not mawk)<a href="#FOOTNOTE-74">[74]</a></td>
+</tr>
+
+<tr>
+<td><em class="emphasis">/dev/stdout</em></td>
+<td>Standard output</td>
+</tr>
+
+<tr>
+<td><em class="emphasis">/dev/stderr</em></td>
+<td>Standard error</td>
+</tr>
+
+
+</table><p>
+
+<a name="FOOTNOTE-74" /><p> [74]The mawk manpage
+recommends using <b class="emphasis-bold">"-"</b>
+for the standard input, which is most portable.</p>
+
+</blockquote>
+
+<p>Note that a special filename, like any filename, 
+must be quoted when specified as a string constant.</p>
+
+<p>The <em class="filename">/dev/stdin</em>, <em class="filename">/dev/stdout</em>, and <em class="filename">/dev/stderr</em> special
+files originated in V8 UNIX.  Gawk was the first to build in special
+recognition of these files, followed by mawk and the Bell Labs awk.</p>
+
+<blockquote><table border="1" cellpadding="6"><tr><td><h4 class="objtitle">A printerr() function</h4>
+
+<p>Error messages inform users about problems 
+often related to missing or incorrect input.  You can
+simply inform the user with a <b class="emphasis-bold">print</b> statement.  However,
+if the output of the program is redirected to a file, the
+user won't see it.  Therefore, it is good practice
+to specify explicitly that the error message be sent to 
+the terminal.  
+<a name="IXT-11-266264" /></p>
+
+<p>
+<a name="IXT-11-266265" />
+The following <b class="emphasis-bold">printerr()</b> function helps to create
+consistent user error messages.  It prints the word "ERROR"
+followed by a supplied message, the record number, and the
+current record. 
+The following example directs output to <em class="filename">/dev/tty</em>:</p>
+
+<blockquote><pre class="code">function printerr (message) {
+	# print message, record number and record
+	printf("ERROR:%s (%d) %s\n", message, NR, $0) &gt; "/dev/tty"
+}</pre></blockquote>
+
+<p>If the output of the program is sent to the terminal screen, then
+error messages will be mixed in with the output.  Outputting
+"ERROR" will help the user recognize error messages.</p>
+
+<p>In UNIX, the standard destination for error messages is standard
+
+error.  The rationale for writing to standard error is the same as
+above.  To write to standard error explicitly, you must use the 
+convoluted syntax "cat 1&gt;&amp;2" as in the following example:</p>
+
+<blockquote><pre class="code">print "ERROR" | "cat 1&gt;&amp;2"</pre></blockquote>
+
+<p>This directs the output of the <b class="emphasis-bold">print</b> statement to a pipe
+which executes the <b class="emphasis-bold">cat</b> command.
+You can also use the <b class="emphasis-bold">system()</b> function to execute a UNIX
+command such as <b class="emphasis-bold">cat</b> or <b class="emphasis-bold">echo</b> and direct its output to
+standard error.</p>
+
+<p>When the special file <em class="filename">/dev/stderr</em> is available,
+this gets much simpler:</p>
+
+<blockquote><pre class="code">print "ERROR" &gt; "/dev/stderr"  # recent awks only</pre></blockquote>
+
+</td></tr></table><p></blockquote>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.1.5" /><div class="sect3">
+<h3 class="sect3">11.2.1.5. The nextfile statement</h3>
+
+<p>
+<a name="IXT-11-266266" />
+<a name="IXT-11-266267" />
+The <b class="emphasis-bold">nextfile</b> statement is similar to <b class="emphasis-bold">next</b>, but it
+operates at a higher level. When <b class="emphasis-bold">nextfile</b> is executed, the current
+data file is abandoned, and processing starts over at the top of the
+script, using the first record of the following file.
+This is useful when you know that
+
+you only need to process part of a file;
+there's no need to then set up a loop to skip records using <b class="emphasis-bold">next</b>.</p>
+
+<p>The <b class="emphasis-bold">nextfile</b> statement originated in gawk, and then was added
+to the Bell Labs awk.
+It will be available in mawk, starting with
+version 1.4.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.1.6" /><div class="sect3">
+<h3 class="sect3">11.2.1.6. Regular expression record separators (gawk and mawk)</h3>
+
+<p>
+<a name="IXT-11-266268" />
+<a name="IXT-11-266269" />
+<a name="IXT-11-266270" />
+Gawk and mawk allow <b class="emphasis-bold">RS</b> to be a full regular expression,
+not just a single character.
+In that case, the records are separated by the longest
+text in the input that matches the regular expression. Gawk also
+sets <b class="emphasis-bold">RT</b> (the record terminator) to the actual input
+text that matched <b class="emphasis-bold">RS</b>.  An example of this is given below.</p>
+
+<p>The ability to have <b class="emphasis-bold">RS</b> be a regular expression first appeared
+in mawk, and was later added to gawk.</p>
+</div>
+
+
+<a name="IXT-11-266271" />
+<a name="IXT-11-266272" />
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-2.2" /><div class="sect2">
+<h3 class="sect2">11.2.2. Bell Labs awk</h3>
+
+<p>
+<a name="ch11.vers1" />
+<a name="ch11.vers2" />
+<a name="IXT-11-266273" />
+The Bell Labs awk is, of course, the direct descendant of the original
+V7 awk, and of the "new" awk that first became avaliable
+with System V Release 3.1.
+Source code
+is freely available
+via anonymous FTP to the host <em class="emphasis">netlib.bell-labs.com</em>. It is in the
+file <em class="filename">/netlib/research/awk.bundle.Z</em>.  This is a compressed shell
+archive file.
+Be sure to use "binary," or "image" mode to transfer the file.
+This version of awk requires an ANSI C compiler.</p>
+
+<p>There have been several distinct versions; we will identify them here
+according to the year they became available.</p>
+
+<p>The first version of new awk became available in late 1987. It had
+almost everything we've described in the previous four chapters
+(although there are footnotes that
+indicate those things that are not available).
+This version is still in use on SunOS 4.1.x systems and some System V
+Release 3 UNIX systems.</p>
+
+<p>In 1989, for System V Release 4, several new things were added.
+The only difference between this version and POSIX awk is that
+POSIX uses <b class="emphasis-bold">CONVFMT</b> for number-to-string conversions, while the
+1989 version still used <b class="emphasis-bold">OFMT</b>.
+The new features were:</p>
+
+<ul><li><p>Escape characters in command-line assignments were now interpreted.</p></li><li><p>The <b class="emphasis-bold">tolower()</b> and <b class="emphasis-bold">toupper()</b> functions were added.</p></li>
+<li><p><b class="emphasis-bold">printf</b> was improved: dynamic width and precision were added,
+and the behavior for "%c" was rationalized.</p></li><li><p>The return value from the <b class="emphasis-bold">srand()</b> function was defined to be
+the previous seed. (The awk book didn't state what <b class="emphasis-bold">srand()</b>
+returned.)</p></li><li><p>It became possible to use regular expressions as simple expressions.
+For example:</p>
+
+<blockquote><pre class="code">if (/cute/ || /sweet/)
+	print "potential here!"</pre></blockquote></li><li><p>The <span class="option">-v</span> option was added to allow setting variables on the
+command line before execution of the <b class="emphasis-bold">BEGIN</b> procedure.</p></li><li><p>Multiple <em class="emphasis">-f</em> options could now be used to have multiple source
+files. (This originated in MKS awk, was adopted by gawk, and then
+added to the Bell Labs awk.)</p></li><li><p>The <b class="emphasis-bold">ENVIRON</b> array was added.
+(This was developed independently for both MKS awk and gawk, and then
+added to the Bell Labs awk.)</p></li></ul><p>In 1993, Brian Kernighan of Bell Labs was able to release the source
+code to his awk.
+At this point, <b class="emphasis-bold">CONVFMT</b> became available, and the <b class="emphasis-bold">fflush()</b>
+function, described above, was added.
+A bug-fix release was made in August of 1994.</p>
+
+<p>In June of 1996, Brian Kernighan made another release.
+It can be retrieved either from the FTP site given above,
+or via a World Wide Web browser
+from Dr. Kernighan's Web page (<a href="http://cm.bell-labs.com/who/bwk">http://cm.bell-labs.com/who/bwk</a>),
+which refers to this version as "the one true awk." <img src="figs/smile.gif" alt="Figure " />
+This version adds several features that originated in gawk and mawk,
+described earlier in this chapter in the "Common Extensions" section.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-2.3" /><div class="sect2">
+<h3 class="sect2">11.2.3. GNU awk (gawk)</h3>
+
+<p>
+<a name="ch11.gawk" />
+<a name="ch11.gawk2" />
+The Free Software Foundation GNU project's version of awk, gawk,
+implements all the features of the POSIX awk, and many more. 
+It is perhaps
+the most popular of the freely available implementations; gawk is
+used on Linux systems, as well as various other
+freely available UNIX-like systems, such as NetBSD and FreeBSD.</p>
+
+<p>
+<a name="IXT-11-266274" />
+Source code for gawk is available
+via anonymous FTP<a href="#FOOTNOTE-75">[75]</a>
+to the host <em class="emphasis">ftp.gnu.org</em>.
+It is in the file ftp://ftp.gnu.org/gnu/gawk/gawk-3.0.4.tar.gz
+(there may be a later version there by the time you read this).
+This is a tar
+file compressed with the <b class="emphasis-bold">gzip</b> program, whose source code is
+available in the same directory.
+There are many sites worldwide that "mirror" the files from the main
+GNU distribution site; if you know of one close to you, you should get
+the files from there.
+Be sure to use "binary" or "image" mode to transfer the file(s).</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-75" /><p> [75]If you don't have Internet access and wish to get a copy
+of gawk, contact the Free Software 
+Foundation, Inc.,
+59 Temple Place, Suite 330,
+Boston, MA 02111-1307 U.S.A.
+The telephone number is 617-542-5942, and the fax number is
+617-542-2652.</p>
+
+</blockquote>
+
+<p>Besides the common extensions listed earlier, gawk has a number
+of additional features. We examine them in this section.</p>
+
+<a name="sedawk-ch-11-sect-2.3.1" /><div class="sect3">
+<h3 class="sect3">11.2.3.1. Command line options</h3>
+
+<p>
+<a name="IXT-11-266275" />
+Gawk has several very useful command-line options.  Like most GNU programs,
+these options are spelled out and begin with two dashes, "--".</p>
+
+<ul><li><p><span class="option"><i>--lint</i></span> and <span class="option"><i>--lint-old</i></span> cause gawk to check your program,
+both at parse-time and at run-time, for constructs that are dubious or
+nonportable to other versions of awk.  The <span class="option"><i>--lint-old</i></span> option
+warns about function calls that are not portable to the original version
+of awk. It is separate from <span class="option">--lint</span>, since most systems now have
+some version of new awk.
+<a name="IXT-11-266276" /></p></li><li><p><span class="option"><i>--traditional</i></span> disables GNU-specific extensions, such as the
+time functions and <b class="emphasis-bold">gensub()</b> (see below).  With this option,
+gawk is intended
+to behave the same as the Bell Labs awk.
+<a name="IXT-11-266277" /></p></li><li><p><span class="option"><i>--re-interval</i></span> enables full POSIX regular expression matching,
+by allowing gawk to recognize interval expressions (such as "/stuff{1,3}/").
+<a name="IXT-11-266278" /></p></li><li><p><span class="option"><i>--posix</i></span> disables <em class="emphasis">all</em> extensions that
+are not specified in the POSIX standard.
+This option also turns on recognition of interval expressions.
+<a name="IXT-11-266279" /></p></li></ul><p>There are a number of other options that are less important for everyday
+programming and script portability; see the gawk documentation for details.</p>
+
+<p>
+<a name="IXT-11-266280" />
+<a name="IXT-11-266281" />
+Although POSIX awk allows you to have multiple instances of the 
+<span class="option">-f</span>
+option, there is no easy way to use library functions from a command-line program.  
+The <span class="option">--source</span> option in gawk makes this possible.</p>
+
+<blockquote><pre class="code">gawk --source '<em class="replaceable"><tt>script</tt></em>' -f mylibs.awk file1 file2</pre></blockquote>
+
+<p>This example runs the program in <em class="emphasis">script</em>, which can use awk
+functions from the file <em class="filename">mylibs.awk</em>.  The input data comes
+from <em class="filename">file1</em> and <em class="filename">file2</em>.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.2" /><div class="sect3">
+<h3 class="sect3">11.2.3.2. An awk program search path</h3>
+
+<p>
+<a name="IXT-11-266282" />
+<a name="IXT-11-266283" />
+<a name="IXT-11-266284" />
+Gawk allows you to specify an environment variable named <b class="emphasis-bold">AWKPATH</b>
+that defines a search path for awk program files.  By default, it is
+defined to be <b class="emphasis-bold">.:/usr/local/share/awk</b>. 
+Thus, when a filename is specified with the <span class="option">-f</span> option, 
+the two default directories will be searched, beginning with the 
+current directory.  Note that if the filename 
+contains a "/", then no search is performed.</p>
+
+<p>For example, if <em class="filename">mylibs.awk</em> was a file of awk functions in
+<em class="filename">/usr/local/share/awk</em>, and 
+<em class="filename">myprog.awk</em> was a program in
+the current directory, we run gawk like this:</p>
+
+<blockquote><pre class="code">gawk -f myprog.awk -f mylibs.awk datafile1</pre></blockquote>
+
+<p>Gawk would find each file in the appropriate place. This makes it much
+easier to have and use awk library functions.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.3" /><div class="sect3">
+<h3 class="sect3">11.2.3.3. Line continuation</h3>
+
+<p>
+<a name="IXT-11-266285" />
+<a name="IXT-11-266286" />
+<a name="IXT-11-266287" />
+<a name="IXT-11-266288" />
+Gawk allows you to break lines after either a "?" or ":".
+You can also continue strings across newlines using a backslash.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gawk 'BEGIN { print "hello, \</b></tt>
+&gt; <tt class="userinput"><b>world" }'</b></tt>
+hello, world</pre></blockquote>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.4" /><div class="sect3">
+<h3 class="sect3">11.2.3.4. Extended regular expressions</h3>
+
+<p>
+<a name="IXT-11-266289" />
+Gawk provides several additional regular expression operators. These
+are common to most GNU programs that work with regular expressions.
+The extended operators are listed in <a href="ch11_02.htm#sedawk-ch-11-tab-4">Table 11.5</a>.</p>
+
+<a name="sedawk-ch-11-tab-4" /><h4 class="objtitle">Table 11.5. Gawk Extended Regular Expressions</h4><table border="1" cellpadding="3">
+
+<tr>
+<th><p>Special Operators</p></th>
+<th><p>Usage</p></th>
+</tr>
+
+
+
+
+<tr>
+<td><p>\w</p></td>
+<td><p>Matches any <em class="emphasis">word-constituent</em>
+character (a letter, digit, or underscore).
+<a name="IXT-11-266290" /></p></td>
+</tr>
+
+<tr>
+<td><p>\W</p></td>
+<td><p>Matches any character that is not word-constituent.
+<a name="IXT-11-266291" /></p></td>
+</tr>
+
+<tr>
+<td><p>\&lt;</p></td>
+<td><p>Matches the empty string at the beginning of a word.
+<a name="IXT-11-266292" />
+<a name="IXT-11-266293" />
+<a name="IXT-11-266294" />
+<a name="IXT-11-266295" /></p></td>
+</tr>
+
+<tr>
+<td><p>\&gt;</p></td>
+<td><p>Matches the empty string at the end of a word.</p></td>
+</tr>
+
+<tr>
+<td><p>\y</p></td>
+<td><p>Matches the empty string at either the beginning or end of a word (the word boundar<b class="emphasis-bold">y</b>). Other GNU software uses "\b", but that was already taken.
+<a name="IXT-11-266296" /></p></td>
+</tr>
+
+<tr>
+<td><p>\B</p></td>
+<td><p>Matches the empty string within a word.
+<a name="IXT-11-266297" /></p></td>
+</tr>
+
+<tr>
+<td><p>\`</p></td>
+<td><p>Matches the empty string at the beginning of a buffer. This is the same as a string in awk, and thus is the same as <b class="emphasis-bold">^</b>. It is provided for compatibility with GNU Emacs and other GNU software.
+<a name="IXT-11-266298" />
+<a name="IXT-11-266299" /></p></td>
+</tr>
+
+<tr>
+<td><p>\'</p></td>
+<td><p>Matches the empty string at the end of a buffer. This is the same as a string in awk, and thus is the same as <b class="emphasis-bold">$</b>. It is provided for compatibility with GNU Emacs and other GNU software.</p></td>
+</tr>
+
+
+</table><p>
+
+<p>You can think of "\w" as a shorthand for the (POSIX) notation
+<b class="emphasis-bold">[[:alnum:]_]</b> and "\W" as a shorthand for <b class="emphasis-bold">[^[:alnum:]_]</b>.
+The following table gives examples of what the middle four operators match,
+borrowed from <em class="citetitle">Effective AWK Programming</em>.</p>
+
+<a name="sedawk-ch-11-tab-5" /><h4 class="objtitle">Table 11.6. Examples of gawk Extended Regular Expression Operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Expression</th>
+<th>Matches</th>
+<th>Does Not Match</th>
+</tr>
+
+
+
+
+<tr>
+<td><b class="emphasis-bold">\&lt;away</b></td>
+<td>away</td>
+<td>stowaway</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">stow\&gt;</b></td>
+<td>stow</td>
+<td>stowaway</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">\yballs?\y</b></td>
+<td>ball or balls</td>
+<td>ballroom or baseball</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">\Brat\B</b></td>
+<td>crate</td>
+<td>dirty rat</td>
+</tr>
+
+
+</table><p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.5" /><div class="sect3">
+<h3 class="sect3">11.2.3.5. Regular expression record terminators</h3>
+
+<p>
+<a name="IXT-11-266300" />
+<a name="IXT-11-266301" />
+<a name="IXT-11-266302" />
+Besides allowing <b class="emphasis-bold">RS</b> to be a regular expression, gawk sets the
+variable <b class="emphasis-bold">RT</b> (record terminator) to the actual input text that matched
+the value of <b class="emphasis-bold">RS</b>.</p>
+
+<p>Here is a simple example, due to Michael Brennan, that shows the power
+of gawk's <b class="emphasis-bold">RS</b> and <b class="emphasis-bold">RT</b> variables.
+As we have seen, one of the most common uses of sed is its substitute
+command (<b class="emphasis-bold">s/old/new/g</b>).
+By setting <b class="emphasis-bold">RS</b> to the pattern to match, and <b class="emphasis-bold">ORS</b> to the
+replacement text, a simple <b class="emphasis-bold">print</b> statement can print the unchanged
+text followed by the replacement text.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat simplesed.awk</b></tt>
+# simplesed.awk --- do s/old/new/g using just print
+#    Thanks to Michael Brennan for the idea
+#
+# NOTE! RS and ORS must be set on the command line
+{
+    if (RT == "")
+        printf "%s", $0
+    else
+        print
+}</pre></blockquote>
+
+<p>There is one wrinkle; at end of file, <b class="emphasis-bold">RT</b>
+will be empty, so we use a <b class="emphasis-bold">printf</b> statement
+to print the record.<a href="#FOOTNOTE-76">[76]</a>
+We could run the program like this.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-76" /><p> [76]See <em class="citetitle">Effective AWK
+Programming</em> [Robbins], Section 16.2.8, for an
+elaborate version of this program.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat simplesed.data</b></tt>
+"This OLD house" is a great show.
+I like shopping for old things at garage sales.
+$ <tt class="userinput"><b>gawk -f simplesed.awk RS="old|OLD" ORS="brand new" simplesed.data</b></tt>
+"This brand new house" is a great show.
+I like shopping for brand new things at garage sales.</pre></blockquote>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.6" /><div class="sect3">
+<h3 class="sect3">11.2.3.6. Separating fields</h3>
+
+<p>
+<a name="IXT-11-266303" />
+Besides the regular way that awk lets you split the input into records and
+the record into fields, gawk gives you some additional capabilities.</p>
+
+<p>First, as mentioned above,
+if the value of <b class="emphasis-bold">FS</b> is the empty string, then each character of
+the input record becomes a separate field.</p>
+
+<p>
+<a name="IXT-11-266304" />
+Second, the special variable <b class="emphasis-bold">FIELDWIDTHS</b> can be used to split out
+data that occurs in fixed-width columns.  Such data may or may not have
+whitespace separating the values of the fields.</p>
+
+<blockquote><pre class="code">FIELDWIDTHS = "5 6 8 3"</pre></blockquote>
+
+<p>Here, the record has four fields: $1 is five characters wide, $2 is six
+characters wide, and so on.
+Assigning a value to <b class="emphasis-bold">FIELDWIDTHS</b> causes gawk to start using it for
+field splitting. Assigning a value to <b class="emphasis-bold">FS</b> causes gawk to return to
+the regular field splitting mechanism.
+Use <b class="emphasis-bold">FS = FS</b> to make this happen without
+having to save the value of <b class="emphasis-bold">FS</b> in an extra variable.</p>
+
+<p>This facility would be of most use when working with fixed-width
+field data, where there may not be any whitespace separating fields,
+or when intermediate fields may be all blank.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.7" /><div class="sect3">
+<h3 class="sect3">11.2.3.7. Additional special files</h3>
+
+<p>
+<a name="IXT-11-266305" />
+<a name="IXT-11-266306" />
+<a name="IXT-11-266307" />
+<a name="IXT-11-266308" />
+Gawk has a number of additional special filenames that it
+interprets internally.
+All of the special filenames are listed in <a href="ch11_02.htm#sedawk-ch-11-tab-6">Table 11.7</a>.</p>
+
+<a name="sedawk-ch-11-tab-6" /><h4 class="objtitle">Table 11.7. Gawk's Special Filenames</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Filename</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><em class="filename">/dev/stdin</em></td>
+<td>Standard input.</td>
+</tr>
+
+<tr>
+<td><em class="filename">/dev/stdout</em></td>
+<td>Standard output.</td>
+</tr>
+
+<tr>
+<td><em class="filename">/dev/stderr</em></td>
+<td>Standard error.</td>
+</tr>
+
+<tr>
+<td><em class="filename">/dev/fd/<em class="replaceable"><tt>n</em></tt></em></td>
+<td>The file referenced as file descriptor <em class="emphasis">n</em>.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">Obsolete Filename</b></td>
+<td><b class="emphasis-bold">Description</b></td>
+</tr>
+
+<tr>
+<td><em class="filename">/dev/pid</em></td>
+<td>Returns a record containing the process ID number.</td>
+</tr>
+
+<tr>
+<td><em class="filename">/dev/ppid</em></td>
+<td>Returns a record containing the parent process ID number.</td>
+</tr>
+
+<tr>
+<td><em class="filename">/dev/pgrpid</em></td>
+<td>Returns a record containing the process group ID number.</td>
+</tr>
+
+<tr>
+<td><em class="filename">/dev/user</em></td>
+<td><p>Returns a record with the real and effective user IDs, the real and effective group IDs, and if available, any secondary group IDs.</p></td>
+</tr>
+
+
+</table><p>
+
+<p>The first three were described earlier.
+The fourth filename provides access to any open file descriptor
+that may have been inherited from gawk's parent process (usually the shell).
+You can use file descriptor 0 for standard input,
+1 for standard output, and 2 for standard error.</p>
+
+<p>
+<a name="IXT-11-266309" />
+The second group of special files, labeled "obsolete," have been in
+gawk for a while, but are being phased out. They will be replaced by
+a <b class="emphasis-bold">PROCINFO</b> array, whose subscipts are the desired item and whose
+element value is the associated value.</p>
+
+<p>For example, you would use
+<b class="emphasis-bold">PROCINFO["pid"]</b> to get the current process ID, instead of using
+<b class="emphasis-bold">getline pid &lt; "/dev/pid"</b>.
+Check the gawk documentation to see if <b class="emphasis-bold">PROCINFO</b> is available
+and if these filenames are still supported.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.8" /><div class="sect3">
+<h3 class="sect3">11.2.3.8. Additional variables</h3>
+
+<p>
+<a name="IXT-11-266310" />
+<a name="IXT-11-266311" />
+<a name="IXT-11-266312" />
+Gawk has several more system variables. They are listed
+in <a href="ch11_02.htm#sedawk-ch-11-tab-7">Table 11.8</a>.</p>
+
+<a name="sedawk-ch-11-tab-7" /><h4 class="objtitle">Table 11.8. Additional gawk System Variables</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><b class="emphasis-bold">ARGIND</b></td>
+<td>The index in <b class="emphasis-bold">ARGV</b> of the current input file.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">ERRNO</b></td>
+<td>A message describing the error if <b class="emphasis-bold">getline</b> or <b class="emphasis-bold">close()</b> fail.</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">FIELDWIDTHS</b></td>
+<td><p>A space-separated list of numbers describing the widths of the input fields.</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">IGNORECASE</b></td>
+<td><p>If non-zero, pattern matches and string comparisons are case-independent.</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">RT</b></td>
+<td>The value of the input text that matched <b class="emphasis-bold">RS</b>.</td>
+</tr>
+
+
+</table><p>
+
+<p>We have already seen the record terminator variable, <b class="emphasis-bold">RT</b>, so
+we'll proceed to the other variables that we haven't covered yet.</p>
+
+<p>
+<a name="IXT-11-266313" />
+<a name="IXT-11-266314" />
+All pattern matching and string comparison in awk is case sensitive.
+Gawk introduced the <b class="emphasis-bold">IGNORECASE</b> variable so that you
+can specify that regular expressions
+be interpreted without regard for upper- or lowercase
+characters.  
+Beginning with version 3.0 of gawk, string comparisons can also be
+done without case sensitivity.</p>
+
+<p>The default value of <b class="emphasis-bold">IGNORECASE</b> is
+zero, which means that pattern matching and string comparison are
+performed the same as in traditional awk.  If <b class="emphasis-bold">IGNORECASE</b> is set to a non-zero value, then case
+distinctions are ignored.  This applies to all places where regular
+expressions are used, including the field separator <b class="emphasis-bold">FS</b>, the record separator <b class="emphasis-bold">RS</b>, and all string comparisons.  It does
+<em class="emphasis">not</em> apply to array subscripting.</p>
+
+<p>
+<a name="IXT-11-266315" />
+<a name="IXT-11-266316" />
+Two more gawk variables are of interest.
+<b class="emphasis-bold">ARGIND</b> is set automatically by gawk to be the index in <b class="emphasis-bold">ARGV</b>
+of the current input file name.  This variable gives you a way to track
+how far along you are in the list of filenames.</p>
+
+<p>
+<a name="IXT-11-266317" />
+Finally, if an error occurs doing a redirection for <b class="emphasis-bold">getline</b> or during a
+<b class="emphasis-bold">close()</b>, gawk sets
+<b class="emphasis-bold">ERRNO</b> to a string describing the error.
+This makes it possible to provide descriptive error messages when
+something goes wrong.</p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.9" /><div class="sect3">
+<h3 class="sect3">11.2.3.9. Additional functions</h3>
+
+<p>
+<a name="IXT-11-266318" />
+<a name="IXT-11-266319" />
+<a name="IXT-11-266320" />
+Gawk has one additional string function, and two functions for
+dealing with the current date and time.
+They are listed in <a href="ch11_02.htm#sedawk-ch-11-tab-8">Table 11.9</a>.</p>
+
+<a name="sedawk-ch-11-tab-8" /><h4 class="objtitle">Table 11.9. Additional gawk Functions</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Gawk Function</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><p><b class="emphasis-bold">gensub</b>(<em class="emphasis">r</em>, <em class="emphasis">s</em>, <em class="emphasis">h</em>, <em class="emphasis">t</em>)</p></td>
+<td><p>If <em class="emphasis">h</em> is a string starting with <b class="emphasis-bold">g</b> or <b class="emphasis-bold">G</b>, globally substitutes <em class="emphasis">s</em> for <em class="emphasis">r</em> in <em class="emphasis">t</em>. Otherwise, <em class="emphasis">h</em> is a number: substitutes for the <em class="emphasis">h</em>'th occurrence. Returns the new value, <em class="emphasis">t</em> is unchanged. If <em class="emphasis">t</em> is not supplied, defaults to <b class="emphasis-bold">$0</b>.</p></td>
+</tr>
+
+<tr>
+<td><p><b class="emphasis-bold">systime</b>()</p></td>
+<td><p>Returns the current time of day in seconds since the Epoch (00:00 a.m., January 1, 1970 UTC).</p></td>
+</tr>
+
+<tr>
+<td><p><b class="emphasis-bold">strftime</b>(<em class="emphasis">format</em>, <em class="emphasis">timestamp</em>)</p></td>
+<td><p>Formats <em class="emphasis">timestamp</em> (of the same form returned by <b class="emphasis-bold">systime()</b>) according to <em class="emphasis">format</em>. If no <em class="emphasis">timestamp</em>, use current time. If no <em class="emphasis">format</em> either, use a default format whose output is similar to the <b class="emphasis-bold">date</b> command.</p></td>
+</tr>
+
+
+</table><p>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.9.2" /><div class="sect3">
+<h3 class="sect3">11.2.3.10. A general substitution function</h3>
+
+<p>
+<a name="IXT-11-266321" />
+<a name="IXT-11-266322" />
+<a name="IXT-11-266323" />
+<a name="IXT-11-266324" />
+<a name="IXT-11-266325" />
+The 3.0 version of gawk introduced a new general substitution function,
+named <b class="emphasis-bold">gensub()</b>.
+The <b class="emphasis-bold">sub()</b> and <b class="emphasis-bold">gsub()</b> functions have some problems.</p>
+
+
+<ul><li><p>You can change either the first occurrence of a pattern or all the
+occurrences of a pattern.  There is no way to change, say, only the
+third occurrence of a pattern but not the ones before it or after it.</p></li><li><p>Both <b class="emphasis-bold">sub()</b> and <b class="emphasis-bold">gsub()</b> change the actual target string, which
+may be undesirable.</p></li><li><p>It is impossible to get <b class="emphasis-bold">sub()</b> and <b class="emphasis-bold">gsub()</b>
+to emit a literal backslash followed by the matched text,
+because an ampersand preceded by a backslash is never replaced.<a href="#FOOTNOTE-77">[77]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-77" /><p> [77]A full discussion is given in <em class="citetitle">Effective AWK Programming</em> [Robbins], Section 12.3. The details are not for the faint of heart.</p>
+
+</blockquote></li><li><p>There is no way to get at parts of the matched text, analogous to the
+<b class="emphasis-bold">\(...\)</b> construct in sed.</p></li></ul><p>For all these reasons, gawk introduced the <b class="emphasis-bold">gensub()</b> function.
+The function takes at least three arguments. The first is a regular expression
+to search for.
+The second is the replacement string.
+The third is a flag that controls how many substitutions should be performed.
+The fourth argument, if present, is the original string to change. If it
+is not provided, the current input record ($0) is used.</p>
+
+<p>The pattern can have subpatterns delimited by parentheses. For
+example, it can have "/(part) (one|two|three)/".  Within the replacement
+string, a backslash followed by a digit represents the text that
+matched the <em class="emphasis">n</em>th subpattern.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo part two | gawk '{ print gensub(/(part) (one|two|three)/, "\\2", "g") }'</b></tt>
+two</pre></blockquote>
+
+<p>The flag is either a string beginning with <b class="emphasis-bold">g</b> or <b class="emphasis-bold">G</b>, in which
+case the substitution happens globally, or it is a number indicating
+that the <em class="emphasis">n</em>th occurrence should be replaced.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo a b c a b c a b c | gawk '{ print gensub(/a/, "AA", 2) }'</b></tt>
+a b c AA b c a b c</pre></blockquote>
+
+<p>The fourth argument is the string in which to make the change. Unlike
+<b class="emphasis-bold">sub()</b> and <b class="emphasis-bold">gsub()</b>, the target string is not changed.
+Instead, the new string is the return value from <b class="emphasis-bold">gensub()</b>.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gawk '
+BEGIN { old = "hello, world"
+        new = gensub(/hello/, "goodbye", 1, old)
+        printf("&lt;%s&gt;, &lt;%s&gt;\n", old, new)
+}'</b></tt>
+&lt;hello, world&gt;, &lt;goodbye, world&gt;</pre></blockquote>
+</div>
+
+
+<a name="sedawk-ch-11-sect-2.3.9.3" /><div class="sect3">
+<h3 class="sect3">11.2.3.11. Time management for programmers</h3>
+
+<p>
+<a name="ch11.time1" />
+<a name="ch11.time2" />
+Awk programs are very often used for processing the log files
+produced by various programs.  Often, each record in a log file contains
+
+a timestamp, indicating when the record was produced. For both conciseness
+and precision, the timestamp is written as the result of the UNIX
+<em class="emphasis">time</em>(2) system call, which is the number of seconds since midnight,
+January 1, 1970 UTC.  (This date is often referred to as "the Epoch.")
+To make it easier to generate and process log file records with
+these kinds of timestamps in them, gawk has two functions,
+<b class="emphasis-bold">systime()</b> and <b class="emphasis-bold">strftime()</b>.</p>
+
+<p>
+<a name="IXT-11-266326" />
+<a name="IXT-11-266327" />
+<a name="IXT-11-266328" />
+<a name="IXT-11-266329" />
+The <b class="emphasis-bold">systime()</b> function is primarily intended for generating
+timestamps to go into log records.  Suppose, for example, that we
+use an awk script to respond to CGI queries to our WWW server.
+We might log each query to a log file.</p>
+
+<blockquote><pre class="code">{
+...
+printf("%s:%s:%d\n", User, Host, systime()) &gt;&gt; "/var/log/cgi/querylog"
+...
+}</pre></blockquote>
+
+<p>Such a record might look like</p>
+
+<blockquote><pre class="code">arnold:some.domain.com:831322007</pre></blockquote>
+
+<p>
+<a name="IXT-11-266330" />
+<a name="IXT-11-266331" />
+The <b class="emphasis-bold">strftime()</b> function<a href="#FOOTNOTE-78">[78]</a>
+makes it easy to turn timestamps into
+human-readable dates.
+The format string is similar to the one used by <b class="emphasis-bold">sprintf()</b>; it
+consists of literal text mixed with format specifications for different
+components of date and time.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-78" /><p> [78]This function is patterned after the function of the same name in ANSI C.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gawk 'BEGIN { print strftime("Today is %A, %B %d, %Y") }'</b></tt>
+Today is Sunday, May 05, 1996</pre></blockquote>
+
+<p>The list of available formats is quite long.
+See your local <em class="emphasis">strftime</em>(3) manpage, and the gawk documentation
+for the full list.
+Our hypothetical CGI log file might be processed by this program:</p>
+
+<blockquote><pre class="code"># cgiformat --- process CGI logs
+# data format is user:host:timestamp
+#1
+BEGIN {	FS = ":"; SUBSEP = "@" }
+
+#2
+{
+# make data more obvious
+	user = $1; host = $2; time = $3
+# store first contact by this user
+	if (! ((user, host) in first))
+		first[user, host] = time
+# count contacts
+	count[user, host]++
+# save last contact
+	last[user, host] = time
+}
+
+#3
+END {
+# print the results
+	for (contact in count) {
+		i = strftime("%y-%m-%d %H:%M", first[contact])
+		j = strftime("%y-%m-%d %H:%M", last[contact])
+		printf "%s -&gt; %d times between %s and %s\n",
+			contact, count[contact], i, j
+	}
+}</pre></blockquote>
+
+<p>The first step is to set <b class="emphasis-bold">FS</b> to ":" to split the field correctly.
+We also use a neat trick and set the subscript separator to "@", so that
+the arrays become indexed by "user@host" strings.</p>
+
+<p>In the second step, we look to see if this is the first time we've seen
+this user. If so (they're not in the <b class="emphasis-bold">first</b> array), we add them.
+Then we increment the count of how many times they've connected. Finally
+we store this record's timestamp in the <b class="emphasis-bold">last</b> array.  This element
+keeps getting overwritten each time we see a new connection by the user.
+That's OK; what we will end up with is the last (most recent) connection
+stored in the array.</p>
+
+<p>The <b class="emphasis-bold">END</b> procedure formats the data for us.
+It loops through the <b class="emphasis-bold">count</b>
+array, formatting the timestamps in the <b class="emphasis-bold">first</b> and <b class="emphasis-bold">last</b> arrays
+for printing.
+Consider a log file with the following records in it.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat /var/log/cgi/querylog</b></tt>
+arnold:some.domain.com:831322007
+mary:another.domain.org:831312546
+arnold:some.domain.com:831327215
+mary:another.domain.org:831346231
+arnold:some.domain.com:831324598</pre></blockquote>
+
+<p>Here's what running the program produces:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gawk -f cgiformat.awk /var/log/cgi/querylog</b></tt>
+mary@another.domain.org -&gt; 2 times between 96-05-05 12:09 and 96-05-05 21:30
+arnold@some.domain.com -&gt; 3 times between 96-05-05 14:46 and 96-05-05 15:29</pre></blockquote>
+
+<a name="IXT-11-266332" />
+<a name="IXT-11-266333" />
+</div>
+
+
+<a name="IXT-11-266334" />
+<a name="IXT-11-266335" />
+</div>
+
+
+
+
+<a name="sedawk-ch-11-sect-2.4" /><div class="sect2">
+<h3 class="sect2">11.2.4. Michael's awk (mawk)</h3>
+
+<p>
+<a name="IXT-11-266336" />
+<a name="IXT-11-266337" />
+<a name="IXT-11-266338" />
+The third freely available awk is
+mawk, written by Michael Brennan.
+This program is upwardly compatible with POSIX awk, and has
+a few extensions as well. It is solid and performs very well.
+Source code for mawk is freely available
+via anonymous FTP from <em class="emphasis">ftp.whidbey.net</em>. It is in ftp://ftp.whidbey.net/pub/brennan/mawk1.3.3.tar.gz. (There may be a later version
+there by the time you read this.)  This is also a tar
+file compressed with the <b class="emphasis-bold">gzip</b> program.
+Be sure to use "binary," or "image" mode to transfer the file.</p>
+
+<p>Mawk's primary advantages are its speed and robustness.
+Although it has fewer features than gawk, it almost always outperforms it.<a href="#FOOTNOTE-79">[79]</a>
+Besides UNIX systems, mawk also runs under MS-DOS.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-79" /><p> [79]Gawk's advantages are that it has a larger feature set, it has been
+ported to more non-UNIX kinds of systems, and it comes with much more
+extensive documentation.</p>
+
+</blockquote>
+
+<p>The common extensions described above are also available in mawk.</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">11. A Flock of awks</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11.3. Commercial awks</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

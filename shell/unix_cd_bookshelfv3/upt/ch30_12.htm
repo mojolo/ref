@@ -1,0 +1,224 @@
+<html><head><title>Picking Up Where You Left Off (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch30_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">30.12. Picking Up Where You Left Off</h2>
+
+<p><a name="IXT-30-4260" /><a name="IXT-30-4261" /><a name="IXT-30-4262" /><a name="IXT-30-4263" /><a name="IXT-30-4264" /><a name="IXT-30-4265" />If
+<a name="upt3-IDXTERM-4704" />you want your command history to be
+remembered even when you log out, set the C shell's
+<em class="emphasis">savehist</em> <b class="emphasis-bold">shell
+variable</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>) to the number of
+lines of history you want saved. Other shells save history
+automatically; you don't need to set a variable. (If
+you want to change the number of lines saved by
+<i class="command">bash</i>, set its <em class="emphasis">HISTFILESIZE</em>
+environment variable. In
+<i class="command">zsh</i><a name="IXT-30-4266" /><a name="IXT-30-4267" /><a name="IXT-30-4268" />, the variable is
+<em class="emphasis">SAVEHIST</em>. In <i class="command">ksh</i>, the
+<em class="emphasis">HISTSIZE</em> variable sets the number of commands
+available to be recalled in your current shell as well the number
+saved for other shells.)
+</p>
+
+<p>When you log out, the specified number of lines from the
+<i class="command">csh</i> history list will be saved in a file called
+<a name="IXT-30-4269" /><em class="filename">.history</em> in your home
+directory. <i class="command">zsh</i>, <i class="command">bash</i> and
+<i class="command">ksh</i> use the filename given in the
+<em class="emphasis">HISTFILE</em> environment variable. By default,
+<i class="command">bash</i> calls the file
+<em class="filename">.bash_history</em>, and the original
+<i class="command">ksh</i> uses
+<em class="filename">.sh_history</em> -- but note that the new
+<i class="command">pdksh</i> and <i class="command">zsh</i>
+don't save history unless you set
+<em class="emphasis">HISTFILE</em> to a filename. For
+<i class="command">zsh</i>, I chose
+<em class="filename">$HOME/.zsh_history</em>, but you can use anything you
+want.
+</p>
+
+<p>On modern windowing systems, this isn't as trivial
+as it sounds. On an old-style terminal, people usually started only
+one main shell, so they could set the history-saving variable in
+their <em class="filename">.login</em> or <em class="filename">.profile</em>
+file and have it apply to their login shell.
+</p>
+
+<p>However, under window systems like X or networked filesystems that
+share your home directory between several hosts, or on networked
+servers to which you might login via <i class="command">ssh</i>, you may
+have multiple shells saving into the same history file. Linux systems
+with multiple <b class="emphasis-bold">virtual consoles</b>
+(<a href="ch23_12.htm#upt3-CHP-23-SECT-12">Section 23.12</a>) logged on as the same user will have
+the same problem. The shells might be overwriting instead of
+appending, or appending instead of overwriting, or jumbling commands
+together when you want them separated. The sections below give some
+possible fixes.
+</p>
+
+<a name="upt3-CHP-30-SECT-12.1" /><div class="sect2">
+<h3 class="sect2">30.12.1. bash, ksh, zsh</h3>
+
+<p><a name="IXT-30-4270" /><a name="IXT-30-4271" /><a name="IXT-30-4272" />Here's the
+<a name="IXT-30-4273" />basic way to give a separate history
+file to each <i class="command">bash</i>, <i class="command">zsh</i>, or
+<i class="command">ksh</i> shell: customize your <b class="emphasis-bold">setup file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) to
+set a different <em class="emphasis">HISTFILE</em> on each host or each
+window. Use names like
+<em class="filename">$HOME/.sh_history.window</em><em class="replaceable"><tt>n</tt></em>
+or
+<em class="filename">~/.bash_history.</em><em class="replaceable"><tt>hostname</tt></em>
+to match each file to its window or host. If your setup is always the
+same each time you log in, that should give each window and/or host
+the same history it had on the last invocation. (There are related
+tips in <a href="ch03_18.htm#upt3-CHP-3-SECT-18">Section 3.18</a> and a series starting at
+<a href="ch03_10.htm#upt3-CHP-3-SECT-10">Section 3.10</a>.)
+</p>
+
+<p>If you open random windows, though, you'll have a
+harder time automatically matching a history file to a shell the next
+time you log in. Cook up your own scheme.
+</p>
+
+<p>The simplest fix is to use<b class="emphasis-bold"> $$</b> (<a href="ch27_17.htm#upt3-CHP-27-SECT-17">Section 27.17</a>) -- which will probably expand differently
+in almost every shell you ever start -- as a unique part of the
+filename. Here are two possibilities:
+</p>
+
+<blockquote><pre class="code">HISTFILE=/tmp/sh_hist.$$
+HISTFILE=$HOME/.sh_hist.$$</pre></blockquote>
+
+<p><a name="IXT-30-4274" />The first example uses the
+system's temporary-file directory. If your
+system's <em class="filename">/tmp</em> is cleaned out
+often, you may be able to leave your history files there and let the
+system remove them; ask the administrator. Note that the history file
+may be <b class="emphasis-bold">world-readable</b> (<a href="ch50_02.htm#upt3-CHP-50-SECT-2">Section 50.2</a>) if your umask isn't set to
+protect your files. If that matters to you, you could make the
+temporary files in your home directory (or some protected directory),
+as in the second example shown earlier. Alternately, at the end of
+each session, you might want to run a command that appends your
+shell's history file to a global history file that
+you then read in at startup of a new session (see below).
+</p>
+
+<p>Two more bits of trivia:</p>
+
+<ul><li>
+<p>The original Korn shell maintains the history file constantly, adding
+a new line to it as soon as you run a command. This means you share
+history between all your current shells with the same
+<em class="emphasis">HISTFILE</em> name, which can be a benefit or a
+problem.
+</p>
+</li><li>
+<p>In most other shells, each shell process keeps its own history list
+in memory. History isn't written to the history file
+(named by the <em class="emphasis">HISTFILE</em> variable in each shell)
+until the shell exits.
+</p>
+
+<p>In <i class="command">bash</i>, you can force a write with the command
+<i class="command">history -w</i>. In the same way, if you have an
+existing history file (or, actually, any file full of command lines),
+you can read it into your current <i class="command">bash</i> with
+<i class="command">history -r</i>. <a href="ch30_13.htm#upt3-CHP-30-SECT-13">Section 30.13</a>
+has another example. Each shell has its own way to do this, so check
+your manual page carefully and experiment to get it right.
+</p>
+</li></ul>
+</div>
+<a name="upt3-CHP-30-SECT-12.2" /><div class="sect2">
+<h3 class="sect2">30.12.2. C Shells</h3>
+
+<p><a name="IXT-30-4275" /><a name="IXT-30-4276" />In
+<i class="command">tcsh</i>, <a name="IXT-30-4277" />you can set
+a history file name in the <em class="emphasis">histfile</em> variable;
+the default filename is <em class="filename">.history</em> in your home
+directory. To avoid conflicts between multiple saved
+<i class="command">tcsh</i> histories, use a system like the one
+described earlier for Bourne shells.
+</p>
+
+<p>The original C shell has only one possible filename for its automatic
+history file: <em class="filename">.history</em>. If you set the C shell
+variable <em class="emphasis">savehist</em> in each of your windows (e.g.,
+by setting it in your <em class="filename">.cshrc</em> or
+<em class="filename">.tcshrc</em>), they will all try to write
+<em class="filename">.history</em> at once, leading to trouble. And even
+if that weren't true, you get the history from every
+window or host, which might not be what you want.
+</p>
+
+<p>Of course, you could set <em class="emphasis">savehist</em> manually in a
+single window when you thought you were doing work you might want to
+pick up later. But there is another way: use the C
+shell's command <i class="command">history -h</i> (which
+prints the history list without leading numbers, so it can be read
+back in later) and redirect the output to a file. Then use
+<i class="command">source -h</i> to read it back into your history list
+when you log in.
+</p>
+
+<p>Do you want to automate this? First, you'll need to
+choose a system of filenames, like
+<em class="filename">~/.history.window</em><em class="replaceable"><tt>n</tt></em> or
+<em class="filename">~/.history.</em><em class="replaceable"><tt>hostname</em><em class="emphasis">,</tt></em>
+to match each file to its window or host. If each of your C shells is
+a <b class="emphasis-bold">login shell</b> (<a href="ch03_04.htm#upt3-CHP-3-SECT-4">Section 3.4</a>),<a href="#FOOTNOTE-95">[95]</a> you can run <i class="command">history -h</i> from your
+<em class="filename">.logout</em> file and <i class="command">source -h</i>
+from your <em class="filename">.login</em> file. For nonlogin shells,
+automation is tougher -- try this:
+</p><blockquote class="footnote"> <a name="FOOTNOTE-95" /><p> [95]<b class="emphasis-bold">xterm -ls</b> (<a href="ch05_10.htm#upt3-CHP-5-SECT-10">Section 5.10</a> runs a
+login shell in your <i class="command">xterm</i> window.</p>
+</blockquote>
+
+<ul><li>
+<p>Set the <em class="emphasis">ignoreeof</em> variable to force you to leave
+the shell with an <b class="emphasis-bold">exit</b> (<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) command.
+</p>
+</li><li>
+<p>Set an <b class="emphasis-bold">alias for exit</b> (<a href="ch29_08.htm#upt3-CHP-29-SECT-8">Section 29.8</a>) that runs <i class="command">history -h</i>
+before exiting.
+</p>
+</li><li>
+<p>Run <i class="command">source -h</i> from your
+<em class="filename">.cshrc</em> or <em class="filename">.tcshrc</em> file. Use
+a <tt class="literal">$?prompt</tt> test to be sure this runs only in
+interactive shells.
+</p>
+</li></ul>
+<p>If you choose to run <i class="command">history -h</i> and
+<i class="command">source -h</i> by hand occasionally, they will allow
+you the kind of control you need to <b class="emphasis-bold">write a
+script</b> (<a href="ch30_13.htm#upt3-CHP-30-SECT-13">Section 30.13</a>) that saves and
+restores only what you want.<a name="IXTR3-4340" /> 
+</p>
+
+<p><em class="emphasis">--JP, TOR, and SJC</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch30_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">30.11. Check Your History First with :p</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">30.13. Pass History to Another Shell</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

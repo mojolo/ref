@@ -1,0 +1,522 @@
+<html><head><title>General and Authentication Problems (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch51_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch51_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">51.5. General and Authentication Problems</h2>
+
+<p><a name="upt3-IDXTERM-8000" /> <a name="upt3-IDXTERM-8001" /><b class="emphasis-bold">Q:</b> The <b class="emphasis-bold">commands
+ssh</b> (<a href="ch46_06.htm#upt3-CHP-46-SECT-6">Section 46.6</a>)<a name="IXT-51-654" />, scp, ssh-agent, ssh-keygen, etc.,
+aren't doing what I expect. Even the help messages
+look weird.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Maybe they are SSH2 programs when you are expecting SSH1, or vice
+versa. Locate the executables and do an <em class="emphasis">ls -l</em>.
+If they are plain files, they are most likely from SSH1 or OpenSSH.
+If they are symbolic links, check whether they point to SSH1 or SSH2
+files. (SSH2 files have names ending in
+"2".)
+</p>
+
+<p><b class="emphasis-bold">Q:</b> When I try to connect to an SSH server, I get the error
+"Connection refused."
+</p>
+
+<p><b class="emphasis-bold">A:</b> No SSH server is running where you tried to connect. Double-check the
+hostname and TCP port number: perhaps the server is running on a port
+different from the default?
+</p>
+
+<p><b class="emphasis-bold">Q:</b> When I log in, the message of the day (/etc/motd) prints twice.</p>
+
+<p><b class="emphasis-bold">A:</b> Both <em class="emphasis">sshd</em><a name="IXT-51-655" /><a name="IXT-51-656" /> and the
+<em class="emphasis">login</em> program are printing it. Disable
+<em class="emphasis">sshd</em>'s printing by setting the
+serverwide configuration keyword <tt class="literal">PrintMotd</tt> to
+<tt class="literal">no</tt>.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> When I log in, I see two messages about email, such as
+"No mail" or "You
+have mail."
+</p>
+
+<p><b class="emphasis-bold">A:</b> Both <em class="emphasis">sshd</em><a name="IXT-51-657" /> and the <em class="emphasis">login</em>
+program are checking for mail. Prevent <em class="emphasis">sshd</em> from
+checking by setting the serverwide configuration keyword
+<tt class="literal">CheckMail</tt> to <tt class="literal">no</tt>.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> The SSH1 server says "Permission
+denied" and exits.
+</p>
+
+<p><b class="emphasis-bold">A:</b> This occurs if all authentication techniques have failed. Run your
+client in debug mode and read the diagnostic messages, looking for
+clues. Also read our solutions to specific authentication problems in
+the rest of this section.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> How do I authenticate without typing a password or passphrase?</p>
+
+<p><b class="emphasis-bold">A:</b> The four available authentication methods for this are:</p>
+
+<ul><li>
+<p>Public-key with <em class="emphasis">ssh-agent</em></p>
+</li><li>
+<p>Public-key with an unencrypted key on disk (empty passphrase)</p>
+</li><li>
+<p>Trusted-host</p>
+</li><li>
+<p>Kerberos (SSH1 and OpenSSH/1 only)</p>
+</li></ul>
+<p>Automatic authentication has a number of important issues you should
+carefully consider before selecting from the preceding list.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> I get prompted for my password or passphrase, but before I have time
+to respond, the SSH server closes the connection.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Your server's idle timeout value may be too short.
+If you are a system administrator of the server machine, set
+<tt class="literal">IdleTimeout</tt> to a larger value in the serverwide
+configuration file. If you are an end user of SSH1 or OpenSSH, set an
+idle-timeout value in <em class="emphasis">authorized_keys</em>.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> RequiredAuthentications doesn't work.</p>
+
+<p><b class="emphasis-bold">A:</b> This feature was broken in SSH2 2.0.13, causing authentication always
+to fail. This problem was fixed in 2.1.0.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> SilentDeny doesn't seem to work for any
+authentication method.
+</p>
+
+<p><b class="emphasis-bold">A:</b> <tt class="literal">SilentDeny</tt> has nothing to do with authentication.
+It applies only to access control using <tt class="literal">AllowHosts</tt>
+and <tt class="literal">DenyHosts</tt>. If a connection is denied access by
+an <tt class="literal">AllowHosts</tt> or <tt class="literal">DenyHosts</tt>
+value, <tt class="literal">SilentDeny</tt> controls whether the client sees
+an informative failure message or not.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> Password authentication isn't working.</p>
+
+<p><b class="emphasis-bold">A:</b> Use <em class="emphasis">ssh -v</em>. If the connection is being refused
+altogether, the SSH server is probably not running, or you are
+connecting to the wrong port. Port 22 is the default, but the remote
+system administrator might have changed it. If you see
+"permission denied," password
+authentication might be disabled in the server.
+</p>
+
+<p>Make sure the server permits password authentication in the
+serverwide configuration file (<tt class="literal">PasswordAuthentication
+yes</tt> for SSH1 and OpenSSH, <tt class="literal">AllowedAuthentications
+password</tt> for SSH2). Also check your client configuration
+file to make sure you don't have
+<tt class="literal">PasswordAuthentication no</tt>.
+</p>
+
+<p>If you are prompted for your password, but it is rejected, you might
+accidentally be connecting to the wrong account. Does your local
+username differ from the remote username? If so, you must specify the
+remote username when connecting:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ssh -l my_remote_username server.example.com</b></tt>
+$ <tt class="userinput"><b>scp myfile my_remote_username@server.example.com:</b></tt></pre></blockquote>
+
+<p>If this still doesn't work, check your local client
+configuration file (<em class="emphasis">~/.ssh/config</em> or
+<em class="emphasis">~/.ssh2/ssh2_config</em>) to make sure you
+haven't accidentally set the wrong value for the
+<tt class="literal">User</tt> keyword. In particular, if your configuration
+file contains <tt class="literal">Host</tt> values with wildcards, check
+that your current command line (the one that isn't
+working) isn't matching the wrong section in the
+file.
+</p>
+
+<p>One common problem on the server side involves
+<a name="IXT-51-658" />OpenSSH and <a name="IXT-51-659" /><a name="IXT-51-660" /><a name="IXT-51-661" /><a name="IXT-51-662" />Pluggable
+Authentication Modules configuration. PAM is a general system for
+performing authentication, authorization, and accounting in an
+application-independent fashion. If your operating system supports
+PAM (as Linux and HPUX do, for example), OpenSSH will probably have
+been automatically compiled to use it. Unless you take the extra step
+of configuring PAM to support SSH, all password authentications will
+mysteriously fail. This is usually just a matter of copying the
+appropriate <em class="emphasis">sshd.pam</em><a name="IXT-51-663" /><a name="IXT-51-664" /> file from the
+<em class="emphasis">contrib</em> directory in the OpenSSH distribution,
+naming the copy <em class="emphasis">sshd</em> and placing it in the PAM
+configuration directory (usually <em class="emphasis">/etc/pam.d</em> ).
+The <em class="emphasis">contrib</em> directory contains several example
+files for different flavors of Unix. For example, on a
+<a name="IXT-51-665" />RedHat Linux system:
+</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>cp contrib/redhat/sshd.pam /etc/pam.d/sshd</b></tt>
+# <tt class="userinput"><b>chown root.root /etc/pam.d/sshd</b></tt>
+# <tt class="userinput"><b>chmod 644 /etc/pam.d/sshd</b></tt></pre></blockquote>
+
+<p>If OpenSSH isn't using PAM, and password
+authentication still isn't working, the compilation
+switches <tt class="literal">--with-md5-passwords</tt> or
+<tt class="literal">--without-shadow</tt> might be relevant. These make no
+difference if PAM support is enabled in OpenSSH, because they deal
+with how OpenSSH reads the Unix <em class="emphasis">passwd</em> map. When
+using PAM, the OpenSSH code doesn't read the
+<em class="emphasis">passwd</em> map directly; the PAM libraries do it
+instead. Without PAM, though, if your system is using MD5-hashed
+passwords instead of the more traditional <em class="emphasis">crypt</em>
+(DES) hash, you must use <tt class="literal">--with-md5-passwords</tt>. You
+can tell which hash your system is using by inspecting the
+<em class="emphasis">/etc/passwd</em> and <em class="emphasis">/etc/shadow</em>
+files. The hashed password is the second field in each entry; if the
+password field in <em class="emphasis">/etc/passwd</em> is just
+"x", the real entry is in
+<em class="emphasis">/etc/shadow</em> instead. MD5 hashes are much longer
+and contain a wider range of characters:
+</p>
+
+<blockquote><pre class="code"># /etc/shadow, MD5 hash
+test:$1$tEMXcnZB$rDEZbQXJzUz4g2J4qYkRh.:...
+# /etc/shadow, crypt hash
+test:JGQfZ8DeroV22:...</pre></blockquote>
+
+<p>Finally, you can try <tt class="literal">--without-shadow</tt> if you
+suspect OpenSSH is trying to use the shadow password file, but your
+system doesn't use it.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> The
+<a name="IXT-51-666" /><a name="IXT-51-667" /><a name="IXT-51-668" />server
+won't let me use an empty password.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Empty passwords are insecure and should be avoided. Nevertheless, you
+can set <tt class="literal">PermitEmptyPasswords yes</tt> in the serverwide
+configuration file.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> <a name="IXT-51-669" /><a name="IXT-51-670" />Trusted-host
+authentication isn't working (SSH1 RhostsRSA, SSH2
+hostbased).
+</p>
+
+<p><b class="emphasis-bold">A:</b> Use <em class="emphasis">ssh -v</em>. If everything looks right, check the
+following. Suppose the client user is orpheus@earth, and the target
+account is orpheus@hades -- that is, on host
+<em class="emphasis">earth</em>, user orpheus invokes <em class="emphasis">ssh
+hades</em>.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> For SSH1 and OpenSSH/1</p>
+
+<p><b class="emphasis-bold">A:</b> The SSH client program must be setuid root.</p>
+
+<p><tt class="literal">RhostsRSAAuthentication yes</tt> belongs in the server
+and client configurations.
+</p>
+
+<p>The client's public host key must be in the
+server's known hosts list. In this case,
+<em class="emphasis">hades:/etc/ssh_known_hosts</em> must contain an entry
+associating the name "earth" with
+earth's public host key, like this:
+</p>
+<blockquote><pre class="code">earth 1024 37 71641647885140363140390131934...</pre></blockquote>
+
+<p>The entry may be in the target account's known hosts
+file instead, i.e., in
+<em class="emphasis">hades:~orpheus/.ssh/known_hosts</em>. Take care that
+"earth" is the canonical name of
+the client host from the server's point of view.
+That is, if the SSH connection is coming from the address
+192.168.10.1, <em class="emphasis">gethostbyname(192.168.10.1)</em> on
+hades must return "earth", not a
+nickname or alias for the host (e.g., if the hostname is
+<em class="emphasis">river.earth.net</em>, the lookup must not return just
+"river"). Note that this can
+involve multiple naming services, since
+<tt class="literal">gethostbyname</tt> can be configured to consult
+multiple sources to determine a translation (e.g., DNS, NIS,
+<em class="emphasis">/etc/hosts</em>). See
+<em class="emphasis">/etc/nsswitch.conf</em>. If your systems
+don't agree on canonical hostnames,
+you'll have no end of trouble with RhostsRSA. You
+can work around such problems to an extent by manually adding extra
+host nicknames to the known hosts file, like this:
+</p>
+<blockquote><pre class="code">earth,gaia,terra 1024 37 71641647885140363140390131934...</pre></blockquote>
+
+<p>Edit <em class="emphasis">hades:/etc/shosts.equiv</em> or
+<em class="emphasis">hades:~orpheus/.shosts</em> to allow the login.
+Adding earth to <em class="emphasis">shosts.equiv</em> allows any nonroot
+user on earth to access the account by the same name on hades. Adding
+earth to <em class="emphasis">.shosts</em> allows orpheus@earth to access
+orpheus@hades.
+</p>
+
+<p>Some firewalls reject outbound connections from privileged ports.
+This prevents RhostsRSA authentication from working, since it relies
+on privileged source ports. You can use <em class="emphasis">ssh -P</em>
+to get a connection to the SSH server via a nonprivileged port, but
+you will have to use a different kind of authentication.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> For SSH2</p>
+
+<p><b class="emphasis-bold">A:</b> <tt class="literal">AllowedAuthentications hostbased</tt> in the server and
+client configurations.
+</p>
+
+<p><em class="emphasis">ssh2</em> doesn't need to be setuid
+root, but <em class="emphasis">ssh-signer2</em> does. More precisely, it
+needs to be able to read the private host key, which in the normal
+installation means it must be setuid root.
+</p>
+
+<p>A copy of earth's public host key in
+<em class="emphasis">hades:/etc/ssh2/knownhosts/earth.ssh-dss.pub</em> (or
+<em class="emphasis">hades:~orpheus:/.ssh2/knownhosts/earth.ssh-dss.pub</em>,
+if you specified "UserKnownHosts
+yes" on the server).
+</p>
+
+<p>Regarding canonical hostnames, the same comments as for RhostsRSA
+apply.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> For OpenSSH/2</p>
+
+<p><b class="emphasis-bold">A:</b> <tt class="literal">DSAAuthentication yes</tt> belongs in the server and
+client configurations.
+</p>
+
+<p><em class="emphasis">ssh</em> must be setuid root (or otherwise able to
+read the client hosts's private host key in
+<em class="emphasis">/etc/ssh_host_dsa_key</em> ; it
+doesn't require a privileged source port).
+</p>
+
+<p>A copy of earth's public host key in
+<em class="emphasis">hades:/etc/ssh_known_hosts2</em> (or
+<em class="emphasis">hades:~orpheus:/.ssh/known_hosts2</em>).
+</p>
+
+<p>The same comments as for RhostsRSA apply, regarding canonical
+hostnames.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> <a name="IXT-51-671" />How do I install my public key file on
+the remote host the first time?
+</p>
+
+<p><b class="emphasis-bold">A:</b> Here's the general method:</p>
+
+<ol><li>
+<p>Generate a key pair.</p>
+</li><li>
+<p>Copy the text of the public key into your computer's
+clipboard or other cut/paste buffer.
+</p>
+</li><li>
+<p>Log into the remote host via SSH with password authentication, which
+doesn't require any special files in your remote
+account.
+</p>
+</li><li>
+<p>Edit the appropriate authorization and key files on the remote host:</p>
+<dl><dt>
+a. For SSH1 and OpenSSH/1, append the public key to
+<em class="emphasis">~/.ssh/authorized_keys</em>.
+</dt>
+<dt>
+b. For OpenSSH/2, append the public key to
+<em class="emphasis">~/.ssh/authorized_keys2</em>.
+</dt>
+<dt>
+c. For SSH2, paste the public key into a new <em class="emphasis">.pub</em>
+file in <em class="emphasis">~/.ssh2</em> (say,
+<em class="emphasis">newkey.pub</em>), and append the line
+"Key newkey.pub" to
+<em class="emphasis">~/.ssh2/authorization</em>.
+</dt>
+</dl>
+</li></ol>
+</li>
+<li>
+<p>Log out from the remote host.</p>
+</li>
+<li>
+<p>Log back into the remote host using public-key authentication.</p>
+</li></ol>
+<p>When editing the remote authorization file, make sure your text
+editor doesn't insert line breaks into the middle of
+a public key. SSH1 and OpenSSH public keys are very long and must be
+kept on a single line.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> I put my SSH public key file mykey.pub into my remote SSH directory,
+but public-key authentication doesn't work.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Placing a valid public key file (e.g.,
+<em class="emphasis">mykey.pub</em>) in your SSH directory
+isn't sufficient. For SSH1 and OpenSSH/1, you must
+append the key (i.e., the contents of <em class="emphasis">mykey.pub</em>)
+to <em class="emphasis">~/.ssh/authorized_keys</em>. For OpenSSH/2, append
+the key to <em class="emphasis">~/.ssh/authorized_keys2</em>. For SSH2,
+you must add a line of text to
+<em class="emphasis">~/.ssh2/authorization</em>, <tt class="literal">Key
+mykey.pub</tt>.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> <a name="IXT-51-672" />Public-key authentication
+isn't working.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Invoke the client in debug mode (<em class="emphasis">ssh -v</em>). Make
+sure:
+</p>
+
+<ul><li>
+<p>Your local client is using the expected identity file.</p>
+</li><li>
+<p>The correct public key is on the remote host in the right location.</p>
+</li><li>
+<p>Your remote home directory, SSH directory, and other SSH-related
+files have the correct permissions.
+</p>
+</li></ul>
+<p><b class="emphasis-bold">Q:</b> <a name="IXT-51-673" />I'm being prompted for
+my login password instead of my public key passphrase. Or, my
+connection is rejected with the error message "No
+further authentication methods available." (SSH2)
+</p>
+
+<p><b class="emphasis-bold">A:</b> There are several possible causes for both of these problems.</p>
+
+<p>Public-key authentication must be enabled in both the client and
+server (SSH1/OpenSSH <tt class="literal">RSAAuthentication yes</tt>, SSH2
+<tt class="literal">AllowedAuthentications publickey</tt>).
+</p>
+
+<p>Specify your remote username with <em class="emphasis">-l</em> (lowercase
+L) if it differs from your local username, or else the SSH server
+will examine the wrong remote account:
+</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>ssh -l jones server.example.com</b></tt></pre></blockquote>
+
+<p>Check the file permissions in your server account. If certain files
+or directories have the wrong owner or careless access permissions,
+the SSH server refuses to perform public-key authentication. This is
+a security feature. Run <em class="emphasis">ssh</em> in verbose mode to
+reveal the problem:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ssh -v server.example.com</b></tt>
+...
+server.example.com: Remote: Bad file modes for /u/smith/.ssh</pre></blockquote>
+
+<p>In your server account, make sure that the following files and
+directories are owned by you and aren't world
+writable: ~, <em class="emphasis">~/.ssh</em>,
+<em class="emphasis">~/.ssh/authorized_keys</em>,
+<em class="emphasis">~/.ssh2</em>, <em class="emphasis">~/.rhosts</em>, and
+<em class="emphasis">~/.shosts</em>.
+</p>
+
+<p>For SSH2, if you use the <em class="emphasis">-i</em> option to specify an
+identification file:
+</p>
+<blockquote><pre class="code">$ ssh2 -i my-identity server.example.com</pre></blockquote>
+
+<p>check that <em class="emphasis">my-identity</em> is an identification
+file, not a private key file. (In contrast, <em class="emphasis">ssh
+-i</em> for SSH1 and OpenSSH expects a private key file.)
+Remember that SSH2 identification files are text files containing the
+names of private keys.</p>
+
+<p><b class="emphasis-bold">Q:</b> I'm being prompted for the passphrase of the wrong
+key.
+</p>
+
+<p><b class="emphasis-bold">A:</b> Make sure your desired public key is in your authorization file on
+the SSH server machine.
+</p>
+
+<p>Check for SSH agent problems. Are you running an agent and trying to
+specify another key with <em class="emphasis">ssh -i</em> or the
+<tt class="literal">IdentityFile</tt> keyword? The presence of an agent
+prevents <em class="emphasis">-i</em> and <tt class="literal">IdentityFile</tt>
+from working. Terminate your agent and try again.
+</p>
+
+<p>For SSH1 and OpenSSH, if any options are specified in
+<em class="emphasis">~/.ssh/authorized_keys</em>, check for typographical
+errors. A mistyped option causes the associated key line to be
+skipped silently. Remember that options are separated by commas, not
+whitespace.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> After the PGP passphrase prompt, I am being prompted for my login
+password.
+</p>
+
+<p><b class="emphasis-bold">A:</b> If you get prompted for your PGP key, and then your password:</p>
+
+<blockquote><pre class="code">Passphrase for pgp key "mykey": ********
+smith's password:</pre></blockquote>
+
+<p>and you know you're typing your passphrase
+correctly, first make sure you're typing your PGP
+passphrase correctly. (For instance, encrypt a file with that public
+key and decrypt it.) If so, then there might be an incompatibility
+between the PGP implementations on your client and server machines.
+We've seen this behavior when the PGP key (generated
+on the client machine) doesn't have sufficient bits
+for the PGP implementation on the server machine. Generate a new key
+on the server machine.
+</p>
+
+<p><b class="emphasis-bold">Q:</b> I get "Invalid pgp key id number
+`0276C297'". 
+</p>
+
+<p><b class="emphasis-bold">A:</b> You probably forgot the leading
+"0x" on the key ID, and SSH is
+trying to interpret a hexadecimal number as a decimal. Use
+<tt class="literal">PgpKeyId 0x0276C297</tt> instead.
+</p>
+
+<p> <em class="emphasis">-- SP<a name="IXTR3-680" /> <a name="IXTR3-681" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch51_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch51_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">51.4. SSH Problems and Solutions</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">51.6. Key and Agent Problems</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,450 @@
+<html><head><title>Periodic Program Execution: The cron Facility (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch25_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch25_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">25.2. Periodic Program Execution: The cron Facility</h2>
+
+<p><a name="upt3-IDXTERM-3745" /> <a name="upt3-IDXTERM-3746" /> <a name="upt3-IDXTERM-3747" /> <a name="upt3-IDXTERM-3748" />This
+article covers two different versions of <i class="command">cron</i>.
+There are other versions around: <a name="IXT-25-5075" />Vixie <i class="command">cron</i>, for
+instance, has some different features and is common in Linux
+distributions. A variation called
+<i class="command">anacron</i><a name="IXT-25-5076" /> doesn't assume (as
+<i class="command">cron</i> does) that the system is running 24 hours a
+day; it's especially nice on portable computers.
+Rather than trying to cover every flavor, this article has
+information on older, basic <i class="command">cron</i>s that should show
+you some of what to expect in whatever version you have.
+</p>
+
+<p><i class="command">cron</i> allows you to schedule programs for periodic
+execution. For example, you can use <i class="command">cron</i> to call
+<i class="command">rsync</i><a name="IXT-25-5077" /> every hour to update your production
+web site with new articles or to perform any number of other tasks.
+</p>
+
+<p>With <b class="emphasis-bold">redirection</b>
+(<a name="IXT-25-5078" /><a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>),
+<i class="command">cron</i> can send program output to a log file or to
+any username via email.
+</p>
+
+<a name="ch25-3-fm2xml" /><blockquote><b>NOTE:</b> 
+<i class="command">cron</i><a name="IXT-25-5079" /> <a name="IXT-25-5080" /> jobs are run by a system program
+in an environment that's much different from your
+normal login sessions. The <b class="emphasis-bold">search
+path</b> (<a href="ch27_06.htm#upt3-CHP-27-SECT-6">Section 27.6</a>) is usually shorter;
+you may need to use absolute pathnames for programs that
+aren't in standard system directories. Be careful
+about using command aliases, shell functions and variables, and other
+things that may not be set for you by the system.
+</p>
+</blockquote>
+
+<a name="upt3-CHP-25-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">25.2.1. Execution Scheduling</h3>
+
+<p><a name="IXT-25-5081" /><a name="IXT-25-5082" /><a name="IXT-25-5083" />The <i class="command">cron</i> system is
+serviced by the <b class="emphasis-bold">cron</b> <b class="emphasis-bold">daemon</b>
+(<a name="IXT-25-5084" /> <a name="IXT-25-5085" /><a href="ch01_10.htm#upt3-CHP-1-SECT-10">Section 1.10</a>). What to
+run and when to run it are specified to <i class="command">cron</i> by
+<em class="emphasis">crontab</em> entries, which are stored in the
+system's <i class="command">cron</i> schedule. On older
+BSD systems, this consists of the files
+<em class="emphasis">/usr/lib/crontab</em> and
+<em class="emphasis">/usr/lib/crontab.local</em>; either file may be used
+to store <a name="IXT-25-5086" /><em class="emphasis">crontab</em> entries.
+Both are ASCII files and may be modified with any text editor. Since
+usually only <em class="emphasis">root</em> has access to these files, all
+<i class="command">cron</i> scheduling must go through the system
+administrator. This can be either an advantage or a disadvantage,
+depending on the needs and personality of your site.
+</p>
+
+<p>Under many other versions of Unix, any user may add entries to the
+<i class="command">cron</i> schedule. <em class="emphasis">crontab</em>
+entries are stored in separate files for each user. The
+<em class="emphasis">crontab</em><a name="IXT-25-5087" /> files are not edited directly by ordinary
+users, but are placed there with the <em class="emphasis">crontab</em>
+command (described later in this section). [If your system is using
+<a name="IXT-25-5088" />Vixie <i class="command">cron</i>, try
+creating a <em class="emphasis">crontab</em> file for yourself by typing
+<tt class="literal">crontab -l</tt>. This will create a new file with
+<i class="command">vi</i> or the editor you've named in
+the <em class="emphasis">EDITOR</em> environment variable. Each line of
+this file should contain either a comment or a
+<em class="emphasis">crontab</em> entry (described below). When you save
+and exit the editor, your file will be added to the
+<em class="emphasis">cron</em> spool directory.
+ <em class="emphasis">-- JJ</em>] [In my experience, the current
+directory during these personal <i class="command">cron</i> jobs is your
+home directory. If you read a file or redirect output to a file with
+a <b class="emphasis-bold">relative pathname</b> (<a href="ch31_02.htm#upt3-CHP-31-SECT-2">Section 31.2</a>), it will probably be in your home directory.
+Check your system to be sure.  <em class="emphasis">-- JP</em>]
+</p>
+
+<p><em class="emphasis">crontab</em><a name="IXT-25-5089" /> entries direct <i class="command">cron</i>
+to run commands at regular intervals. Each one-line entry in the
+<em class="emphasis">crontab</em> file has the following format:
+</p>
+
+<blockquote><pre class="code"><em class="replaceable"><tt>mins hrs day-of-month month weekday username cmd</tt></em>     <i class="lineannotation">(BSD)</i>
+<em class="replaceable"><tt>mins hrs day-of-month month weekday cmd</tt></em>              <i class="lineannotation">(other)</i></pre></blockquote>
+
+<p><a name="IXT-25-5090" /><a name="IXT-25-5091" />Spaces separate the
+<a name="IXT-25-5092" />fields. However, the final
+field, <em class="emphasis">cmd</em>, can contain spaces within it (i.e.,
+the <em class="emphasis">cmd</em> field consists of everything after the
+space following <em class="emphasis">weekday</em>); the other fields must
+not contain spaces. The <em class="emphasis">username</em> field is used
+in the original BSD version only and specifies the username under
+which to run the command. In other versions, commands are run by the
+user who owns the <em class="emphasis">crontab</em> in which they appear
+(and for whom it is named).
+</p>
+
+<p>The first five fields specify the times at which
+<i class="command">cron</i> should execute <em class="emphasis">cmd</em>.
+Their meanings are described in <a href="ch25_02.htm#upt3-CHP-25-TABLE-1">Table 25-1</a>.
+</p>
+
+<a name="upt3-CHP-25-TABLE-1" /><h4 class="objtitle">Table 25-1. crontab entry time fields </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Field</p>
+</th>
+<th>
+<p>Meaning</p>
+</th>
+<th>
+<p>Range</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><em class="emphasis">mins</em></p>
+</td>
+<td>
+<p>The minutes after the hour</p>
+</td>
+<td>
+<p>0-59</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">hrs</em></p>
+</td>
+<td>
+<p>The hour of the day</p>
+</td>
+<td>
+<p>0-23 (0 = midnight)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">day-of-month</em></p>
+</td>
+<td>
+<p>The day within a month</p>
+</td>
+<td>
+<p>1-31</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">month</em></p>
+</td>
+<td>
+<p>The month of the year</p>
+</td>
+<td>
+<p>1-12</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="emphasis">weekday</em></p>
+</td>
+<td>
+<p>The day of the week</p>
+</td>
+<td>
+<p>1-7 (1 = Monday) <em class="emphasis">BSD</em></p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+<p>0-6 (0 = Sunday) <em class="emphasis">System V</em></p>
+</td>
+</tr>
+
+</table><p>
+
+<p>These fields can contain a single number, a pair of numbers separated
+by a dash (indicating a range of numbers), a comma-separated list of
+numbers and ranges, or an asterisk (<tt class="literal">*</tt>, a wildcard
+that represents all valid values for that field). Some versions
+accept strings of letters: for instance, <a name="IXT-25-5095" />Vixie <i class="command">cron</i>, at
+least, accepts month and day names instead of numbers.
+</p>
+
+<p><a name="IXT-25-5096" /><a name="IXT-25-5097" />If the first character in an
+entry is a hash mark (#), <i class="command">cron</i> will treat the
+entry as a comment and ignore it. This is an easy way to temporarily
+disable an entry without permanently deleting it.
+</p>
+
+<p><a name="IXT-25-5098" />Here are
+some example <em class="emphasis">crontab</em> entries (shown in non-BSD
+format):
+</p>
+<p><tt class="literal">/proc</tt> <a href="ch24_09.htm#upt3-CHP-24-SECT-9">Section 24.9</a>,
+<tt class="literal">2&gt;&amp;1</tt> <a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a>, <tt class="literal">\%</tt> <a href="ch25_04.htm#upt3-CHP-25-SECT-4">Section 25.4</a></p>
+
+<blockquote><pre class="code">0,15,30,45 * * * *  (echo -n '   '; date; cat /proc/loadavg) &gt;/dev/console
+0,10,20,30,40,50 7-18 * * * /usr/lib/atrun
+7 0 * * *  find / -name "*.bak" -type f -atime +7 -exec rm {} \;
+12 4 * * *  /bin/sh /usr/adm/ckdsk &gt;/usr/adm/disk.log 2&gt;&amp;1
+22 2 * * *  /bin/sh /usr/adm/ckpwd 2&gt;&amp;1 | mail root
+30 3 * * 1 /bin/csh -f /usr/lib/uucp/uu.weekly &gt;/dev/null 2&gt;&amp;1
+12 5 15-21 * * test `date +\%a` = Mon &amp;&amp; /usr/local/etc/mtg-notice
+#30 2 * * 0,6  /usr/lib/newsbin/news.weekend</pre></blockquote>
+
+<p>The first entry displays the date on the console terminal every 15
+minutes (on the quarter hour); notice that multiple commands are
+enclosed in parentheses to redirect their output as a group. (This
+runs the commands together in a <b class="emphasis-bold">subshell</b> (<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>).) The
+second entry runs <i class="command">/usr/lib/atrun</i> every 10 minutes
+from 7:00 a.m. to 6:50 p.m. daily. The third entry runs a
+<i class="command">find</i> command at 7 minutes after midnight to remove
+all <em class="emphasis">.bak</em> files not accessed in 7 days. To cut
+wear and tear and load on your disk, try to <b class="emphasis-bold">combine find jobs</b> (<a href="ch14_19.htm#upt3-CHP-14-SECT-19">Section 14.19</a>). Also, as <a href="ch25_08.htm#upt3-CHP-25-SECT-8">Section 25.8</a> explains, try <em class="emphasis">not</em> to
+schedule your jobs at frequently chosen times like 1:00 a.m., 2:00
+a.m., and so on; pick oddball times like 4:12 a.m.
+</p>
+
+<p>The fourth and fifth lines run a shell script every day, at 4:12 a.m.
+and 2:22 a.m., respectively. The shell to execute the script is
+specified explicitly on the command line in both cases; the system
+default shell, usually the Bourne shell, is used if none is
+explicitly specified. Both lines' entries redirect
+standard output and standard error, sending it to a file in one case
+and mailing it to <em class="emphasis">root</em> in the other.
+</p>
+
+<p>The sixth entry executes a C shell script named
+<em class="emphasis">uu.weekly</em>, stored in
+<em class="emphasis">/usr/lib/uucp</em>, at 3:30 a.m. on Monday mornings.
+Notice that the command format -- specifically the output
+redirection -- is for the Bourne shell, even though the script
+itself will be run under the C shell. The seventh entry runs on the
+third Monday of every month; there's more
+explanation below. The final entry would run the command
+<em class="emphasis">/usr/lib/newsbin/news.weekend</em> at 2:30 a.m. on
+Saturday and Sunday mornings were it not disabled with a
+<tt class="literal">#</tt>. (<tt class="literal">#</tt> can also be used to add
+comments to your <em class="emphasis">crontab</em>.)
+</p>
+
+<p>The fourth through sixth entries illustrate three output-handling
+alternatives: redirecting it to a file, piping it through mail, and
+discarding it to <b class="emphasis-bold">/dev/null</b> (<a href="ch43_12.htm#upt3-CHP-43-SECT-12">Section 43.12</a>). If no output redirection is performed, the
+output is sent via mail to the user who ran the command.
+</p>
+
+<p>The <em class="emphasis">cmd</em> field can be any Unix command or group
+of commands (properly separated with semicolons). The entire
+<em class="emphasis">crontab</em> entry can be arbitrarily long, but it
+must be a single physical line in the file.
+</p>
+
+<p>One problem with the <em class="emphasis">crontab</em> syntax is that it
+lets you specify any day of the month and any day of the week; but it
+doesn't let you construct cases like
+"the third Monday of every month."
+You might think that the <em class="emphasis">crontab</em> entry:
+</p>
+
+<blockquote><pre class="code">12 5 15-21 * 1 <em class="replaceable"><tt>your-command</tt></em></pre></blockquote>
+
+<p>would do the trick, but it won't; this
+<em class="emphasis">crontab</em> entry runs your command on every Monday,
+plus the 15th through the 21st of each month.<a href="#FOOTNOTE-80">[80]</a> An answer from Greg Ubben is
+shown in the seventh entry. He uses the <b class="emphasis-bold">test</b> (<a href="ch35_26.htm#upt3-CHP-35-SECT-26">Section 35.26</a>) and
+<i class="command">date</i> commands to compare the name of today (like
+<tt class="literal">Tue</tt>) to the day we want the entry to be executed
+(here, <tt class="literal">Mon</tt>). This entry will be run between the
+15th and 21st of each month, but the <em class="emphasis">mtg-notice</em>
+command will run only on the Monday during that period. The
+shell's<b class="emphasis-bold"> &amp;&amp;
+operator</b> (<a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a>) runs the
+<em class="emphasis">mtg-notice</em> command only when the previous test
+succeeds. Greg actually writes the entry as shown here, testing for
+failure of the <i class="command">test</i> command:
+</p><blockquote class="footnote"> <a name="FOOTNOTE-80" /><p> [80]This
+strange behavior seems to be a System V peculiarity that somehow
+infected the rest of the world. Original BSD systems behave the way
+we explained earlier.</p> </blockquote>
+
+<blockquote><pre class="code">12 5 15-21 * * test `date +\%a` != Mon || /usr/local/etc/mtg-notice</pre></blockquote>
+
+<p>He did it that "backwards" way so
+the <i class="command">cron</i> job's exit status would
+be 0 (success) in the case when it doesn't execute
+<em class="emphasis">mtg-notice</em>. You may need that technique, too.
+</p>
+
+<p><a name="IXT-25-5099" />The
+<i class="command">cron</i> command starts the <i class="command">cron</i>
+program. It has no options. Once started, <i class="command">cron</i>
+never terminates. It is normally started automatically by one of the
+system initialization scripts. <i class="command">cron</i> reads the
+<em class="emphasis">crontab</em> file(s) every minute to see whether
+there have been changes. Therefore, any change to its schedule will
+take effect within one minute.
+</p>
+
+</div>
+<a name="upt3-CHP-25-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">25.2.2. A Little Help, etc.</h3>
+
+<p><a name="upt3-IDXTERM-3774" /> <a name="upt3-IDXTERM-3775" />Some flavors of Unix, notably
+<a name="upt3-IDXTERM-3776" />Red Hat and Debian Linux, have
+included an easy shortcut to creating periodic processes. In some
+systems, the <em class="filename">/etc</em> directory will contain the
+following directories:
+</p>
+
+<blockquote class="simplelist">
+
+<p><em class="filename">cron.daily</em></p>
+
+<p><em class="filename">cron.hourly</em></p>
+
+<p><em class="filename">cron.monthly</em></p>
+
+<p><em class="filename">cron.weekly</em></p>
+
+</blockquote>
+
+<p>By placing programs and scripts in these directories, you can have
+those chosen processes occur at the interval designated by the
+extension of the directory name. By sacrificing granularity of when
+those processes occur, you gain ease of use. Of course, adding
+several resource-intensive programs to the same directory may bring
+an underpowered system to its knees. Excerise care.
+</p>
+
+<p>In case you're curious, these directories are really
+just an extension of the <a name="IXT-25-5100" />Vixie cron system. Looking inside
+<em class="filename">/etc/crontab</em>, we begin to see the magic:
+</p>
+
+<blockquote><pre class="code">SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+HOME=/
+
+# run-parts
+01 * * * * root run-parts /etc/cron.hourly
+02 4 * * * root run-parts /etc/cron.daily
+22 4 * * 0 root run-parts /etc/cron.weekly
+42 4 1 * * root run-parts /etc/cron.monthly</pre></blockquote>
+
+<p>If you want to change when these various <em class="emphasis">cron</em>
+groups execute, this is the place to make your changes. The
+<em class="emphasis">run-parts</em><a name="IXT-25-5101" /><a name="IXT-25-5102" />
+script is a little be more complicated, but it's
+worth a brief look.
+</p>
+
+<blockquote><pre class="code">#!/bin/bash
+
+# run-parts - concept taken from Debian
+
+# keep going when something fails
+set +e
+
+if [ $# -lt 1 ]; then
+        echo "Usage: run-parts &lt;dir&gt;"
+        exit 1
+fi
+
+if [ ! -d $1 ]; then
+        echo "Not a directory: $1"
+        exit 1
+fi
+
+# Ignore *~ and *, scripts
+for i in $1/*[^~,] ; do
+        [ -d $i ] &amp;&amp; continue
+        # Don't run *.{rpmsave,rpmorig,rpmnew,swp} scripts
+        [ "${i%.rpmsave}" != "${i}" ] &amp;&amp; continue
+        [ "${i%.rpmorig}" != "${i}" ] &amp;&amp; continue
+        [ "${i%.rpmnew}" != "${i}" ] &amp;&amp; continue
+        [ "${i%.swp}" != "${i}" ] &amp;&amp; continue
+        [ "${i%,v}" != "${i}" ] &amp;&amp; continue
+
+        if [ -x $i ]; then
+                $i 2&gt;&amp;1 | awk -v "progname=$i" \
+                              'progname {
+                                   print progname ":\n"
+                                   progname="";
+                               }
+                               { print; }'
+        fi
+done
+
+exit 0</pre></blockquote>
+
+<p>The first dozen or so lines of this script are either comments or
+sanity checks to ensure that it was called with a directory name. The
+meat of the script is the loop that looks at all the non-tilde files
+in the given directory. As long as the file isn't a
+relic from the Red Hat Package Manager or an RCS file, the file is
+run and its results sent to <i class="command">awk</i>, so that a
+somewhat clean report can be mailed by <i class="command">cron</i>. You
+now have the code to set up this system if your Unix
+doesn't <a name="IXTR3-5137" />have it.<a name="IXTR3-5138" /> <a name="IXTR3-5139" /> 
+</p>
+
+<p><em class="emphasis">-- AF, JP, and JJ</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch25_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch25_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">25. Delayed Execution</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">25.3. Adding crontab Entries</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

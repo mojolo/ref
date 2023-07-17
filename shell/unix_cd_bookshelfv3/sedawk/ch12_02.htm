@@ -1,0 +1,1507 @@
+<html><head><title>Generating a Formatted Index (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.2. Generating a Formatted Index</h2>
+
+<p>
+<a name="ch12.index1" />
+<a name="ch12.index2" />
+The process of generating an index usually involves three steps:</p>
+
+<ul><li><p>Code the index entries in the document.</p></li><li><p>Format the document, producing index entries with page numbers.</p></li><li><p>Process the index entries to sort them, combining entries that
+differ only in page number, and then preparing the formatted index.</p></li></ul><p>This process remains pretty much the same whether using
+<b class="emphasis-bold">troff</b>, other coded batch formatters, or a WYSIWYG
+formatter such as <em class="emphasis">FrameMaker</em>, although the steps are
+not as clearly separated with the latter.  However, I will be
+describing how we use <b class="emphasis-bold">troff</b> to generate an index
+such as the one for this book.
+We code the index using the following macros:</p>
+
+<a name="sedawk-ch-12-tab-1" /><table border="1" cellpadding="3">
+
+<tr>
+<th>Macro</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>.XX</td>
+<td>Produces general index entries.</td>
+</tr>
+
+<tr>
+<td>.XN</td>
+<td>Creates "see" or "see also" cross references.</td>
+</tr>
+
+<tr>
+<td>.XB</td>
+<td>Creates bold page entry indicating primary reference.</td>
+</tr>
+
+<tr>
+<td>.XS</td>
+<td>Begins range of pages for entry.</td>
+</tr>
+
+<tr>
+<td>.XE</td>
+<td>Ends range of pages for entry.</td>
+</tr>
+
+
+</table><p>
+
+<p>These macros take a single quoted argument, which
+can have one of several forms, indicating
+primary, secondary, or tertiary keys:</p>
+
+<blockquote><pre class="code">"<em class="replaceable"><tt>primary</em> [ : <em class="replaceable">secondary</em> [ ; <em class="replaceable">tertiary</tt></em> ]]"</pre></blockquote><p>A colon is used as the separator between the primary and secondary
+keys.  To support an earlier coding convention, the first comma is
+interpreted as the separator if no colon is used.  A semicolon
+indicates the presence of a tertiary key.  The page number is always
+associated with the last key.</p>
+
+<p>Here is an entry with only a primary key:</p>
+
+<blockquote><pre class="code">.XX "XView"</pre></blockquote>
+
+<p>The next two entries specify a secondary key:</p>
+
+<blockquote><pre class="code">.XX "XView: reserved names"
+.XX "XView, packages"</pre></blockquote>
+
+<p>The most complex entries contain tertiary keys:</p>
+
+<blockquote><pre class="code">.XX "XView: objects; list"
+.XX "XView: objects; hierarchy of"</pre></blockquote>
+
+<p>Finally, there are two types of cross references:</p>
+
+<blockquote><pre class="code">.XN "error recovery: (see error handling)" 
+.XX "mh mailer: (see also xmh mailer)"</pre></blockquote>
+
+<p>The "see" entry refers a person to another index entry.  The "see
+also" is typically used when there are entries for, in this case, "mh
+mailer," but there is relevant information catalogued under another
+name.  Only "see" entries do not have page numbers associated with
+them.</p>
+
+<p>When the document is processed by <b class="emphasis-bold">troff</b>, the
+following index entries are produced:</p>
+
+<blockquote><pre class="code">XView    42
+XView: reserved names   43
+XView, packages 43
+XView: objects; list of 43
+XView: objects; hierarchy of    44
+XView, packages 45
+error recovery: (See error handling) 
+mh mailer: (see also xmh mailer)    46</pre></blockquote>
+
+<p>These entries serve as input to the indexing program.  Each entry
+(except for "see" entries) consists of the key and a page number.  In
+other words, the entry is divided into two parts and the first part,
+the key, can also be divided into three parts.  When these entries are
+processed by the indexing program and the output is formatted, the
+entries for "XView" are combined as follows:</p>
+
+<blockquote><pre class="code">XView, 42
+	objects; hierarchy of, 44; 
+	   list of, 43
+	packages, 43,45
+	reserved names, 43</pre></blockquote>
+
+<p>To accomplish this, the indexing program must:</p>
+
+<ul><li><p>Sort the index by key and page number.</p></li><li><p>Merge entries that differ only in the page number.</p></li><li><p>Merge entries that have the same primary and/or secondary keys.</p></li><li><p>Look for consecutive page numbers and combine as a range.</p></li><li><p>Prepare the index in a format for display on screen or for printing.</p></li></ul><p>This is what the index program does if you are processing the index
+entries for a single book.  It also allows you to create a master
+index, an overall index for a set of volumes.  To do that, an awk
+script appends either a roman numeral or an abbreviation after the
+page number.  Each file then contains the entries for a particular
+book and those entries are uniquely identified.  If we chose to use
+roman numerals to identify the volume, then the above entries would be
+changed to:</p>
+
+<blockquote><pre class="code">XView	42:I
+XView: reserved names   43:I
+XView: objects; list of 43:I</pre></blockquote>
+
+<p>With multivolume entries, the final index that is generated might look
+like this:</p>
+
+<blockquote><pre class="code">XView, I:42; II:55,69,75
+	objects; hierarchy of, I:44; 
+          list of, I:43; II: 56 
+	packages, I:43,45
+	reserved names, I:43</pre></blockquote>
+
+<p>For now, it's only important to recognize that the index entry used as
+input to the awk program can have a page number or a page number
+followed by a volume identifier.</p>
+
+<a name="sedawk-ch-12-sect-2.1" /><div class="sect2">
+<h3 class="sect2">12.2.1. The masterindex Program</h3>
+
+<p>Because of the length and complexity of
+this indexing application,<a href="#FOOTNOTE-86">[86]</a>
+our description presents the larger structure of the program.  Use the
+comments in the program itself to understand what is happening in the
+program line by line.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-86" /><p> [86]The origins of this
+indexing program are traced back to a copy of an
+indexing program written in awk by Steve Talbott.  I learned this
+program by taking it apart, and made some changes to it to support
+consecutive page numbering in addition to section-page numbering.
+That was the program I described in <em class="citetitle">UNIX Text
+Processing</em>.  Knowing that program, I wrote an indexing
+program that could deal with index entries produced by Microsoft Word
+and generate an index using section-page numbering.  Later, we needed
+a master index for several books in our X Window System Series.  I
+took it as an opportunity to rethink our indexing program, and rewrite
+it using nawk, so that it supports both single-book and multiple-book
+indices.  <em class="citetitle">The AWK Programming Language</em> contains
+an example of an index program that is smaller than the one shown
+here and might be a place to start if you find this one too
+complicated.  It does not, however, deal with keys.  That indexing
+program is a simplified version of the one described in Bell Labs
+Computing Science Technical Report 128, <em class="citetitle">Tools for Printing
+Indexes</em>, October 1986, by Brian Kernighan and Jon Bentley. [D.D.]</p>
+
+</blockquote>
+
+<p>After descriptions of each of the program modules, a final section
+discusses a few remaining details.  For the most part, these are code
+fragments that deal with nitty-gritty, input-related problems that had
+to be solved along the way.
+The shell script <b class="emphasis-bold">masterindex</b>
+<a href="#FOOTNOTE-87">[87]</a> 
+
+allows the user to specify a number of different command-line options
+to specify what kind of index to make and it invokes the necessary awk
+programs to do the job.  The operations of the
+<b class="emphasis-bold">masterindex</b> program can be broken into five
+separate programs or modules that form a single pipe.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-87" /><p> [87]This shell
+script and the documentation for the program are
+presented in <a href="appc_01.htm">Appendix C, "Supplement for Chapter 12"</a>.  You might want to first
+read the documentation for a basic understanding of using the program.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">input.idx | sort | pagenums.idx | combine.idx | format.idx</pre></blockquote>
+
+<p>All but one of the programs are written using awk.  For sorting the
+entries, we rely upon <b class="emphasis-bold">sort</b>, a standard UNIX
+utility.  Here's a brief summary of what each of these programs does:</p>
+
+<dl>
+<dt><b class="emphasis-bold">input.idx</b></i></dt><dd>Standardizes the format of entries and rotates them.</p></dd>
+
+
+<dt><b class="emphasis-bold">sort</b></i></dt><dd>Sorts entries by key, volume, and page number.</p></dd>
+
+
+<dt><b class="emphasis-bold">pagenums.idx</b></i></dt><dd>Merges entries with same key, creating a list of page numbers.</p></dd>
+
+
+<dt><b class="emphasis-bold">combine.idx</b></i></dt><dd>Combines consecutive page numbers into a range.</p></dd>
+
+
+<dt><b class="emphasis-bold">format.idx</b></i></dt><dd>Prepares the formatted index for the screen or processing by <b class="emphasis-bold">troff</b>.</p></dd>
+
+</dl>
+
+<p>We will discuss each of these steps in a separate section.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-2.2" /><div class="sect2">
+<h3 class="sect2">12.2.2. Standardizing Input</h3>
+
+<p>This <b class="emphasis-bold">input.idx</b> script looks for different types of
+entries and standardizes them for easier processing by subsequent
+programs.  Additionally, it automatically rotates index entries
+containing a tilde (~).  (See <a href="ch12_03.htm#sedawk-ch-12-sect-3.2">Section 12.3.2</a> later
+in this chapter.)</p>
+
+<p>The input to the <b class="emphasis-bold">input.idx</b> program consists of two
+tab-separated fields, as described earlier.  The program produces
+output records with three colon-separated fields.  The first field
+contains the primary key; the second field contains the secondary and
+tertiary keys, if defined; and the third field contains the page
+number.</p>
+
+<p>Here's the code for <b class="emphasis-bold">input.idx</b> program:</p>
+
+<blockquote><pre class="code">#!/work/bin/nawk -f
+# ------------------------------------------------
+# input.idx -- standardize input before sorting
+# Author:  Dale Dougherty
+# Version 1.1   7/10/90
+# 
+# input is "entry" tab "page_number"
+# ------------------------------------------------
+BEGIN { FS = "\t"; OFS = "" }
+
+#1 Match entries that need rotating that contain a single tilde
+   # $1 ~ /~[^~]/  # regexp does not work and I do not know why 
+$1 ~ /~/ &amp;&amp; $1 !~ /~~/ { 
+   # split first field into array named subfield 
+	n = split($1, subfield, "~")
+	if (n == 2) {
+	# print entry without "~" and then rotated
+		printf("%s %s::%s\n", subfield[1], subfield[2], $2)
+		printf("%s:%s:%s\n", subfield[2], subfield[1], $2)
+	}
+	next
+}# End of 1
+
+#2 Match entries that contain two tildes 
+$1 ~ /~~/ { 
+   # replace ~~ with ~	
+	gsub(/~~/, "~", $1)
+} # End of 2
+
+#3  Match entries that use "::" for literal ":". 
+$1 ~ /::/ { 
+   # substitute octal value for "::"
+	gsub(/::/, "\\72", $1) 
+}# End of 3
+
+#4 Clean up entries 
+{
+   # look for second colon, which might be used instead of ";"
+	if (sub(/:.*:/, "&amp;;", $1)) {
+		sub(/:;/, ";", $1)	
+	}
+   # remove blank space if any after colon.
+	sub(/: */, ":", $1)
+   # if comma is used as delimiter, convert to colon. 
+	if ( $1 !~ /:/ ) {
+	# On see also &amp; see, try to put delimiter before "(" 
+		if ($1 ~ /\([sS]ee/) {
+			if (sub(/, *.*\(/, ":&amp;", $1)) 
+				sub(/:, */, ":", $1)
+			else
+				sub(/  *\(/, ":(", $1)
+		}
+		else { # otherwise, just look for comma
+			sub(/, */, ":", $1)
+		}
+	}
+	else {
+		# added to insert semicolon in "See"
+		if ($1 ~ /:[^;]+ *\([sS]ee/) 
+			sub(/  *\(/, ";(", $1)
+	}	
+}# End of 4
+
+#5 match See Alsos and fix for sort at end
+$1 ~ / *\([Ss]ee +[Aa]lso/ { 
+  # add "~zz" for sort at end
+	sub(/\([Ss]ee +[Aa]lso/, "~zz(see also", $1) 
+	if ($1 ~ /:[^; ]+ *~zz/) {
+		sub(/ *~zz/, "; ~zz", $1)
+	}
+  # if no page number
+	if ($2 == "") {
+		print $0 ":" 
+		next
+	}
+	else {
+	# output two entries: 
+	# print See Also entry w/out page number
+		print $1 ":"
+	# remove See Also 
+		sub(/ *~zz\(see also.*$/, "", $1) 
+		sub(/;/, "", $1)
+	# print as normal entry
+		if ( $1 ~ /:/ )
+			print $1 ":" $2
+		else
+			print $1 "::" $2
+		next
+	}
+}# End of 5
+
+#6 Process entries without page number (See entries)
+(NF == 1 || $2 == "" || $1 ~ /\([sS]ee/) { 
+   # if a "See" entry
+	if ( $1 ~ /\([sS]ee/ ) { 
+		if ( $1 ~ /:/ ) 
+			print $1 ":"
+		else  
+			print $1 ":"
+		next
+	}
+	else  { # if not a See entry, generate error
+		printerr("No page number")
+		next
+        }
+}# End of 6
+
+#7 If the colon is used as the delimiter 
+$1 ~ /:/ { 
+   # output entry:page
+	print $1 ":" $2
+	next
+}# End of 7
+
+#8  Match entries with only primary keys.
+{
+	print $1 "::" $2
+}# End of 8
+
+# supporting functions
+# 
+# printerr -- print error message and current record
+#		Arg: message to be displayed
+
+function printerr (message) {
+	# print message, record number and record
+	printf("ERROR:%s (%d) %s\n", message, NR, $0) &gt; "/dev/tty"
+}</pre></blockquote>
+
+<p>This script consists of a number of pattern-matching rules to
+recognize different types of input.  Note that an entry could match
+more than one rule unless the action associated with a rule calls the
+<b class="emphasis-bold">next</b> statement.</p>
+
+<p>As we describe this script, we will be referring to the rules by
+number.  Rule 1 rotates entries containing a tilde and produces two
+output records.  The <b class="emphasis-bold">split()</b> function
+creates an array named <b class="emphasis-bold">subfield</b> that contains the
+two parts of the compound entry.  The two parts are printed in their
+original order and are then swapped to create a second output record in
+which the secondary key becomes a primary key.</p>
+
+<p>Because we are using the tilde as a special character, we must provide
+some way of actually entering a tilde.  We have implemented the
+convention that two consecutive tildes are translated into a single
+tilde.  Rule 2 deals with that case, but notice that the pattern for
+rule 1 makes sure that the first tilde it matches is not followed by
+another tilde.<a href="#FOOTNOTE-88">[88]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-88" /><p> [88]In the first edition, Dale wrote, "For extra credit, please send me
+mail if you can figure out why the commented regular expression just
+before rule 1 does not do the job.  I used the compound expression as
+a last resort."  I'm ashamed to admit that this stumped me also.  When
+Henry Spencer turned on the light, it was blinding: "The reason why
+the commented regexp doesn't work is that it doesn't do what the
+author thought. <img src="figs/smile.gif" alt="Figure " /> It looks for tilde followed by a non-tilde
+character... but the second tilde of a ~~ combination is
+usually followed by a non-tilde!  Using /[^~]~[^~]/ would probably
+work."  I plugged this regular expression in to the program, and it
+worked just fine. [A.R.]</p>
+
+</blockquote>
+
+<p>The order of rules 1 and 2 in the script is significant.  We can't
+replace "~~" with "~" until after the procedure for rotating
+the entry.</p>
+
+<p>Rule 3 does a job similar to that of rule 2; it allows "::" to be used to
+output a literal ":" in the index.  However, since we use the colon as
+an input delimiter throughout the input to the program, we cannot
+allow it to appear in an entry as finally output until the very end.
+Thus, we replace the sequence "::" with the colon's ASCII value in
+octal.  (The <b class="emphasis-bold">format.idx</b> program will reverse the
+replacement.)</p>
+
+<p>Beginning with rule 4, we attempt to recognize various ways of coding
+entries--giving the user more flexibility.  However, to make
+writing the remaining programs easier, we must reduce this variety to
+a few basic forms.</p>
+
+<p>In the "basic" syntax, the primary and secondary keys are separated by
+a colon.  The secondary and tertiary keys are separated by a
+semicolon.  Nonetheless the program also recognizes a second colon, in
+place of a semicolon, as the delimiter between the secondary and
+tertiary keys.  It also recognizes that if no colon is specified as a
+delimiter, then a comma can be used as the delimiter between primary
+and secondary keys.  (In part, this was done to be compatible with an
+earlier program that used the comma as the delimiter.)  The
+<b class="emphasis-bold">sub()</b> function looks for the first comma on
+the line and changes it to a colon.  This rule also tries to
+standardize the syntax of "see" and "see also" entries.  For entries
+that are colon-delimited, rule 4 removes spaces after the colon.
+All of the work is done using the <b class="emphasis-bold">sub()</b>
+function.</p>
+
+<p>Rule 5 deals with "see also" entries.  We prepend the arbitrary string
+"~zz" to the "see also" entries so that they will sort at the end of
+the list of secondary keys.  The <b class="emphasis-bold">pagenums.idx</b>
+script, later in the pipeline, will remove "~zz" after the entries
+have been sorted.</p>
+
+<p>Rule 6 matches entries that do not specify a page number.  The only
+valid entry without a page number contains a "see" reference.  This
+rule outputs "see" entries with ":" at the end to indicate an empty
+third field.  All other entries generate an error message via the
+<b class="emphasis-bold">printerr()</b> function.  This function
+notifies the user that a particular entry does not have a page number
+and will not be included in the output.  This is one method of
+standardizing input--throwing out what you can't interpret
+properly.  However, it is critical to notify the user so that he or
+she can correct the entry.</p>
+
+<p>Rule 7 outputs entries that contain the colon-delimiter.  Its action
+uses <b class="emphasis-bold">next</b> to avoid reaching rule 8.</p>
+
+<p>Finally, rule 8 matches entries that contain only a primary key.  In
+other words, there is no delimiter.  We output "::" to indicate an
+empty second field.</p>
+
+<p>Here's a portion of the contents of our <em class="filename">test</em></tt>
+file.  We'll be using it to generate examples in this section.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat test</b></tt>
+XView: programs; initialization 45
+XV_INIT_ARGS~macro      46
+Xv_object~type  49
+Xv_singlecolor~type     80
+graphics: (see also server image)
+graphics, XView model   83
+X Window System: events 84
+graphics, CANVAS_X_PAINT_WINDOW 86
+X Window System, X Window ID for paint window   87
+toolkit (See X Window System).
+graphics: (see also server image)
+Xlib, repainting canvas 88
+Xlib.h~header file      89</pre></blockquote>
+
+<p>When we run this file through <b class="emphasis-bold">input.idx</b>, 
+it produces:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>input.idx test</b></tt>
+XView:programs; initialization:45
+XV_INIT_ARGS macro::46
+macro:XV_INIT_ARGS:46
+Xv_object type::49
+type:Xv_object:49
+Xv_singlecolor type::80
+type:Xv_singlecolor:80
+graphics:~zz(see also server image):
+graphics:XView model:83
+X Window System:events:84
+graphics:CANVAS_X_PAINT_WINDOW:86
+X Window System:X Window ID for paint window:87
+graphics:~zz(see also server image):
+Xlib:repainting canvas:88
+Xlib.h header file::89
+header file:Xlib.h:89</pre></blockquote>
+
+<p>Each entry now consists of three colon-separated fields.  In the
+sample output, you can find examples of entries with only a primary
+key, those with primary and secondary keys, and those with primary,
+secondary, and tertiary keys.  You can also find examples of rotated
+entries, duplicate entries, and "see also" entries.</p>
+
+<p>The only difference in the output for multivolume entries is that
+each entry would have a fourth field that contains the volume
+identifier.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-2.3" /><div class="sect2">
+<h3 class="sect2">12.2.3. Sorting the Entries</h3>
+
+<p>Now the output produced by <b class="emphasis-bold">input.idx</b> is ready to be
+sorted.  The easiest way to sort the entries is to use the standard
+UNIX <b class="emphasis-bold">sort</b> program rather than write a custom
+script.  In addition to sorting the entries, we want to remove any
+duplicates and for this task we use the <b class="emphasis-bold">uniq</b>
+program.</p>
+
+<p>Here's the command line we use:</p>
+
+<blockquote><pre class="code">sort -bdf -t: +0 -1 +1 -2 +3 -4 +2n -3n | uniq</pre></blockquote>
+
+<p>As you can see, we use a number of options with the
+<b class="emphasis-bold">sort</b> command.  The first option,
+<span class="option">-b</span>, specifies that leading spaces be ignored.  The
+<span class="option">-d</span> option specifies a dictionary sort in which
+symbols and special characters are ignored.  <span class="option">-f</span>
+specifies that lower- and uppercase letters are to be
+<em class="emphasis">folded</em></tt> together; in other words, they are to be
+treated as the same character for purposes of the sort.  The next
+argument is perhaps the most important: <span class="option">-t:</span> tells the
+program to use a colon as a field delimiter for sort keys.  The
+"<span class="option">+</span>" options that follow specify the number of fields to
+skip from the beginning of the line.  Therefore, to specify the first
+field as the primary sort key, we use "+0."  Similarly, the
+"<span class="option">-</span>" options specify the end of a sort key.  "-1"
+specifies that the primary sort key ends at the first field, or the
+beginning of the second field.  The second sort field is the secondary
+key.  The fourth field ("+3") if it exists, contains the volume
+number.  The last key to sort is the page number; this requires a
+numeric sort (if we did not tell <b class="emphasis-bold">sort</b> that this key
+consists of numbers, then the number 1 would be followed by 10,
+instead of 2).  Notice that we sort page numbers after sorting the
+volume numbers.  Thus, all the page numbers for Volume I are sorted in
+order before the page numbers for Volume II.  Finally, we pipe the
+output to <b class="emphasis-bold">uniq</b> to remove identical entries.
+Processing the output from <b class="emphasis-bold">input.idx</b>, the
+<b class="emphasis-bold">sort</b> command produces:</p>
+
+<blockquote><pre class="code">graphics:CANVAS_X_PAINT_WINDOW:86
+graphics:XView model:83
+graphics:~zz(see also server image):
+header file:Xlib.h:89 
+macro:XV_INIT_ARGS:46
+toolkit:(See X Window System).:
+type:Xv_object:49
+type:Xv_singlecolor:80
+X Window System:events:84
+X Window System:X Window ID for paint window:87
+Xlib:repainting canvas:88
+Xlib.h header file::89 
+XView:programs; initialization:45
+XV_INIT_ARGS macro::46
+Xv_object type::49
+Xv_singlecolor type::80</pre></blockquote>
+
+
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-2.4" /><div class="sect2">
+<h3 class="sect2">12.2.4. Handling Page Numbers</h3>
+
+<p>The <b class="emphasis-bold">pagenums.idx</b> program looks for entries that
+differ only in page number and creates a list of page numbers for a
+single entry.
+The input to this program is four colon-separated fields:</p>
+
+<blockquote><pre class="code">PRIMARY:SECONDARY:PAGE:VOLUME</pre></blockquote><p>The fourth is optional.  For now, we consider only the index for a
+single book, in which there are no volume numbers.  Remember that the
+entries are now sorted.</p>
+
+<p>The heart of this program compares the current entry to the previous
+one and determines what to output.  The conditionals that implement
+the comparison can be extracted and expressed in pseudocode, as
+follows:</p>
+
+<blockquote><pre class="code">PRIMARY = $1
+SECONDARY = $2
+PAGE = $3
+if (PRIMARY == prevPRIMARY)
+	if (SECONDARY == prevSECONDARY)
+		print PAGE
+	else
+		print PRIMARY:SECONDARY:PAGE
+else
+	print PRIMARY:SECONDARY:PAGE
+prevPRIMARY = PRIMARY
+prevSECONDARY = SECONDARY</pre></blockquote>
+
+<p>Let's see how this code handles a series of entries, beginning with:</p>
+
+<blockquote><pre class="code">XView::18</pre></blockquote>
+
+<p>The primary key doesn't match the previous primary key; the line
+is output as is:</p>
+
+<blockquote><pre class="code">XView::18</pre></blockquote>
+
+<p>The next entry is:</p>
+
+<blockquote><pre class="code">XView:about:3</pre></blockquote>
+
+<p>When we compare the primary key of this entry to the previous one,
+they are the same.  When we compare secondary keys, they differ; we
+output the record as is:</p>
+
+<blockquote><pre class="code">XView:about:3</pre></blockquote>
+
+<p>The next entry is:</p>
+
+<blockquote><pre class="code">XView:about:7</pre></blockquote>
+
+<p>Because both the primary and secondary keys match the keys of the
+previous entry, we simply output the page number.  (The
+<b class="emphasis-bold">printf</b> function is used instead of
+<b class="emphasis-bold">print</b> so that there is no automatic newline.)  This
+page number is appended to the previous entry so that it looks like
+this:</p>
+
+<blockquote><pre class="code">XView:about:3,7</pre></blockquote>
+
+<p>The next entry also matches both keys:</p>
+
+<blockquote><pre class="code">XView:about:10</pre></blockquote>
+
+<p>Again, only the page number is output so that entry now looks like:</p>
+
+<blockquote><pre class="code">XView:about:3,7,10</pre></blockquote>
+
+<p>In this way, three entries that differ only in page number are
+combined into a single entry.</p>
+
+<p>The full script adds an additional test to see if the volume
+identifier matches.  Here's the full <b class="emphasis-bold">pagenums.idx</b>
+script:</p>
+
+<blockquote><pre class="code">#!/work/bin/nawk -f
+# ------------------------------------------------
+# pagenums.idx -- collect pages for common entries 
+# Author:  Dale Dougherty
+# Version 1.1   7/10/90
+# 
+# input should be PRIMARY:SECONDARY:PAGE:VOLUME
+# ------------------------------------------------
+
+BEGIN { FS = ":"; OFS = ""}
+
+# main routine -- apply to all input lines
+{
+   # assign fields to variables
+	PRIMARY = $1
+	SECONDARY = $2
+	PAGE = $3
+	VOLUME = $4
+
+   # check for a see also and collect it in array
+	if (SECONDARY ~ /\([Ss]ee +[Aa]lso/) {
+	# create tmp copy &amp; remove "~zz" from copy 
+		tmpSecondary = SECONDARY
+		sub(/~zz\([Ss]ee +[Aa]lso */, "", tmpSecondary)
+		sub(/\) */, "", tmpSecondary)
+	# remove secondary key along with "~zz"
+		sub(/^.*~zz\([Ss]ee +[Aa]lso */, "", SECONDARY)
+		sub(/\) */, "", SECONDARY)
+	# assign to next element of seeAlsoList
+		seeAlsoList[++eachSeeAlso] = SECONDARY "; "
+		prevPrimary = PRIMARY
+	# assign copy to previous secondary key
+		prevSecondary = tmpSecondary 
+		next
+	} # end test for see Also
+
+   # Conditionals to compare keys of current record to previous
+   #  record.  If Primary and Secondary keys are the same, only
+   #  the page number is printed. 
+
+   # test to see if each PRIMARY key matches previous key
+	if (PRIMARY == prevPrimary) {
+
+	# test to see if each SECONDARY key matches previous key
+		if (SECONDARY == prevSecondary)
+		# test to see if VOLUME matches;
+		# print only VOLUME:PAGE
+			if (VOLUME == prevVolume)
+				printf (",%s", PAGE)
+			else {
+				printf ("; ")
+				volpage(VOLUME, PAGE)
+			}
+		else{
+		# if array of See Alsos, output them now
+			if (eachSeeAlso) outputSeeAlso(2)
+		# print PRIMARY:SECONDARY:VOLUME:PAGE
+			printf ("\n%s:%s:", PRIMARY, SECONDARY)
+			volpage(VOLUME, PAGE)
+		}
+	} # end of test for PRIMARY == prev
+	else { # PRIMARY != prev
+		# if we have an array of See Alsos, output them now
+		if (eachSeeAlso) outputSeeAlso(1)
+		if (NR != 1) 
+			printf ("\n")
+		if (NF == 1){
+			printf ("%s:", $0)
+		}
+		else {
+			printf ("%s:%s:", PRIMARY, SECONDARY)
+			volpage(VOLUME, PAGE)
+		}
+	}
+   	prevPrimary = PRIMARY
+	prevSecondary = SECONDARY
+	prevVolume = VOLUME
+
+} # end of main routine
+
+# at end, print newline
+END { 
+   # in case last entry has "see Also"
+	if (eachSeeAlso) outputSeeAlso(1)
+	printf("\n")
+}
+
+# outputSeeAlso function -- list elements of seeAlsoList 
+function outputSeeAlso(LEVEL) {
+	# LEVEL - indicates which key we need to output
+	if (LEVEL == 1)
+		printf ("\n%s:(See also ", prevPrimary)
+	else {
+		sub(/;.*$/, "", prevSecondary)
+		printf ("\n%s:%s; (See also ", prevPrimary, prevSecondary)
+	}
+
+	sub(/; $/, ".):", seeAlsoList[eachSeeAlso])
+	for (i = 1; i &lt;= eachSeeAlso; ++i)
+		printf ("%s", seeAlsoList[i]) 
+	eachSeeAlso = 0
+}
+
+# volpage function -- determine whether or not to print volume info 
+# 	two args: volume &amp; page
+ 
+function volpage(v, p)
+{
+   # if VOLUME is empty then print PAGE only 
+	if ( v == "" ) 
+		printf ("%s", p)
+	else
+   # otherwise print VOLUME^PAGE
+		printf ("%s^%s",v, p)  
+}</pre></blockquote>
+
+<p>Remember, first of all, that the input to the program is sorted by its
+keys.  The page numbers are also in order, such that an entry for
+"graphics" on page 7 appears in the input before one on page 10.
+Similarly, entries for Volume I appear in the input before Volume II.
+Therefore, this program need do no sorting; it simply compares the
+keys and if they are the same, appends the page number to a list.  In
+this way, the entries are reduced.</p>
+
+<p>This script also handles "see also" entries.  Since the records are
+now sorted, we can remove the special sorting sequence "~zz."  We also
+handle the case where we might encounter consecutive "see also"
+entries.  We don't want to output:</p>
+
+<blockquote><pre class="code">Toolkit (see also Xt) (See also XView) (See also Motif).</pre></blockquote>
+
+<p>Instead we'd like to combine them into a list such that they appear
+as:</p>
+
+<blockquote><pre class="code">Toolkit (see also Xt; XView; Motif)</pre></blockquote>
+
+<p>To do that, we create an array named <b class="emphasis-bold">seeAlsoList</b>.
+From <b class="emphasis-bold">SECONDARY</b>, we remove the parentheses, the
+secondary key if it exists and the "see also" and then assign it to an
+element of <b class="emphasis-bold">seeAlsoList</b>.  We make a copy of
+<b class="emphasis-bold">SECONDARY</b> with the secondary key and assign it to
+<b class="emphasis-bold">prevSecondary</b> for making comparisons to the next
+entry.</p>
+
+<p>The function <b class="emphasis-bold">outputSeeAlso()</b> is called to
+read all the elements of the array and print them.  The function
+<b class="emphasis-bold">volpage()</b> is also simple and determines
+whether or not we need to output a volume number.  Both of these
+functions are called from more than one place in the code, so the main
+reason for defining them as functions is to reduce duplication.</p>
+
+<p>Here's an example of what it produces for a single-book index:</p>
+
+<blockquote><pre class="code">X Window System:Xlib:6
+XFontStruct structure::317
+Xlib::6
+Xlib:repainting canvas:88
+Xlib.h header file::89,294
+Xv_Font type::310
+XView::18
+XView:about:3,7,10
+XView:as object-oriented system:17</pre></blockquote>
+
+<p>Here's an example of what it produces for a master index:</p>
+
+<blockquote><pre class="code">reserved names:table of:I^43
+Xt:example of programming interface:I^44,65
+Xt:objects; list of:I^43,58; II^40
+Xt:packages:I^43,61; II^42
+Xt:programs; initialization:I^45
+Xt:reserved names:I^43,58
+Xt:reserved prefixes:I^43,58
+Xt:types:I^43,54,61</pre></blockquote>
+
+<p>The "^" is used as a temporary delimiter between the volume number and
+the list of page numbers.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-2.5" /><div class="sect2">
+<h3 class="sect2">12.2.5. Merging Entries with the Same Keys</h3>
+
+<p>The <b class="emphasis-bold">pagenums.idx</b> program reduced entries that were
+the same except for the page number.  Now we'll to process
+entries that share the same primary key.  We also want to look for
+consecutive page numbers and combine them in ranges.</p>
+
+<p>The <b class="emphasis-bold">combine.idx</b> is quite similar to the
+<b class="emphasis-bold">pagenums.idx</b> script, making another pass through
+the index, comparing entries with the same primary key.  The following
+pseudocode abstracts this comparison. (To make this discussion easier, we
+will omit tertiary keys and show how to compare primary and secondary
+keys.)  After the entries are processed by
+<b class="emphasis-bold">pagenums.idx</b>, no two entries exist that share the
+same primary and secondary keys.  Therefore, we don't have to compare
+secondary keys.</p>
+
+<blockquote><pre class="code">PRIMARY = $1
+SECONDARY = $2
+PAGE = $3
+if (PRIMARY == prevPRIMARY)
+	print :SECONDARY:
+else
+	print PRIMARY:SECONDARY
+prevPRIMARY = PRIMARY
+prevSECONDARY = SECONDARY</pre></blockquote>
+
+<p>If the primary keys match, we output only the secondary
+key.  For instance, if there are three entries:</p>
+
+<blockquote><pre class="code">XView:18
+XView:about:3, 7, 10
+XView:as object-oriented system:17</pre></blockquote>
+
+<p>they will be output as:</p>
+
+<blockquote><pre class="code">XView:18
+:about:3, 7, 10
+:as object-oriented system:17</pre></blockquote>
+
+<p>We drop the primary key when it is the same.  The actual code is a
+little more difficult because there are tertiary keys.  We have to
+test primary and secondary keys to see if they are unique or the same,
+but we don't have to test tertiary keys.  (We only need to know that
+they are there.)</p>
+
+<p>You no doubt noticed that the above pseudocode does not output page
+numbers.  The second role of this script is to examine page numbers
+and combine a list of consecutive numbers.  The page numbers are a
+comma-separated list that can be loaded into an array, using the
+<b class="emphasis-bold">split()</b> function.</p>
+
+<p>To see if numbers are consecutive, we loop through the array comparing
+each element to 1 + the previous element.</p>
+
+<blockquote><pre class="code">eachpage[j-1]+1 == eachpage[j]</pre></blockquote>
+
+<p>In other words, if adding 1 to the previous element produces the
+current element, then they are consecutive.  The previous element
+becomes the first page number in the range and the current element
+becomes the last page in the range.  This is done within a
+<b class="emphasis-bold">while</b> loop until the conditional is not true, and
+the page numbers are not consecutive.  Then we output the first page
+number and the last page number separated by a hyphen:</p>
+
+<blockquote><pre class="code">23-25</pre></blockquote>
+
+<p>The actual code looks more complicated than this because it is called
+from a function that must recognize volume and page number pairs.  It
+first has to split the volume from the list of page numbers and then
+it can call the function (<b class="emphasis-bold">rangeOfPages()</b>)
+to process the list of numbers.</p>
+
+<p>Here is the full listing of <b class="emphasis-bold">combine.idx</b>:</p>
+
+<blockquote><pre class="code">#!/work/bin/nawk -f
+# ------------------------------------------------
+# combine.idx -- merge keys with same PRIMARY key
+#		and combine consecutive page numbers
+# Author:  Dale Dougherty
+# Version 1.1   7/10/90
+# 
+# input should be PRIMARY:SECONDARY:PAGELIST
+# ------------------------------------------------
+
+BEGIN   { FS = ":"; OFS = ""}
+
+# main routine -- applies to all input lines
+#  It compares the keys and merges the duplicates.
+{
+   # assign first field
+	PRIMARY=$1
+   # split second field, getting SEC and TERT keys.
+	sizeOfArray = split($2, array, ";") 
+	SECONDARY = array[1]
+	TERTIARY = array[2]
+   # test that tertiary key exists
+	if (sizeOfArray &gt; 1) {
+	# tertiary key exists
+		isTertiary = 1 
+	# two cases where ";" might turn up
+	# check SEC key for list of "see also" 
+		if (SECONDARY ~ /\([sS]ee also/){
+			SECONDARY = $2
+			isTertiary = 0
+		}
+	# check TERT key for "see also" 
+		if (TERTIARY ~ /\([sS]ee also/){
+			TERTIARY = substr($2, (index($2, ";") + 1))
+		}	
+	}
+	else # tertiary key does not exist
+		isTertiary = 0
+   # assign third field
+	PAGELIST = $3
+
+   # Conditional to compare primary key of this entry to that
+   #  of previous entry. Then compare secondary keys.  This 
+   #  determines which non-duplicate keys to output.
+	if (PRIMARY == prevPrimary) {
+		if (isTertiary &amp;&amp; SECONDARY == prevSecondary)
+			printf (";\n::%s", TERTIARY)
+		else
+			if (isTertiary)
+				printf ("\n:%s; %s", SECONDARY, TERTIARY)
+			else
+				printf ("\n:%s", SECONDARY)
+	 }
+	 else {
+		if (NR != 1) 
+			printf ("\n")
+		if ($2 != "") 
+			printf ("%s:%s", PRIMARY, $2)
+		else 
+			printf ("%s", PRIMARY)
+
+		prevPrimary = PRIMARY
+	}
+
+	prevSecondary = SECONDARY
+} # end of main procedure
+
+# routine for "See" entries (primary key only)
+NF == 1 { printf ("\n") }
+
+# routine for all other entries
+#  It handles output of the page number.
+
+NF &gt; 1  {
+	if (PAGELIST)
+	# calls function numrange() to look for 
+ 	# consecutive page numbers.
+		printf (":%s", numrange(PAGELIST))  
+	else
+		if (! isTertiary || (TERTIARY &amp;&amp; SECONDARY)) printf (":")  
+
+} # end of NF &gt; 1
+
+# END procedure outputs newline
+END {  printf ("\n") }
+
+# Supporting Functions
+
+# numrange -- read list of Volume^Page numbers, detach Volume
+#		from Page for each Volume and call rangeOfPages 
+#		to combine consecutive page numbers in the list. 
+#	PAGE = volumes separated by semicolons; volume and page
+#		separated by ^.
+
+function numrange(PAGE,     listOfPages, sizeOfArray)
+{
+  # Split up list by volume.
+	sizeOfArray = split(PAGE, howManyVolumes,";") 
+  # Check to see if more than 1 volume.
+	if (sizeOfArray &gt; 1) {
+
+	# if more than 1 volume, loop through list 
+		for (i = 1; i &lt;= sizeOfArray; ++i) {
+		# for each Volume^Page element, detach Volume 
+		# and call rangeOfPages function on Page to
+		# separate page numbers and compare to find
+		# consecutive numbers.
+			if (split(howManyVolumes[i],volPage,"^") == 2)  
+				listOfPages = volPage[1] "^"
+				   rangeOfPages(volPage[2])
+		# collect output in listOfPages
+			if (i == 1) 
+				result = listOfPages
+			else
+				result=result ";" listOfPages
+		} # end for loop
+	}
+	else { # not more than 1 volume
+
+	# check for single volume index with volume number 
+	# if so, detach volume number.
+	# Both call rangeOfPages on the list of page numbers.
+		if (split(PAGE,volPage,"^") == 2 )  
+		# if Volume^Page, detach volume and then call rangeOfPages 
+			listOfPages = volPage[1] "^" rangeOfPages(volPage[2])
+		else # No volume number involved 
+			listOfPages = rangeOfPages(volPage[1])
+		result = listOfPages
+	} # end of else
+
+	return result  # Volume^Page list
+
+} # End of numrange function
+
+# rangeOfPages -- read list of comma-separated page numbers,  
+#		load them into an array, and compare each one
+#		to the next, looking for consecutive numbers.
+#	PAGENUMBERS = comma-separated list of page numbers
+
+function rangeOfPages(PAGENUMBERS, pagesAll, sizeOfArray,pages,
+                       listOfPages, d, p, j) {
+   # close-up space on troff-generated ranges
+	gsub(/ - /, ",-", PAGENUMBERS)
+
+   # split list up into eachpage array.
+	sizeOfArray = split(PAGENUMBERS, eachpage, ",")
+   # if more than 1 page number
+	if (sizeOfArray &gt; 1){
+	# for each page number, compare it to previous number + 1
+		p = 0  # flag indicates assignment to pagesAll 
+	# for loop starts at 2
+		for (j = 2; j-1 &lt;= sizeOfArray; ++j) {
+		# start by saving first page in sequence (firstpage)    
+		# and loop until we find last page (lastpage)
+			firstpage = eachpage[j-1]
+			d = 0  # flag indicates consecutive numbers found  
+		# loop while page numbers are consecutive
+			while ((eachpage[j-1]+1) == eachpage[j] ||
+					eachpage[j] ~ /^-/) {
+			# remove "-" from troff-generated range
+				if (eachpage[j] ~ /^-/) {
+					sub(/^-/, "", eachpage[j])
+				}
+				lastpage = eachpage[j]
+			# increment counters
+				++d
+				++j
+			} # end of while loop
+		# use values of firstpage and lastpage to make range.
+			if (d &gt;= 1) {
+			# there is a range
+				pages = firstpage "-" lastpage 
+			}
+			else # no range; only read firstpage 
+				pages = firstpage 
+		# assign range to pagesAll 
+			if (p == 0) {
+				pagesAll = pages 
+				p = 1
+			}
+			else {
+				pagesAll = pagesAll "," pages
+			}
+		}# end of for loop
+
+	# assign pagesAll to listOfPages
+		listOfPages = pagesAll
+
+	} # end of sizeOfArray &gt; 1
+
+	else # only one page 
+		listOfPages = PAGENUMBERS
+
+   # add space following comma
+	gsub(/,/, ", ", listOfPages)
+   # return changed list of page numbers
+	return listOfPages
+} # End of rangeOfPages function</pre></blockquote>
+
+<p>This script consists of minimal <b class="emphasis-bold">BEGIN</b> and
+<b class="emphasis-bold">END</b> procedures.  The main routine does the work of
+comparing primary and secondary keys.  The first part of this routine
+assigns the fields to variables.  The second field contains the
+secondary and tertiary keys and we use
+<b class="emphasis-bold">split()</b> to separate them.  Then we test
+that there is a tertiary key and set the flag
+<b class="emphasis-bold">isTertiary</b> to either 1 or 0.</p>
+
+<p>The next part of the main procedure contains the conditional
+expressions that look for identical keys.  As we said in our
+discussion of the pseudocode for this part of the program, entries
+with wholly identical keys have already been removed by the
+<b class="emphasis-bold">pagenums.idx</b>.</p>
+
+<p>The conditionals in this procedure determine what keys to output based
+on whether or not each is unique.  If the primary key is unique, it is
+output, along with the rest of the entry.  If the primary key matches
+the previous key, we compare secondary keys.  If the secondary key is
+unique, then it is output, along with the rest of the entry.  If the
+primary key matches the previous primary key, and the secondary key
+matches the previous secondary key, then the tertiary key must be
+unique.  Then we only output the tertiary key, leaving the primary and
+secondary keys blank.</p>
+
+<p>The different forms are shown below:</p>
+
+<blockquote class="simplelist">
+<p>&#160;primary</p>
+<p>&#160;primary:secondary</p>
+<p>&#160;:secondary</p>
+<p>&#160;:secondary:tertiary</p>
+<p>&#160;::tertiary</p>
+<p>&#160;primary:secondary:tertiary</p>
+</blockquote>
+
+<p>The main procedure is followed by two additional routines.  The first
+of them is executed only when <b class="emphasis-bold">NF</b> equals one.  It
+deals with the first of the forms on the list above.  That is, there
+is no page number so we must output a newline to finish the entry.</p>
+
+<p>The second procedure deals with all entries that have page numbers.
+This is the procedure where we call a function to take apart the list
+of page numbers and look for consecutive pages.  It calls the
+<b class="emphasis-bold">numrange()</b> function, whose main purpose is
+to deal with a multivolume index where a list of page numbers might
+look like:</p>
+
+<blockquote><pre class="code">I^35,55; II^200</pre></blockquote>
+
+<p>This function calls <b class="emphasis-bold">split()</b> using a
+semicolon delimiter to separate each volume.  Then we call
+<b class="emphasis-bold">split()</b> using a "^" delimiter to detach the
+volume number from the list of page numbers.  Once we have the list of
+pages, we call a second function
+<b class="emphasis-bold">rangeOfPages()</b> to look for consecutive
+numbers.  On a single-book index, such as the sample shown in this
+chapter, the <b class="emphasis-bold">numrange()</b> function really
+does nothing but call <b class="emphasis-bold">rangeOfPages()</b>.  We
+discussed the meat of the <b class="emphasis-bold">rangeOfPages()</b>
+function earlier.  The <b class="emphasis-bold">eachpage</b> array is created
+and a <b class="emphasis-bold">while</b> loop is used to go through the array
+comparing an element to the one previous.  This function returns the
+list of pages.</p>
+
+<p>Sample output from this program follows:</p>
+
+<blockquote><pre class="code">Xlib:6
+:repainting canvas:88
+Xlib.h header file:89, 294
+Xv_Font type:310
+XView:18
+:about:3, 7, 10
+:as object-oriented system:17
+:compiling programs:41
+:concept of windows differs from X:25
+:data types;  table of:20
+:example of programming interface:44
+:frames and subframes:26
+:generic functions:21
+:Generic Object:18, 24
+:libraries:42
+:notification:10, 35
+:objects:23-24;
+:: table of:20;
+:: list of:43
+:packages:18, 43
+:programmer's model:17-23
+:programming interface:41
+:programs;  initialization:45
+:reserved names:43
+:reserved prefixes:43
+:structure of applications:41
+:subwindows:28
+:types:43
+:window objects:25</pre></blockquote>
+
+<p>In particular, notice the entry for "objects" under "XView."  This is
+an example of a secondary key with multiple tertiary keys.  It is also
+an example of an entry with a consecutive page range.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-2.6" /><div class="sect2">
+<h3 class="sect2">12.2.6. Formatting the Index</h3>
+
+<p>The previous scripts have done nearly all of the processing, leaving 
+the list of entries in good order.  The
+<b class="emphasis-bold">format.idx</b> script, probably the easiest of the
+scripts, reads the list of entries and generates a report in two
+different formats, one for display on a terminal screen and one to
+send to <b class="emphasis-bold">troff</b> for printing on a laser printer.
+Perhaps the only difficulty is that we output the entries grouped by
+each letter of the alphabet.</p>
+
+<p>A command-line argument sets the variable <b class="emphasis-bold">FMT</b> that
+determines which of the two output formats is to be used.</p>
+
+<p>Here's the full listing for <b class="emphasis-bold">format.idx</b>:</p>
+
+<blockquote><pre class="code">#!/work/bin/nawk -f
+# ------------------------------------------------
+# format.idx -- prepare formatted index
+# Author:  Dale Dougherty
+# Version 1.1   7/10/90
+# 
+# input should be PRIMARY:SECONDARY:PAGE:VOLUME
+# Args:  FMT = 0 (default) format for screen
+#        FMT = 1 output with troff macros
+#        MACDIR = pathname of index troff macro file 
+# ------------------------------------------------
+BEGIN {		FS = ":"
+		upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		lower = "abcdefghijklmnopqrstuvwxyz" 
+}
+
+# Output initial macros if troff FMT 
+NR == 1 &amp;&amp; FMT == 1 {
+		if (MACDIR)
+			printf (".so %s/indexmacs\n", MACDIR) 
+		else
+			printf (".so indexmacs\n") 
+		printf (".Se \"\" \"Index\"\n") 
+		printf (".XC\n") 
+} # end of NR == 1
+ 
+
+# main routine - apply to all lines
+# determine which fields to output
+{
+   # convert octal colon to "literal" colon 
+   # make sub for each field, not $0, so that fields are not parsed
+	gsub(/\\72/, ":", $1)
+	gsub(/\\72/, ":", $2)
+	gsub(/\\72/, ":", $3)
+
+   # assign field to variables
+	PRIMARY = $1
+	SECONDARY = $2
+	TERTIARY = ""
+	PAGE = $3
+	if (NF == 2) {
+		SECONDARY = ""
+		PAGE = $2
+	}
+   # Look for empty fields to determine what to output
+	if (! PRIMARY) {  
+		if (! SECONDARY) {
+			TERTIARY = $3
+			PAGE = $4	
+			if (FMT == 1)
+				printf (".XF 3 \"%s", TERTIARY)
+			else
+				printf ("  %s", TERTIARY)
+		}
+		else
+		        if (FMT == 1)
+			        printf (".XF 2 \"%s", SECONDARY)
+		        else
+			        printf ("  %s", SECONDARY)
+	}
+	else { # if primary entry exists	
+	     # extract first char of primary entry
+		firstChar = substr($1, 1, 1)
+	     # see if it is in lower string.
+		char = index(lower, firstChar) 
+	     # char is an index to lower or upper letter 
+		if (char == 0)  {
+		# if char not found, see if it is upper
+			char = index(upper, firstChar)
+			if (char == 0)
+				char = prevChar
+		}
+		# if new char, then start group for new letter of alphabet
+		if (char != prevChar) {
+			if (FMT == 1)
+				printf(".XF A \"%s\"\n", substr(upper, char, 1))
+			else
+				printf("\n\t\t%s\n", substr(upper, char, 1))
+			prevChar = char
+		}
+		# now output primary and secondary entry
+		if (FMT == 1)
+			if (SECONDARY)
+				printf (".XF 1 \"%s\" \"%s", PRIMARY, SECONDARY)
+			else
+				printf (".XF 1 \"%s\" \"", PRIMARY)
+		else
+			if (SECONDARY)
+				printf ("%s, %s", PRIMARY, SECONDARY)
+			else
+				printf ("%s", PRIMARY)
+	}
+	
+   # if page number, call pageChg to replace "^" with ":"
+   # for multi-volume page lists.
+	if (PAGE) {
+		if (FMT == 1) {
+			# added to omit comma after bold entry
+			if (! SECONDARY &amp;&amp; ! TERTIARY)
+				printf ("%s\"", pageChg(PAGE))
+			else
+				printf (", %s\"", pageChg(PAGE))
+		}
+		else
+			printf (", %s", pageChg(PAGE))
+	}
+	else if (FMT == 1)
+		printf("\"")
+	
+	printf ("\n")
+
+} # End of main routine
+
+# Supporting function
+
+# pageChg -- convert "^" to ":" in list of volume^page 
+#	Arg: pagelist -- list of numbers 
+
+function pageChg(pagelist) {
+	 gsub(/\^/, ":", pagelist)
+	 if (FMT == 1) {
+		gsub(/[1-9]+\*/, "\\fB&amp;\\P", pagelist)
+		gsub(/\*/, "", pagelist)
+	}
+	return pagelist
+}# End of pageChg function</pre></blockquote>
+
+<p>The <b class="emphasis-bold">BEGIN</b> procedure defines the field separator and
+the strings <b class="emphasis-bold">upper</b> and <b class="emphasis-bold">lower</b>.
+The next procedure is one that outputs the name of the file that
+contains the <b class="emphasis-bold">troff</b> index macro definitions.  The
+name of the macro directory can be set from the command line as the
+second argument.</p>
+
+<p>The main procedure begins by converting the "hidden" colon to a
+literal colon.  Note that we apply the
+<b class="emphasis-bold">gsub()</b> function to each field rather than
+the entire line because doing the latter would cause the line to be
+reevaluated and the current order of fields would be disturbed.</p>
+
+<p>Next we assign the fields to variables and then test to see whether
+the field is empty.  If the primary key is not defined, then we see if
+the secondary key is defined.  If it is, we output it.  If it is not,
+then we output a tertiary key.  If the primary key is defined, then we
+extract its first character and then see if we find it in the
+<b class="emphasis-bold">lower</b> string.</p>
+
+<blockquote><pre class="code">firstChar = substr($1, 1, 1)
+     
+char = index(lower, firstChar)</pre></blockquote>
+
+<p>The <b class="emphasis-bold">char</b> variable holds the position of the letter
+in the string.  If this number is greater than or equal to 1, then we
+also have an index into the <b class="emphasis-bold">upper</b> string.  We
+compare each entry and while <b class="emphasis-bold">char</b> and
+<b class="emphasis-bold">prevChar</b> are the same, the current letter of the
+alphabet is unchanged.  Once they differ, first we check for the
+letter in the <b class="emphasis-bold">upper</b> string.  If
+<b class="emphasis-bold">char</b> is a new letter, we output a centered string
+that identifies that letter of the alphabet.</p>
+
+<p>Then we look at outputting the primary and secondary entries.
+Finally, the list of page numbers is output, after calling the
+<b class="emphasis-bold">pageChg()</b> function to replace the "^" in
+volume-page references with a colon.</p>
+
+<p>Sample screen output produced by <b class="emphasis-bold">format.idx</b> is
+shown below:</p>
+
+<blockquote><pre class="code">X
+X Protocol, 6
+X Window System, events, 84
+  extensibility, 9
+  interclient communications, 9
+  overview, 3
+  protocol, 6
+  role of window manager, 9
+  server and client relationship, 5
+  software hierarchy, 6
+  toolkits, 7
+  X Window ID for paint window, 87
+  Xlib, 6
+XFontStruct structure, 317
+Xlib, 6
+  repainting canvas, 88
+Xlib.h header file, 89, 294
+Xv_Font type, 310
+XView, 18
+  about, 3, 7, 10
+  as object-oriented system, 17
+  compiling programs, 41
+  concept of windows differs from X, 25
+  data types;  table of, 20
+  example of programming interface, 44
+  frames and subframes, 26
+  generic functions, 21
+  Generic Object, 18, 24</pre></blockquote>
+
+<p>Sample <b class="emphasis-bold">troff</b> output produced by <b class="emphasis-bold">format.idx</b> is
+shown below:</p>
+
+<blockquote><pre class="code">.XF A "X"
+.XF 1 "X Protocol" "6"
+.XF 1 "X Window System" "events, 84"
+.XF 2 "extensibility, 9"
+.XF 2 "interclient communications, 9"
+.XF 2 "overview, 3"
+.XF 2 "protocol, 6"
+.XF 2 "role of window manager, 9"
+.XF 2 "server and client relationship, 5"
+.XF 2 "software hierarchy, 6"
+.XF 2 "toolkits, 7"
+.XF 2 "X Window ID for paint window, 87"
+.XF 2 "Xlib, 6"
+.XF 1 "XFontStruct structure" "317"
+.XF 1 "Xlib" "6"
+.XF 2 "repainting canvas, 88"
+.XF 1 "Xlib.h header file" "89, 294"
+.XF 1 "Xv_Font type" "310"
+.XF 1 "XView" "18"
+.XF 2 "about, 3, 7, 10"
+.XF 2 "as object-oriented system, 17"</pre></blockquote>
+
+<p>This output must be formatted by <b class="emphasis-bold">troff</b> to produce a
+printed version of the index.  The index of this book was originally
+done using the <b class="emphasis-bold">masterindex</b> program.</p>
+
+<a name="sedawk-ch-12-sect-2.6.1" /><div class="sect3">
+<h3 class="sect3">12.2.6.1. The masterindex shell script</h3>
+
+<p>The <b class="emphasis-bold">masterindex</b> shell script is the glue that holds
+all of these scripts together and invokes them with the proper options
+based on the user's command line.  For instance, the user enters:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>masterindex -s -m volume1 volume2 </b></tt></pre></blockquote>
+
+<p>to specify that a master index be created from the files
+<em class="filename">volume1</em></tt> and <em class="filename">volume2</em></tt> and that
+the output be sent to the screen.</p>
+
+<p>The <b class="emphasis-bold">masterindex</b> shell script is presented in <a href="appc_01.htm">Appendix C, "Supplement for Chapter 12"</a> with the documentation.</p>
+</div>
+</div>
+
+
+
+
+<a name="IXT-12-266378" />
+<a name="IXT-12-266379" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12. Full-Featured Applications</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12.3. Spare Details of the masterindex Program</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

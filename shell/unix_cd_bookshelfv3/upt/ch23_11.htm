@@ -1,0 +1,122 @@
+<html><head><title>Disowning Processes (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch23_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">23.11. Disowning Processes</h2>
+
+<p><a name="IXT-23-5607" /><a name="IXT-23-5608" /><a name="IXT-23-5609" />Job
+control isn't always a good thing. For instance, I
+might want to start a long equipment-monitoring job running when I go
+home for the night. But if I simply put the job in the background and
+try to log out, <i class="command">zsh</i> says <tt class="literal">zsh: you have
+running</tt> <tt class="literal">jobs</tt>. If I log out anyway, the
+shell sends my background job a HUP signal. I could use <b class="emphasis-bold">nohup</b> (<a href="ch23_10.htm#upt3-CHP-23-SECT-10">Section 23.10</a>) to block
+the hangup signal, but there's a simpler way: tell
+the shell, "Don't use job control
+on this job." This is also true of jobs that I know
+are there -- a clock running on my X Window System display, for
+instance -- and that I'll never want to use job
+control on, so the jobs are just cluttering the <b class="emphasis-bold">jobs</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>) list.
+</p>
+
+<p>To run a job without job control, the trick in most shells is to
+start the job in a <b class="emphasis-bold">subshell</b> (<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>), and put the job inside that subshell into
+the background. This is sometimes called
+"disowning" the job. Note that the
+ampersand (<tt class="literal">&amp;</tt>) is <em class="emphasis">inside</em>
+the parentheses:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>(myprog -opts &amp;)</b></tt></pre></blockquote>
+
+<p>The job won't appear in the <i class="command">jobs</i>
+list, but <b class="emphasis-bold">ps</b> (<a name="IXT-23-5610" /><a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>) should
+show it running. (You might need to use a "show all
+jobs" option like <i class="command">ps -x</i> or
+<i class="command">ps -e</i>.) If you use <i class="command">ps -l</i> for a
+"long" listing,
+you'll see that the process' PPID
+(the process ID number of the <b class="emphasis-bold">parent
+process</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>)) is 1; this means
+that the process is now "owned" by
+<b class="emphasis-bold">init</b> (<a href="ch24_02.htm#upt3-CHP-24-SECT-2">Section 24.2</a>).
+On the other hand, if you'd started the job in the
+background normally (without the subshell trick),
+you'd see that its PPID was that of the shell you
+started it from.
+</p>
+
+<p><a name="IXT-23-5611" /><a name="IXT-23-5612" />The <a name="IXT-23-5613" />Z shell has a more direct way: its
+<tt class="literal">&amp;!</tt> and <tt class="literal">&amp;|</tt> background
+operators. Both of them do the same thing: if you use one of those
+operators instead of plain <tt class="literal">&amp;</tt>, the job will be
+disowned immediately; it won't appear in the
+<i class="command">jobs</i> list.
+</p>
+
+<p><a name="IXT-23-5614" />In most shells, once you start a job
+without the subshell trick, the shell that started the job will
+continue to be its parent. (Some shells, like the C shells, will give
+up ownership of a child process and let it keep running when you end
+the shell -- that is, when you log out -- and then
+<i class="command">init</i> will
+"inherit" the process.) In
+<i class="command">zsh</i><a name="IXT-23-5615" /><a name="IXT-23-5616" /> and
+<i class="command">bash</i> Version 2, though, you can change your mind
+after you start a job by using the shell's built-in
+<i class="command">disown</i><a name="IXT-23-5617" /> command. Give <i class="command">disown</i>
+the job number you want the shell to
+"forget." For instance,
+I'll start a background job and then disown it. It
+disappears from the job table, but giving <i class="command">ps</i> its
+process ID shows that the job is still running:
+</p>
+
+<blockquote><pre class="code">zsh% <tt class="userinput"><b>myprog -opts&amp;</b></tt>
+[1] 28954
+zsh% <tt class="userinput"><b>jobs</b></tt>
+[1]  + running    myprog -opts
+zsh% <tt class="userinput"><b>disown %1</b></tt>
+zsh% <tt class="userinput"><b>jobs</b></tt>
+zsh% <tt class="userinput"><b>ps 28954</b></tt>
+  PID TTY      STAT   TIME COMMAND
+28954 pts/5    S      0:09 myprog -opts</pre></blockquote>
+
+<p>If you don't give a job number,
+<i class="command">disown</i> "forgets"
+the current job. The <i class="command">bash2</i> version of
+<i class="command">disown</i> has options that <i class="command">zsh</i>
+doesn't: <i class="command">disown</i>
+-<span class="option">a</span> disowns all jobs, and <i class="command">disown</i>
+-<span class="option">r</span> disowns only running jobs.
+<a name="IXT-23-5618" /><a name="IXT-23-5619" />The
+<i class="command">bash2</i> option <span class="option">-h</span> does a different
+job: instead of removing a job from the job table, the job
+won't receive any HUP signal sent to the shell. This
+is similar to what the <i class="command">nohup</i> command does.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch23_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">23.10. nohup</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">23.12. Linux Virtual Consoles</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,810 @@
+<html><head><title>Pattern Matching Quick Reference with Examples (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch33_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">32.21. Pattern Matching Quick Reference with Examples</h2>
+
+<p><a href="ch32_04.htm#upt3-CHP-32-SECT-4">Section 32.4</a> <a name="upt3-IDXTERM-5082" />
+<a name="upt3-IDXTERM-5083" />gives an introduction to regular
+expressions. This article is intended for those of you who need just
+a quick listing of regular expression syntax as a refresher from time
+to time. It also includes some simple examples. The characters in
+<a href="ch32_21.htm#upt3-CHP-32-TABLE-7">Table 32-7</a> have special meaning only in
+<a name="IXT-32-4056" /><a name="IXT-32-4057" />search patterns.
+</p>
+
+<a name="upt3-CHP-32-TABLE-7" /><h4 class="objtitle">Table 32-7. Special characters in search patterns </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Pattern</p>
+</th>
+<th>
+<p>What does it match?</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>.</p>
+</td>
+<td>
+<p>Match any <em class="emphasis">single</em> character except newline.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">*</tt></p>
+</td>
+<td>
+<p>Match any number (including none) of the single characters that
+immediately precede it. The preceding character can also be a regular
+expression. For example, since . (dot) means any character,
+<tt class="literal">.*</tt> means "match any number of any
+character."
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^</tt></p>
+</td>
+<td>
+<p>Match the following regular expression at the beginning of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">$</tt></p>
+</td>
+<td>
+<p>Match the preceding regular expression at the end of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[ ]</tt></p>
+</td>
+<td>
+<p>Match any <em class="emphasis">one</em> of the enclosed characters.</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>A hyphen (<tt class="literal">-</tt>) indicates a range of consecutive
+characters. A caret (<tt class="literal">^</tt>) as the first character in
+the brackets reverses the sense: it matches any one character
+<em class="emphasis">not</em> in the list. A hyphen or a right square
+bracket (<tt class="literal">]</tt>) as the first character is treated as a
+member of the list. All other metacharacters are treated as members
+of the list.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\</tt>{<em class="replaceable"><tt>n,m</tt></em><tt class="literal">\}</tt>
+</p>
+</td>
+<td>
+<p>Match a range of occurrences of the single character that immediately
+precedes it. The preceding character can also be a regular
+expression. \{<em class="replaceable"><tt>n</tt></em>\} will match exactly
+<em class="replaceable"><tt>n</tt></em> occurrences,
+\{<em class="replaceable"><tt>n</tt></em>,\} will match at least
+<em class="replaceable"><tt>n</tt></em> occurrences, and
+\{<em class="replaceable"><tt>n</em>,<em class="replaceable">m</tt></em>\} will
+match any number of occurrences between <em class="replaceable"><tt>n</tt></em>
+and <em class="replaceable"><tt>m</tt></em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\</tt></p>
+</td>
+<td>
+<p>Turn off the special meaning of the character that follows (except
+for \{ and \(, etc., where it turns on the special meaning of the
+character that follows).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\( \)</tt></p>
+</td>
+<td>
+<p>Save the pattern enclosed between \( and \) into a special holding
+space. Up to nine patterns can be saved on a single line. They can be
+"replayed" in substitutions by the
+escape sequences \1 to \9.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\&lt; \&gt;</tt></p>
+</td>
+<td>
+<p>Match characters at beginning (<tt class="literal">\&lt;</tt>) or end
+(<tt class="literal">\&gt;</tt>) of a word.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">+</tt></p>
+</td>
+<td>
+<p>Match one or more instances of preceding regular expression.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">?</tt></p>
+</td>
+<td>
+<p>Match zero or one instances of preceding regular expression.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">|</tt></p>
+</td>
+<td>
+<p>Match the regular expression specified before or after.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">(' )</tt></p>
+</td>
+<td>
+<p>Apply a match to the enclosed group of regular expressions.</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>The characters in <a href="ch32_21.htm#upt3-CHP-32-TABLE-8">Table 32-8</a> have special meaning
+only in replacement patterns. <a name="IXT-32-4058" /> <a name="IXT-32-4059" /> <a name="IXT-32-4060" />
+</p>
+
+<a name="upt3-CHP-32-TABLE-8" /><h4 class="objtitle">Table 32-8. Special characters in replacement patterns </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Pattern</p>
+</th>
+<th>
+<p>What does it do?</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">\</tt></p>
+</td>
+<td>
+<p>Turn off the special meaning of the character that follows.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\</tt><em class="replaceable"><tt>n</tt></em></p>
+</td>
+<td>
+<p>Restore the <em class="replaceable"><tt>n</tt></em>th pattern previously saved
+by <tt class="literal">\(</tt> and <tt class="literal">\)</tt>.
+<em class="replaceable"><tt>n</tt></em> is a number from 1 to 9, with 1 starting
+on the left.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">&amp;</tt></p>
+</td>
+<td>
+<p>Reuse the string that matched the search pattern as part of the
+replacement pattern.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\u</tt></p>
+</td>
+<td>
+<p>Convert first character of replacement pattern to uppercase.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\U</tt></p>
+</td>
+<td>
+<p>Convert replacement pattern to uppercase.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\l</tt></p>
+</td>
+<td>
+<p>Convert first character of replacement pattern to lowercase.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\L</tt></p>
+</td>
+<td>
+<p>Convert replacement pattern to lowercase.</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>Note that many programs, especially
+<i class="command">perl</i><a name="IXT-32-4061" /> <a name="IXT-32-4062" /> <a name="IXT-32-4063" />,
+<i class="command">awk</i>, and <i class="command">sed</i>, implement their
+own programming languages and often have much more extensive support
+for regular expressions. As such, their manual pages are the best
+place to look when you wish to confirm which expressions are
+supported or whether the program supports more than simple regular
+expressions. On many systems, notably those with a large complement
+of GNU tools, the regular expression support is astonishing, and many
+generations of tools may be implemented by one program (as with
+<i class="command">grep</i>, which also emulates the later
+<i class="command">egrep</i> in the same program, with widely varying
+support for expression formats based on how the program is invoked).
+Don't make the mistake of thinking that all of these
+patterns will work everywhere in every program with regex support, or
+of thinking that this is all there is.
+</p>
+
+<a name="upt3-CHP-32-SECT-21.1" /><div class="sect2">
+<h3 class="sect2">32.21.1. Examples of Searching</h3>
+
+<p>When used with <i class="command">grep</i><a name="IXT-32-4064" /> <a name="IXT-32-4065" /> <a name="IXT-32-4066" />
+or <i class="command">egrep</i>, <a name="IXT-32-4067" />regular expressions are surrounded
+by <a name="IXT-32-4068" />quotes.
+(If the pattern contains a <tt class="literal">$</tt>, you must use single
+quotes from the shell; e.g.,
+<tt class="literal">'</tt><em class="replaceable"><tt>pattern</tt></em><tt class="literal">'</tt>.)
+When used with <i class="command">ed</i>, <i class="command">ex</i>,
+<i class="command">sed</i>, and <i class="command">awk</i>, regular
+expressions are usually surrounded by <tt class="literal">/</tt> (although
+any delimiter works). <a href="ch32_21.htm#upt3-CHP-32-TABLE-9">Table 32-9</a> has some example
+patterns.
+</p>
+
+<a name="upt3-CHP-32-TABLE-9" /><h4 class="objtitle">Table 32-9. Search pattern examples </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Pattern</p>
+</th>
+<th>
+<p>What does it match?</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">bag</tt></p>
+</td>
+<td>
+<p>The string <tt class="literal">bag</tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^bag</tt></p>
+</td>
+<td>
+<p><tt class="literal">bag</tt> at beginning of line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">bag$</tt></p>
+</td>
+<td>
+<p><tt class="literal">bag</tt> at end of line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^bag$</tt></p>
+</td>
+<td>
+<p><tt class="literal">bag</tt> as the only word on line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[Bb]ag</tt></p>
+</td>
+<td>
+<p><tt class="literal">Bag</tt> or <tt class="literal">bag</tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">b[aeiou]g</tt></p>
+</td>
+<td>
+<p>Second letter is a vowel.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">b[^aeiou]g</tt></p>
+</td>
+<td>
+<p>Second letter is a consonant (or uppercase or symbol).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">b.g</tt></p>
+</td>
+<td>
+<p>Second letter is any character.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^...$</tt></p>
+</td>
+<td>
+<p>Any line containing exactly three characters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^\</tt>.</p>
+</td>
+<td>
+<p>Any line that begins with a . (dot).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^\.[a-z][a-z]</tt></p>
+</td>
+<td>
+<p>Same, followed by two lowercase letters (e.g.,
+<i class="command">troff</i> requests).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^\.[a-z]\{2\}</tt></p>
+</td>
+<td>
+<p>Same as previous, <i class="command">grep</i> or <i class="command">sed</i>
+only.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^[^.]</tt></p>
+</td>
+<td>
+<p>Any line that doesn't begin with a . (dot).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">bugs*</tt></p>
+</td>
+<td>
+<p><tt class="literal">bug</tt>, <tt class="literal">bugs</tt>,
+<tt class="literal">bugss</tt>, etc.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">"word"</tt></p>
+</td>
+<td>
+<p>A word in quotes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">"*word"*</tt></p>
+</td>
+<td>
+<p>A word, with or without quotes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[A-Z][A-Z]*</tt></p>
+</td>
+<td>
+<p>One or more uppercase letters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[A-Z]+</tt></p>
+</td>
+<td>
+<p>Same, extended regular expression format.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[A-Z].*</tt></p>
+</td>
+<td>
+<p>An uppercase letter, followed by zero or more characters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[A-Z]*</tt></p>
+</td>
+<td>
+<p>Zero or more uppercase letters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[a-zA-Z]</tt></p>
+</td>
+<td>
+<p>Any letter.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[^0-9A-Za-z]</tt></p>
+</td>
+<td>
+<p>Any symbol (not a letter or a number).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[567]</tt></p>
+</td>
+<td>
+<p>One of the numbers <tt class="literal">5</tt>, <tt class="literal">6</tt>, or
+<tt class="literal">7</tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><b class="emphasis-bold">Extended regular expression patterns:</b></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">five|six|seven</tt></p>
+</td>
+<td>
+<p>One of the words <tt class="literal">five</tt>, <tt class="literal">six</tt>, or
+<tt class="literal">seven</tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">80[23]?86</tt></p>
+</td>
+<td>
+<p>One of the numbers <tt class="literal">8086</tt>, <tt class="literal">80286</tt>,
+or <tt class="literal">80386</tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">compan(y|ies)</tt></p>
+</td>
+<td>
+<p>One of the words <tt class="literal">company</tt> or
+<tt class="literal">companies</tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\&lt;the</tt></p>
+</td>
+<td>
+<p>Words like <tt class="literal">theater</tt> or <tt class="literal">the</tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">the\&gt;</tt></p>
+</td>
+<td>
+<p>Words like <tt class="literal">breathe</tt> or <tt class="literal">the</tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\&lt;the\&gt;</tt></p>
+</td>
+<td>
+<p>The word <tt class="literal">the</tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">0\{5,\}</tt></p>
+</td>
+<td>
+<p>Five or more zeros in a row.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}</tt></p>
+</td>
+<td>
+<p>U.S. Social Security number
+(<em class="replaceable"><tt>nnn</em><tt class="literal">-</tt><em class="replaceable">nn</em><tt class="literal">-</tt><em class="replaceable">nnnn</tt></em>).
+</p>
+</td>
+</tr>
+
+</table><p>
+
+</div>
+<a name="upt3-CHP-32-SECT-21.2" /><div class="sect2">
+<h3 class="sect2">32.21.2. Examples of Searching and Replacing</h3>
+
+<p><a href="ch32_21.htm#upt3-CHP-32-TABLE-10">Table 32-10</a> <a name="IXT-32-4069" /> <a name="IXT-32-4070" />shows the
+<a name="IXT-32-4071" />metacharacters available to
+<i class="command">sed</i><a name="IXT-32-4072" /> <a name="IXT-32-4073" /> <a name="IXT-32-4074" /> or <i class="command">ex</i>.
+(<i class="command">ex</i> commands begin with a colon.) A space is
+marked by <tt class="literal"><img src="figs/squ.gif"></tt>; a TAB is marked by
+<em class="replaceable"><tt>tab</tt></em>.
+</p>
+
+<a name="upt3-CHP-32-TABLE-10" /><h4 class="objtitle">Table 32-10. Search and replace commands </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Result</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">s/.*/( &amp; )/</tt></p>
+</td>
+<td>
+<p>Redo the entire line, but add parentheses.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">s/.*/mv &amp; &amp;.old/</tt></p>
+</td>
+<td>
+<p>Change a word list into <i class="command">mv</i> commands.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">/^$/d</tt></p>
+</td>
+<td>
+<p>Delete blank lines.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:g/^$/d</tt></p>
+</td>
+<td>
+<p><i class="command">ex</i> version of previous.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">/^[<img src="figs/squ.gif"></tt><em class="replaceable"><tt>tab</tt></em><tt class="literal">]*$/d</tt>
+</p>
+</td>
+<td>
+<p>Delete blank lines, plus lines containing only spaces or TABs.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:g/^[<img src="figs/squ.gif"></tt><em class="replaceable"><tt>tab</tt></em><tt class="literal">]*$/d</tt>
+</p>
+</td>
+<td>
+<p><i class="command">ex</i> version of previous.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">s/<img src="figs/squ.gif"><img src="figs/squ.gif"></tt>*/<tt class="literal"><img src="figs/squ.gif"></tt>/g
+</p>
+</td>
+<td>
+<p>Turn one or more spaces into one space.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:%s/<img src="figs/squ.gif"></tt>*/<tt class="literal"><img src="figs/squ.gif"></tt>/g</p>
+</td>
+<td>
+<p><i class="command">ex</i> version of previous.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:s/[0-9]/Item &amp;:/</tt></p>
+</td>
+<td>
+<p>Turn a number into an item label (on the current line).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:s</tt></p>
+</td>
+<td>
+<p>Repeat the substitution on the first occurrence.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:&amp;</tt></p>
+</td>
+<td>
+<p>Same.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:sg</tt></p>
+</td>
+<td>
+<p>Same, but for all occurrences on the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:&amp;g</tt></p>
+</td>
+<td>
+<p>Same.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:%&amp;g</tt></p>
+</td>
+<td>
+<p>Repeat the substitution globally.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:.,$s/Fortran/\U&amp;/g</tt></p>
+</td>
+<td>
+<p>Change word to uppercase, on current line to last line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:%s/.*/\L&amp;/</tt></p>
+</td>
+<td>
+<p>Lowercase entire file.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:s/\&lt;./\u&amp;/g</tt></p>
+</td>
+<td>
+<p>Uppercase first letter of each word on current line (useful for
+titles).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:%s/yes/No/g</tt></p>
+</td>
+<td>
+<p>Globally change a word to <tt class="literal">No</tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:%s/Yes/~/g</tt></p>
+</td>
+<td>
+<p>Globally change a different word to <tt class="literal">No</tt> (previous
+replacement).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">s/die or do/do or die/</tt></p>
+</td>
+<td>
+<p>Transpose words.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">s/\([Dd]ie\) or \([Dd]o\)/\2 or</tt>
+<tt class="literal">\1/</tt><a name="IXTR3-4074" /> <a name="IXTR3-4075" />
+</p>
+</td>
+<td>
+<p>Transpose, using hold buffers to preserve case.</p>
+</td>
+</tr>
+
+</table><p>
+
+<p> <em class="emphasis">-- DG<a name="IXTR3-4076" /></em> 
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch33_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">32.20. Valid Metacharacters for Different Unix Programs</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">33. Wildcards</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,702 @@
+<html><head><title>Startup (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 2. Startup</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch02_01.htm#sect1">Booting Mac OS X</a><br />
+<a href="ch02_02.htm">Adding Startup Items</a><br />
+<a href="ch02_03.htm">Scheduling Tasks</a><br /></p></div><p><a name="mosxgeeks-IDXTERM-113" /> <a name="mosxgeeks-IDXTERM-114" />The most striking difference between
+Mac OS X and other flavors of Unix is in how Mac OS X handles the
+boot process. Gone are <em class="filename">/etc/inittab</em>,
+<em class="filename">/etc/init.d</em>, and
+<em class="filename">/etc/rc.local</em> from traditional Unix systems. In
+their place is a BSD-like startup sequence sandwiched between a
+<a name="IXT-2-308" />Mach<a href="#FOOTNOTE-5">[5]</a>
+foundation and the Aqua user interface.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-5" /><p> [5]Mach is a
+microkernel operating system developed at<a name="IXT-2-309" /> Carnegie
+Mellon University. The Mac OS X kernel, <em class="emphasis">xnu</em>, is
+a hybrid of Mach and
+<a name="IXT-2-310" />BSD.</p> </blockquote><p>This chapter describes the Mac OS X startup sequence, beginning with
+the <em class="filename">BootX</em><a name="IXT-2-311" /> loader and progressing to full multiuser
+mode, at which time the system is ready to accept logins from normal
+users. The chapter also covers custom startup items, network
+interface configuration, and Mac OS X's default
+<em class="filename">cron</em> jobs.
+</p><div class="sect1"><a name="mosxgeeks-CHP-2-SECT-1" />
+<h2 class="sect1"><a name="sect1" />2.1. Booting Mac OS X</h2>
+
+<p><a name="mosxgeeks-IDXTERM-119" />When
+the computer is powered up, the firmware is in complete control.
+After the firmware initializes the hardware, it hands off control to
+the <em class="filename">BootX</em> loader, which bootstraps the kernel.
+After a trip into Mach, the control bubbles up into the BSD
+subsystem, and eventually into the Aqua user interface.
+</p>
+
+<p><a name="mosxgeeks-IDXTERM-120" />By
+default, Mac OS X boots graphically. If you'd like
+to see <a name="IXT-2-312" />console messages as you boot, hold down
+<img src="figs/command.gif" alt="Figure " />-V as you start the computer. To boot
+in <a name="IXT-2-313" />single-user mode, hold down
+<img src="figs/command.gif" alt="Figure " />-S as you start the computer.
+</p>
+
+<a name="mosxgeeks-CHP-2-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">2.1.1. The BootX Loader</h3>
+
+<p><em class="filename">BootX</em> is located in
+<em class="filename">/System/Library/CoreServices</em><a name="IXT-2-314" />.
+It draws the Apple logo on the screen and proceeds to set up the
+kernel environment. <em class="filename">BootX</em> first looks for kernel
+extensions (drivers, also known as <em class="filename">kexts</em>) that
+are cached in the <em class="filename">mkext cache</em>. If this cache
+does not exist, <em class="filename">BootX</em> loads only those
+extensions in <em class="filename">/System/Library/Extensions</em> that
+have the <em class="filename">OSBundleRequired</em> key in their
+<em class="filename">Info.plist</em> file. Each extension lives in a
+folder (<em class="filename">ExtensionName.kext</em>), and the
+<em class="filename">Info.plist</em><a name="IXT-2-315" /> file is an XML document
+that resides in its <em class="filename">Contents</em> subfolder. <a href="ch02_01.htm#mosxgeeks-CHP-2-EX-1">Example 2-1</a> is an excerpt from the
+<em class="filename">/System/Library/Extensions/System.kext/Contents/Info.plist</em>
+file.
+</p>
+
+<a name="mosxgeeks-CHP-2-EX-1" /><div class="example">
+<h4 class="objtitle">Example 2-1. A portion of a kernel extension's Info.plist file  </h4>
+<blockquote><pre class="code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" 
+          "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+  &lt;dict&gt;
+    &lt;key&gt;CFBundleDevelopmentRegion&lt;/key&gt;
+    &lt;string&gt;English&lt;/string&gt;
+    &lt;!-- multiple keys and strings omitted --&gt;
+  &lt;/dict&gt;
+&lt;/plist&gt;</pre></blockquote>
+</div>
+
+<p>After the required drivers are loaded, <em class="filename">BootX</em>
+hands off control to the kernel (<em class="filename">/mach_kernel</em>).
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-2-SECT-1.2" /><div class="sect2">
+<h3 class="sect2">2.1.2. Initialization</h3>
+
+<p>The kernel first
+<a name="IXT-2-316" />initializes
+all the data structures needed to support Mach and BSD. Next, it
+initializes the I/O Kit, which connects the kernel with the set of
+extensions that correspond to the machine's hardware
+configuration. Then, the kernel finds and mounts the
+<em class="filename">root</em> filesystem. The kernel next loads
+<em class="filename">mach_init</em>, which starts Mach message handling.
+<em class="filename">mach_init</em> then launches the BSD
+<em class="filename">init</em> process. In keeping with Unix conventions,
+<em class="filename">init</em> is process ID (PID) 1, even though it was
+started second. <em class="filename">mach_init</em> is given PID 2, and
+its parent PID is set to 1
+(<em class="filename">init</em>'s PID).
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-2-SECT-1.3" /><div class="sect2">
+<h3 class="sect2">2.1.3. The rc Scripts</h3>
+
+<p>The <em class="filename">init</em><a name="IXT-2-317" /> process launches the
+<em class="filename">/etc/rc.boot</em><a name="IXT-2-318" /> and
+<em class="filename">/etc/rc</em><a name="IXT-2-319" /> shell scripts to start the system. Both
+<em class="filename">rc</em><a name="IXT-2-320" /> scripts (and all startup items) source
+the <em class="filename">/etc/rc.common</em> script, which sets the
+initial environment, defines some useful functions, and loads the
+<em class="filename">/etc/hostconfig</em> file.
+<em class="filename">/etc/hostconfig</em> controls which system services
+need to be started and defines such things as the AppleTalk hostname.
+<a href="ch02_01.htm#mosxgeeks-CHP-2-EX-2">Example 2-2</a> is an excerpt from the
+<em class="filename">hostconfig </em><a name="IXT-2-321" />file.
+</p>
+
+<a name="mosxgeeks-CHP-2-EX-2" /><div class="example">
+<h4 class="objtitle">Example 2-2. A portion of /etc/hostconfig  </h4>
+<blockquote><pre class="code">SSHSERVER=-YES-
+WEBSERVER=-YES-
+APPLETALK_HOSTNAME=*427269616e204a6570736f6ed57320436f6d7075746572*</pre></blockquote>
+</div>
+
+<p>This excerpt shows that <em class="filename">sshd</em> and
+<em class="filename">httpd</em> will be started on "Brian
+Jepson's Computer" (the decoded
+AppleTalk hostname) at startup. The AppleTalk hostname is encoded as
+a sequence of hexadecimal bytes (for example, 42=B, 72=r, 69=i, 61=a,
+and 6e=n).
+</p>
+
+<p>After <em class="filename">rc.boot</em> has loaded in values from
+<em class="filename">/etc/rc.common</em>, it determines whether the system
+is booting from a CD. Next, <em class="filename">rc.boot</em> tests to see
+whether the system is booting in single-user mode. If the system is
+neither in single-user mode nor booting from a CD, then
+<em class="filename">rc.boot</em> performs a check of the
+<a name="IXT-2-322" /> <a name="IXT-2-323" />filesystem (<em class="filename">fsck)</em>.
+If the <em class="filename">fsck</em> fails, then
+<em class="filename">rc.boot</em> tries an <em class="filename">fsck -y</em>,
+which assumes a "Yes" answer to all
+the questions that <em class="filename">fsck</em> asks. If that fails, the
+system reboots (and may end up trying an <em class="filename">fsck -y</em>
+over and over again).
+</p>
+
+
+
+<a name="ch02-7-fm2xml" /><blockquote><b>TIP:</b> 
+If you find yourself in an <em class="filename">fsck</em> loop, you should
+boot from the Mac OS X installation CD. You can boot from a CD by
+holding down the C key at startup. When the Installer appears, choose
+Disk Utility from the Installer menu and use it to inspect and repair
+the damaged disk.
+</p>
+</blockquote>
+
+<p>If <em class="filename">rc.boot</em> succeeds, <em class="filename">init</em>
+drops into a shell (for single-user mode) or launches
+<em class="filename">/etc/rc</em> (for installation or multiuser mode). In
+single-user mode, only the <em class="filename">root</em> user may log in.
+In multiuser mode, the system is fully functional and ready to accept
+logins from normal users.<a name="IXTR3-352" /> 
+</p>
+
+<p>If <em class="filename">/etc/rc</em> determines that the system is booting
+from a CD, it starts the Mac OS X installation program. (If you
+booted from a CD in single-user mode, you'll get
+dropped into a shell and <em class="filename">/etc/rc</em>
+won't get run.) Otherwise,
+<em class="filename">/etc/rc</em> mounts local filesystems and starts
+<em class="filename">kextd</em>, the kernel extension daemon. After that,
+it starts the Window Server and the <em class="filename">update</em>
+process (which flushes the filesystem buffers every 30 seconds).
+Finally, <em class="filename">/etc/rc</em> enables the swap file, sets the
+language for the system, and hands off control to
+<em class="filename">/sbin/SystemStarter</em>.
+</p>
+
+<a name="mosxgeeks-CHP-2-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">What Is kextd?</h4>
+
+<p>The kernel boots with the minimum set of extensions needed to mount
+the <em class="filename">root</em> filesystem on all supported hardware.
+Some of these extensions are not needed, so
+<em class="filename">/etc/rc</em> starts the <em class="filename">kextd</em>
+daemon (<em class="filename">/usr/libexec/kextd</em>) to unload
+unnecessary extensions. For example, the
+<em class="filename">iPodDriver</em> includes the
+<em class="filename">OSBundleRequired</em> key to support booting from
+your iPod. If you don't have your iPod plugged in,
+<em class="filename">kextd</em> can safely unload that driver. The
+<em class="filename">kextd</em><a name="IXT-2-324" /> daemon is also responsible for loading
+and unloading extensions for the duration of the
+system's uptime.
+</p>
+</td></tr></table><p></blockquote>
+
+</div>
+<a name="mosxgeeks-CHP-2-SECT-1.4" /><div class="sect2">
+<h3 class="sect2">2.1.4. SystemStarter</h3>
+
+<p><em class="filename">SystemStarter</em><a name="IXT-2-325" />
+examines
+<em class="filename">/System/Library/StartupItems</em><a name="IXT-2-326" />
+and
+<em class="filename">/Library/StartupItems</em><a name="IXT-2-327" /> for applications that should be
+started at boot time. <em class="filename">/Library/StartupItems</em>
+contains items for locally installed applications; you can also put
+your own custom startup items there.
+<em class="filename">/System/Library/StartupItems</em> contains items for
+the system. You should not modify these or add your own items here.
+<a href="ch02_01.htm#mosxgeeks-CHP-2-TABLE-1">Table 2-1</a> lists
+<a name="IXT-2-328" />Mac OS X's
+available startup items.
+</p>
+
+<a name="mosxgeeks-CHP-2-TABLE-1" /><h4 class="objtitle">Table 2-1. Mac OS X default startup items </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Item</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<blockquote><pre class="code">Accounting</pre></blockquote>
+</td>
+<td>
+<p>Starts the <em class="filename">acct</em> daemon, which collects process
+accounting records.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">Apache</pre></blockquote>
+</td>
+<td>
+<p>Starts the Apache web server. Enable this with the
+<tt class="literal">WEBSERVER</tt> entry in
+<em class="filename">/etc/hostconfig</em> or by turning on Web Sharing
+(System Preferences <img src="figs/U2192.gif" alt="Figure " /> Sharing).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">AppServices</pre></blockquote>
+</td>
+<td>
+<p>Starts the desktop database, input managers, and printing services.</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">AppleShare</pre></blockquote>
+</td>
+<td>
+<p>Starts Apple file sharing. Enable this with the
+<tt class="literal">AFPSERVER</tt> entry in
+<em class="filename">/etc/hostconfig</em> or by turning on File Sharing
+(System Preferences <img src="figs/U2192.gif" alt="Figure " /> Sharing).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">AppleTalk</pre></blockquote>
+</td>
+<td>
+<p>Starts the AppleTalk protocol. Enable this with the
+<tt class="literal">APPLETALK</tt> entry in
+<em class="filename">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">AuthServer</pre></blockquote>
+</td>
+<td>
+<p>Starts the authentication server. Enable this with the
+<tt class="literal">AUTHSERVER</tt> entry in
+<em class="filename">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">BIND</pre></blockquote>
+</td>
+<td>
+<p>Starts <em class="filename">named</em>, the Internet domain name server,
+if <tt class="literal">DNSSERVER</tt> is set to <tt class="literal">-YES-</tt> in
+<em class="filename">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">ConfigServer</pre></blockquote>
+</td>
+<td>
+<p>An empty startup script that maintains compatibility with earlier
+versions of Mac OS X, where this script was used to configure the
+network.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">CoreGraphics</pre></blockquote>
+</td>
+<td>
+<p>Starts the font and window server.</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">CrashReporter</pre></blockquote>
+</td>
+<td>
+<p>Enables automatic crash report generation when an application
+crashes. Enable this with the <tt class="literal">CRASHREPORTER</tt> entry
+in <em class="filename">/etc/hostconfig</em> or by selecting <em class="emphasis">Log
+crash information</em> in the Crashes panel of the Console
+application's Preferences (the Console application
+is located in <em class="filename">/Applications/Utilities</em>).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">Cron</pre></blockquote>
+</td>
+<td>
+<p>Starts the <em class="filename">cron</em> daemon.</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">DirectoryServices</pre></blockquote>
+</td>
+<td>
+<p>Starts <em class="filename">lookupd</em>, a daemon through which Directory
+Services is accessed.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">Disks</pre></blockquote>
+</td>
+<td>
+<p>Mounts local filesystems.</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">HeadlessStartup</pre></blockquote>
+</td>
+<td>
+<p>Functions as a special startup routine used by headless servers, such
+as the XServe. Mac OS X Server only.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">IPAliases</pre></blockquote>
+</td>
+<td>
+<p>Sets up IP Aliasing (assigns multiple IP addresses to single physical
+adapter). Mac OS X Server only. Enable this with the
+<tt class="literal">IPALIASES</tt> entry in
+<em class="filename">/etc/hostconfig</em>. See the
+<em class="filename">IPAliases(5)</em> manpage.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">IPFailover</pre></blockquote>
+</td>
+<td>
+<p>Starts a service that allows a server to take over for another server
+in case it fails. Mac OS X Server only.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">IPServices</pre></blockquote>
+</td>
+<td>
+<p>Starts <em class="filename">inetd</em> and, optionally, the
+<em class="filename">bootp</em> service.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">LDAP</pre></blockquote>
+</td>
+<td>
+<p>Starts <em class="filename">slapd</em>, the standalone LDAP daemon.</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">LoginWindow</pre></blockquote>
+</td>
+<td>
+<p>Does nothing except to note the point at which the system is ready to
+display the login window. This is a placeholder service.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">mDNSResponder</pre></blockquote>
+</td>
+<td>
+<p>Starts the multicast DNS responder, which is used by Rendezvous for
+configuration.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">MySQL</pre></blockquote>
+</td>
+<td>
+<p>Functions as a startup script for MySQL. Mac OS X Server only. Enable
+this with the <tt class="literal">MYSQL</tt> entry in
+<em class="filename">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">NFS</pre></blockquote>
+</td>
+<td>
+<p>Starts the NFS client. The server is also started if NetInfo or
+<em class="filename">/etc/exports</em> has been configured to export one
+or more filesystems.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">NIS</pre></blockquote>
+</td>
+<td>
+<p>Starts the Network Information Service unless
+<tt class="literal">NISDOMAIN</tt> is set to <tt class="literal">-NO-</tt> in
+<em class="filename">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">NetInfo</pre></blockquote>
+</td>
+<td>
+<p>Starts NetInfo. If the <tt class="literal">NETINFOSERVER</tt> entry is set
+to <tt class="literal">-YES-</tt> in <em class="filename">/etc/hostconfig</em>,
+this will start up the <em class="filename">nibindd</em> daemon, which
+will start one or more NetInfo servers. If the entry is set
+to <tt class="literal">-AUTOMATIC-</tt> (the default), this will not start
+<em class="filename">nibindd</em> and will only start the local NetInfo
+server.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">Network</pre></blockquote>
+</td>
+<td>
+<p>Configures network interfaces and the hostname. If
+<tt class="literal">IPFORWARDING</tt> is enabled in
+<em class="emphasis">/etc/hostconfig</em>, this script also enables IP
+forwarding.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">NetworkExtensions</pre></blockquote>
+</td>
+<td>
+<p>Loads various networking extensions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">NetworkTime</pre></blockquote>
+</td>
+<td>
+<p>Starts the NTP client. Enable this with the
+<tt class="literal">TIMESYNC</tt> entry in <em class="emphasis">/etc/hostconfig</em>
+or with System Preferences <img src="figs/U2192.gif" alt="Figure " /> Date &amp;
+Time <img src="figs/U2192.gif" alt="Figure " /> Network Time.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">Portmap</pre></blockquote>
+</td>
+<td>
+<p>Starts the <em class="filename">portmap</em> daemon. Enable this with the
+<tt class="literal">RPCSERVER</tt> entry in
+<em class="emphasis">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">PrintingServices</pre></blockquote>
+</td>
+<td>
+<p>Starts the Common Unix Printing System (CUPS).</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">QuickTimeStreamingServer</pre></blockquote>
+</td>
+<td>
+<p>Starts the QuickTime Streaming Server. Mac OS X Server only. Enable
+this with the <tt class="literal">QTSSERVER</tt> entry in
+<em class="filename">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">SNMP</pre></blockquote>
+</td>
+<td>
+<p>Starts <em class="filename">snmpd</em>, the SNMP daemon. Mac OS X Server
+only. Enable this with the <tt class="literal">SNMPSERVER</tt> entry in
+<em class="filename">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">SSH</pre></blockquote>
+</td>
+<td>
+<p>Starts <em class="filename">sshd</em>. Enable this with the
+<tt class="literal">SSHSERVER</tt> entry in
+<em class="filename">/etc/hostconfig</em> or by enabling remote login in
+System Preferences <img src="figs/U2192.gif" alt="Figure " /> Sharing.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">Samba</pre></blockquote>
+</td>
+<td>
+<p>Starts the Samba service, which provides file services to Windows
+clients.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">SecurityServer</pre></blockquote>
+</td>
+<td>
+<p>Starts security services.</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">Sendmail</pre></blockquote>
+</td>
+<td>
+<p>Starts <em class="filename">sendmail</em>. Enable this with the
+<tt class="literal">MAILSERVER</tt> entry in
+<em class="emphasis">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">SerialTerminalSupport</pre></blockquote>
+</td>
+<td>
+<p>Supports serial terminals for headless servers. Mac OS X Server only.
+See the <em class="filename">SerialTerminalSupport</em> script for
+configuration information.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">ServerManagerDaemon</pre></blockquote>
+</td>
+<td>
+<p>Starts the Server Manager daemon. Mac OS X Server only. Enable this
+with the <tt class="literal">SERVERMANAGERSERVER</tt> entry in
+<em class="emphasis">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">SystemLog</pre></blockquote>
+</td>
+<td>
+<p>Starts <em class="filename">syslogd</em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">SystemTuning</pre></blockquote>
+</td>
+<td>
+<p>Tunes the system based on details of your hardware configuration
+(such as the amount of installed memory).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">VPN</pre></blockquote>
+</td>
+<td>
+<p>Starts the VPN server. Mac OS X Server only. Enable this with the
+<tt class="literal">VPNSERVER</tt> entry in
+<em class="emphasis">/etc/hostconfig</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<blockquote><pre class="code">Watchdog</pre></blockquote>
+</td>
+<td>
+<p>Starts the <em class="filename">watchdog</em> service, which monitors and
+restarts critical services when they quit unexpectedly. See the
+<em class="filename">watchdog(8)</em> manpage. Mac OS X Server only.
+</p>
+</td>
+</tr>
+
+</table><p>
+
+</div>
+<a name="mosxgeeks-CHP-2-SECT-1.5" /><div class="sect2">
+<h3 class="sect2">2.1.5. The Login Window</h3>
+
+<p>Once <em class="filename">SystemStarter</em> is finished, control is
+returned to <em class="filename">init</em>, which launches
+<em class="filename">getty</em><a name="IXT-2-329" />.
+In <em class="filename">/etc/ttys</em><a name="IXT-2-330" />, the console entry launches the
+<a name="IXT-2-331" />Login Window
+(<em class="filename">/System/Library/CoreServices/loginwindow.app</em><a name="IXT-2-332" />). At this point, the system is
+fully functional and ready to accept logins.<a name="IXTR3-353" />
+</p>
+
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.6. Mac OS X's Unix Development Tools</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.2. Adding Startup Items</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

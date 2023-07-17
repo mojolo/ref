@@ -1,0 +1,185 @@
+<html><head><title>Citrix: Making Windows Multiuser (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch47_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="part9.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">47.9. Citrix: Making Windows Multiuser</h2>
+
+<p><a name="upt3-IDXTERM-7652" /> <a name="upt3-IDXTERM-7653" /> <a name="upt3-IDXTERM-7654" />Unix users needing
+to access Windows applications will find that VNC is not a workable
+solution in all instances. The reason for this is that Windows
+operating systems were not designed to be multiuser; they do not
+allow multiple concurrent user sessions. When you have more than a
+few users needing to run a Windows application, such as Outlook to
+connect to corporate email, your options are to put a Windows PC on
+every desk, run Windows under a virtual machine, or set up Windows
+Terminal Services (WTS).
+</p>
+
+<p>WTS is the current name of the multiuser software Microsoft provides
+with the Windows 2000 Server product family. Its former iteration was
+Windows NT 4.0 Terminal Server. Similar to VNC, WTS provides a
+Windows 2000 desktop to a connecting client, but does it in true
+multiuser fashion. Dozens of users can be connected to the same
+machine, running different processes, all independent of the other.
+However, WTS is only part of the solution for Unix users. This is
+because Microsoft only allows connections to a WTS server via the
+<a name="IXT-47-2076" />Remote Desktop Protocol (RDP) but
+doesn't provide any non-Windows clients that use
+RDP.
+</p>
+
+<p>On the flip side,
+<a name="IXT-47-2077" />Citrix provides a
+Unix client program that can connect to a WTS server, but it only
+uses the Independent Computing Architecture (ICA) protocol. For that
+client to work, a server add-on product to WTS called
+<a name="IXT-47-2078" /><a name="IXT-47-2079" />Citrix
+Metaframe must be installed. Thankfully, Metaframe provides
+additional features to a WTS server besides ICA connectivity that
+helps to justify the additional cost.
+</p>
+
+<p><a name="IXT-47-2080" /><a name="IXT-47-2081" />One
+<a name="IXT-47-2082" />thing to be careful of when
+implementing a WTS solution is licensing. Microsoft is very strict in
+its rules about what machines can connect under which circumstances.
+Like tollbooths on the highway, Microsoft wants to get paid no matter
+how you get on, or which vehicle you're driving. To
+put licensing simply, you must have a Windows 2000 Server license for
+each server, a Windows 2000 Server Client Access License for each
+machine connecting to the server, a Terminal Services License for
+each machine actually using WTS, and, if you are using Office, each
+machine that runs Office off the WTS server must have a license.
+These are not concurrent licenses: if 50 machines are going to use
+Office at some point, all 50 must have licenses, not just the 10 that
+are connected at any given moment.
+<a name="IXT-47-2083" />Citrix
+licenses are in addition to Microsoft licenses but are thankfully
+more friendly. Citrix allows the use of concurrent licenses, which
+means 20 licenses could cover the needs of 50 users, if only 20 are
+going to be connected at a time. Full details about Microsoft
+licensing in a WTS environment can be found at <a href="http://www.microsoft.com/windows2000/server/howtobuy/pricing/tsfaq.asp">http://www.microsoft.com/windows2000/server/howtobuy/pricing/tsfaq.asp</a>.
+</p>
+
+<a name="upt3-CHP-47-SECT-9.1" /><div class="sect2">
+<h3 class="sect2">47.9.1. Citrix Metaframe</h3>
+
+<p><a name="IXT-47-2084" /><a name="IXT-47-2085" />Assuming
+that you have a properly installed and configured Citrix Metaframe
+server to connect to, you should download and install the appropriate
+<a name="IXT-47-2086" /><a name="IXT-47-2087" />ICA
+client for your operating system from <a href="http://www.citrix.com/download/">http://www.citrix.com/download/</a>.
+Installation is very simple and adequately explained in the provided
+documentation.
+</p>
+
+<p>After installation, as a user, run
+<i class="command">wfcmgr</i><a name="IXT-47-2088" /> from program directory you installed
+to. This will launch the configuration program for the ICA client;
+see <a href="ch47_09.htm#upt3-CHP-47-FIG-3">Figure 47-3</a>.
+</p>
+
+<a name="upt3-CHP-47-FIG-3" /><div class="figure"><img src="figs/upt3_4703.gif" alt="Figure 47-3" width="450" /></div><h4 class="objtitle">Figure 47-3. Existing entries in wfcmgr</h4>
+
+<p>To create a new entry, select New from the Entry menu. You will see
+<a href="ch47_09.htm#upt3-CHP-47-FIG-4">Figure 47-4</a>. Though all settings are important, be
+sure to adjust the settings pertaining to the Window properties. A
+good tip is to set up your screen to be 90 percent of your display
+size, to use a shared palette of colors, and to map drive letters to
+your home directory, floppy, and CD-ROM. Using full-screen mode will
+disable the use of multiple desktops on your Unix system, so it is
+not a good idea. Using a shared palette prevents odd coloring on your
+display. Mapping to your local devices is useful for transferring
+files between the WTS server and your workstation. The settings to do
+this are under the Option menu after you've saved
+the entry.
+</p>
+
+<a name="upt3-CHP-47-FIG-4" /><div class="figure"><img src="figs/upt3_4704.gif" alt="Figure 47-4" width="450" /></div><h4 class="objtitle">Figure 47-4. Creating a new entry in wfcmgr</h4>
+
+<p>Running <i class="command">wfcmgr</i> also creates a
+<em class="filename">.ICAClient</em> directory in the
+user's home directory. Copy this directory to
+<em class="filename">/etc/skel</em> to insure that new users are
+automatically setup with default settings to access WTS. For existing
+users, copy the directory to their home directory and give ownership
+to that user.
+</p>
+
+<p>Create a symbolic link, such as
+<em class="filename">/usr/local/bin/citrix</em>, in your default path that
+points to <i class="command">wfcmgr</i>. Give it an easy name like
+<em class="emphasis">citrix</em>. Using this link name, you can launch
+saved configurations in <i class="command">wfcmgr</i> with a single
+command.
+</p>
+
+<blockquote><pre class="code">$ citrix <em class="replaceable"><tt>desc</em> <em class="replaceable">description_name</tt></em></pre></blockquote>
+
+<p><em class="replaceable"><tt>description_name</tt></em>, in this instance, is the
+descriptive name you gave your entry in <i class="command">wfcmgr</i>
+(see <a href="ch47_09.htm#upt3-CHP-47-FIG-3">Figure 47-3</a>). It is case-sensitive.
+</p>
+
+<p>Metaframe offers many additional features, such as load balancing,
+application publishing, automatic updates of ICA clients, and a
+web-based client, that may help justify its cost. Citrix even sells a
+Metaframe for Unix that provides Unix programs to Windows clients
+that don't have an X Server.
+</p>
+
+</div>
+<a name="upt3-CHP-47-SECT-9.2" /><div class="sect2">
+<h3 class="sect2">47.9.2. rdesktop</h3>
+
+<p>The fact that Microsoft has not provided an
+<a name="IXT-47-2089" /><a name="IXT-47-2090" />RDP client for Unix has not stopped
+enterprising programmers in the Open Source community from creating
+one. This program, called
+<i class="command">rdesktop</i><a name="IXT-47-2091" /><a name="IXT-47-2092" />, is available at <a href="http://www.rdesktop.org">http://www.rdesktop.org</a>. In everyday use this
+program has proven to be as useful as the ICA client, though it lacks
+support for sound, high color depths, drive mapping, or client-side
+support for serial and parallel ports. If these features are
+important to you, you will need Metaframe; if not, this free program
+is an excellent alternative.
+</p>
+
+</div>
+<a name="upt3-CHP-47-SECT-9.3" /><div class="sect2">
+<h3 class="sect2">47.9.3. Hob</h3>
+
+<p>Another RDP client, called <a name="IXT-47-2093" /><a name="IXT-47-2094" /><a name="IXT-47-2095" />HOBLink JWT, is available from
+Hobsoft, <a href="http://www.hobsoft.com">http://www.hobsoft.com</a>.
+The most interesting feature of this program is that it is written in
+Java. This means that any client that has a browser with a working
+Java runtime should be able to run this program. Hobsoft has provided
+a lot of features in this product, and it is a viable alternative to
+Citrix Metaframe.<a name="IXTR3-2099" /> <a name="IXTR3-2100" /> <a name="IXTR3-2101" /> 
+</p>
+
+<p> <em class="emphasis">-- DB<a name="IXTR3-2102" /></em> 
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch47_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="part9.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">47.8. Of Emulators and APIs</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">IX. Security</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

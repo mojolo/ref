@@ -1,0 +1,254 @@
+<html><head><title>Context diffs (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">11.3. Context diffs</h2>
+
+<p><a name="upt3-IDXTERM-1819" />
+<a name="upt3-IDXTERM-1820" />The <i class="command">diff</i> examples in
+<a href="ch11_01.htm#upt3-CHP-11-SECT-1">Section 11.1</a> and <a href="ch11_02.htm#upt3-CHP-11-SECT-2">Section 11.2</a> show compact formats with just the differences
+between the two files. But, in many cases, context
+<i class="command">diff</i> listings are more useful. Context
+<i class="command">diff</i>s show the changed lines and the lines around
+them. (This can be a headache if you're trying to
+read the listing on a terminal and there are many changed lines
+fairly close to one another: the context will make a huge
+"before" section, with the
+"after" section several screenfuls
+ahead. In that case, the more compact <i class="command">diff</i> formats
+can be useful.) A related format, unified <i class="command">diff</i>,
+shows context but doesn't take as much space.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: rcs</p>
+
+<p>The <i class="command">rcsdiff</i><a name="IXT-11-6063" /> command shows differences between
+revisions in an <b class="emphasis-bold">RCS</b> (<a href="ch39_05.htm#upt3-CHP-39-SECT-5">Section 39.5</a>) file (and will only be available if you have
+RCS installed). We'll use it here instead of
+<i class="command">diff</i> -- but the concepts are the same.
+Incidentally, these examples would also work with <b class="emphasis-bold">cvs diff</b> (<a name="IXT-11-6064" /><a href="ch39_07.htm#upt3-CHP-39-SECT-7">Section 39.7</a>), if you
+have CVS installed.
+</p>
+
+<p>The <span class="option">-c</span> option shows before-and-after versions of
+each changed section of a file. By itself, <span class="option">-c</span> shows
+three lines above and below each change. Here's an
+example of a C file before and after some edits; the
+<tt class="literal">-c2</tt> option shows two lines of context. The
+<span class="option">-u</span> option shows changed lines next to each other,
+not in separate before-and-after sections. Again, an option like
+<tt class="literal">-u2</tt> shows two lines of context around a change
+instead of the default three lines.
+</p>
+
+<dl>
+<dt><i>Start of a listing</i></dt>
+<dd>
+A <em class="emphasis">diff -c</em></tt><a name="IXT-11-6065" /><a name="IXT-11-6066" /> listing starts with the two
+filenames and their last-modified dates
+("timestamps"). The first filename
+(here, <em class="emphasis">atcat.c</em></tt> revision 1.1) has three asterisks
+(<tt class="literal">***</tt>) before it; the second name
+(<em class="emphasis">atcat.c</em></tt> revision 1.2) has three dashes
+(<tt class="literal">---</tt>). These markers identify the two files in the
+difference listings below:
+</p>
+<blockquote><pre class="code">*** atcat.c 1987/09/19 12:00:44 1.1
+--- atcat.c 1987/09/19 12:08:41 1.2</pre></blockquote>
+
+<p>A <em class="emphasis">diff -u</em></tt><a name="IXT-11-6067" />
+listing also starts with the two filenames and their last-modified
+dates ("timestamps"). The first
+filename (here, <em class="emphasis">atcat.c</em></tt> revision 1.1) has three
+minus signs (<tt class="literal">---</tt>) before it, meaning
+"from" or
+"before." The second name
+(<em class="emphasis">atcat.c</em></tt> revision 1.2) has three plus signs
+(<tt class="literal">+++</tt>). Again, these markers identify the two files
+in the difference listings that follow:
+</p>
+
+<blockquote><pre class="code">--- atcat.c 1987/09/19 12:00:44 1.1
++++ atcat.c 1987/09/19 12:08:41 1.2</pre></blockquote>
+</dd>
+
+
+<dt><i>Start of a section</i></dt>
+<dd>
+Each difference section in a <em class="emphasis">diff
+-c</em><a name="IXT-11-6068" /> listing starts with a row of asterisks:
+</p>
+<blockquote><pre class="code">***************</pre></blockquote>
+<p>In a <em class="emphasis">diff -u</em><a name="IXT-11-6069" /> listing, each difference section starts
+with a line that has a pair of line numbers and line counts. This one
+means that the first version of the file (with a <tt class="literal">-</tt>
+before it) starts at line 14 and contains 5 lines; the second version
+of the file (with a <tt class="literal">+</tt>) also starts at line 14 and
+has 5 lines:
+</p>
+<blockquote><pre class="code">@@ -14,5 +14,5 @@</pre></blockquote>
+</dd>
+
+
+<dt><i>Changes</i></dt>
+<dd>
+In a <em class="emphasis">diff -c</em></tt><a name="IXT-11-6070" /> listing, changed lines that exist in both
+files are marked with an <tt class="literal">!</tt> (exclamation point)
+character in the left margin. So, one of the lines between lines
+15-19 was changed. Other lines in the section
+weren't changed:
+</p>
+
+<blockquote><pre class="code">*** 15, 19 ****
+  #ifndef lint
+  static char rcsid[ ] = 
+!     "$Id: ch11_03.htm,v 1.3 2002/11/05 20:19:28 ellie Exp ellie $";
+  #endif not lint
+--- 15,19 ----
+  #ifndef lint
+  static char rcsid[ ] = 
+!     "$Id: ch11_03.htm,v 1.3 2002/11/05 20:19:28 ellie Exp ellie $";
+  #endif not lint
+  /* end of Identification */</pre></blockquote>
+
+<p>A <em class="emphasis">diff -u</em></tt><a name="IXT-11-6071" /> listing always shows lines that are marked
+with a minus (<tt class="literal">-</tt>) only in the first version and
+lines marked with a plus (<tt class="literal">+)</tt> in the second
+version. Here, one line was changed:
+</p>
+
+<blockquote><pre class="code">@@ -15,5 +15,5 @@
+ #ifndef lint
+ static char rcsid[ ] = 
+-     "$Id: ch11_03.htm,v 1.3 2002/11/05 20:19:28 ellie Exp ellie $";
+ static char rcsid[ ] = 
++     "$Id: ch11_03.htm,v 1.3 2002/11/05 20:19:28 ellie Exp ellie $";
+ #endif not lint
+ /* end of Identification */</pre></blockquote>
+
+</dd>
+
+
+<dt><i>Deletions</i></dt>
+<dd>
+In a <em class="emphasis">diff -c</em><a name="IXT-11-6072" /> listing, a line that exists in the first
+version but not the second version is marked with a minus sign
+(<tt class="literal">-</tt>). None of the lines from the second version are
+shown. So, line 62 in the first version (lines 64-68) was deleted,
+leaving lines 64-67 in the second version:
+</p>
+<blockquote><pre class="code">*** 64,68 ****
+  {
+    int i;              /* for loop index */
+-   int userid;         /* uid of owner of file */
+    int isuname;        /* is a command line argv a user name? */
+    int numjobs;        /* # of jobs in spooling area */
+--- 64,67 ----</pre></blockquote>
+
+<p>A <em class="emphasis">diff -u</em><a name="IXT-11-6073" /> listing simply shows the deleted line with
+a minus (<tt class="literal">-</tt>) sign before it. The section started at
+line 64 and had 5 lines; after the change, it starts at line 64 and
+has 4 lines:
+</p>
+
+<blockquote><pre class="code">@@ -64,5 +64,4 @@
+ {
+    int i;              /* for loop index */
+-   int userid;         /* uid of owner of file */
+    int isuname;        /* is a command line argv a user name? */
+    int numjobs;        /* # of jobs in spooling area */</pre></blockquote>
+</dd>
+
+
+
+<dt><i>Additions</i></dt>
+<dd>
+In a <em class="emphasis">diff -c</em></tt><a name="IXT-11-6074" /> listing, lines that are
+added are marked with an exclamation point (!) and only appear in the
+second version. So, one of the lines between lines 111-116 was
+changed, and two other lines were added, leaving lines 111-118 in the
+second version:
+</p>
+<blockquote><pre class="code">*** 111,116 ****
+     * are given, print usage info and exit.
+     */
+!   if (allflag &amp;&amp; argc)
+        usage( );
+
+    /*
+--- 111,118 ----
+     * are given, print usage info and exit.
+     */
+!   if (allflag &amp;&amp; argc) {
+        usage( );
++       exit(1);
++   }
+
+    /*</pre></blockquote>
+
+
+<p>In a <em class="emphasis">diff -u</em></tt><a name="IXT-11-6075" /> listing, lines that are only
+in the second version are always marked with a <tt class="literal">+</tt>.
+Here, one line was changed, and two lines were added. The original
+version started at line 111 and had 6 lines; the changed version
+started at line 111 and has 8 lines:
+</p>
+<blockquote><pre class="code">@@ -111,6 +111,8 @@
+     * are given, print usage info and exit.
+     */
+-   if (allflag &amp;&amp; argc)
++   if (allflag &amp;&amp; argc) {
+        usage( );
++       exit(1);
++   }
+
+    /*</pre></blockquote>
+</dd>
+
+</dl>
+
+<p><a name="IXT-11-6076" />Context <i class="command">diff</i>s
+aren't just nice for reading. The <b class="emphasis-bold">patch</b> (<a href="ch20_09.htm#upt3-CHP-20-SECT-9">Section 20.9</a>) program
+reads context <i class="command">diff</i> listings and uses them to
+update files automatically. For example, if I had the first version
+of <em class="emphasis">atcat.c</em></tt>, someone could send me either of the
+previous <i class="command">diff</i> listings (called a
+"patch"). From the original and the
+patch, <i class="command">patch</i> could create the second version of
+<em class="emphasis">atcat.c</em></tt>. The advantage of a context
+<i class="command">diff</i> over the formats in <a href="ch11_01.htm#upt3-CHP-11-SECT-1">Section 11.1</a> and <a href="ch11_02.htm#upt3-CHP-11-SECT-2">Section 11.2</a> is that
+context <i class="command">diff</i>s let <i class="command">patch</i> locate
+the changed sections even if they've been moved
+somewhat. In this case, it's probably
+<em class="emphasis">not</em></tt> a good idea to save space by reducing the
+number of context lines (with <tt class="literal">-c2</tt> or
+<tt class="literal">-u2</tt>, as I did here); giving all three lines of
+context can help <i class="command">patch</i> locate the changed
+sections.
+</p>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-6093" /> <a name="IXTR3-6094" /></em></tt>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">11.2. Comparing Three Different Versions with diff3</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11.4. Side-by-Side diffs: sdiff</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

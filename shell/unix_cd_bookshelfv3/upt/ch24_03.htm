@@ -1,0 +1,191 @@
+<html><head><title>Managing Processes: Overall Concepts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.3. Managing Processes: Overall Concepts</h2>
+
+<p><a name="IXT-24-5162" />As <a name="upt3-IDXTERM-3386" />you know, when you log into your
+Unix account and start typing, you're talking to the
+<b class="emphasis-bold">shell</b> (<a href="ch27_01.htm#upt3-CHP-27-SECT-1">Section 27.1</a>). The shell you use may be a variant of the
+<a name="IXT-24-5163" />Bourne
+shell (such as a standard <i class="command">sh</i>,
+<i class="command">ksh</i>, or the GNU shell <i class="command">bash</i>), or
+perhaps it is a variant of the C shell, <a name="IXT-24-5164" /><i class="command">csh</i> (such as, perhaps,
+the <i class="command">tcsh</i><a name="IXT-24-5165" /> shell that includes line- and
+history-editing features). Alternatively, you may be using a somewhat
+less common shell such as <i class="command">rc</i>.
+</p>
+
+<p>Your shell is a <em class="emphasis">process</em>, one of many individual
+programs running at the same time on the machine. Every process has
+certain pieces of information associated with it, including the
+following:
+</p>
+
+<ul><li>
+<p><a name="IXT-24-5166" /><a name="IXT-24-5167" />The <em class="emphasis">process ID</em>
+(PID) is a number assigned to the process when it is
+started up. Process IDs are unique (that is, they cycle and are
+eventually reused, but no two processes have the same process ID at
+the same time).
+</p>
+</li><li>
+<p><a name="IXT-24-5168" /><a name="IXT-24-5169" /><a name="IXT-24-5170" /><a name="IXT-24-5171" />The
+<em class="emphasis">user ID</em> (UID) tells who the process belongs to.
+This determines <b class="emphasis-bold">what files and directories the
+process is allowed to read from or write to</b> (<a href="ch50_01.htm#upt3-CHP-50-SECT-1">Section 50.1</a>), as well as who is allowed to <b class="emphasis-bold">kill the process</b> (<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>) (tell it to stop running).
+</p>
+</li><li>
+<p><a name="IXT-24-5172" /><a name="IXT-24-5173" /> <a name="IXT-24-5174" /><a name="IXT-24-5175" /><a name="IXT-24-5176" />The
+<em class="emphasis">group ID</em> (GID) is similar to the user ID but
+tells which group the process belongs to. On some systems, this
+controls the group assigned to files created by the process. See
+<a href="ch50_02.htm#upt3-CHP-50-SECT-2">Section 50.2</a>.
+</p>
+</li><li>
+<p><a name="IXT-24-5177" /><a name="IXT-24-5178" />The
+<em class="emphasis">environment</em> contains a list of variable names
+and associated values. For example, when you type
+<tt class="literal">echo</tt> <tt class="literal">$HOME</tt> at the shell and it
+prints out the name of your <b class="emphasis-bold">home
+directory</b> (<a href="ch01_15.htm#upt3-CHP-1-SECT-15">Section 1.15</a>), it has told you
+the contents of the <b class="emphasis-bold">environment
+variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) called
+<em class="emphasis">HOME</em>.
+</p>
+</li><li>
+<p><a name="IXT-24-5179" /><a name="IXT-24-5180" />The <b class="emphasis-bold">current
+working directory</b> (<a href="ch31_03.htm#upt3-CHP-31-SECT-3">Section 31.3</a>) is the
+directory that is currently the default. When you specify a filename
+to a program but do not say explicitly where to look for it with a
+<b class="emphasis-bold">pathname</b> (<a href="ch31_02.htm#upt3-CHP-31-SECT-2">Section 31.2</a>), the program will look in the current working
+directory -- if the <em class="emphasis">PATH</em> variable contains
+the current directory (<a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a>
+explains).
+</p>
+</li><li>
+<p><em class="emphasis">File descriptors</em><a name="IXT-24-5181" /> are a record of which files a
+process has opened for reading or writing, as well as the current
+position in each file.
+</p>
+</li><li>
+<p><a name="IXT-24-5182" /><a name="IXT-24-5183" /> <a name="IXT-24-5184" />Versions of Unix with <b class="emphasis-bold">job control</b> (<a href="ch23_01.htm#upt3-CHP-23-SECT-1">Section 23.1</a>)
+have <em class="emphasis">process groups</em>. A process group is used for
+<b class="emphasis-bold">distribution of signals</b>
+(<a name="IXT-24-5185" /><a href="ch24_10.htm#upt3-CHP-24-SECT-10">Section 24.10</a>, <a href="ch24_11.htm#upt3-CHP-24-SECT-11">Section 24.11</a>, <a href="ch24_14.htm#upt3-CHP-24-SECT-14">Section 24.14</a>). It's also used to control
+which process can <a name="IXT-24-5186" />read from a
+<a name="IXT-24-5187" />terminal. A process that
+has the same process group as the terminal is "in
+the <a name="IXT-24-5188" />foreground" and can read
+from the terminal. Other processes are stopped when they try to read
+from the terminal.
+</p>
+</li></ul>
+<p><a name="IXT-24-5189" /><a name="IXT-24-5190" /><a name="IXT-24-5191" />When you're typing
+commands at the shell, it is the <em class="emphasis">controlling
+process</em> of your terminal, meaning that it (the shell) is
+the process that gets the input you type. See <a href="ch24_06.htm#upt3-CHP-24-SECT-6">Section 24.6</a>. 
+</p>
+
+<p><a name="IXT-24-5192" /><a name="IXT-24-5193" />Normally, when you type a command at the
+shell prompt, that command runs and is allowed by the shell to take
+over the terminal for its lifetime. For example, if you type
+<a name="IXT-24-5194" /><tt class="literal">more</tt>
+<tt class="literal">.login</tt> to view your <em class="emphasis">.login</em>
+file, the shell starts up the <i class="command">more</i> program and
+then sits around waiting for it to finish; while
+<i class="command">more</i> is running, you can type commands to page
+through the file and <i class="command">more</i> (not the shell) will see
+them. The command you run is called a
+<em class="emphasis">child</em><a name="IXT-24-5195" /><a name="IXT-24-5196" /><a name="IXT-24-5197" /><a name="IXT-24-5198" /> or
+<em class="emphasis">subprocess</em> of the shell process, which is its
+<em class="emphasis">parent</em>. All process information (user ID, group
+ID, etc.) is inherited by the child from its parent, except for the
+process ID, since the child is assigned a new one. <b class="emphasis-bold">Built-in shell commands</b> (<a href="ch01_09.htm#upt3-CHP-1-SECT-9">Section 1.9</a>) such as <i class="command">cd</i>
+don't start a child process.
+</p>
+
+<p><a name="IXT-24-5199" />Although
+<a name="IXT-24-5200" />the normal behavior is for the shell to
+wait until any command you run has finished before it becomes active
+again, there are some situations in which you don't
+want this to occur. For example, if you're using a
+window system such as <b class="emphasis-bold">X</b> (<a href="ch01_22.htm#upt3-CHP-1-SECT-22">Section 1.22</a>) and want to start up a new
+<i class="command">xterm</i> window from your shell, you
+don't want to type just <tt class="literal">xterm</tt>,
+because then your original shell will wait until the
+<i class="command">xterm</i> finishes before allowing you to type any
+more commands. This would mean that you still have only one shell to
+work in, thus defeating the purpose of starting the new
+<i class="command">xterm</i>.
+</p>
+
+<p><a name="IXT-24-5201" /><a name="IXT-24-5202" /><a name="IXT-24-5203" /><a name="IXT-24-5204" /><a name="IXT-24-5205" />When you don't want a
+process to finish before getting back to the shell, you can run it in
+the <em class="emphasis">background</em>. You do this by putting an
+ampersand (<tt class="literal">&amp;</tt>) character at the end of the
+command, for example, <tt class="literal">xterm</tt>
+<tt class="literal">&amp;</tt>. The shell will start the child process and
+then immediately prompt you for another command. Note that in this
+situation, the shell retains control of the terminal, and the newly
+created background process cannot read input. Some shells have
+additional <b class="emphasis-bold">job control</b>
+(<a name="IXT-24-5206" /><a name="IXT-24-5207" /><a name="IXT-24-5208" /><a href="ch23_01.htm#upt3-CHP-23-SECT-1">Section 23.1</a>) features (processes that are running in the
+background are often described as <em class="emphasis">background
+jobs</em> or just jobs) that enable you to do things such as
+kill jobs or bring a job from the background into the
+<em class="emphasis">foreground</em> so that it becomes the controlling
+process of the terminal and you can type input at it.
+</p>
+
+<p><a name="IXT-24-5209" />An important thing to remember is
+that although process information is inherited by children
+<em class="emphasis">when they are started</em>, it is impossible for the
+parent to affect its child's process information (or
+vice versa) after that point. For example, if you <b class="emphasis-bold">start up the editor vi, suspend it</b> (<a href="ch24_06.htm#upt3-CHP-24-SECT-6">Section 24.6</a>), and then use the <i class="command">cd</i>
+command in the shell to change directories, <i class="command">vi</i>
+will still have the old working directory when you bring it back into
+the foreground. Similarly, if you write a shell script that changes
+some environment variables, those variables will contain their old
+values in the shell when the shell script exits. This sometimes
+confuses MS-DOS users, since MS-DOS stores information such as the
+current directory in a global area that is referenced by all
+programs. If it is necessary to communicate information from a child
+back to a parent shell, <b class="emphasis-bold"> other methods are
+needed</b> (<a href="ch24_10.htm#upt3-CHP-24-SECT-10">Section 24.10</a>, <a href="ch35_29.htm#upt3-CHP-35-SECT-29">Section 35.29</a>). 
+</p>
+
+<p>One more useful concept: when a process exits, it returns a numeric
+<b class="emphasis-bold">exit status</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>) <a name="IXT-24-5210" /> <a name="IXT-24-5211" /><a name="IXT-24-5212" /><a name="IXT-24-5213" />to its parent process. By convention, a
+zero status means success; nonzero means some kind of failure.
+</p>
+
+<p>Just as there are ways to modify the environment and the current
+working directory of the shell, there are also useful ways to
+<b class="emphasis-bold">manipulate file descriptors</b> (<a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a>).<a name="IXTR3-5461" /> 
+</p>
+
+<p> <em class="emphasis">-- JIK</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.2. fork and exec</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.4. Subshells</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

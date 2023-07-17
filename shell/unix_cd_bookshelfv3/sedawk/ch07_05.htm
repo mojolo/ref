@@ -1,0 +1,287 @@
+<html><head><title>Records and Fields (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.5. Records and Fields</h2>
+
+<p>
+<a name="ch07.rec1" />
+<a name="ch07.rec2" />
+<a name="IXT-7-265821" />
+Awk makes the assumption that its input is structured and not just an
+endless string of characters.  In the simplest case, it takes each
+input line as a record and each word, separated by spaces or tabs, as
+a field.  (The characters separating the fields are often referred to
+as <em class="emphasis">delimiters</em>.)  The following record in the file
+<em class="filename">names</em> has three fields, separated by either a
+space or a tab.</p>
+
+<blockquote><pre class="code">John Robinson	666-555-1111</pre></blockquote>
+
+<p>Two or more consecutive spaces and/or tabs count as a single
+delimiter.</p>
+
+<a name="sedawk-ch-7-sect-5.1" /><div class="sect2">
+<h3 class="sect2">7.5.1. Referencing and Separating Fields</h3>
+
+<p>
+<a name="IXT-7-265822" />
+<a name="IXT-7-265823" />
+<a name="IXT-7-265824" />
+Awk allows you to refer to fields in actions using the field operator
+<b class="emphasis-bold">$</b>.  This operator is followed by a number or a
+variable that identifies the position of a field by number.  "$1"
+refers to the first field, "$2" to the second field, and so on.  "$0"
+refers to the entire input record.  The following example displays the
+last name first and the first name second, followed by the phone number.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk '{ print $2, $1, $3 }' names</b></tt>
+Robinson John 666-555-1111</pre></blockquote>
+
+<p>$1 refers to the first name, $2 to the last name, and $3 to the phone
+number.  The commas that separate each argument in the
+<b class="emphasis-bold">print</b> statement cause a space to be output
+between the values.  (Later on, we'll discuss the output field
+separator (<b class="emphasis-bold">OFS</b>), whose value the comma
+outputs and which is by default a space.)  In this example, a single
+input line forms one record containing three fields: there is a space
+between the first and last names and a tab between the last name and
+the phone number.  If you wanted to grab the first and last name as a
+single field, you could set the field separator explicitly so that
+only tabs are recognized.  Then, awk would recognize only two fields
+in this record.</p>
+
+<p>You can use any expression that evaluates to an integer to refer to a
+field, not just numbers and variables.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo a b c d | awk 'BEGIN { one = 1; two = 2 }</b></tt>
+&gt; <tt class="userinput"><b>{ print $(one + two) }'</b></tt>
+c</pre></blockquote>
+
+<p>
+<a name="IXT-7-265825" />
+<a name="IXT-7-265826" />
+You can change the field separator with the <span class="option">-F</span> option
+on the command line.  It is followed by the delimiter character
+(either immediately, or separated by whitespace).  In the following
+example, the field separator is changed to a tab.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -F"\t" '{ print $2 }' names</b></tt>
+666-555-1111</pre></blockquote>
+
+<p>"\t" is an <em class="emphasis">escape sequence</em> (discussed below) that
+represents an actual tab character.  It should be surrounded by single
+or double quotes.</p>
+
+<p>Commas delimit fields in the following two address records.</p>
+
+<blockquote><pre class="code">John Robinson,Koren Inc.,978 4th Ave.,Boston,MA 01760,696-0987 
+Phyllis Chapman,GVE Corp.,34 Sea Drive,Amesbury,MA 01881,879-0900</pre></blockquote>
+
+<p>An awk program can print the name and address in block format.</p>
+
+<blockquote><pre class="code"># blocklist.awk -- print name and address in block form.
+# input file -- name, company, street, city, state and zip, phone
+{ 	print ""	# output blank line
+	print $1	# name
+	print $2	# company
+	print $3	# street 
+	print $4, $5	# city, state zip 
+}</pre></blockquote>
+
+<p>The first <b class="emphasis-bold">print</b> statement specifies an empty string
+("") (remember,
+<b class="emphasis-bold">print</b> by itself outputs the current line).  This
+arranges for the records in the report to be separated by blank lines.
+We can invoke this script and specify that the field separator is a
+comma using the following command:</p>
+
+<blockquote><pre class="code">awk -F, -f blocklist.awk names</pre></blockquote>
+
+<p>The following report is produced:</p>
+
+<blockquote><pre class="code">John Robinson
+Koren Inc.
+978 4th Ave.
+Boston  MA 01760
+
+Phyllis Chapman
+GVE Corp.
+34 Sea Drive
+Amesbury  MA 01881</pre></blockquote>
+
+<p>
+<a name="IXT-7-265827" />
+<a name="IXT-7-265828" />
+It is usually a better practice, and more convenient, to specify the
+field separator in the script itself.  The system variable
+<b class="emphasis-bold">FS</b> can be defined to change the field separator.
+Because this must be done before the first input line is read, we must
+assign this variable in an action controlled by the
+<b class="emphasis-bold">BEGIN</b> rule.</p>
+
+<blockquote><pre class="code">BEGIN { FS = "," }</pre></blockquote>
+
+<p>Now let's use it in a script to print out the names and phone numbers.</p>
+
+<blockquote><pre class="code"># phonelist.awk -- print name and phone number. 
+# input file -- name, company, street, city, state and zip, phone
+
+BEGIN { FS = "," }  # comma-delimited fields
+
+{ print $1 ", " $6 }</pre></blockquote>
+
+<p>Notice that we use blank lines in the script itself to improve
+readability.  The <b class="emphasis-bold">print</b> statement puts a comma
+followed by a space between the two output fields.  This script can be
+invoked from the command line:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f phonelist.awk names</b></tt>
+John Robinson, 696-0987
+Phyllis Chapman, 879-0900</pre></blockquote>
+
+<p>This gives you a basic idea of how awk can be used to work with data
+that has a recognizable structure.  This script is designed
+to print all lines of input, but we could modify the single action by
+writing a pattern-matching rule that selected only certain names or
+addresses.  So, if we had a large listing of names, we could select
+only the names of people residing in a particular
+state.  We could write:</p>
+
+<blockquote><pre class="code">/MA/ { print $1 ", " $6 }</pre></blockquote>
+
+<p>where MA would match the postal state abbreviation for Massachusetts.
+However, we could possibly match a company name or some other field in
+which the letters "MA" appeared.  We can test a specific field for a
+match.  The tilde (~) operator allows you to test a regular expression
+against a field.
+<a name="IXT-7-265829" />
+<a name="IXT-7-265830" />
+<a name="IXT-7-265831" />
+<a name="IXT-7-265832" />
+<a name="IXT-7-265833" />
+<a name="IXT-7-265834" />
+<a name="IXT-7-265835" /></p>
+
+<blockquote><pre class="code">$5 ~ /MA/   { print $1 ", " $6 }</pre></blockquote>
+
+<p>You can reverse the meaning of the rule by using bang-tilde (!~).</p>
+
+<blockquote><pre class="code">$5 !~ /MA/   { print $1 ", " $6 }</pre></blockquote>
+
+<p>This rule would match all those records whose fifth field did not have
+"MA" in it.  A more challenging pattern-matching rule would be one
+that matches only long-distance phone numbers.  The following regular
+expression looks for an area code.</p>
+
+<blockquote><pre class="code">$6 ~ /1?(-|<img src="figs/squ.gif" alt="Figure " />)?\(?[0-9]+\)?(<img src="figs/squ.gif" alt="Figure " />|-)?[0-9]+-[0-9]+/</pre></blockquote>
+
+<p>This rule matches any of the following forms:</p>
+
+<blockquote><pre class="code">707-724-0000
+(707) 724-0000
+(707)724-0000
+1-707-724-0000   
+1 707-724-0000   
+1(707)724-0000</pre></blockquote>
+
+<p>The regular expression can be deciphered by breaking down its parts.
+"1?" means zero or one occurrences of "1".  "(-|<img src="figs/squ.gif" alt="Figure " />)?"  looks for
+either a hyphen or a space in the next position, or nothing at all.
+"\(?" looks for zero or one left parenthesis; the backslash
+prevents the interpretation of "(" as the grouping metacharacter.
+"[0-9]+" looks for one or more digits; note that we took the lazy way
+out and specified one or more digits rather than exactly three.  In
+the next position, we are looking for an optional right parenthesis,
+and again, either a space or a hyphen, or nothing at all.  Then we
+look for one or more digits "[0-9]+" followed by a hyphen followed by
+one or more digits "[0-9]+".</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-7-sect-5.2" /><div class="sect2">
+<h3 class="sect2">7.5.2. Field Splitting: The Full Story</h3>
+
+<p>
+<a name="IXT-7-265836" />
+<a name="IXT-7-265837" />
+<a name="IXT-7-265838" />
+There are three distinct ways you can have awk separate fields.
+The first method is to have fields separated by whitespace.  To do
+this, set <b class="emphasis-bold">FS</b> equal to a single
+space. In this case, leading and trailing whitespace (spaces and/or
+tabs) are stripped from the record, and fields are separated by runs
+of spaces and/or tabs.  Since the default value of <b class="emphasis-bold">FS</b> 
+is a single space, this is the way awk normally splits each record into fields.</p>
+
+<p>The second method is to have some other single character separate
+fields.  For example, awk programs for processing the UNIX
+<em class="filename">/etc/passwd</em> file usually use a ":" as the field
+separator.  When <b class="emphasis-bold">FS</b> is any single
+character, <em class="emphasis">each</em> occurrence of that character
+separates another field.  If there are two successive occurrences, the
+field between them simply has the empty string as its value.</p>
+
+<p>Finally, if you specify more than a single character as the field
+separator, it will be interpreted as a regular expression.  That is,
+the field separator will be the "leftmost longest non-null and
+nonoverlapping" substring<a href="#FOOTNOTE-41">[41]</a> 
+that matches the regular expression.  (The phrase "null string" is
+technical jargon for what we've been calling the "empty string.")  You
+can see the difference between specifying:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-41" /><p> [41] 
+<em class="citetitle">The AWK Programming Language</em> [Aho], p. 60.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">FS = "\t"</pre></blockquote>
+
+<p>which causes each tab to be interpreted as a field separator, and:</p>
+
+<blockquote><pre class="code">FS = "\t+"</pre></blockquote>
+
+<p>which specifies that one or more consecutive tabs separate a field.
+Using the first specification, the following line would have three fields:</p>
+
+<blockquote><pre class="code">abc\t\tdef</pre></blockquote>
+
+<p>whereas the second specification would only recognize two fields.
+Using a regular expression allows you to specify several
+characters to be used as delimiters:</p>
+
+<blockquote><pre class="code">FS = "[':\t]"</pre></blockquote>
+
+<p>Any of the three characters in brackets will be interpreted
+as the field separator.</p>
+</div>
+
+
+
+
+<a name="IXT-7-265839" />
+<a name="IXT-7-265840" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.4. Pattern Matching</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.6. Expressions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

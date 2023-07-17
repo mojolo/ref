@@ -1,0 +1,298 @@
+<html><head><title>Expect (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_17.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch29_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">28.18. Expect</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: expect</p>
+
+<p><a name="upt3-IDXTERM-4362" />
+<a name="upt3-IDXTERM-4363" /> <a name="upt3-IDXTERM-4364" />Expect is a program to control
+interactive applications such as <b class="emphasis-bold">telnet</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) and
+<i class="command">passwd</i>. These and many other applications
+interactively prompt and expect a user to enter keystrokes in
+response. But you can write simple Expect scripts to automate these
+interactions. Then the Expect program can run the
+"interactive" program
+noninteractively. Expect can also be used to automate only parts of a
+dialogue, since control can be passed from the script to the keyboard
+and vice versa. This allows a script to do the drudgery and a user to
+do the fun stuff.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: tcl, tk</p>
+
+<p><a name="IXT-28-4707" /><a name="IXT-28-4708" /><a name="IXT-28-4709" />Expect
+programs can be written in any language but are almost always written
+in Tcl. Tcl is an interpreted language that is widely used in many
+other applications. If you already use a Tcl-based application, you
+won't have to learn a new language for Expect.
+</p>
+
+<p>Tcl is a very typical-looking shell-like language. There are
+<a name="IXT-28-4710" />commands
+to set variables (<i class="command">set</i>), control flow
+(<i class="command">if</i>, <i class="command">while</i>,
+<i class="command">foreach</i>, etc.), and perform the usual math and
+string operations. Of course, Unix programs can be called, too.
+</p>
+
+<p>Expect is integrated on top of Tcl and provides additional commands
+for interacting with programs. Expect is named after the specific
+command that waits for output from a program. The
+<i class="command">expect</i><a name="IXT-28-4711" /> command is the heart of the Expect
+program. It describes a list of patterns to watch for. Each pattern
+is followed by an action; if the pattern is found, the action is
+executed.
+</p>
+
+<p><a name="IXT-28-4712" />For example, the following fragment
+is from a script that involves a login. When executed, the script
+waits for the strings <tt class="literal">welcome</tt>,
+<tt class="literal">failed</tt>, or <tt class="literal">busy</tt>, and then it
+evaluates [(executes) -- <em class="emphasis">JP</em>] one of the
+corresponding actions. The action associated with
+<em class="emphasis">busy</em> shows how multiple commands can be
+evaluated. The
+<em class="emphasis">timeout</em><a name="IXT-28-4713" /><a name="IXT-28-4714" /> keyword is a special pattern that
+matches if no other patterns match in a certain amount of time.
+</p>
+
+<blockquote><pre class="code">expect {
+   "welcome" break
+   "failed"  abort
+   timeout   abort
+   "busy"    {
+        puts "I'll wait - the system is busy!"
+        continue
+    }
+}</pre></blockquote>
+
+<a name="upt3-CHP-28-SECT-18.1" /><div class="sect2">
+<h3 class="sect2">28.18.1. Dialback</h3>
+
+<p><a name="IXT-28-4715" /><a name="IXT-28-4716" /><a name="IXT-28-4717" />It
+is surprising how little scripting is necessary to produce something
+useful. Below is a script that dials a phone. It is used to reverse
+the charges so that long-distance phone calls are charged to the
+computer. It is invoked with the phone number as its argument.
+</p>
+
+<blockquote><pre class="code">spawn tip modem
+expect "connected"
+send "ATD$argv\r"
+# modem takes a while to connect
+set timeout 60
+expect "CONNECT"</pre></blockquote>
+
+<p><a name="IXT-28-4718" /><a name="IXT-28-4719" /> <a name="IXT-28-4720" /> <a name="IXT-28-4721" />The first line runs the
+<i class="command">tip</i> program so that the output of a modem can be
+read by <i class="command">expect</i> and its input written by
+<i class="command">send</i>. Once <i class="command">tip</i> says it is
+connected, the modem is told to dial using the command
+<tt class="literal">ATD</tt> followed by the phone number. The phone number
+is retrieved from <em class="emphasis">argv</em>, which is a variable
+predefined to contain the original argument with which the script was
+called.
+</p>
+
+<p>The fourth line is just a comment noting that the variable being set
+in the next line controls how long <i class="command">expect</i> will
+wait before giving up. At this point, the script waits for the call
+to complete. No matter what happens, <i class="command">expect</i>
+terminates. If the call succeeds, the system detects that a user is
+connected and prompts with <tt class="literal">login</tt>:.
+</p>
+
+<p>Actual scripts do more error checking, of course. For example, the
+script could retry if the call fails. But the point here is that it
+does not take much code to produce useful scripts. This six-line
+script replaced a 60 KB executable (written in C) that did the same
+thing!
+</p>
+
+</div>
+<a name="upt3-CHP-28-SECT-18.2" /><div class="sect2">
+<h3 class="sect2">28.18.2. Automating /bin/passwd</h3>
+
+<p><a name="upt3-IDXTERM-4380" /> <a name="upt3-IDXTERM-4381" /> <a name="upt3-IDXTERM-4382" />Earlier I mentioned some programs
+that cannot be automated with the shell. It is difficult to imagine
+why you might even want to embed some of these programs in shell
+scripts. Certainly the original authors of the programs did not
+conceive of this need. As an example, consider
+<i class="command">passwd</i><a name="IXT-28-4722" />.
+</p>
+
+<p><i class="command">passwd</i> is the command to change a password. The
+<i class="command">passwd</i> program does not take the new password from
+the command line.<a href="#FOOTNOTE-90">[90]</a> Instead,
+it interactively prompts for it -- twice. Here is what it looks
+like when run by a system administrator. (When run by users, the
+interaction is slightly more complex because they are prompted for
+their old passwords as well.)
+</p><blockquote class="footnote"> <a name="FOOTNOTE-90" /><p> [90]Newer versions will accept input
+from <em class="emphasis">STDIN</em>, however.</p> </blockquote>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>passwd libes</b></tt>
+Changing password for libes on thunder.
+New password:
+Retype new password:</pre></blockquote>
+
+<p>This is fine for a single password. But suppose you have accounts of
+your own on a number of unrelated computers and you would like them
+all to have the same password. Or suppose you are a system
+administrator establishing 1,000 accounts at the beginning of each
+semester. All of a sudden, an automated <i class="command">passwd</i>
+makes a lot of sense. Here is an Expect script to do just that:
+automate <i class="command">passwd</i> so that it can be called from a
+shell script.
+</p>
+
+<blockquote><pre class="code">spawn passwd [lindex $argv 0]
+set password [lindex $argv 1]
+expect "password:"
+send "$password\r"
+expect "password:"
+send "$password\r"
+expect eof</pre></blockquote>
+
+<p>The first line starts the <i class="command">passwd</i> program with the
+username passed as an argument. The next line saves the password in a
+variable for convenience. As in shell scripts, variables do not have
+to be declared in advance.
+</p>
+
+<p>In the third line, the <i class="command">expect</i> command looks for
+the pattern <tt class="literal">password</tt>:. <i class="command">expect</i>
+waits until the pattern is found before continuing.
+</p>
+
+<p>After receiving the prompt, the next line sends a password to the
+current process. The <tt class="literal">\r</tt> indicates a carriage
+return. (Most of the usual C string conventions are supported.) There
+are two <em class="emphasis">expect</em>-<em class="emphasis">send</em>
+sequences because <i class="command">passwd</i> asks the password to be
+typed twice as a spelling verification. There is no point to this in
+a noninteractive <i class="command">passwd</i>, but the script has to do
+it because <i class="command">passwd</i> assumes it is interacting with a
+human who does not type consistently.
+</p>
+
+<p>The final command <tt class="literal">expect
+eof</tt><a name="IXT-28-4723" /> causes the script to wait for the
+<a name="IXT-28-4724" />end-of-file character in the output of
+<i class="command">passwd</i>. Similar to <em class="emphasis">timeout</em>,
+<em class="emphasis">eof</em> is another keyword pattern. This final
+<i class="command">expect</i> effectively waits for
+<i class="command">passwd</i> to complete execution before returning
+control to the script.
+</p>
+
+<p>Take a step back for a moment. Consider that this problem could be
+solved in a different way. You could edit the source to
+<i class="command">passwd</i> (should you be so lucky as to have it) and
+modify it so that given an optional flag, it reads its arguments from
+the command line just the way that the Expect script does. If you
+lack the source and have to write <i class="command">passwd</i> from
+scratch, of course, then you will have to worry about how to encrypt
+passwords, lock and write the password database, etc. In fact, even
+if you only modify the existing code, you may find it surprisingly
+complicated code to look at. The <i class="command">passwd</i> program
+does some very tricky things. If you do get it to work, pray that
+nothing changes when your system is upgraded. If the vendor adds NIS,
+NIS+, Kerberos, shadow passwords, a different encryption function, or
+some other new feature, you will have to revisit the code.
+</p>
+
+<p>Expect comes with several example scripts that demonstrate how you
+can do many things that are impossible with traditional shells. For
+example, the <i class="command">passmass</i><a name="IXT-28-4725" /><a name="IXT-28-4726" /><a name="IXT-28-4727" /> script lets you update your password
+on many unrelated machines simultaneously. The
+<i class="command">rftp</i><a name="IXT-28-4728" /><a name="IXT-28-4729" /> script provides
+your regular <i class="command">ftp</i> client with additional commands
+to do recursive FTP in either direction. The
+<i class="command">cryptdir</i><a name="IXT-28-4730" /> <a name="IXT-28-4731" /><a name="IXT-28-4732" /> script encrypts all the files in a
+directory. And an amusing script is provided that lets two
+<i class="command">chess</i><a name="IXT-28-4733" /> processes play each other. Expect has no
+limit to the number of interactive programs it can drive at the same
+time. The Unix system may limit Expect, though, by controlling the
+maximum number of processes or other system resources available.
+<a name="IXTR3-4759" />
+<a name="IXTR3-4760" />
+<a name="IXTR3-4761" />
+</p>
+
+</div>
+<a name="upt3-CHP-28-SECT-18.3" /><div class="sect2">
+<h3 class="sect2">28.18.3. Testing: A Story</h3>
+
+<p><a name="IXT-28-4734" /><a name="IXT-28-4735" /><a name="IXT-28-4736" />Many people use Expect for
+testing. You can test interactive programs as easily as you can
+automate them. And hardware lends itself to testing with Expect, too.
+For example, we solved a thorny problem when we had to deal with an
+unreliable bank of
+<a name="IXT-28-4737" />modems. We were receiving dozens of
+calls each week reporting "the modem is
+hung." No indication of which modem, of course. And
+it was always too late for us to ask the user to try something to
+investigate the problem. The connection was gone by then. Our
+solution was an Expect script that connected to each modem hourly and
+exercised it. Any problems were recorded so that we had a clear and
+full history of each modem's behavior. As soon as a
+defective or hung modem was encountered, the Expect script would send
+email to the system administrator. With this script in place, reports
+of modem problems from our users dropped to zero.
+</p>
+
+</div>
+<a name="upt3-CHP-28-SECT-18.4" /><div class="sect2">
+<h3 class="sect2">28.18.4. Other Problems</h3>
+
+<p>These are just a few of the problems that can be solved with Expect.
+And as with all Expect solutions, recompilation of the original
+programs is unnecessary. You don't even need the
+source code! Expect handles many other problems as well. For example,
+Expect can wrap existing interactive tools with
+<a name="IXT-28-4738" />GUI wrappers. This means you can
+wrap interactive programs with graphic frontends to control
+applications by buttons, scrollbars, and other graphic elements. And
+Expect scripts work great as CGI scripts or from <b class="emphasis-bold">cron</b> (<a name="IXT-28-4739" /><a href="ch25_02.htm#upt3-CHP-25-SECT-2">Section 25.2</a>) or
+<i class="command">inetd</i><a name="IXT-28-4740" /> [the daemon that controls Internet
+services provided by a system -- <em class="emphasis">JP</em>].
+Finally, learning Expect may be easier than you think. Expect can
+watch you interact and then produce an Expect script for you.
+Interaction automation can't get much easier than
+this!
+</p>
+
+<p>More information on Expect is available in <em class="citetitle">Exploring
+Expect</em>, by Don Libes, from O'Reilly
+&amp; Associates.<a name="IXTR3-4762" /> <a name="IXTR3-4763" /> <a name="IXTR3-4764" />
+</p>
+
+<p> <em class="emphasis">-- DL<a name="IXTR3-4765" /></em> 
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_17.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch29_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">28.17. Dealing with Too Many Arguments</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">29. Custom Commands</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

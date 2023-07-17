@@ -1,0 +1,236 @@
+<html><head><title>Your X Environment (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_23.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 6. Your X Environment</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch06_01.htm#sect1">Defining Keys and Button Presses with xmodmap</a><br />
+<a href="ch06_02.htm">Using xev to Learn Keysym Mappings</a><br />
+<a href="ch06_03.htm">X Resource Syntax</a><br />
+<a href="ch06_04.htm">X Event Translations</a><br />
+<a href="ch06_05.htm">Setting X Resources: Overview</a><br />
+<a href="ch06_06.htm">Setting Resources with the -xrm Option</a><br />
+<a href="ch06_07.htm">How -name Affects Resources</a><br />
+<a href="ch06_08.htm">Setting Resources with xrdb</a><br />
+<a href="ch06_09.htm">Listing the Current Resources for a Client: appres</a><br />
+<a href="ch06_10.htm">Starting Remote X Clients</a><br /></p></div><div class="sect1"><a name="upt3-CHP-6-SECT-1" />
+<h2 class="sect1"><a name="sect1" />6.1. Defining Keys and Button Presses with xmodmap</h2>
+
+<p><a name="upt3-IDXTERM-1092" /> <a name="upt3-IDXTERM-1093" /> <a name="upt3-IDXTERM-1094" /> <a name="upt3-IDXTERM-1095" />If you have a Linux system, you may
+want to use <i class="command">loadkeys</i><a name="IXT-6-838" /><a name="IXT-6-839" /> instead of
+<i class="command">xmodmap</i>. <i class="command">loadkeys</i> is designed
+to set the keymap used by the system as a whole, particularly the
+console, so use your own judgment. Whatever is done in
+<i class="command">xmodmap</i> will affect X but not the system console.
+</p>
+
+<p>An important piece to the X Window System puzzle is filled by the
+<i class="command">xmodmap</i> client. When the user performs any
+action -- such as typing a key or moving the mouse -- the
+server sends a packet of information to the client called an
+<em class="emphasis">event</em>. These events are then translated into
+actions by the client. You can use the <i class="command">xmodmap</i>
+utility to effectively change the event that is reported to the
+client.
+</p>
+
+<p><em class="emphasis">Keysym mappings</em><a name="IXT-6-840" /><a name="upt3-IDXTERM-1099" /> are mappings of keyboard events at the
+server level, before the event is sent to the client.
+<em class="emphasis">Keysyms</em> are the
+<a name="IXT-6-841" />symbols used
+for each key on the keyboard.
+</p>
+
+<p>The X server maintains a <em class="emphasis">keymap
+table</em><a name="IXT-6-842" />, which contains a listing of keys on the
+keyboard and how they should be interpreted. A client gets the keymap
+table from the server upon client startup. In most cases, the keymap
+table is used to interpret keys literally -- when you press the
+letter "a," a key code is sent to
+the client that corresponds to the letter
+"a" in the keymap table.
+</p>
+
+<p>You can use the <i class="command">xmodmap</i> client to reassign key
+codes within the keymap table. <i class="command">xmodmap</i> can
+therefore be used to redefine how the key is interpreted by the
+client. You probably wouldn't want to translate the
+alphanumeric keys on the keyboard, but you may want to translate
+others. For example, you might want to change the BACKSPACE key to
+DELETE:
+</p>
+
+<blockquote><pre class="code">% xmodmap -e "keysym BackSpace = Delete"</pre></blockquote>
+
+<p>Another example is if you mistakenly hit the <a name="IXT-6-843" />CAPS LOCK key a bit too often, you can
+disable it completely. Some people might disable CAPS LOCK the
+low-tech way (by just removing the key from the keyboard!), but you
+can also render it harmless with the command:
+</p>
+
+<blockquote><pre class="code">% xmodmap -e "keysym Caps_Lock = "</pre></blockquote>
+
+<p>effectively disabling the CAPS LOCK key entirely. Note that the
+symbol is now gone and can't be redefined without
+using the hardware key code.
+</p>
+
+<p>If you are a <a name="IXT-6-844" /> <a name="IXT-6-845" />DVORAK typist, you can use
+<i class="command">xmodmap</i> to translate every key on the keyboard and
+so your QWERTY keyboard behaves like a DVORAK keyboard.
+</p>
+
+<p>If it ever seems that keystrokes are not working correctly, you can
+check current keysym settings by running <i class="command">xmodmap</i>
+with the <span class="option">-pk</span> argument. Use the
+<i class="command">xev</i> client to determine exactly which key code a
+key generates on your display. There is also a public domain client
+called <i class="command">xkeycaps</i> that can be used to display the
+keysyms for selected keyboards.
+</p>
+
+<p>You can use <i class="command">xmodmap</i> to add or remove keysyms, or
+even to redefine the key code associated with that keysym. You can
+also use it to redefine the mouse buttons, using the
+<tt class="literal">pointer</tt> keyword. For example, to have the second
+and third mouse button switch places, you can enter:
+</p>
+
+<blockquote><pre class="code">% xmodmap -e "pointer = 1 3 2"</pre></blockquote>
+
+<p>If you have a large number of keys to remap, you can put the commands
+in a file that is read when your X session starts. For example,
+create a file called <em class="emphasis">.Xmodmap</em>:
+</p>
+
+<blockquote><pre class="code">! my .Xmodmap file
+remove Lock = Caps_Lock
+remove Control = Control_L
+keysym Control_L = Caps_Lock
+keysym Caps_Lock = Control_L
+add Lock = Caps_Lock
+add Control = Control_L
+  ...</pre></blockquote>
+
+<p>These commands effectively reverse your CTRL and CAPS LOCK keys.
+(CTRL and CAPS LOCK are "switched"
+on <a name="IXT-6-846" /><a name="IXT-6-847" />PC and Macintosh keyboards, which
+can be exceedingly frustrating.) This file can then be read
+automatically in a X startup script:
+</p>
+
+<blockquote><pre class="code">  ...
+xset b 10 100 10
+xrdb $HOME/.Xdefaults
+<tt class="userinput"><b>xmodmap $HOME/.Xmodmap</b></tt>
+fvwm &amp;
+  ...</pre></blockquote>
+
+<p>Alternately, you might want to assign different functions to
+little-used keys, such as making the tiny
+"enter" key on Powerbook keyboards
+into another command key. Remember, too, that some keys may have
+different names than what you're used to. Sun
+keyboards, for example, often come with a
+"meta" key; Macintosh keyboards
+have an "option" key where PC users
+expect to find "alt" (though they
+act the same); and so forth.
+</p>
+
+<p>On <a name="IXT-6-848" />Linux systems, the
+<i class="command">loadkeys</i> command is often used to make
+system-level changes to key mappings; it's common to
+see a variety of keytables already defined and a system default
+chosen from among them. The system default is often found in
+<em class="filename">/etc/sysconfig/keytable</em> (Red Hat 6 and earlier)
+or <em class="filename">/etc/sysconfig/keyboard</em> (Red Hat 7) or
+otherwise defined in a directory such as
+<em class="filename">/usr/share/keymaps</em> or
+<em class="filename">/usr/lib/kbd/keymaps</em>. On Debian, the keytable is
+simply set in
+<em class="filename">/etc/console-tools/default.kmap.gz</em>.
+</p>
+
+<p>If you have a physical keyboard on which you've
+switched certain keys, you may want to modify the
+<a name="IXT-6-849" />system-level key mappings as well, so
+that they are always loaded properly for those times when you need
+the console to work without any special user-level configuration. For
+example, on my <a name="IXT-6-850" />Red Hat systems, I always
+modify my keymap (in 6.* and earlier, found in
+<em class="filename">/usr/lib/kbd/keymaps/i386/qwerty/us.kmap.gz</em>, and
+in 7.*, found in
+<em class="filename">/lib/kbd/keymaps/i386/qwerty/us.kmap.gz</em>) to
+reflect the fact that the keyboard I carry with me to the co-lo has
+swapped CAPS LOCK and CTRL keys. Just <i class="command">gunzip</i> the
+file, edit, and then <i class="command">gzip</i> it back up again.
+Alternately, you can create a new file from an existing one, make
+your edits, and specify the new file in your
+<em class="filename">/etc/sysconfig/keytable</em> or
+<em class="filename">/etc/syscongig/keyboard</em> file, as appropriate.
+</p>
+
+<p>The keymaps directory tree is broken down by the platform (Amiga,
+Atari, i386, Mac, Sun) and then by the layout type of the keyboard
+(<a name="IXT-6-851" /><a name="IXT-6-852" />DVORAK,
+QWERTY, and various other layouts) and finally by the language or
+character set. So, there is a U.S. keymap, a U.K. keymap, a Hebrew
+keymap, and dozens of various others, for all of the systems on which
+Linux is supported. The files are in a relatively straightforward
+format:
+</p>
+
+<blockquote><pre class="code">keycode  54 = Shift
+keycode  56 = Alt
+keycode  57 = space
+        control keycode  57 = nul
+keycode  58 = Control
+keycode  86 = less             greater          bar
+keycode  97 = Control</pre></blockquote>
+
+<p>First comes the <tt class="literal">keycode</tt><a name="IXT-6-853" /> keyword, followed by the numeric value
+of the keysym generated when the key is pressed, and then a keyword
+(or several) describing the character to be generated when a given
+keysym is received. Modifiers may precede the
+<tt class="literal">keycode</tt> keyword, binding the combination of
+modifier key and keysym to another character value.
+</p>
+
+<a name="ch06-3-fm2xml" /><blockquote><b>NOTE:</b> 
+One danger of using <i class="command">xmodmap</i> is that anything set
+with <i class="command">xmodmap</i> might remain in effect after you have
+logged out. This isn't a problem if you use the same
+X server every day, but be aware that if you use a
+coworker's X terminal in his absence, he may come
+back complaining that you broke his CAPS LOCK key. This might happen
+if you use <i class="command">xdm</i>, since the server is not restarted
+after every X session. On some X terminals, you can fix this problem
+by toggling "Retain X Settings" on
+the X terminal setup menu.<a name="IXTR3-959" /> <a name="IXTR3-960" /> <a name="IXTR3-961" /> <a name="IXTR3-962" /> 
+</p>
+</blockquote>
+
+<p><em class="emphasis">--LM, EP, and SJC</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_23.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.23. Don't Quote Arguments to xterm -e</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.2. Using xev to Learn Keysym Mappings</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

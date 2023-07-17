@@ -1,0 +1,93 @@
+<html><head><title>Pass History to Another Shell (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch30_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">30.13. Pass History to Another Shell</h2>
+
+<p><a name="IXT-30-4278" /><a name="IXT-30-4279" /><a name="IXT-30-4280" /><a name="IXT-30-4281" /><a name="IXT-30-4282" /><a name="IXT-30-4283" />Most shells can <b class="emphasis-bold">save
+a history of the commands you type</b> (<a href="ch30_12.htm#upt3-CHP-30-SECT-12">Section 30.12</a>). You can add your own commands to some
+shells' history lists without retyping them. Why
+would you do that?
+</p>
+
+<ul><li>
+<p>You might have a set of commands that you want to be able to recall
+and reuse every time you log in. This can be more convenient than
+aliases because you don't have to think of names for
+the aliases. It's handier than a shell script if you
+need to do a series of commands that aren't always
+in the same order.
+</p>
+</li><li>
+<p>You might have several shells running (say, in several windows) and
+want to <b class="emphasis-bold">pass the history from one shell to
+another shell</b> (<a href="ch30_12.htm#upt3-CHP-30-SECT-12">Section 30.12</a>).
+</p>
+</li></ul>
+<p>Unfortunately, this isn't easy to do in all shells.
+For instance, the new
+<i class="command">pdksh</i><a name="IXT-30-4284" /> saves
+its history in a file with NUL-separated lines. And the
+<i class="command">tcsh</i><a name="IXT-30-4285" /> <a name="IXT-30-4286" /> <a name="IXT-30-4287" />
+history file has a timestamp-comment before each saved line, like
+this:
+</p>
+
+<blockquote><pre class="code">#+0972337571
+less 1928.sgm
+#+0972337575
+vi 1928.sgm
+#+0972337702
+ls -lt | head</pre></blockquote>
+
+<p>Let's look at an example for two of the shells that
+make history editing easy. Use the <i class="command">csh</i> command
+<i class="command">history -h</i>, or the <i class="command">bash</i> command
+<i class="command">history -w</i><a name="IXT-30-4288" /><a name="IXT-30-4289" />, to save the history from a shell to a
+file. Edit the file to take out commands you don't
+want:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>mail -s "My report" bigboss</b></tt>   $ <tt class="userinput"><b>mail -s "My report" bigboss</b></tt>
+    ...                                           ...
+% <tt class="userinput"><b>history -h &gt; history.std</b></tt>      $ <tt class="userinput"><b>history -w history.std</b></tt>
+% <tt class="userinput"><b>vi history.std</b></tt>                $ <tt class="userinput"><b>vi history.std</b></tt>
+       <i class="lineannotation">...Clean up history...</i>                   <i class="lineannotation">...Clean up history...</i></pre></blockquote>
+
+<p>Read that file into another shell's history list
+with the <i class="command">csh</i> command <i class="command">source
+-h</i><a name="IXT-30-4290" /> or the <i class="command">bash</i> command
+<i class="command">history -r</i><a name="IXT-30-4291" />:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>source -h history.std</b></tt>         $ <tt class="userinput"><b>history -r history.std</b></tt>
+% <tt class="userinput"><b>!ma</b></tt>                           $ <tt class="userinput"><b>!ma</b></tt>
+mail -s "My report" bigboss     mail -s "My report" bigboss</pre></blockquote>
+
+<p>Of course, you can also use <i class="command">bash</i> <b class="emphasis-bold">interactive command-line editing</b> (<a href="ch30_14.htm#upt3-CHP-30-SECT-14">Section 30.14</a>) on the saved commands.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch30_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">30.12. Picking Up Where You Left Off</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">30.14. Shell Command-Line Editing</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

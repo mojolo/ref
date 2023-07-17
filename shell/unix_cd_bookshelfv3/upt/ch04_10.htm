@@ -1,0 +1,224 @@
+<html><head><title>Highlighting and Color in Shell Prompts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.10. Highlighting and Color in Shell Prompts</h2>
+
+<p><a name="IXT-4-6796" /><a name="IXT-4-6797" /><a name="IXT-4-6798" /><a name="IXT-4-6799" />If
+your prompt has some information that you want to stand out -- or
+if you want your whole prompt to stand out from the rest of the text
+on the screen -- you might be able to make it in enhanced
+characters or colors. If your terminal has special escape sequences
+for enhancing the characters (and most do), you can use them to make
+part or all of your prompt stand out. Newer versions of
+<i class="command">xterm</i> also have color capability, as does the
+<a name="IXT-4-6800" /> <a name="IXT-4-6801" />Mac OS X Terminal program, though
+Terminal may not properly support the escape sequences we discuss
+later. (The <a name="IXT-4-6802" /> <a name="IXT-4-6803" />GNU <b class="emphasis-bold">dircolors</b> (<a href="ch08_06.htm#upt3-CHP-8-SECT-6">Section 8.6</a>)
+command sets up a color-capable terminal.)
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: blinkprompt.cshblinkprompt.sh</p>
+
+<p>Let's say that you want to make sure people notice
+that they're logged in as <a name="IXT-4-6804" /><a name="IXT-4-6805" /><a name="IXT-4-6806" />root (the superuser) by making part of the
+root prompt flash. Here are lines for the root
+<em class="filename">.cshrc</em>:
+</p>
+
+<blockquote><pre class="code"># Put ESCape character in $e.  Use to start blinking mode (${e}[5m)
+# and go back to normal mode (${e}[0m) on VT100-series terminals:
+set e="`echo x | tr x '\033'`"</pre></blockquote>
+
+<p><tt class="literal">uname -n</tt> <a href="ch02_05.htm#upt3-CHP-2-SECT-5">Section 2.5</a></p>
+
+<blockquote><pre class="code">set prompt="${e}[5mroot${e}[0m@`uname -n`# "</pre></blockquote>
+
+<p>That prompt might look like this, with the word
+<tt class="literal">root</tt> flashing:
+</p>
+
+<blockquote><pre class="code">root@www.jpeek.com#</pre></blockquote>
+
+<a name="ch04-3-fm2xml" /><blockquote><b>NOTE:</b> 
+<a name="IXT-4-6807" /> <a name="IXT-4-6808" />Shells
+with command-line editing need to calculate the width of your prompt
+string. When you put <a name="IXT-4-6809" /> <a name="IXT-4-6810" />nonprinting escape sequences in a
+prompt (as we're doing here), in
+<i class="command">zsh</i> and <i class="command">tcsh</i> you have to
+delimit them with<a name="IXT-4-6811" /> <tt class="literal">%{</tt> and
+<tt class="literal">%}</tt>. In
+<i class="command">bash</i><a name="IXT-4-6812" /> <a name="IXT-4-6813" />, bracket nonprinting characters
+with <tt class="literal">\[</tt> and <tt class="literal">\]</tt>. In the
+<a name="IXT-4-6814" />Korn shell, prefix your prompt
+with a nonprinting character (such as CTRL-a) followed by a RETURN,
+and delimit the escape codes with this same nonprinting character. As
+the <i class="command">pdksh</i> manual page says,
+"Don't blame me for this hack;
+it's in the original
+<i class="command">ksh</i>."
+</p>
+</blockquote>
+
+<p><a name="IXT-4-6815" /><a name="IXT-4-6816" />The
+prompt is set inside double quotes (<tt class="literal">"</tt>), so the
+<tt class="literal">uname' -n</tt> command is run once,
+when the <em class="emphasis">PS1</em> string is first stored. In some
+shells, like <i class="command">bash</i> and <i class="command">pdksh</i>,
+you can put single quotes (<tt class="literal">'</tt>) around the
+<em class="emphasis">PS1</em> string; this stores the backquotes
+(<tt class="literal">`</tt>) in the string, and the shell will interpret
+them before it prints each prompt. (In this case,
+that's useless because the output of <tt class="literal">uname
+-n</tt> will always be the same in a particular invocation of a
+shell. But if you want constantly updated information in your prompt,
+it's very handy.) <a href="ch04_06.htm#upt3-CHP-4-SECT-6">Section 4.6</a> and <a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a> have more
+info.
+</p>
+
+<p><a name="IXT-4-6817" />Because the same escape sequences
+won't work on all terminals, it's
+probably a good idea to add an <i class="command">if</i> test that only
+sets the prompt if the terminal type <em class="emphasis">$TERM</em> is in
+the Digital Equipment Corporation VT100 series (or one that emulates
+it). <a href="ch04_10.htm#upt3-CHP-4-TABLE-1">Table 4-1</a> shows a few escape sequences for
+VT100 and compatible terminals. (The <tt class="literal">ESC</tt> in each
+sequence stands for an ESCape character. )
+</p>
+
+<a name="upt3-CHP-4-TABLE-1" /><h4 class="objtitle">Table 4-1. VT100 escape sequences for highlighting </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Sequence</p>
+</th>
+<th>
+<p>What it does</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>ESC[1m</p>
+</td>
+<td>
+<p>Bold, intensify foreground</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ESC[4m</p>
+</td>
+<td>
+<p>Underscore</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ESC[5m</p>
+</td>
+<td>
+<p>Blink</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ESC[7m</p>
+</td>
+<td>
+<p>Reverse video</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ESC[0m</p>
+</td>
+<td>
+<p>All attributes off</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>Of course, you can use different escape sequences if your terminal
+needs them. <a name="IXT-4-6818" /><a name="IXT-4-6819" /><a name="IXT-4-6820" />Better, read your
+terminal's <em class="emphasis">terminfo</em> or
+<em class="emphasis">termcap</em> database with a program like
+<i class="command">tput</i> or <i class="command">tcap</i> to get the correct
+escape sequences for your terminal. Store the escape sequences in
+<b class="emphasis-bold">shell variables</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>). 
+</p>
+
+<p><a name="IXT-4-6821" /><a name="IXT-4-6822" /><i class="command">bash</i> interprets
+octal character codes (like <tt class="literal">\033</tt>) in the prompt.
+It also has special-backslashed special-prompt characters -- for
+instance, <i class="command">bash</i> Version 2 has
+<tt class="literal">\e</tt>, which outputs an ESCape character, and
+<tt class="literal">\H</tt>, which gives the complete hostname. The string
+<tt class="literal">\$</tt> is replaced by a dollar sign
+(<tt class="literal">$</tt>) on non-<em class="emphasis">root</em> shells and a
+hash mark (<tt class="literal">#</tt>) if you're currently
+<em class="emphasis">root</em>. So, on <i class="command">bash</i>, you can
+make the previous <i class="command">csh</i> prompt this way:
+</p>
+
+<blockquote><pre class="code">PS1='\[\e[5m\]root\[\e[0m\]@\H\$ '</pre></blockquote>
+
+<p>(The delimiters for nonprinting characters, <tt class="literal">\[</tt> and
+<tt class="literal">\]</tt>, might make it look complicated. Try spotting
+them first, as you look at the prompt string, so you can see
+what's left.)
+</p>
+
+<p><a name="IXT-4-6823" />Eight-bit-clean versions of
+<i class="command">tcsh</i> can put standout, boldface, and
+underline -- and any other terminal escape sequence,
+too -- into your shell prompt. For instance, <tt class="literal">%S</tt>
+starts standout mode and <tt class="literal">%s</tt> ends it; the
+<i class="command">tcsh</i> manpage has details for your version. The
+next example shows how to make the same prompt as earlier with the
+word <tt class="literal">root</tt> in standout mode.
+(<i class="command">tcsh</i> puts the hostname into
+<tt class="literal">%m</tt>.) Because <i class="command">tcsh</i>
+"knows" the width of its special
+<tt class="literal">%S</tt> and <tt class="literal">%s</tt> formatting sequences,
+they don't need to be delimited with
+<tt class="literal">%{</tt> or <tt class="literal">%}</tt>:
+</p>
+
+<blockquote><pre class="code">set prompt = '%Sroot%s@%m# '</pre></blockquote>
+
+<p>You also can add color to your prompt! For instance, make the
+previous prompt for <i class="command">bash</i> using bright red (1;31)
+on a blue background (44):
+</p>
+
+<blockquote><pre class="code">PS1='\[\e[1;31;44m\]root\[\e[0m\]@\H# '</pre></blockquote>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.9. A "Menu Prompt" for Naive Users</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.11. Right-Side Prompts</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

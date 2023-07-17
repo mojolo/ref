@@ -1,0 +1,129 @@
+<html><head><title>rm and Its Dangers (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch14_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch14_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">14.3. rm and Its Dangers</h2>
+
+<p><a name="IXT-14-6218" /><a name="IXT-14-6219" />Under
+Unix, you use the <i class="command">rm</i> command to delete files. The
+command is simple enough; you just type <tt class="literal">rm</tt>
+followed by a list of files. If anything, <i class="command">rm</i> is
+too simple. It's easy to delete more than you want,
+and once something is gone, it's permanently gone.
+There are a few hacks that make <i class="command">rm</i> somewhat safer,
+and we'll get to those momentarily. But first,
+here's a quick look at some of the dangers.
+</p>
+
+<p>To understand why it's impossible to reclaim deleted
+files, you need to know a bit about how the Unix filesystem works.
+The system contains a "free list,"
+which is a list of disk blocks that aren't used.
+When you delete a file, its directory entry (which gives it its name)
+is removed. If there are no more <b class="emphasis-bold">links</b> (<a href="ch10_03.htm#upt3-CHP-10-SECT-3">Section 10.3</a>) to the
+file (i.e., if the file only had one name), its <b class="emphasis-bold">inode</b> (<a href="ch14_02.htm#upt3-CHP-14-SECT-2">Section 14.2</a>) is added
+to the list of free inodes, and its datablocks are added to the free
+list.
+</p>
+
+<p>Well, why can't you get the file back from the free
+list? After all, there are DOS utilities that can reclaim deleted
+files by doing something similar. Remember, though, Unix is a
+multitasking operating system. Even if you think your system is a
+single-user system, there are a lot of things going on
+"behind your back": daemons are
+writing to log files, handling network connections, processing
+electronic mail, and so on. You could theoretically reclaim a file if
+you could "freeze" the filesystem
+the instant your file was deleted -- but that's
+not possible. With Unix, everything is always active. By the time you
+realize you made a mistake, your file's data blocks
+may well have been reused for something else.
+</p>
+
+<p><a name="IXT-14-6220" /><a name="IXT-14-6221" />When you're deleting
+files, it's important to use wildcards carefully.
+Simple typing errors can have disastrous consequences.
+Let's say you want to delete all your object
+(<em class="emphasis">.o</em>) files. You want to type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm *.o</b></tt></pre></blockquote>
+
+<p>But because of a nervous twitch, you add an extra space and type: </p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm * .o</b></tt></pre></blockquote>
+
+<p>It looks right, and you might not even notice the error. But before
+you know it, all the files in the current directory will be gone,
+irretrievably.
+</p>
+
+<p>If you don't think this can happen to you,
+here's something that actually did happen to me. At
+one point, when I was a relatively new Unix user, I was working on my
+company's business plan. The executives thought, so
+as to be "secure," that
+they'd set a business plan's
+permissions so you had to be <b class="emphasis-bold">root</b>
+(<a href="ch01_18.htm#upt3-CHP-1-SECT-18">Section 1.18</a>) to modify it. (A mistake in its own
+right, but that's another story.) I was using a
+terminal I wasn't familiar with and accidentally
+created a bunch of files with four control characters at the
+beginning of their name. To get rid of these, I typed (as
+<em class="emphasis">root</em>):
+</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>rm ????*</b></tt></pre></blockquote>
+
+<p>This command took a <em class="emphasis">long</em> time to execute. When
+about two-thirds of the directory was gone, I realized (with horror)
+what was happening: I was deleting all files with four or more
+characters in the filename.
+</p>
+
+<p>The story got worse. They hadn't made a backup in
+about five months. (By the way, this article should give you plenty
+of reasons for making regular <b class="emphasis-bold">backups</b> (<a href="ch38_03.htm#upt3-CHP-38-SECT-3">Section 38.3</a>).) By
+the time I had restored the files I had deleted (a several-hour
+process in itself; this was on an ancient version of Unix with a
+horrible <em class="emphasis">backup</em> utility) and checked (by hand)
+all the files against our printed copy of the business plan, I had
+resolved to be <em class="emphasis">very careful</em> with my
+<i class="command">rm</i> commands.
+</p>
+
+<p>[Some shells have safeguards that work against
+Mike's first disastrous example -- but not the
+second one. Automatic safeguards like these can become a crutch,
+though . . . when you use another shell temporarily and
+don't have them, or when you type an expression like
+Mike's very destructive second example. I agree with
+his simple advice: check your <i class="command">rm</i> commands
+carefully! -- <em class="emphasis">JP</em>]
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch14_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch14_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">14.2. How Unix Keeps Track of Files: Inodes</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">14.4. Tricks for Making rm Safer</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

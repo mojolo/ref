@@ -1,0 +1,146 @@
+<html><head><title>Library Versions (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.4. Library Versions</h2>
+
+<p><a name="IXT-5-580" /> <a name="IXT-5-581" />Library version numbering is one area
+where Mac OS X differs from other Unix variants. In particular, the
+dynamic linker <em class="emphasis">dyld</em><a name="IXT-5-582" /> <a name="IXT-5-583" /> checks both major and minor version
+numbers. Also, the manner in which library names carry the version
+numbers is different. On ELF systems, shared libraries are named with
+an extension similar to the following:
+</p>
+
+<blockquote><pre class="code">libname.so.major_version_no.minor_version_no</pre></blockquote>
+
+<p>Typically, a symbolic link is created in the library named
+<em class="emphasis">libname.so</em>, which points to the most current
+version of the library. For example, on an ELF system like Solaris,
+<em class="emphasis">libMagick.so.5.0.44</em> is the name of an actual
+library. If this is the latest installed version of the library, you
+can find symbolic links that point to this library in the same
+directory. These symbolic links are typically created during the
+installation process.
+</p>
+
+<p>In this example, both <em class="emphasis">libMagick.so</em> and
+<em class="emphasis">libMagick.so.5</em> are symbolic links that point to
+<em class="emphasis">libMagick.so.5.0.44</em>. Older versions of the
+library may also be present, such as
+<em class="emphasis">libMagick.so.5.0.42</em>. However, although older
+versions of the library may be present, whenever a newer version is
+installed, the symbolic links are updated to point to the latest
+version. This works because when you create a shared library, you
+need to specify the name of the library to be used when the library
+is called by a program at runtime.
+</p>
+
+
+<a name="ch05-19-fm2xml" /><blockquote><b>TIP:</b> 
+In general, you should keep older versions of libraries around, just
+in case an application depends on them. If you are certain there are
+no dependencies, you can safely remove an older version.
+</p>
+</blockquote>
+
+<p>On Mac OS X, the <em class="emphasis">libMagick</em> library is named
+<em class="emphasis">libMagick.5.0.44.dylib</em>, and the symbolic links
+<em class="emphasis">libMagick.dylib</em> and
+<em class="emphasis">libMagick.5.dylib</em> point to it. Older versions,
+such as <em class="emphasis">libMagick.5.0.42.dylib</em>, may also be
+found in the same directory. One difference that is immediately
+apparent on Mac OS X systems is that the version numbers are placed
+between the library name and the <em class="emphasis">.dylib</em>
+extension rather than at the end of the filename, as on other Unix
+systems (e.g., <em class="emphasis">libMagick.so.5.0.42</em>).
+</p>
+
+<p>Another difference on Darwin is that the absolute pathname is
+specified when the library is installed. Thus,
+<em class="emphasis">ldconfig</em> is not used in Darwin, since paths to
+linked dynamic shared libraries are included in the executables. On
+an ELF system, you typically use <em class="emphasis">ldconfig</em> or set
+the <tt class="literal">LD_LIBRARY_PATH</tt> variable. In Darwin, use
+<tt class="literal">DYLD_LIBRARY_PATH</tt> instead of
+<tt class="literal">LD_LIBRARY_PATH</tt> (see the <em class="emphasis">dyld</em>
+man page for more details).
+</p>
+
+<p>You can link against a particular version of a library by including
+the appropriate option for <em class="emphasis">cc</em>, such as
+-<em class="emphasis">lMagick.5.0.42</em>. Minor version checking is
+another way that the Mach-O format differs from ELF. To illustrate
+this, let's revisit <a href="ch05_03.htm#mosxgeeks-CHP-5-EX-4">Example 5-4</a>,
+earlier in this chapter.
+</p>
+
+<p>Suppose that the library shown in <a href="ch05_03.htm#mosxgeeks-CHP-5-EX-4">Example 5-4</a> will
+continue to be improved over time; minor bugs will be fixed, minor
+expanded capabilities will be added, and, in time, major new features
+will be added. In each of these cases, there will be a need to rename
+the library to reflect the latest version. Assume that the last
+version of the library is named
+<em class="emphasis">libanswer.1.2.5.dylib</em>. The major version number
+is <em class="emphasis">1</em>, the minor revision is
+<em class="emphasis">2</em>, and the bug-fix (i.e., fully compatible)
+revision number is <em class="emphasis">5</em>. <a href="ch05_04.htm#mosxgeeks-CHP-5-EX-8">Example 5-8</a> illustrates how to update this library to
+release <em class="emphasis">libanswer.1.2.6.dylib,</em> which is fully
+compatible with the release 1.2.5, but contains some bug fixes.
+</p>
+
+<p>In the <em class="emphasis">makefile</em> shown earlier in <a href="ch05_03.htm#mosxgeeks-CHP-5-EX-5">Example 5-5</a>, replace the following lines:
+</p>
+
+<blockquote><pre class="code">libanswer.dylib: answer.o
+        $(LD) -dynamiclib -install_name libanswer.dylib \
+        -o libanswer.dylib answer.o</pre></blockquote>
+
+<p>with the code shown in <a href="ch05_04.htm#mosxgeeks-CHP-5-EX-8">Example 5-8</a>.</p>
+
+<a name="mosxgeeks-CHP-5-EX-8" /><div class="example">
+<h4 class="objtitle">Example 5-8. Versioning the answer library  </h4><a name="IXT-5-584" />
+<blockquote><pre class="code">libanswer.dylib: answer.o 
+     $(LD) -dynamiclib -install_name libanswer.1.dylib \
+            -compatibility_version 1.2 -current_version 1.2.6 \
+              -o libanswer.1.2.6.dylib  $(OBJS) 
+      rm -f libanswer.1.dylib   libanswer.1.2.dylib  libanswer.dylib
+      ln -s libanswer.1.2.6.dylib libanswer.1.2.dylib
+      ln -s libanswer.1.2.6.dylib libanswer.1.dylib
+      ln -s libanswer.1.2.6.dylib libanswer.dylib</pre></blockquote>
+</div>
+
+<p><a name="IXT-5-585" />Symbolic links are established to
+point to the actual library: one link reflecting the major revision,
+one reflecting the minor revision, and one that simply reflects the
+name of the library.
+</p>
+
+<p>The compatibility version number checks that the library used by an
+executable is compatible with the library that was linked in creating
+the executable. This is why the phrase <em class="emphasis">compatibility
+version</em> makes sense in this context.
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.3. Shared Libraries Versus Loadable Modules</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.5. Creating and Linking Static Libraries</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

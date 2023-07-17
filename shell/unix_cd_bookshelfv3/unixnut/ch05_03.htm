@@ -1,0 +1,415 @@
+<html><head><title>Variables (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">5.3. Variables</h2><p>
+<a name="unut-ch-5-ix-variables-csh-shell" />
+<a name="unut-ch-5-ix-csh-c-shell-variables" />This section describes the following:</p>
+<ul><li><p>Variable substitution</p>
+</li><li><p>Variable modifiers</p>
+</li><li><p>Predefined shell variables</p>
+</li><li><p>Example <tt class="literal">.cshrc</tt> file</p>
+</li><li><p>Environment variables</p>
+</li></ul>
+
+<a name="unut-ch-5-sect-3.1" /><div class="sect2"><h3 class="sect2">5.3.1. Variable Substitution</h3><p>
+<a name="IXT-5-122925" />In the following substitutions, braces (<tt class="literal">{}</tt>) are optional,
+except when needed to separate a variable name from following characters 
+that would otherwise be a part of it.</p>
+
+<table border="1" cellpadding="3"><tr><td><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">}</tt></td><td>The value of variable <em class="emphasis">var</tt></em>.</td></tr>
+<tr><td><tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">[</tt><em class="replaceable">i</em><tt class="literal">]}</tt></td><td><p>Select word or words in position <em class="emphasis">i</em> of <em class="emphasis">var</tt></em>.
+<em class="emphasis">i</em> can be a single number,
+a range <em class="emphasis">m</em>&#8211;<em class="emphasis">n</em>,
+a range <tt class="literal">-</tt><em class="emphasis">n</em>
+(missing <em class="emphasis">m</em> implies 1),
+a range <em class="emphasis">m</em><tt class="literal">-</tt>
+(missing <em class="emphasis">n</em> implies all remaining words),
+or <tt class="literal">*</tt> (select all words).
+<em class="emphasis">i</em> can also be a variable that
+expands to one of these values.</p>
+</td></tr>
+<tr><td><tt class="literal">${#</tt><em class="replaceable"><tt>var</em><tt class="literal">}</tt></td><td>The number of words in <em class="emphasis">var</tt></em>.</td></tr>
+<tr><td><tt class="literal">${#argv}</tt></td><td>The number of arguments.</td></tr>
+<tr><td><tt class="literal">$0</tt></td><td>Name of the program. (Usually not set in interactive shells.)</td></tr>
+<tr><td><tt class="literal">${argv[</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">]}</tt></td><td><p>Individual arguments on command line (positional parameters).
+<em class="emphasis">n</em> = 1&#8211;9.</p>
+</td></tr>
+<tr><td><tt class="literal">${</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">}</tt></td><td><p>Same as
+<tt class="literal">${argv[</tt><em class="emphasis">n</em><tt class="literal">]}</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">${argv[*]}</tt></td><td>All arguments on command line.</td></tr>
+<tr><td><tt class="literal">$*</tt></td><td>Same as <tt class="literal">$argv[*]</tt>.</td></tr>
+<tr><td><tt class="literal">$argv[$#argv]</tt></td><td>The last argument.</td></tr>
+<tr><td><tt class="literal">${?</tt><em class="replaceable"><tt>var</em><tt class="literal">}</tt></td><td><p>Return 1 if <em class="emphasis">var</tt></em> is set;
+0 if <em class="emphasis">var</em> is not set.</p>
+</td></tr>
+<tr><td><tt class="literal">$$</tt></td><td><p>Process number of current shell; useful as part of a filename
+for creating temporary files with unique names.</p>
+</td></tr>
+<tr><td><tt class="literal">$?0</tt></td><td>Return 1 if input filename is known; 0 if not.</td></tr>
+<tr><td><tt class="literal">$&lt;</tt></td><td>Read a line from standard input.</td></tr>
+</table><p>
+
+
+
+<a name="unut-ch-5-sect-3.1.1" /><div class="sect3"><h3 class="sect3">5.3.1.1. Examples</h3><p>Sort the third through last arguments (files)
+and save the output in a unique temporary file:</p>
+<blockquote><pre class="code">sort $argv[3-] &gt; tmp.$$</pre></blockquote>
+<p>Process <tt class="literal">.cshrc</tt> commands only if the shell is interactive
+(i.e., the <tt class="literal">prompt</tt> variable must be set):</p>
+<blockquote><pre class="code">if ($?prompt) then
+   <i class="lineannotation">set commands,</i>
+   <i class="lineannotation">alias commands,</i>
+   <i class="lineannotation">etc.</i>
+endif</pre></blockquote>
+</div>
+</div>
+
+<a name="unut-ch-5-sect-3.2" /><div class="sect2"><h3 class="sect2">5.3.2. Variable Modifiers</h3><p>
+<a name="IXT-5-122926" />Except for <tt class="literal">$?</tt><em class="emphasis">var</em>,
+<tt class="literal">$$</tt>, <tt class="literal">$?0</tt>, and <tt class="literal">$&lt;</tt>,
+the previous variable substitutions may be followed by one of the
+following modifiers. When braces are used, the modifier goes inside them.</p>
+<dl><dt><tt class="literal">:r</tt></dt><dd>Return the variable's root.</p>
+</dd>
+<dt><tt class="literal">:e</tt></dt><dd>Return the variable's extension.</p>
+</dd>
+<dt><tt class="literal">:h</tt></dt><dd>Return the variable's header.</p>
+</dd>
+<dt><tt class="literal">:t</tt></dt><dd>Return the variable's tail.</p>
+</dd>
+<dt><tt class="literal">:gr</tt></dt><dd>Return all roots.</p>
+</dd>
+<dt><tt class="literal">:ge</tt></dt><dd>Return all extensions.</p>
+</dd>
+<dt><tt class="literal">:gh</tt></dt><dd>Return all headers.</p>
+</dd>
+<dt><tt class="literal">:gt</tt></dt><dd>Return all tails.</p>
+</dd>
+<dt><tt class="literal">:q</tt></dt><dd>Quote a wordlist variable, keeping the items separate.
+Useful when the variable contains filename metacharacters that should
+not be expanded.</p>
+</dd>
+<dt><tt class="literal">:x</tt></dt><dd>Quote a pattern, expanding it into a wordlist.</p>
+</dd>
+</dl>
+
+<a name="unut-ch-5-sect-3.2.1" /><div class="sect3"><h3 class="sect3">5.3.2.1. Examples using pathname modifiers</h3><p>
+<a name="IXT-5-122927" />This table shows the use of pathname modifiers on the 
+following variable:</p>
+<blockquote><pre class="code">set aa=(/progs/num.c /book/chap.ps)</pre></blockquote>
+
+
+<table border="1" cellpadding="3"><tr><th><em class="emphasis">Variable Portion</em></th><th><em class="emphasis">Specification</em></th><th><em class="emphasis">Output Result</em></th></tr>
+
+<tr><td>Normal variable</td><td><tt class="literal">echo $aa</tt></td><td><tt class="literal">/progs/num.c /book/chap.ps</tt></td></tr>
+
+
+<tr><td>Second root</td><td><tt class="literal">echo $aa[2]:r</tt></td><td><tt class="literal">/book/chap</tt></td></tr>
+<tr><td>Second header</td><td><tt class="literal">echo $aa[2]:h</tt></td><td><tt class="literal">/book</tt></td></tr>
+<tr><td>Second tail</td><td><tt class="literal">echo $aa[2]:t</tt></td><td><tt class="literal">chap.ps</tt></td></tr>
+<tr><td>Second extension</td><td><tt class="literal">echo $aa[2]:e</tt></td><td><tt class="literal">ps</tt></td></tr>
+<tr><td>Root</td><td><tt class="literal">echo $aa:r</tt></td><td><tt class="literal">/progs/num /book/chap.ps</tt></td></tr>
+
+
+<tr><td>Global root</td><td><tt class="literal">echo $aa:gr</tt></td><td><tt class="literal">/progs/num /book/chap</tt></td></tr>
+<tr><td>Header</td><td><tt class="literal">echo $aa:h</tt></td><td><tt class="literal">/progs /book/chap.ps</tt></td></tr>
+<tr><td>Global header</td><td><tt class="literal">echo $aa:gh</tt></td><td><tt class="literal">/progs /book</tt></td></tr>
+<tr><td>Tail</td><td><tt class="literal">echo $aa:t</tt></td><td><tt class="literal">num.c /book/chap.ps</tt></td></tr>
+<tr><td>Global tail</td><td><tt class="literal">echo $aa:gt</tt></td><td><tt class="literal">num.c chap.ps</tt></td></tr>
+<tr><td>Extension</td><td><tt class="literal">echo $aa:e</tt></td><td><tt class="literal">c /book/chap.ps</tt></td></tr>
+<tr><td>Global extension</td><td><tt class="literal">echo $aa:ge</tt></td><td><tt class="literal">c ps</tt></td></tr>
+</table><p>
+</div>
+
+<a name="unut-ch-5-sect-3.2.2" /><div class="sect3"><h3 class="sect3">5.3.2.2. Examples using quoting modifiers</h3><blockquote><pre class="code">% <tt class="userinput"><b>set a="[a-z]*" A="[A-Z]*"</b></tt>
+% <tt class="userinput"><b>echo "$a" "$A"</b></tt>
+[a-z]* [A-Z]*
+
+% <tt class="userinput"><b>echo $a $A</b></tt>
+at cc m4 Book Doc
+
+% <tt class="userinput"><b>echo $a:x $A</b></tt>
+[a-z]* Book Doc
+
+% <tt class="userinput"><b>set d=($a:q $A:q)</b></tt>
+% <tt class="userinput"><b>echo $d</b></tt>
+at cc m4 Book Doc
+
+% <tt class="userinput"><b>echo $d:q</b></tt>
+[a-z]* [A-Z]*
+
+% <tt class="userinput"><b>echo $d[1] +++ $d[2]</b></tt>
+at cc m4 +++ Book Doc
+
+% <tt class="userinput"><b>echo $d[1]:q</b></tt>
+[a-z]*</pre></blockquote>
+</div>
+</div>
+
+<a name="unut-ch-5-sect-3.3" /><div class="sect2"><h3 class="sect2">5.3.3. Predefined Shell Variables</h3><p>
+<a name="IXT-5-122928" />
+<a name="IXT-5-122929" />
+<a name="IXT-5-122930" />
+<a name="IXT-5-122931" />Variables can be set in one of two ways, by assigning a value:</p>
+<blockquote><pre class="code">set <em class="replaceable"><tt>var</em>=<em class="replaceable">value</tt></em></pre></blockquote>
+<p>or by simply turning them on:</p>
+<blockquote><pre class="code">set <em class="replaceable"><tt>var</tt></em></pre></blockquote>
+<p>In the following table, variables that accept values are shown 
+with the equals sign followed by the type of value they accept;
+the value is then described.  (Note, however, that variables
+such as <tt class="literal">argv</tt>, <tt class="literal">cwd</tt>,
+or <tt class="literal">status</tt> are never explicitly assigned.)
+For variables that are turned on
+or off, the table describes what they do when set.
+The C shell automatically sets the variables 
+<tt class="literal">argv</tt>,
+<tt class="literal">cwd</tt>,
+<tt class="literal">home</tt>,
+<tt class="literal">path</tt>,
+<tt class="literal">prompt</tt>,
+<tt class="literal">shell</tt>,
+<tt class="literal">status</tt>,
+<tt class="literal">term</tt>,
+and
+<tt class="literal">user</tt>.</p>
+<table border="1" cellpadding="3">
+<tr><th><em class="emphasis">Variable</em></th><th><em class="emphasis">Description</em></th></tr>
+
+<tr><td><tt class="literal">argv=(</tt><em class="replaceable"><tt>args</tt></em><tt class="literal">)</tt></td><td><p>List of arguments passed to current command;
+default is <tt class="literal">()</tt>.
+<a name="IXT-5-122932" /></p>
+</td></tr>
+<tr><td><tt class="literal">cdpath=(</tt><em class="replaceable"><tt>dirs</tt></em><tt class="literal">)</tt></td><td><p>List of alternate directories to search when locating arguments for
+<a name="IXT-5-122933" />
+<tt class="literal">cd</tt>, <tt class="literal">popd</tt>, or <tt class="literal">pushd</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">cwd=</tt><em class="replaceable"><tt>dir</tt></em></td><td><p>Full pathname of
+<a name="IXT-5-122934" />
+current directory.</p>
+</td></tr>
+<tr><td><tt class="literal">echo</tt></td><td><p>Redisplay each command line before execution; same as
+<a name="IXT-5-122935" />
+<tt class="literal">csh -x</tt> command.</p>
+</td></tr>
+<tr><td><tt class="literal">fignore=(</tt><em class="replaceable"><tt>chars</tt></em><tt class="literal">)</tt></td><td><p>List of filename suffixes to ignore during 
+<a name="IXT-5-122936" />
+filename completion (see <tt class="literal">filec</tt>).</p>
+</td></tr>
+<tr><td><tt class="literal">filec</tt></td><td><p>If set, a filename that is partially typed on the command line
+<a name="IXT-5-122937" />
+can be expanded to its full name when the Escape key is pressed.  
+If more than one filename matches, type <em class="emphasis">EOF</em> 
+to list possible completions.</p>
+</td></tr>
+<tr><td><tt class="literal">hardpaths</tt></td><td><p>Tell <tt class="literal">dirs</tt> to display the actual pathname
+<a name="IXT-5-122938" />
+of any directory that is a symbolic link.</p>
+</td></tr>
+<tr><td><tt class="literal">histchars=</tt><em class="replaceable"><tt>ab</tt></em></td><td><p>A two-character string that sets the characters to use
+<a name="IXT-5-122939" />
+in history-substitution and quick-substitution (default is <tt class="literal">!^</tt>).</p>
+</td></tr>
+<tr><td><tt class="literal">history=</tt><em class="replaceable"><tt>n</tt></em></td><td><p>
+<a name="IXT-5-122940" />Number of commands to save in history list.</p>
+</td></tr>
+<tr><td><tt class="literal">home=</tt><em class="replaceable"><tt>dir</tt></em></td><td><p>Home directory of user, initialized from HOME. 
+<a name="IXT-5-122941" />
+The <tt class="literal">~</tt> character is shorthand for this value.</p>
+</td></tr>
+<tr><td><tt class="literal">ignoreeof</tt></td><td><p>
+<a name="IXT-5-122942" />Ignore an end-of-file (<em class="emphasis">EOF</em>) from terminals;
+prevents accidental logout.</p>
+</td></tr>
+<tr><td><tt class="literal">mail=(</tt><em class="replaceable"><tt>n file</tt></em><tt class="literal">)</tt></td><td><p>
+<a name="IXT-5-122943" />One or more files checked for new mail every five minutes or
+(if <em class="emphasis">n</em> is supplied) every <em class="emphasis">n</em> seconds.</p>
+</td></tr>
+<tr><td><tt class="literal">nobeep</tt></td><td><p>
+<a name="IXT-5-122944" />Don't ring bell for ambiguous file completion (see <tt class="literal">filec</tt>).</p>
+</td></tr>
+<tr><td><tt class="literal">noclobber</tt></td><td><p>Don't redirect output to an existing file; prevents accidental
+<a name="IXT-5-122945" />
+destruction of files.</p>
+</td></tr>
+<tr><td><tt class="literal">noglob</tt></td><td><p>
+<a name="IXT-5-122946" />Turn off filename expansion; useful in shell scripts.</p>
+</td></tr>
+<tr><td><tt class="literal">nonomatch</tt></td><td><p>
+<a name="IXT-5-122947" />Treat filename metacharacters as literal characters;
+e.g., <tt class="literal">vi ch*</tt> creates new file 
+<tt class="literal">ch*</tt> instead of printing &#8220;No match.&#8221;</p>
+</td></tr>
+<tr><td><tt class="literal">notify</tt></td><td><p>Notify user of completed jobs right away,
+<a name="IXT-5-122948" />
+instead of waiting for the next prompt.</p>
+</td></tr>
+<tr><td><tt class="literal">path=(</tt><em class="replaceable"><tt>dirs</tt></em><tt class="literal">)</tt></td><td><p>	List of pathnames in which to search for commands to execute.
+	Initialized from PATH.
+	SVR4 default is <tt class="literal">( . /usr/ucb /usr/bin )</tt>.
+	On Solaris, the default path is
+	<tt class="literal">( /usr/bin . )</tt>.
+	However, the standard start-up scripts then change it to
+	<tt class="literal">( /bin /usr/bin /usr/ucb /etc . )</tt>.
+	</p>
+</td></tr>
+<tr><td><tt class="literal">prompt='</tt><em class="replaceable"><tt>str</tt></em><tt class="literal">'</tt></td><td><p>
+<a name="IXT-5-122949" />String that prompts for interactive input;
+default is <tt class="literal">%</tt>.  </p>
+</td></tr>
+<tr><td><tt class="literal">savehist=</tt><em class="replaceable"><tt>n</tt></em></td><td><p>Number of history commands to save in
+<a name="IXT-5-122950" />
+<tt class="literal">~/.history</tt> upon logout; they can be accessed
+at the next login.</p>
+</td></tr>
+<tr><td><tt class="literal">shell=</tt><em class="replaceable"><tt>file</tt></em></td><td><p>Pathname of the shell program currently in use;
+default is <tt class="literal">/bin/csh</tt>.
+<a name="IXT-5-122951" /></p>
+</td></tr>
+<tr><td><tt class="literal">status=</tt><em class="replaceable"><tt>n</tt></em></td><td><p>Exit status of last command.  Built-in commands return
+<a name="IXT-5-122952" />
+0 (success) or 1 (failure).</p>
+</td></tr>
+<tr><td><tt class="literal">term=</tt><em class="replaceable"><tt>ID</tt></em></td><td><p>Name of terminal type,
+same as TERM.
+<a name="IXT-5-122953" /></p>
+</td></tr>
+<tr><td><tt class="literal">time='</tt><em class="replaceable"><tt>n</em> <tt class="literal">%</tt><em class="replaceable">c</em><tt class="literal">'</tt></td><td><p>If command execution takes more than <em class="emphasis">n</tt></em> CPU seconds,
+<a name="IXT-5-122954" />
+report user time, system time, elapsed time, and CPU percentage.
+Supply optional <tt class="literal">%</tt><em class="emphasis">c</em> flags to show other data.</p>
+</td></tr>
+<tr><td><tt class="literal">user=</tt><em class="replaceable"><tt>name</tt></em></td><td><p>Login name of user, initialized from USER.
+<a name="IXT-5-122955" /></p>
+</td></tr>
+<tr><td><tt class="literal">verbose</tt></td><td><p>Display a command after history substitution; same as the 
+<a name="IXT-5-122956" />
+command <tt class="literal">csh -v</tt>.</p>
+</td></tr>
+</table><p>
+</div>
+
+<a name="unut-ch-5-sect-3.4" /><div class="sect2"><h3 class="sect2">5.3.4. Example .cshrc File</h3><p>
+<a name="IXT-5-122957" /></p>
+<blockquote><pre class="code"># PREDEFINED VARIABLES
+set path=(~ ~/bin /usr/ucb /bin /usr/bin . )
+set mail=(/var/mail/tom)
+
+if ($?prompt) then            # Settings for interactive use
+  set echo
+  set filec
+  set noclobber ignoreeof
+
+  set cdpath=(/usr/lib /var/spool/uucp)
+# Now I can type cd macros 
+# instead of cd /usr/lib/macros
+
+  set fignore=.o              # Ignore object files for filec
+  set history=100 savehist=25
+  set prompt='tom \!% '       # Includes history number
+  set time=3
+
+# MY VARIABLES
+
+  set man1="/usr/man/man1"    # Lets me do    cd $man1, ls $man1
+  set a="[a-z]*"              # Lets me       do vi $a
+  set A="[A-Z]*"              # Or            grep string $A
+
+# ALIASES
+
+  alias c "clear; dirs"       # Use quotes to protect ; or |
+  alias h "history | more"
+  alias j jobs -l
+  alias ls ls -sFC            # Redefine ls command
+  alias del 'mv \!* ~/tmp_dir'# A safe alternative to rm
+endif</pre></blockquote>
+</div>
+
+<a name="unut-ch-5-sect-3.5" /><div class="sect2"><h3 class="sect2">5.3.5. Environment Variables</h3><p>
+<a name="IXT-5-122958" />
+<a name="IXT-5-122959" />The C shell maintains a set of <em class="emphasis">environment variables</em>,
+which are distinct from shell variables and aren't really part of 
+the C shell.
+Shell variables are meaningful only within the current shell, but
+environment variables are automatically exported,
+making them available globally.
+For example, C shell variables are accessible 
+only to a particular script in which they're defined, whereas
+environment variables can be used
+by any shell scripts, mail utilities, or editors you might invoke.</p>
+<p>Environment variables are assigned as follows:</p>
+<blockquote><pre class="code">setenv <em class="replaceable"><tt>VAR value</tt></em></pre></blockquote>
+
+
+<p>By convention, environment variable names are all uppercase.
+You can create your own environment variables,
+
+
+or you can use the following predefined environment variables.</p>
+<p>These environment variables have a corresponding C shell variable:</p>
+<dl><dt><i>HOME</i></dt><dd>
+<a name="IXT-5-122960" />Home directory; same as <tt class="literal">home</tt>.
+These may be changed independently of each other.</p>
+</dd>
+<dt><i>PATH</i></dt><dd>
+<a name="IXT-5-122961" />Search path for commands; same as <tt class="literal">path</tt>.
+Changing either one updates the value stored in the other.</p>
+</dd>
+<dt><i>TERM</i></dt><dd>
+<a name="IXT-5-122962" />Terminal type; same as <tt class="literal">term</tt>.
+Changing <tt class="literal">term</tt> updates TERM, but not
+the other way around.</p>
+</dd>
+<dt><i>USER</i></dt><dd>
+<a name="IXT-5-122963" />Username; same as <tt class="literal">user</tt>.
+Changing <tt class="literal">user</tt> updates USER, but not
+the other way around.</p>
+</dd>
+</dl>
+<p>Other environment variables include the following:</p>
+<dl><dt><i>EXINIT</i></dt><dd>A string of <tt class="literal">ex</tt> commands similar to those found in
+<a name="IXT-5-122964" />
+the startup <tt class="literal">.exrc</tt> file (e.g., <tt class="literal">set ai</tt>).
+Used by <tt class="literal">vi</tt> and <tt class="literal">ex</tt>.</p>
+</dd>
+<dt><i>LOGNAME</i></dt><dd>
+<a name="IXT-5-122965" />Another name for the USER variable.</p>
+</dd>
+<dt><i>MAIL</i></dt><dd>The file that holds mail.  Used by mail programs.
+<a name="IXT-5-122966" />
+This is not the same as the C shell <tt class="literal">mail</tt> variable,
+which only checks for new mail.</p>
+</dd>
+<dt><i>PWD</i></dt><dd>
+<a name="IXT-5-122967" />The current directory; the value is copied from <tt class="literal">cwd</tt>.</p>
+</dd>
+<dt><i>SHELL</i></dt><dd>Undefined by default; once initialized to <tt class="literal">shell</tt>,
+<a name="IXT-5-122968" />
+the two are identical.</p>
+</dd>
+</dl>
+
+<a name="IXT-5-122969" />
+<a name="IXT-5-122970" /></div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.2. Syntax</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.4. Expressions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

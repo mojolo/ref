@@ -1,0 +1,187 @@
+<html><head><title>Dealing with Too Many Arguments (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch28_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">28.17. Dealing with Too Many Arguments</h2>
+
+<p><a name="upt3-IDXTERM-4351" /> <a name="upt3-IDXTERM-4352" /> <a name="upt3-IDXTERM-4353" />Historically, one of the more annoying
+things about the design of many UNIX tools was their inability to
+handle large numbers of arguments. For example, if you wanted to
+print several hundred files using <i class="command">lpr</i>, you either
+had to pass them a few at a time, perhaps using wildcards on the
+command line to split the list up into shorter groups, or call
+<i class="command">lpr</i> once per file, perhaps using
+<i class="command">find</i> or a loop. One other method, which is still
+useful today, involves the use of <i class="command">xargs</i>.
+</p>
+
+<p><i class="command">xargs</i> is one of those Unix utilities that seems
+pretty useless when you first hear about it -- but turns into one
+of the handiest tools you can have.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: xargs</p>
+
+<p>If your system doesn't already have
+<i class="command">xargs</i>, be sure to install it from the web site.
+</p>
+
+<p><i class="command">xargs</i> reads a group of arguments from its standard
+input, then runs a Unix command with that group of arguments. It
+keeps reading arguments and running the command until it runs out of
+arguments. The shell's <b class="emphasis-bold">backquotes</b> (<a name="IXT-28-4702" /><a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) do the
+same kind of thing, but they give all the arguments to the command at
+once. This can give you a <tt class="literal">Too many arguments</tt>
+error.
+</p>
+
+<p>Here are some examples:</p>
+
+<ul><li>
+<p>If you want to print most of the files in a large directory, put the
+output of <i class="command">ls</i> into a file. Edit the file to leave
+just the filenames you want printed. Give the file to
+<i class="command">xargs</i>' standard input:
+</p>
+
+<p><tt class="literal">&lt;</tt> <a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a></p>
+<blockquote><pre class="code">% <tt class="userinput"><b>ls &gt; allfiles.tmp</b></tt>
+% <tt class="userinput"><b>vi allfiles.tmp</b></tt>
+% <tt class="userinput"><b>xargs lpr &lt; allfiles.tmp</b></tt></pre></blockquote>
+
+<p>What did that do? With lines like these in
+<em class="emphasis">allfiles.tmp</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat allfiles.tmp</b></tt>
+afile
+application
+   ...
+yoyotest
+zapme</pre></blockquote>
+
+<p><i class="command">xargs</i> ran one or more <i class="command">lpr</i>
+commands, each with a group of arguments, until it had read every
+word in the file:
+</p>
+
+<blockquote><pre class="code">lpr afile application ...
+   ...
+lpr ... yoyotest zapme</pre></blockquote>
+
+<p>This has another advantage for <i class="command">lpr</i>: each print job
+is fairly short, so you can delete one from the print queue without
+losing all of them.
+</p>
+</li>
+
+<li>
+<p>The standard output of <i class="command">xargs</i> is the standard
+output of the commands it runs. So, if you'd created
+<em class="emphasis">allfiles.tmp</em> above, but you wanted to format the
+files with <b class="emphasis-bold">pr</b> (<a href="ch45_06.htm#upt3-CHP-45-SECT-6">Section 45.6</a>) first, you could type:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>xargs pr &lt; allfiles.tmp | lpr</b></tt></pre></blockquote>
+<p>Then <i class="command">xargs</i> would run all of these
+<i class="command">pr</i> commands. The shell would pipe their standard
+outputs<a href="#FOOTNOTE-89">[89]</a> to a single
+<i class="command">lpr</i> command:
+</p><blockquote class="footnote"> <a name="FOOTNOTE-89" /><p> [89]Actually, the shell is piping the standard
+output of <i class="command">xargs</i>. As I said above,
+<i class="command">xargs</i> sends the standard output of commands it
+runs to its own standard output.</p> </blockquote>
+<blockquote><pre class="code">pr afile application ...
+   ...
+</pre></blockquote>
+</li>
+<li>
+<p>In the next example, <b class="emphasis-bold">find</b> (<a href="ch09_01.htm#upt3-CHP-9-SECT-1">Section 9.1</a>) gets a list of all files in the directory
+tree. Next, we use <i class="command">xargs</i> to read those filenames
+and run <b class="emphasis-bold">grep -l</b> (<a href="ch33_06.htm#upt3-CHP-33-SECT-6">Section 33.6</a>) to find which files contain the word
+"WARNING". Next, we pipe that to a
+setup with <i class="command">pr</i> and <i class="command">lpr</i>, like the
+one in the previous example:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -type f -print | xargs grep -l WARNING | xargs pr | lpr</b></tt></pre></blockquote>
+
+<p>"Huh?" you might say. Just take
+that step by step. The output of <i class="command">find</i> is a list of
+filenames, like <tt class="literal">./afile ./bfile ... ./adir/zfile</tt>
+and so on. The first <i class="command">xargs</i> gives those filenames
+to one or more <i class="command">grep -l</i> commands:
+</p>
+
+<blockquote><pre class="code">grep -l WARNING ./afile ./bfile ...
+   ...
+grep -l WARNING ./adir/zfile ...</pre></blockquote>
+<p>The standard output of all those <i class="command">grep</i>s is a
+(shortened) list of filenames that match. That's
+piped to another <i class="command">xargs</i> -- it runs
+<i class="command">pr</i> commands with the filenames that
+<i class="command">grep</i> found.
+</p>
+
+<p>Unix is weird and wonderful!</p>
+</li><li>
+<p><a name="IXT-28-4703" />Sometimes you don't
+want <i class="command">xargs</i> to run its command with as many
+arguments as it can fit on the command line. The
+<span class="option">-n</span><a name="IXT-28-4704" />
+option sets the maximum number of arguments <i class="command">xargs</i>
+will give to each command. Another handy
+option,<a name="IXT-28-4705" /> <span class="option">-p</span>, prompts you
+before running each command.
+</p>
+
+<p>Here's a directory full of files with errors (whose
+names end with <em class="emphasis">.bad</em>) and corrected versions
+(named <em class="emphasis">.fixed</em>). I use <i class="command">ls</i> to
+give the list of files to <i class="command">xargs</i>; it reads two
+filenames at once, then asks whether I want to run <i class="command">diff
+-c</i><a name="IXT-28-4706" /> to compare those two files. It keeps
+prompting me and running <i class="command">diff -c</i> until it runs out
+of file pairs:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls</b></tt>
+chap1.bad
+chap1.fixed
+chap2.bad
+chap2.fixed
+    ...
+chap9.bad
+chap9.fixed
+% <tt class="userinput"><b>ls | xargs -p -n2 diff -c</b></tt>
+diff -c chap1.bad chap1.fixed ?...<tt class="userinput"><b>y</b></tt>
+   <i class="lineannotation">...Output of diff command for chap1...</i>
+diff -c chap2.bad chap2.fixed ?...<tt class="userinput"><b>n</b></tt>
+diff -c chap3.bad chap3.fixed ?...<tt class="userinput"><b>y</b></tt>
+   <i class="lineannotation">...Output of diff command for chap3...</i></pre></blockquote>
+
+</li></ul>
+
+<p><em class="emphasis">--JP and SJC<a name="IXTR3-4756" /> <a name="IXTR3-4757" /> <a name="IXTR3-4758" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch28_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">28.16. Separating Commands with Semicolons</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">28.18. Expect</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

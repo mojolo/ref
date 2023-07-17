@@ -1,0 +1,93 @@
+<html><head><title>Order of Commands in a Script (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.6. Order of Commands in a Script</h2>
+
+<p><a name="IXT-34-721" /><a name="IXT-34-722" /><a name="IXT-34-723" />Combining a series of edits in a script can
+have unexpected results. You might not think of the consequences one
+edit can have on another. New users typically think that
+<i class="command">sed</i> applies an individual editing command to all
+lines of input before applying the next editing command. But the
+opposite is true. <i class="command">sed</i> applies every editing
+command to the first input line before reading the second input line
+and applying the editing script to it. Because <i class="command">sed</i>
+is always working with the latest version of the original line, any
+edit that is made changes the line for subsequent commands.
+<i class="command">sed</i> doesn't retain the original.
+This means that a pattern that might have matched the original input
+line may no longer match the line after an edit has been made.
+</p>
+
+<p>Let's look at an example that uses the substitute
+command. Suppose someone quickly wrote the following script to change
+<tt class="literal">pig</tt> to <tt class="literal">cow</tt> and
+<tt class="literal">cow</tt> to <tt class="literal">horse</tt>:
+</p>
+
+<blockquote><pre class="code">s/pig/cow/
+s/cow/horse/</pre></blockquote>
+
+<p>The first command would change <tt class="literal">pig</tt> to
+<tt class="literal">cow</tt> as expected. However, when the second command
+changed <tt class="literal">cow</tt> to <tt class="literal">horse</tt> on the
+same line, it also changed the <tt class="literal">cow</tt> that had been a
+<tt class="literal">pig</tt>. So, where the input file contained pigs and
+cows, the output file has only horses!
+</p>
+
+<p>This mistake is simply a problem of the order of the commands in the
+script. Reversing the order of the commands -- changing
+<tt class="literal">cow</tt> into <tt class="literal">horse</tt> before changing
+<tt class="literal">pig</tt> into <tt class="literal">cow</tt> -- does the
+trick.
+</p>
+
+<p>Another way to deal with this effect is to use a pattern you know
+won't be in the document except when you put it
+there, as a temporary placeholder. Either way, you know what the
+"document" looks like after each
+step in the program.
+</p>
+
+<blockquote><pre class="code">s/pig/cXXXoXXXw/
+s/cow/horse/
+s/cXXXoXXXw/cow/</pre></blockquote>
+
+<p>Some <i class="command">sed</i> commands change the flow through the
+script. For example, the <b class="emphasis-bold">N command</b>
+(<a href="ch34_16.htm#upt3-CHP-34-SECT-16">Section 34.16</a>) reads another line into the pattern
+space without removing the current line, so you can test for patterns
+across multiple lines. Other commands tell <i class="command">sed</i> to
+exit before reaching the bottom of the script or to go to a labeled
+command. <i class="command">sed</i> also maintains a second temporary
+buffer called the <em class="emphasis">hold space</em>. You can copy the
+contents of the pattern space to the hold space and retrieve it
+later. The commands that make use of the hold space are discussed in
+<a href="ch34_14.htm#upt3-CHP-34-SECT-14">Section 34.14</a> and other articles after it.
+</p>
+
+<p> <em class="emphasis">-- DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.5. sed Addressing Basics</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.7. One Thing at a Time</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

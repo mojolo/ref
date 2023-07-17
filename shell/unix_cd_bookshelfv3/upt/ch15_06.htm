@@ -1,0 +1,226 @@
+<html><head><title>Compressing Files to Save Space (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch15_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">15.6. Compressing Files to Save Space</h2>
+
+<p><a name="upt3-IDXTERM-2249" />
+<a name="upt3-IDXTERM-2250" />
+<a name="upt3-IDXTERM-2251" /> <a name="upt3-IDXTERM-2252" /><i class="command">gzip</i> is a fast and
+efficient compression program distributed by the
+<span class="acronym">GNU</span> project. The basic function of
+<i class="command">gzip</i><a name="IXT-15-6144" /> is to take a file
+<em class="emphasis">filename</em>, compress it, save the compressed
+version as <em class="emphasis">filename.gz</em>, and remove the original,
+uncompressed file. The original file is removed only if
+<i class="command">gzip</i> is successful; it is very difficult to delete
+a file accidentally in this manner. Of course, being
+<span class="acronym">GNU</span> software, <i class="command">gzip</i> has more
+options than you want to think about, and many aspects of its
+behavior can be modified using command-line options.
+</p>
+
+<p>First, let's say that we have a large file named
+<em class="filename">garbage.txt</em>:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>ls -l garbage.txt*</b></tt>
+-rw-r--r--   1 mdw      hack       312996 Nov 17 21:44 garbage.txt</pre></blockquote>
+
+<p>If we compress this file using <i class="command">gzip</i>, it replaces
+<em class="filename">garbage.txt</em> with the compressed file
+<em class="filename">garbage.txt.gz</em>. We end up with the following:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>gzip garbage.txt</b></tt>
+rutabaga% <tt class="userinput"><b>ls -l garbage.txt*</b></tt>
+-rw-r--r--   1 mdw      hack       103441 Nov 17 21:48 garbage.txt.gz</pre></blockquote>
+
+<p>Note that <em class="filename">garbage.txt</em> is removed when
+<i class="command">gzip</i> completes.
+</p>
+
+<p>You can give <i class="command">gzip</i> a list of filenames; it
+compresses each file in the list, storing each with a
+<em class="emphasis">.gz</em> extension. (Unlike the
+<i class="command">zip</i> program for Unix and <span class="acronym">MS-DOS</span>
+systems, <i class="command">gzip</i> will not, by default, compress
+several files into a single <em class="emphasis">.gz</em> archive.
+That's what <i class="command">tar</i> is for; see
+<a href="ch15_07.htm#upt3-CHP-15-SECT-7">Section 15.7</a>.)
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: gzip</p>
+
+<p>How efficiently a file is compressed depends upon its format and
+contents. For example, many audio and graphics file formats (such as
+<span class="acronym">MP3</span> and <span class="acronym">JPEG</span>) are already well
+compressed, and <i class="command">gzip</i> will have little or no effect
+upon such files. Files that compress well usually include plain-text
+files and binary files such as executables and libraries. You can get
+information on a <i class="command">gzip</i> ped file using
+<i class="command">gzip</i><a name="IXT-15-6145" /> -<span class="option">l</span>. For example:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>gzip -l garbage.txt.gz</b></tt>
+compressed  uncompr. ratio uncompressed_name
+   103115    312996  67.0% garbage.txt</pre></blockquote>
+
+<p><a name="IXT-15-6146" />To get our
+original file back from the compressed version, we use
+<i class="command">gunzip</i>, as in:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>gunzip garbage.txt.gz</b></tt>
+rutabaga% <tt class="userinput"><b>ls -l garbage.txt</b></tt>
+-rw-r--r--   1 mdw      hack       312996 Nov 17 21:44 garbage.txt</pre></blockquote>
+
+<p>which is identical to the original file. Note that when you
+<i class="command">gunzip</i> a file, the compressed version is removed
+once the uncompression is complete.
+</p>
+
+<p><i class="command">gzip</i> stores the name of the original, uncompressed
+file in the compressed version. This allows the name of the
+compressed file to be irrelevant; when the file is uncompressed it
+can be restored to its original splendor.
+<a name="IXT-15-6147" />To
+uncompress a file to its original filename, use the
+<span class="option">-N</span> option with <i class="command">gunzip</i>. To see the
+value of this option, consider the following sequence of commands:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>gzip garbage.txt</b></tt>
+rutabaga% <tt class="userinput"><b>mv garbage.txt.gz rubbish.txt.gz</b></tt></pre></blockquote>
+
+<p>If we were to <i class="command">gunzip
+rubbish.txt.gz</i><a name="IXT-15-6148" /> at this
+point, the uncompressed file would be named
+<em class="filename">rubbish.txt</em>, after the new (compressed)
+filename. However, with the <span class="option">-N</span> option, we get the
+following:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>gunzip -N rubbish.txt.gz</b></tt>
+rutabaga% <tt class="userinput"><b>ls -l garbage.txt</b></tt>
+-rw-r--r--   1 mdw      hack       312996 Nov 17 21:44 garbage.txt</pre></blockquote>
+
+<p><i class="command">gzip</i> and <i class="command">gunzip</i> can also
+compress or uncompress data from <a name="IXT-15-6149" /> <a name="IXT-15-6150" />standard input and output. If
+<i class="command">gzip</i> is given no filenames to compress, it
+attempts to compress data read from standard input. Likewise, if you
+use the <span class="option">-c</span><a name="IXT-15-6151" /> option with
+<i class="command">gunzip</i>, it writes uncompressed data to standard
+output. For example, you could pipe the output of a command to
+<i class="command">gzip</i> to compress the output stream and save it to
+a file in one step, as in:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>ls -laR $HOME | gzip &gt; filelist.gz</b></tt></pre></blockquote>
+
+<p>This will produce a recursive directory listing of your home
+directory and save it in the compressed file
+<em class="filename">filelist.gz</em>. You can display the contents of
+this file with the command:
+</p>
+
+<blockquote><pre class="code">rutabaga% <tt class="userinput"><b>gunzip -c filelist.gz | less</b></tt></pre></blockquote>
+
+<p>This will uncompress <em class="filename">filelist.gz</em> and pipe the
+output to the <b class="emphasis-bold">less</b> (<a href="ch12_03.htm#upt3-CHP-12-SECT-3">Section 12.3</a>) command. When you use
+<i class="command">gunzip</i> -<span class="option">c</span>, the file on disk
+remains compressed.
+</p>
+
+<p><a name="IXT-15-6152" /><a name="IXT-15-6153" />The <i class="command">gzcat</i> command is
+identical to <i class="command">gunzip</i> -<span class="option">c</span>. You can
+think of this as a version of <i class="command">cat</i> for compressed
+files. Some systems, including Linux, even have a version of the
+pager <i class="command">less</i><a name="IXT-15-6154" /> <a name="IXT-15-6155" /> for compressed files:
+<i class="command">zless</i>.
+</p>
+
+<p>When compressing files, you can use one of the options
+<span class="option">-1</span>, <span class="option">-2</span>, through <span class="option">-9</span>
+to specify the speed and quality of the compression used.
+<span class="option">-1</span> (also <span class="option">-</span> <span class="option">-fast</span>)
+specifies the fastest method, which compresses the files less
+compactly, while <span class="option">-9</span> (also <span class="option">- -best</span>)
+uses the slowest, but best compression method. If you
+don't specify one of these options, the default is
+<span class="option">-6</span>. None of these options has any bearing on how you
+use <i class="command">gunzip</i>; <i class="command">gunzip</i> can
+uncompress the file no matter what speed option you use.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: bzip, bzip2</p>
+
+<p>Another compression/decompression program has emerged to take the
+lead from <a name="IXT-15-6156" /><a name="IXT-15-6157" /><i class="command">gzip</i>.
+<i class="command">bzip2</i> is the new kid on the block and sports even
+better compression (on the average about 10 to 20% better than
+<i class="command">gzip</i>), at the expense of longer compression times.
+You cannot use <i class="command">bunzip2</i><a name="IXT-15-6158" /><a name="IXT-15-6159" /> <a name="IXT-15-6160" /> to
+uncompress files compressed with <i class="command">gzip</i> and vice
+versa. Since you cannot expect everybody to have
+<i class="command">bunzip2</i> installed on their machine, you might want
+to confine yourself to <i class="command">gzip</i> for the time being if
+you want to send the compressed file to somebody else (or, as many
+archives do, provide both <i class="command">gzip</i>- and
+<i class="command">bzip2</i>-compressed versions of the file). However,
+it pays to have <i class="command">bzip2</i> installed, because more and
+more <span class="acronym">FTP</span> servers now provide
+<i class="command">bzip2</i>-compressed packages to conserve disk space
+and, more importantly these days, bandwidth. You can recognize
+<i class="command">bzip2</i>-compressed files from their typical
+<em class="emphasis">.bz2</em> file name extension.
+</p>
+
+<p>While the command-line options of <i class="command">bzip2</i> are not
+exactly the same as those of <i class="command">gzip</i>, those that have
+been described in this section are, except for <span class="option">-
+-best</span> and <span class="option">- -fast</span>, which
+<i class="command">bzip2</i> doesn't have. For more
+information, see the <i class="command">bzip2</i> manual page.
+</p>
+
+<p>The bottom line is that you should use
+<i class="command">gzip</i>/<i class="command">gunzip</i> or
+<i class="command">bzip2</i>/<i class="command">bunzip2</i> for your
+compression needs. If you encounter a file with the extension
+<em class="emphasis">.Z</em><a name="IXT-15-6161" />, it was probably produced by
+<i class="command">compress</i><a name="IXT-15-6162" />, and <i class="command">gunzip</i> can
+uncompress it for you.
+</p>
+
+<p>[These days, the only real use for
+<i class="command">compress</i> -- if you have <i class="command">gzip</i>
+and <i class="command">bzip2</i> -- is for creating compressed images
+needed by some embedded hardware, such as older Cisco IOS images.
+ -- DJPH]<a name="IXTR3-6198" /> <a name="IXTR3-6199" /> <a name="IXTR3-6200" /> <a name="IXTR3-6201" /> 
+</p>
+
+<p><em class="emphasis">-- MW, MKD, and LK</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch15_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch15_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">15.5. Limiting File Sizes</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">15.7. Save Space: tar and compress a Directory Tree</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

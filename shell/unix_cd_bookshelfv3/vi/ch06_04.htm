@@ -1,0 +1,572 @@
+<html><head><title>Pattern-Matching Examples  (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.4. Pattern-Matching Examples </h2>
+
+<p>
+<a name="ch06.examples1" />
+<a name="ch06.examples2" />
+<a name="ch06.examples3" />
+<a name="ch06.examples4" />
+
+<a name="ch06.examples5" />
+<a name="ch06.examples6" />
+<a name="ch06.examples7" />
+Unless you are already familiar with regular expressions,
+the discussion of special characters above probably looks forbiddingly
+complex. A few more examples should make things clearer.
+In the examples that follow, a square
+(<img src="figs/squ.gif" alt="Figure " />) is used to mark a space; it is not a special character.</p>
+
+<p>Let's work through how you might use some special characters in a replacement.
+Suppose that you have a long file
+and that you want to substitute the word <em class="emphasis">child</em> with the
+word <em class="emphasis">children</em> throughout that file.
+You first save the edited buffer with <tt class="literal">:w</tt>, then
+try the global replacement:</p>
+
+<blockquote><pre class="code">:%s/child/children/g</pre></blockquote>
+
+<p>When you continue editing, you notice occurrences of words
+such as <em class="emphasis">childrenish</em>.
+You have unintentionally matched the word <em class="emphasis">childish</em>.
+Returning to the last saved buffer with
+<tt class="literal">:e!</tt>, you now try:</p>
+
+<blockquote><pre class="code">:%s/child<img src="figs/squ.gif" alt="Figure " />/children<img src="figs/squ.gif" alt="Figure " />/g</pre></blockquote>
+
+<p>(Note that there is a space after <em class="emphasis">child</em>.)
+But this command misses
+the occurrences <em class="emphasis">child.</em>, <em class="emphasis">child,</em>, <em class="emphasis">child:</em> and so on.
+After some thought, you remember that brackets
+allow you to specify one character from among a list, so
+you realize a solution:</p>
+
+<blockquote><pre class="code">:%s/child[<img src="figs/squ.gif" alt="Figure " />,.;:!?]/children[<img src="figs/squ.gif" alt="Figure " />,.;:!?]/g</pre></blockquote>
+
+<p>This searches for <em class="emphasis">child</em> followed by either a
+space (indicated by <img src="figs/squ.gif" alt="Figure " />) or any one of
+the punctuation characters <tt class="literal">,.;:!?</tt>.   You expect to
+replace this with <em class="emphasis">children</em> followed by the corresponding
+space or punctuation mark,
+but you've ended up with
+a bunch of punctuation marks after every occurrence of <em class="emphasis">children</em>.
+You need to save the
+space and punctuation marks inside a <tt class="literal">\(</tt> and <tt class="literal">\)</tt>.
+Then you can "replay"
+them with a <tt class="literal">\1</tt>.  Here's the next attempt:</p>
+
+<blockquote><pre class="code">:%s/child\([<img src="figs/squ.gif" alt="Figure " />,.;:!?]\)/children\1/g</pre></blockquote>
+
+<p>When the search matches a character inside the <tt class="literal">\(</tt> and
+<tt class="literal">\)</tt>,
+the <tt class="literal">\1</tt> on the right-hand side restores the same character.
+The syntax may seem awfully complicated, but this
+command sequence can save you a lot of work!
+<em class="emphasis">Any time you spend learning regular expression syntax will be repaid
+a thousandfold!</em></p>
+
+<p>The command is still not perfect, though. You've noticed
+that occurrences of <em class="emphasis">Fairchild</em> have been changed,
+so you need a way to match <em class="emphasis">child</em> when it isn't part of another
+word.</p>
+
+<p>As it turns out, <i class="command">vi</i> (but not all other programs that use regular
+expressions) has a special syntax for saying "only if the pattern
+is a complete word."  The character sequence <tt class="literal">\&lt;</tt>
+requires the pattern
+to match at the beginning of a word, whereas <tt class="literal">\&gt;</tt> requires the
+pattern to match at the end of a word. Using both will restrict
+the match to a whole word. So, in the task given above,
+<tt class="literal">\&lt;child\&gt;</tt> will find all instances of the word <em class="emphasis">child</em>,
+whether followed by punctuation or spaces.
+Here's the substitution command you should use:</p>
+
+<blockquote><pre class="code">:%s/\&lt;child\&gt;/children/g</pre></blockquote>
+
+<a name="vi6-ch-6-sect-4.1" /><div class="sect2">
+<h3 class="sect2">6.4.1. Search for General Class of Words </h3>
+
+<p>
+<a name="IXT-6-280186" />
+<a name="IXT-6-280187" />
+Suppose your subroutine names begin with the prefixes: 
+<em class="emphasis">mgi</em>, <em class="emphasis">mgr</em>,
+and <em class="emphasis">mga</em>.</p>
+
+<?graphic_args "" "" .815?><img src="figs/vi.0601.gif" alt="Figure 6.4.1" width="334" /><p>If you want to save the prefixes, but want to change the name <em class="emphasis">box</em> to
+<em class="emphasis">square</em>, either of the following replacement commands will do the trick.
+The first example illustrates how <tt class="literal">\(</tt> and <tt class="literal">\)</tt> can be used to save whatever
+pattern was actually matched. The second example shows how you can search
+for one pattern but change another:</p>
+
+<blockquote><pre class="code">:g/mg\([ira]\)box/s//mg\1square/g</pre></blockquote>
+
+<img src="figs/vi.0602.gif" alt="Figure 6.4.1" width="334" />
+<table border="1" cellpadding="3">
+
+<p>The global replacement keeps track of whether an <em class="emphasis">i</em>,
+<em class="emphasis">r</em> or <em class="emphasis">a</em> is saved. In that way,
+<em class="emphasis">box</em> is changed to <em class="emphasis">square</em> only when <em class="emphasis">box</em> is part of the
+routine's name.</p>
+
+<p><blockquote><pre class="code">:g/mg[ira]box/s/box/square/g</pre></blockquote>
+
+<img src="figs/vi.0603.gif" alt="Figure 6.4.1" width="334" />
+<p>This has the same effect as the previous command, but it is a little less safe
+since it could change other instances of <em class="emphasis">box</em> on the same
+line, not just those within the routine names.</p>
+
+</div>
+
+
+
+
+<a name="vi6-ch-6-sect-4.2" /><div class="sect2">
+<h3 class="sect2">6.4.2. Block Move by Patterns </h3>
+
+<p>
+<a name="IXT-6-280188" />
+<a name="IXT-6-280189" />
+You can also move blocks of text delimited by patterns.
+For example, assume you have a 150-page reference manual.
+Each page is organized into three paragraphs with
+the same three headings: SYNTAX, DESCRIPTION,
+and PARAMETERS.
+A sample of one reference page follows:</p>
+
+<blockquote><pre class="code">.Rh 0 "Get status of named file" "STAT"
+ .Rh "SYNTAX"
+ .nf
+ integer*4 stat, retval
+ integer*4 status(11)
+ character*123 filename
+ ...
+ retval = stat (filename, status)
+ .fi
+ .Rh "DESCRIPTION"
+ Writes the fields of a system data structure into the
+ status array.
+ These fields contain (among other
+ things) information about the file's location, access
+ privileges, owner, and time of last modification.
+ .Rh "PARAMETERS"
+ .IP "\fBfilename\fR" 15n
+ A character string variable or constant containing
+ the UNIX pathname for the file whose status you want
+ to retrieve.
+ You can give the ...</pre></blockquote>
+
+<p>Suppose that it is decided to move DESCRIPTION above the SYNTAX
+paragraph.
+With pattern matching, you can move blocks of text on all 150 pages
+with one command!</p>
+
+<blockquote><pre class="code">:g /SYNTAX/.,/DESCRIPTION/-1 move /PARAMETERS/-1</pre></blockquote>
+
+<p>This command works as follows. First, <i class="command">ex</i>
+finds and marks each line that matches the first pattern
+(i.e., that contains the word <em class="emphasis">SYNTAX</em>).
+Second, for each marked line, it sets <tt class="literal">.</tt> (dot, the
+current line) to that line, and executes the command.
+Using the <tt class="literal">move</tt> command,
+the command moves the block of lines from the current line (dot)
+to the line before the one containing the word
+<em class="emphasis">DESCRIPTION</em> (<tt class="literal">/DESCRIPTION/-1</tt>)
+to just before the line containing <em class="emphasis">PARAMETERS</em>
+(<tt class="literal">/PARAMETERS/-1</tt>).
+</p>
+
+<p>Note that <i class="command">ex</i> can place text only below the line specified.
+
+
+To tell <i class="command">ex</i> to place text above a line, you first
+subtract one with <tt class="literal">-1</tt>, and then <i class="command">ex</i>
+places your text below the previous line.
+
+
+In a case like this, one command saves literally hours of work.
+(This is a real-life example&#8212;we once used a pattern match like this
+to rearrange a reference manual containing hundreds of pages.)</p>
+
+<p>Block definition by patterns can be used equally well with other <i class="command">ex</i> commands.
+For example, if you wanted to delete all DESCRIPTION paragraphs in
+the reference chapter, you could enter:</p>
+
+<blockquote><pre class="code">:g/DESCRIPTION/,/PARAMETERS/-1d</pre></blockquote>
+
+<p>This very powerful kind of change is implicit in <i class="command">ex</i>'s line
+addressing syntax, but it is not readily apparent even to experienced
+users.
+For this reason,
+whenever you are faced with a complex, repetitive editing task, take
+the time to analyze the problem
+and find out if you can apply
+pattern-matching tools to get the job done.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-6-sect-4.3" /><div class="sect2">
+<h3 class="sect2">6.4.3. More Examples </h3>
+
+<p> 
+Since the best way to learn pattern matching is by example,
+here is a list of pattern-matching examples, with explanations.
+Study the syntax carefully, so that you understand the principles at
+work.
+You should then be able to adapt these examples to your own situation.</p>
+
+<ol><li><p>Put <i class="command">troff</i> italicization codes around
+the word <em class="emphasis">RETURN</em>:</p>
+
+<blockquote><pre class="code">:%s/RETURN/\\fI&amp;\\fP/g</pre></blockquote>
+
+<p>Notice that two backslashes (<tt class="literal">\\</tt>) are needed in the replacement,
+because the backslash in the <i class="command">troff</i> italicization code will be
+interpreted as a special character.
+(<tt class="literal">\fI</tt>
+alone would be interpreted as
+<em class="emphasis">fI</em>;
+you must type
+<tt class="literal">\\fI</tt>
+to get
+<em class="emphasis">\fI</em>.)</p></li><li><p>Modify a list of pathnames in a file:</p>
+
+<blockquote><pre class="code">:%s/\/home\/tim/\/home\/linda/g</pre></blockquote>
+
+<p> 
+A slash (used as a delimiter in the global replacement sequence) must be
+escaped with a backslash when it is part of the pattern or
+replacement; use <tt class="literal">\/</tt>
+to get <tt class="literal">/</tt>.
+An alternate way to achieve this same
+effect is to use a different character as the pattern delimiter.
+For example, you could make the above replacement using colons as
+delimiters. (The delimiter colons and the <i class="command">ex</i> command colon are 
+separate entities.) Thus:</p>
+
+<blockquote><pre class="code">:%s:/home/tim:/home/linda:g</pre></blockquote>
+
+<p>This is much more readable.</p></li><li><p>Put HTML italicization codes around
+the word <em class="emphasis">RETURN</em>:</p>
+
+<blockquote><pre class="code">:%s:RETURN:&lt;I&gt;&amp;&lt;/I&gt;:g</pre></blockquote>
+
+<p>Notice here the use of <tt class="literal">&amp;</tt> to represent the
+text that was actually matched,
+and, as just described, the use of colons as delimiters
+instead of slashes.</p></li><li><p>Change all periods to semicolons in lines 1 to 10:</p>
+
+<blockquote><pre class="code">:1,10s/\./;/g</pre></blockquote>
+
+<p>A dot has special meaning in regular expression syntax and must
+be escaped with a backslash (\.).</p></li><li><p>Change all occurrences of the word <em class="emphasis">help</em>
+(or <em class="emphasis">Help</em>) to <em class="emphasis">HELP</em>:</p>
+
+<blockquote><pre class="code">:%s/[Hh]elp/HELP/g</pre></blockquote>
+
+<p>or:</p>
+
+<blockquote><pre class="code">:%s/[Hh]elp/\U&amp;/g</pre></blockquote>
+
+<p>The <tt class="literal">\U</tt> changes the pattern that follows to all uppercase. The
+pattern that follows is the repeated search pattern, which is
+either <em class="emphasis">help</em> or <em class="emphasis">Help</em>.</p></li><li><p>Replace <em class="emphasis">one or more</em> spaces with a single space:</p>
+
+<blockquote><pre class="code">:%s/<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />*/<img src="figs/squ.gif" alt="Figure " />/g</pre></blockquote>
+
+<p> 
+ 
+Make sure you understand how the asterisk works as a special
+character.
+An asterisk following any character (or following any regular
+expression that matches a single character, such as <tt class="literal">.</tt>
+or <tt class="literal">[a-z]</tt>)
+matches <em class="emphasis">zero or more</em> instances of that character.
+Therefore, you must specify <em class="emphasis">two</em> spaces followed by an asterisk
+to match one or more spaces (one space, plus zero or more spaces).</p></li><li><p>Replace one or more spaces following a colon with two spaces:</p>
+
+<blockquote><pre class="code">:%s/:<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />*/:<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />/g</pre></blockquote></li><li><p>Replace one or more spaces following a period <em class="emphasis">or</em> a
+colon with two spaces:</p>
+
+<blockquote><pre class="code">:%s/\([:.]\)<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />*/\1<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />/g</pre></blockquote>
+
+<p>Either of the two characters within brackets can be matched.
+This character is saved into a hold buffer, using <tt class="literal">\(</tt> and
+<tt class="literal">\)</tt>, and restored on the right-hand side by the <tt class="literal">\1</tt>.
+Note that within brackets a special character such as a dot
+does not need to be escaped.</p></li><li><p>Standardize various uses of a word or heading:</p>
+
+<blockquote><pre class="code">:%s/^Note[<img src="figs/squ.gif" alt="Figure " />:s]*/Notes:<img src="figs/squ.gif" alt="Figure " />/g</pre></blockquote>
+
+<p>The brackets enclose three characters: a space,
+a colon, and the letter <em class="emphasis">s</em>.
+Therefore, the pattern
+<tt class="literal">Note[</tt><img src="figs/squ.gif" alt="Figure " /><tt class="literal">s:]</tt> will match
+<em class="emphasis">Note</em><img src="figs/squ.gif" alt="Figure " />,
+<em class="emphasis">Notes</em> or <em class="emphasis">Note:</em>.
+An asterisk is added to the pattern so that it also matches
+<em class="emphasis">Note</em> (with zero spaces after it) and <em class="emphasis">Notes:</em> (the
+already correct spelling). Without the asterisk,
+<em class="emphasis">Note</em> would be missed entirely and <em class="emphasis">Notes:</em> would be
+incorrectly changed to
+<em class="emphasis">Notes:</em><img src="figs/squ.gif" alt="Figure " /><em class="emphasis">:</em>.</p></li><li><p>Delete all blank lines:</p>
+
+<blockquote><pre class="code">:g/^$/d</pre></blockquote>
+
+<p>What you are actually matching here is the beginning of the line (^)
+followed by the end of the line ($), with nothing in between.</p></li><li><p>Delete all blank lines, plus any lines that contain only whitespace:</p>
+
+<blockquote><pre class="code">:g/^[<img src="figs/squ.gif" alt="Figure " /><em class="emphasis">tab</em>]*$/d</pre></blockquote>
+
+<p>(In the line above, a tab is shown as <em class="emphasis">tab</em>.)
+A line may appear to be blank, but may in fact contain spaces or tabs.
+The previous example will not delete such a line.
+This example, like the one above it, searches for the beginning and end
+of the line. But instead of having nothing in between, the
+pattern tries to find any number of spaces or tabs.
+If no spaces or tabs are matched, the line is blank.
+To delete lines that contain whitespace but that
+<em class="emphasis">aren't</em> empty,
+you would have to match lines with
+<em class="emphasis">at least</em> one space or tab:</p>
+
+<blockquote><pre class="code">:g/^[<img src="figs/squ.gif" alt="Figure " /><em class="emphasis">tab</em>][<img src="figs/squ.gif" alt="Figure " /><em class="emphasis">tab</em>]*$/d</pre></blockquote></li><li><p>Delete all leading spaces on every line:</p>
+
+<blockquote><pre class="code">:%s/^<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />*\(.*\)/\1/</pre></blockquote>
+
+<p>Use <tt class="literal">^</tt><img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " /><tt class="literal">*</tt>
+to search for one or more spaces at the beginning of each line;
+then use <tt class="literal">\(.*\)</tt>
+to save the rest of the line into the first hold buffer.
+Restore the line without leading spaces, using <tt class="literal">\1</tt>.</p></li><li><p>Delete all spaces at the end of every line:</p>
+
+<blockquote><pre class="code">:%s/\(.*\)<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />*$/\1/</pre></blockquote>
+
+<p>For each line, use <tt class="literal">\(.*\)</tt>
+to save all the text on the line,
+but only up until one or more spaces
+at the end of the line.
+Restore the saved text without the spaces.</p>
+
+<p>The substitutions in this example and the previous one
+will happen only once on any given line, so the <tt class="literal">g</tt> option
+doesn't need to follow the replacement string.</p></li><li><p>Insert a  &gt;<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />
+at the start of every line in a file:</p>
+
+<blockquote><pre class="code">:%s/^/&gt;<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />/</pre></blockquote>
+
+<p>What we're really doing here is "replacing" the start of the line with
+&gt;<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />.
+Of course, the start of the line (being a logical construct, not an
+actual character) isn't really replaced!</p>
+
+<p>This command is useful when replying to mail or USENET news postings.
+Frequently, it is desirable to include part of the
+original message in your reply. By convention,
+the inclusion is distinguished from your reply
+by setting off the included text with a right angle
+bracket and a couple of spaces at the start of the line. This can be done
+easily as shown above. (Typically, only part of the original message will
+be included. Unneeded text can be deleted either before or after the above
+replacement.) Advanced mail systems do this automatically.
+However, if you're using <i class="command">vi</i> to edit
+your mail, you can do it with this command.</p></li><li><p>Add a period to the end of the next six lines:</p>
+
+<blockquote><pre class="code">:.,+5s/$/./</pre></blockquote>
+
+<p>The line address indicates the current line plus five lines.
+The <tt class="literal">$</tt> indicates the end of line. As in the previous
+example, the <tt class="literal">$</tt> is a logical construct. You aren't
+really replacing the end of the line.</p></li><li><p>Reverse the order of all hyphen-separated items in a list:</p>
+
+<blockquote><pre class="code">:%s/\(.*\)<img src="figs/squ.gif" alt="Figure " />-<img src="figs/squ.gif" alt="Figure " />\(.*\)/\2<img src="figs/squ.gif" alt="Figure " />-<img src="figs/squ.gif" alt="Figure " />\1/</pre></blockquote>
+
+<p>Use
+<tt class="literal">\(.*\)</tt>
+to save text on the line into the first hold buffer, but
+only until you find
+<img src="figs/squ.gif" alt="Figure " />-<img src="figs/squ.gif" alt="Figure " />.
+Then use
+<tt class="literal">\(.*\)</tt>
+to save the rest of the line into the
+second hold buffer.
+Restore the saved portions of the line,
+reversing the order of the two hold buffers.
+The effect of this command on several items is shown below.</p>
+
+<blockquote><pre class="code">more - display files</pre></blockquote>
+
+<p>becomes:</p>
+
+<blockquote><pre class="code">display files - more</pre></blockquote>
+
+<p>and:</p>
+
+<blockquote><pre class="code">lp - print files</pre></blockquote>
+
+<p>becomes:</p>
+
+<blockquote><pre class="code">print files - lp</pre></blockquote></li><li><p>Change every word in a file to uppercase:</p>
+
+<blockquote><pre class="code">:%s/.*/\U&amp;/</pre></blockquote>
+
+<p>or:</p>
+
+<blockquote><pre class="code">:%s/./\U&amp;/g</pre></blockquote>
+
+<p>The <tt class="literal">\U</tt> flag at the start of the replacement string tells
+<i class="command">vi</i> to change the replacement to uppercase.
+The <tt class="literal">&amp;</tt> character replays the text matched
+by the search pattern as the replacement.
+These two commands are equivalent;  however, the first form is
+considerably faster, since it results in only one substitution per
+line (<tt class="literal">.*</tt> matches the entire line, once per line),
+whereas the second form results in repeated substitutions on each line
+(<tt class="literal">.</tt> matches only a
+single character, with the replacement repeated on account of the
+trailing <tt class="literal">g</tt>).</p></li><li><p> 
+Reverse the order of lines in a file:<a href="#FOOTNOTE-25">[25]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-25" /><p> [25]From an article by Walter Zintz in <em class="citetitle">UNIX World</em>, May 1990.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">:g/.*/mo0</pre></blockquote>
+
+<p>The search pattern matches all lines (a line contains zero or more
+characters).
+Each line is moved, one by one, to the top of the file (that
+is, moved after imaginary line 0). As each matched line is
+placed at the top, it pushes the previously moved lines down,
+one by one, until the last line is on top.
+Since all lines have a beginning, the same result can be achieved
+more succinctly:</p>
+
+<blockquote><pre class="code">:g/^/mo0</pre></blockquote></li><li><p>In a database, on all lines not marked <em class="emphasis">Paid in full</em>,
+append the phrase <em class="emphasis">Overdue</em>:</p>
+
+<blockquote><pre class="code">:g!/Paid<img src="figs/squ.gif" alt="Figure " />in<img src="figs/squ.gif" alt="Figure " />full/s/$/Overdue/</pre></blockquote>
+
+<p>or the equivalent:</p>
+
+<blockquote><pre class="code">:v/Paid<img src="figs/squ.gif" alt="Figure " />in<img src="figs/squ.gif" alt="Figure " />full/s/$/Overdue/</pre></blockquote>
+
+<p>To affect all lines <em class="emphasis">except</em> those matching your pattern,
+add a <tt class="literal">!</tt> to the <tt class="literal">g</tt> command,
+or simply use the <tt class="literal">v</tt> command.</p></li><li><p>For any line that doesn't begin with a number, move the line
+to the end of the file:</p>
+
+<blockquote><pre class="code">:g!/^[0-9]/m$</pre></blockquote>
+
+<p>or:</p>
+
+<blockquote><pre class="code">:g/^[^0-9]/m$</pre></blockquote>
+
+<p>As the first character within brackets, a caret negates the
+sense, so the two commands have the same effect. The first one
+says, "Don't match lines that begin with a number," and the
+second one says, "Match lines that don't begin with a number."</p></li><li><p> 
+ 
+Change manually numbered section heads
+(e.g., 1.1, 1.2, etc.) to a <i class="command">troff</i> macro
+(e.g., .Ah for an A-level heading):</p>
+
+<blockquote><pre class="code">:%s/^[1-9]\.[1-9]/.Ah/</pre></blockquote>
+
+<p>The search string matches a digit other than zero, followed by a
+period, followed by another non-zero digit.
+Notice that the period doesn't need to be escaped in the replacement
+(though a <tt class="literal">\</tt> would have no effect, either).
+The command above won't find chapter numbers containing
+two or more digits. To do so, modify the command like this:</p>
+
+<blockquote><pre class="code">:%s/^[1-9][0-9]*\.[1-9]/.Ah/</pre></blockquote>
+
+<p>Now it will match chapters
+10 to 99 (digits 1 to 9, followed by a digit),
+100 to 999 (digits 1 to 9, followed by two digits),
+etc.
+The command still finds chapters
+1 to 9 (digits 1 to 9, followed by no digit).</p></li><li><p>Remove numbering from section headings in a document.
+You want to change the sample lines:</p>
+
+<blockquote><pre class="code">2.1 Introduction
+10.3.8 New Functions</pre></blockquote>
+
+<p>into the lines:</p>
+
+<blockquote><pre class="code">Introduction
+New Functions</pre></blockquote>
+
+<p>Here's the command to do this:</p>
+
+<blockquote><pre class="code">:%s/^[1-9][0-9]*\.[1-9][0-9.]*<img src="figs/squ.gif" alt="Figure " />//</pre></blockquote>
+
+<p>The search pattern resembles the one in the previous example, but now
+the numbers vary in length. At a minimum, the headings contain
+<em class="emphasis">number</em>, <em class="emphasis">period</em>, <em class="emphasis">number</em>, so you start
+with the search pattern from the previous example:</p>
+
+<blockquote><pre class="code">[1-9][0-9]*\.[1-9]</pre></blockquote>
+
+<p>But in this example, the heading may continue with any number of
+digits or periods:</p>
+
+<blockquote><pre class="code">[0-9.]*</pre></blockquote>
+
+<p>
+
+
+
+
+</p></li><li><p> 
+Change the word <em class="emphasis">Fortran</em> to the phrase
+<em class="emphasis">FORTRAN (acronym of FORmula TRANslation)</em>:</p>
+
+<blockquote><pre class="code">
+:%s/\(For\)\(tran\)/\U\1\2\E<img src="figs/squ.gif" alt="Figure " />(acronym<img src="figs/squ.gif" alt="Figure " />of<img src="figs/squ.gif" alt="Figure " />\U\1\Emula<img src="figs/squ.gif" alt="Figure " />\U\2\Eslation)/g
+</pre></blockquote>
+
+<p>First, since we notice that
+the words <em class="emphasis">FORmula</em> and <em class="emphasis">TRANslation</em> use portions of the
+original word, we decide to save the search pattern in two
+pieces:  <tt class="literal">\(For\)</tt> and <tt class="literal">\(tran\)</tt>.
+The first time we restore it,
+we use both pieces together, converting all characters to uppercase:
+<tt class="literal">\U\1\2</tt>.  Next, we undo the uppercase with <tt class="literal">\E</tt>;
+otherwise the
+remaining replacement text would all be uppercase. The
+replacement continues with actual typed words,
+then we restore the first hold buffer. This buffer still contains
+<em class="emphasis">For</em>, so again we convert to uppercase first:  <tt class="literal">\U\1</tt>.
+Immediately after, we lowercase the rest of the word:  <tt class="literal">\Emula</tt>.
+Finally, we restore the second hold buffer. This contains
+<em class="emphasis">tran</em>, so we precede the "replay" with uppercase, follow it
+with lowercase, and type out the rest of the word: <tt class="literal">\U\2\Eslation</tt>).</p></li></ol>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.3. Pattern-Matching Rules </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.5. A Final Look at Pattern Matching </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

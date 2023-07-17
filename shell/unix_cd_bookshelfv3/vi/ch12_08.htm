@@ -1,0 +1,710 @@
+<html><head><title>Improved Editing Facilities (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.8. Improved Editing Facilities</h2>
+
+<p>
+<a name="ch12.facil1" />
+<a name="ch12.facil2" />
+<a name="ch12.facil3" />
+This section describes the features of <em class="emphasis">vile</em>
+that make simple text editing easier and more powerful.</p>
+
+<a name="vi6-ch-12-sect-8.1" /><div class="sect2">
+<h3 class="sect2">12.8.1. Command-Line History and Completion</h3>
+
+<p>
+<a name="IXT-12-282056" />
+<a name="IXT-12-282057" />
+<a name="IXT-12-282058" />
+<a name="IXT-12-282059" />
+<a name="IXT-12-282060" />
+<a name="IXT-12-282061" />
+<a name="IXT-12-282062" />
+<em class="emphasis">vile</em> stores all your <em class="emphasis">ex</em>
+commands in a buffer named <tt class="literal">[History]</tt>.  This
+feature is controlled with the <tt class="literal">history</tt> option,
+which is true by default. Turning it off disables the history feature
+and removes the <tt class="literal">[History]</tt> buffer.
+<a name="IXT-12-282063" />
+The command <tt class="literal">show-history</tt> will split the screen
+and display the <tt class="literal">[History]</tt> buffer in a new window.</p>
+
+<p>Starting with <em class="emphasis">vile</em> 7.4, the
+colon command line is really a minibuffer. 
+You can use it to recall lines from the <tt class="literal">[History]</tt>
+buffer and edit them.</p>
+
+<p>You use the <img src="figs/U2191.gif" alt="Figure " /> and <img src="figs/U2193.gif" alt="Figure " /> keys to scroll backward and forward
+in the history, and <img src="figs/U2190.gif" alt="Figure " /> and <img src="figs/U2192.gif" alt="Figure " /> to move around within the
+line. Your current delete character (usually <span class="keycap">BACKSPACE</span>)
+can be used to delete characters. Any other characters you type
+will be inserted at the current cursor postion.</p>
+
+<p>You can toggle the minibuffer into <em class="emphasis">vi</em> mode
+by typing the <tt class="literal">mini-edit</tt> character (by
+default, <tt class="literal">^G</tt>).
+When you do this, <em class="emphasis">vile</em>
+will highlight the minibuffer using the mechanism specified
+<a name="IXT-12-282064" />
+by the <tt class="literal">mini-hilite</tt> option.
+The default is <tt class="literal">reverse</tt>, for reverse video.
+In <em class="emphasis">vi</em> mode, you can
+use <em class="emphasis">vi</em>
+style commands for positioning.
+In Version 8.0, you can also use the <tt class="literal">i</tt>,
+<tt class="literal">I</tt>, <tt class="literal">a</tt>, and <tt class="literal">A</tt>
+<em class="emphasis">vi</em> commands.</p>
+
+<p>An interesting feature is that <em class="emphasis">vile</em> will use the
+history to show you previous data that corresponds to the command
+you're entering. For instance, after typing <tt class="literal">:set</tt>
+followed by a space,
+<em class="emphasis">vile</em> will prompt you with <tt class="literal">Global value:</tt>.
+At that point, you can use <img src="figs/U2191.gif" alt="Figure " /> to see previous global
+variables that you've set, should you wish to change one of them.</p>
+
+<p>The <em class="emphasis">ex</em>
+command line provides completion of various sorts.
+As you type the name of a command, you can hit
+the <span class="keycap">TAB</span> key at any point.
+<em class="emphasis">vile</em> will fill out the rest of the command name
+as much as possible. If you type a <span class="keycap">TAB</span> a second
+time, <em class="emphasis">vile</em> will create a new window showing
+you all the possible completions.</p>
+
+<p>Completion applies to built-in
+and user-defined <em class="emphasis">vile</em> commands, tags,
+filenames, modes (described later in this chapter), variables,
+and to the terminal characters (the character settings such
+as backspace, suspend, and so on, derived from your
+<em class="emphasis">stty</em> settings).</p>
+
+<p>As a side point, this leads to an interesting phenomenon.
+In <em class="emphasis">vi</em>-style editors, commands may have long names,
+but they tend to be unique in the first few characters,
+since abbreviations are accepted.
+In <em class="emphasis">emacs</em>-style editors, command names often are
+not unique in the first several characters, but command completion
+still allows you to get away with less typing.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-8.2" /><div class="sect2">
+<h3 class="sect2">12.8.2. Tag Stacks</h3>
+
+<p>
+<a name="IXT-12-282065" />
+<a name="IXT-12-282066" />
+<a name="IXT-12-282067" />
+<a name="IXT-12-282068" />
+Tag stacking is described in <a href="ch08_05.htm#vi6-ch-8-sect-5.2">Section 8.5.3</a>.
+In <em class="emphasis">vile</em>, tag stacking is available and straightforward.
+It is somewhat different than the other clones, most notably in the
+<em class="emphasis">vi</em> mode commands that are used for tag searching
+and popping the tag stack. <a href="ch12_08.htm#vi6-ch-12-tab-2">Table 12.2</a> shows the <em class="emphasis">vile</em>
+tag commands.</p>
+
+<a name="vi6-ch-12-tab-2" /><h4 class="objtitle">Table 12.2. vile Tag Commands</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Command</th>
+<th>Function</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">ta</tt>[<tt class="literal">g</tt>][<tt class="literal">!</tt>] [<em class="replaceable"><tt>tagstring</tt></em>]</td>
+<td><p>Edit the file containing
+<em class="emphasis">tagstring</em> as defined in the <em class="filename">tags</em>
+<a name="IXT-12-282069" />
+file. The <tt class="literal">!</tt> forces <em class="emphasis">vile</em> to
+switch to the new file if the current buffer has been modified
+but not saved.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">pop</tt>[<tt class="literal">!</tt>]</td>
+<td><p>Pops a cursor position off the stack,
+<a name="IXT-12-282070" />
+restoring the cursor to its previous position.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">next-tag</tt></td>
+<td><p>Continues searching through
+<a name="IXT-12-282071" />
+the <em class="filename">tags</em> file for more matches.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">show-tagstack</tt></td>
+<td><p>Creates a new window that displays
+<a name="IXT-12-282072" />
+the tag stack. The display changes as tags are pushed onto or popped
+off of the stack.</p></td>
+</tr>
+
+
+</table><p><p>
+
+<p>The <em class="emphasis">vi</em> mode commands are described
+in <a href="ch12_08.htm#vi6-ch-12-tab-3">Table 12.3</a>.</p>
+
+<a name="vi6-ch-12-tab-3" /><h4 class="objtitle">Table 12.3. vile Command Mode Tag Commands</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Command</th>
+<th>Function</th>
+</tr>
+
+
+
+
+<tr>
+<td><p><tt class="literal">^]</tt></p></td>
+<td><p>Look up the location of the identifier
+<a name="IXT-12-282073" />
+under the cursor in the <em class="filename">tags</em> file, and move to that
+location. The current location is automatically pushed onto the
+tag stack.</p></td>
+</tr>
+
+
+<tr>
+<td><p><tt class="literal">^T&#160;&#xA0;&#xA0; ^X ^]</tt></p></td>
+<td><p>Return to the previous location
+<a name="IXT-12-282074" />
+in the tag stack, i.e., pop off one element.</p></td>
+</tr>
+
+<tr>
+<td><p><tt class="literal">^A ^]</tt></p></td>
+<td><p>
+<a name="IXT-12-282075" />
+Same as the <tt class="literal">:next-tag</tt> command.</p></td>
+</tr>
+
+
+</table><p><p>
+
+<p>As in the other editors, options control how <em class="emphasis">vile</em>
+manages the tag related commands, as shown in 
+<a href="ch12_08.htm#vi6-ch-12-tab-4">Table 12.4</a>.</p>
+
+<a name="vi6-ch-12-tab-4" /><h4 class="objtitle">Table 12.4. vile Options for Tag Management</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Option</th>
+<th>Function</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">taglength</tt></td>
+<td><p>Controls the number of significant
+characters in a tag
+<a name="IXT-12-282076" />
+that is to be looked up. The default value of zero indicates that all
+characters are significant.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">tagignorecase</tt></td>
+<td><p>Makes tag searches ignore case.
+<a name="IXT-12-282077" />
+By default this option is false.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">tagrelative</tt></td>
+<td><p>When using
+a <em class="filename">tags</em> file in another directory, filenames in
+<a name="IXT-12-282078" />
+that <em class="filename">tags</em> file are considered to be relative to
+the directory where the <em class="filename">tags</em> file is.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">tags</tt></td>
+<td><p>Can be set to a whitespace
+separated list of <em class="filename">tags</em> files to use for
+<a name="IXT-12-282079" />
+looking up tags.  <em class="emphasis">vile</em> loads all 
+<em class="filename">tags</em> files
+into separate buffers that are hidden by default, but that can be
+edited if you wish.
+You can place environment variables and shell wildcards
+into <tt class="literal">tags</tt>.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">tagword</tt></td>
+<td><p>Uses the whole word under the cursor for
+the tag lookup, not just the sub-word starting at the current
+<a name="IXT-12-282080" />
+cursor position.
+This option is disabled by default, which keeps
+<em class="emphasis">vile</em> compatible with <em class="emphasis">vi</em>.</p></td>
+</tr>
+
+
+</table><p><p>
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-8.3" /><div class="sect2">
+<h3 class="sect2">12.8.3. Infinite Undo</h3>
+
+<p>
+<a name="IXT-12-282081" />
+<a name="IXT-12-282082" />
+<em class="emphasis">vile</em> is similar in principle but different in practice
+from the other editors. Like <em class="emphasis">elvis</em> and
+<em class="emphasis">vim</em>, there is an undo limit you can set, but like
+<em class="emphasis">nvi</em>, the <tt class="literal">.</tt> command will do the
+next undo or redo, as appropriate it.
+Separate <em class="emphasis">vi</em> mode commands implement
+successive undo and redo.</p>
+
+<p>
+<a name="IXT-12-282083" />
+<em class="emphasis">vile</em> uses the <tt class="literal">undolimit</tt> option
+to control how many changes it will store.
+The default is 10, meaning that you can undo up to the 10 most
+recent changes. Setting it to zero allows true "infinite
+undo," but this may consume a lot of memory.</p>
+
+<p>To start an undo, first use either the <tt class="literal">u</tt>
+or <tt class="literal">^X u</tt> commands.
+Then each successive <tt class="literal">.</tt> command will do another undo.
+Like <em class="emphasis">vi</em>, two <tt class="literal">u</tt> commands
+just toggle the state of the change; however, each
+<tt class="literal">^X u</tt> command does another undo.</p>
+
+<p>The <tt class="literal">^X r</tt> command does
+a redo. Typing <tt class="literal">.</tt> after the first
+<tt class="literal">^X r</tt> will do successive
+redos. You can provide a count to the
+<tt class="literal">^X u</tt> and
+<tt class="literal">^X r</tt> commands,
+in which case <em class="emphasis">vile</em> will perform the
+requested number of undos or redos.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-8.4" /><div class="sect2">
+<h3 class="sect2">12.8.4. Arbitrary Length Lines and Binary Data</h3>
+
+<p>
+<a name="IXT-12-282084" />
+<a name="IXT-12-282085" />
+<a name="IXT-12-282086" />
+<a name="IXT-12-282087" />
+<a name="IXT-12-282088" />
+<em class="emphasis">vile</em> can edit files with arbitrary length
+lines, and with an arbitrary number of lines.</p>
+
+<p><em class="emphasis">vile</em>
+automatically handles binary data. No special command lines
+or options are required.
+To enter 8-bit text, type <tt class="literal">^V</tt> followed by
+an <tt class="literal">x</tt> and two hexadecimal digits, or
+a <tt class="literal">0</tt> and three octal digits, or three
+decimal digits.</p>
+
+
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-8.5" /><div class="sect2">
+<h3 class="sect2">12.8.5. Incremental Searching</h3>
+
+<p>
+<a name="IXT-12-282089" />
+<a name="IXT-12-282090" />
+<a name="IXT-12-282091" />
+<a name="IXT-12-282092" />
+As mentioned in
+<a href="ch08_06.htm#vi6-ch-8-sect-6.4">Section 8.6.4</a>,
+you perform
+incremental searching in <em class="emphasis">vile</em>
+using the <tt class="literal">^X S</tt> and <tt class="literal">^X R</tt>
+commands. It is not necessary to set an option to
+enable incremental searching.</p>
+
+<p>The cursor moves through the
+file as you type, always being placed on the first character of
+the text that matches. <tt class="literal">^X S</tt> incrementally searches forward
+through the file, while <tt class="literal">^X R</tt> incrementally searches
+backwards.</p>
+
+<p>You may wish to add these commands
+(described below) to your <em class="filename">.vilerc</em>
+file to make the more familiar <tt class="literal">/</tt>
+and <tt class="literal">?</tt> search commands work incrementally:
+<a name="IXT-12-282093" />
+<a name="IXT-12-282094" /></p>
+
+<blockquote><pre class="code">bind-key incremental-search /
+bind-key reverse-incremental-search ?</pre></blockquote>
+
+<p>
+<a name="IXT-12-282095" />
+Also of interest is the "visual match" facility,
+which will highlight <em class="emphasis">all</em> occurrences of the
+matched expression. For a <em class="filename">.vilerc</em> file:</p>
+
+<blockquote><pre class="code">set visual-matches reverse</pre></blockquote>
+
+<p>This command directs <em class="emphasis">vile</em> to use reverse
+video for visual matching.
+Since the highlighting can sometimes be visually distracting,
+the <tt class="literal">=</tt> command will turn off any current
+highlighting until you enter a new search pattern.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-8.6" /><div class="sect2">
+<h3 class="sect2">12.8.6. Left-Right Scrolling</h3>
+
+<p>
+<a name="IXT-12-282096" />
+<a name="IXT-12-282097" />
+<a name="IXT-12-282098" />
+<a name="IXT-12-282099" />
+<a name="IXT-12-282100" />
+<a name="IXT-12-282101" />
+<a name="IXT-12-282102" />
+As mentioned in
+<a href="ch08_06.htm#vi6-ch-8-sect-6.5">Section 8.6.5</a> in <a href="ch08_01.htm">Chapter 8</a>,
+you enable
+left-right scrolling in <em class="emphasis">vile</em> using
+<tt class="literal">:set nolinewrap</tt>. Unlike the other editors,
+left-right scrolling is the default.
+<?troff .ne 10?>
+Long lines are marked at the left and right edges with
+<tt class="literal">&lt;</tt> and <tt class="literal">&gt;</tt>.
+The value of
+<tt class="literal">sideways</tt> controls the number of characters
+by which <em class="emphasis">vile</em> shifts the screen when scrolling
+left to right.
+With <tt class="literal">sideways</tt> set to zero, each scroll moves the
+screen by one third. Otherwise the screen scrolls by
+the desired number of characters.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-12-sect-8.7" /><div class="sect2">
+<h3 class="sect2">12.8.7. Visual Mode</h3>
+
+<p>
+<a name="IXT-12-282103" />
+<a name="IXT-12-282104" />
+<em class="emphasis">vile</em> is different from <em class="emphasis">elvis</em>
+and <em class="emphasis">vim</em> in the way you highlight the text
+you want to operate on. It uses the "quoted motion"
+command, <tt class="literal">q</tt>.
+<a name="IXT-12-282105" />
+<a name="IXT-12-282106" /></p>
+
+<p>You enter <tt class="literal">q</tt> at the beginning of the region,
+any other <em class="emphasis">vi</em> motions to get to the opposite
+end of the region, and then another <tt class="literal">q</tt> to end
+the quoted motion. <em class="emphasis">vile</em> highlights the marked text.</p>
+
+<p>Arguments to the <tt class="literal">q</tt> command determine what kind
+of highlighting it will do. <tt class="literal">1q</tt> (same as
+<tt class="literal">q</tt>) does an exact highlighting, <tt class="literal">2q</tt>
+does line-at-a-time highlighting, and <tt class="literal">3q</tt> does
+rectangular highlighting.</p>
+
+<p>Typically, you use a quoted motion in conjunction with an
+operator, such as <tt class="literal">d</tt> or <tt class="literal">y</tt>.
+Thus, <tt class="literal">d3qjjwq</tt> deletes the rectangle indicated
+by the motions.
+When used without an operator, the region is left highlighted. It can
+be referred to later using <tt class="literal">^S</tt>.
+Thus, <tt class="literal">d ^S</tt> will delete the highlighted region.</p>
+
+
+<p>
+<a name="IXT-12-282107" />
+In addition, rectangular regions can be indicated through the
+use of marks.<a href="#FOOTNOTE-61">[61]</a>
+As you know, a mark can be used to refer to either a specific character (when
+<a name="IXT-12-282108" />
+<a name="IXT-12-282109" />
+<a name="IXT-12-282110" />
+<a name="IXT-12-282111" />
+<a name="IXT-12-282112" />
+referred to with <tt class="literal">`</tt>) or a specific line
+(when referred to with <tt class="literal">'</tt>).
+In addition, referring to the mark (say a mark set with <tt class="literal">mb</tt>)
+with <tt class="literal">`b</tt> instead of <tt class="literal">'b</tt> can change the
+nature of the operation being
+done&#8212;<tt class="literal">d'b</tt> will delete a set of lines,
+and <tt class="literal">d`b</tt> will delete two
+partial lines and the lines in between. Using the <tt class="literal">`</tt>
+form of mark
+reference gives a more "exact" region than
+the <tt class="literal">'</tt> form of mark reference.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-61" /><p> [61]Thanks to Paul Fox for this explanation.</p>
+
+</blockquote>
+
+<p>
+<a name="IXT-12-282113" />
+<a name="IXT-12-282114" />
+<em class="emphasis">vile</em> adds a third form of mark reference. The
+<tt class="literal">\</tt> command can be used as another way of referring to a mark.
+By itself, it behaves just like <tt class="literal">`</tt> and moves the cursor to the
+character at which the mark was set. When combined with an
+operator, however, the behavior is quite different. The mark
+reference becomes "rectangular," such that the
+action <tt class="literal">d\b</tt> will
+delete the rectangle of characters whose corners are marked by the
+cursor and the character which holds mark <tt class="literal">b</tt>.</p>
+
+<?troff .Nd 10?><table border="1" cellpadding="3">
+
+<tr>
+<th>Keystrokes</th>
+<th />
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">ma</tt></td>
+<td>&nbsp;</td>
+</tr>
+
+
+</table><p><p>
+<?graphic_args "" "" "" "-.25"?><img src="figs/vi.1201.gif" alt="Figure 12.8.7" width="503" />
+<?troff .sp -1v?><table border="1" cellpadding="3">
+
+<tr>
+<th>Results</th>
+<th />
+</tr>
+
+
+
+
+<tr>
+<td><p>Set mark <tt class="literal">a</tt> at the <em class="emphasis">b</em>
+in <em class="emphasis">book</em>.</p></td>
+<td>&nbsp;</td>
+</tr>
+
+
+</table><p><p><table border="1" cellpadding="3">
+
+<tr>
+<th>Keystrokes</th>
+<th />
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">3jfr</tt></td>
+<td>&nbsp;</td>
+</tr>
+
+
+</table><p><p>
+<?graphic_args "" "" "" -.25?><img src="figs/vi.1202.gif" alt="Figure 12.8.7" width="503" />
+<?troff .sp -1v?><table border="1" cellpadding="3">
+
+<tr>
+<th>Results</th>
+<th />
+</tr>
+
+
+
+
+<tr>
+<td><p>Move the cursor to the <em class="emphasis">r</em> in
+<em class="emphasis">number</em> to mark the opposite corner.</p></td>
+<td>&nbsp;</td>
+</tr>
+
+
+</table><p><p><table border="1" cellpadding="3">
+
+<tr>
+<th>Keystrokes</th>
+<th />
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">^A ~\a</tt></td>
+<td>&nbsp;</td>
+</tr>
+
+
+</table><p><p>
+<?graphic_args "" "" "" -.25?><img src="figs/vi.1203.gif" alt="Figure 12.8.7" width="503" />
+<?troff .sp -1v?><table border="1" cellpadding="3">
+
+<tr>
+<th>Results</th>
+<th />
+</tr>
+
+
+
+
+<tr>
+<td><p>Toggle the case of rectangle bounded with mark <tt class="literal">a</tt>.</p></td>
+<td>&nbsp;</td>
+</tr>
+
+
+</table><p>The commands which define arbitrary regions and operate upon
+them are summarized in
+<a href="ch12_08.htm#vi6-ch-12-tab-5">Table 12.5</a>.</p>
+
+<a name="vi6-ch-12-tab-5" /><h4 class="objtitle">Table 12.5. vile Block Mode Operations</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Command</th>
+<th>Operation</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">q</tt></td>
+<td><p>Start and end a quoted motion.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">^A r</tt></td>
+<td><p>Open up a rectangle.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&gt;</tt></td>
+<td><p>Shift text to the right.
+Same as <tt class="literal">^A r</tt> when the region is
+rectangular.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;</tt></td>
+<td><p>Shift text to the left.
+Same as <tt class="literal">d</tt> when the region is rectangular.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">y</tt></td>
+<td><p>Yank the whole region.
+<em class="emphasis">vile</em> remembers that it was rectangular.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">c</tt></td>
+<td><p>Change the region.
+For a non-rectangular region, delete all the text between the
+end points and enter insert mode. For a rectangular region,
+prompt for the text to fill the lines.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">^A u</tt></td>
+<td><p>Change the case of the region
+to all uppercase.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">^A l</tt></td>
+<td><p>Change the case of the region
+to all lowercase.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">^A ~</tt></td>
+<td><p>Toggle the case of all
+alphabetic characters in the region.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">^A</tt> <span class="keycap">SPACE</span></td>
+<td><p>Fill the region with
+spaces.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">p</tt>, <tt class="literal">P</tt></td>
+<td><p>Put the text back. <em class="emphasis">vile</em>
+does a rectangular put if the original text was rectangular.</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">^A p</tt>, <tt class="literal">^A P</tt></td>
+<td><p>Force previously yanked text
+to be put back as if it were rectangular. The width of the longest
+yanked line is used for the rectangle's width.</p></td>
+</tr>
+
+
+</table><p><p>
+</div>
+
+
+
+
+<a name="IXT-12-282115" />
+<a name="IXT-12-282116" />
+<a name="IXT-12-282117" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.7. Extended Regular Expressions</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12.9. Programming Assistance</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

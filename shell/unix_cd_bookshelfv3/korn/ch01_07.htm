@@ -1,0 +1,467 @@
+<html><head><title>Input and Output (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">1.7. Input and Output</h2>
+
+<p>
+<a name="IXT-1-287056" />
+<a name="IXT-1-287057" />
+<a name="IXT-1-287058" />
+
+
+The software field -- really, any scientific field -- tends to
+advance most quickly and impressively
+on those few occasions when someone (i.e., not a committee) comes
+up with an idea that is small in concept yet enormous in its
+implications. The standard input and output scheme of Unix
+has to be on the short list of such ideas,
+along with such classic innovations as the LISP language,
+the relational data model, and object-oriented programming.
+<a name="IXT-1-287059" />
+</p>
+
+<p>
+The Unix I/O scheme is based on two dazzlingly simple ideas.
+First, Unix file I/O takes the form of arbitrarily
+long sequences of characters (bytes). In contrast, file systems
+of older vintage have more complicated I/O schemes (e.g., "block,"
+"record," "card image," etc.).
+Second, everything on the system that
+produces or accepts data is treated as a file; this includes
+hardware devices like disk drives and terminals. Older systems
+treated every device differently. Both of these ideas have made
+systems programmers' lives much more pleasant.
+</p>
+
+<a name="korn2-CHP-1-SECT-7.1" /><div class="sect2">
+<h3 class="sect2">1.7.1. Standard I/O</h3>
+
+<p>
+<a name="IXT-1-287060" />
+By convention, each Unix program has a single
+way of accepting input called <em class="emphasis">standard input</em>, a single way
+of producing output called <em class="emphasis">standard output</em>, and a single way
+of producing error messages called <em class="emphasis">standard error output</em>,
+usually shortened to <em class="emphasis">standard error</em>.
+Of course, a program can have other input and output sources as well,
+as we will see in <a href="ch07_01.htm">Chapter 7</a>.
+</p>
+
+<p>
+Standard I/O was the first scheme of its kind that was designed
+specifically for interactive users, rather than
+the older batch style of use that usually involved decks of
+punch-cards. Since the Unix shell provides the user interface,
+it should come as no surprise that standard I/O was designed to
+fit in very neatly with the shell.
+</p>
+
+<p>
+All shells handle standard I/O in basically the same way.
+Each program that you invoke has all three standard I/O channels
+set to your terminal or workstation window, so that standard input is
+your keyboard, and standard output and error are your screen or
+window. For example, the <em class="emphasis">mail</em> utility prints messages
+to you on the standard output, and when you use it to send messages
+to other users, it accepts your input on the standard input.
+This means that you view
+messages on<?troff .ne 10?> your screen and type new ones in on your keyboard.
+</p>
+
+<p>
+When necessary, you can redirect
+input and output to come from or go to a file instead. If you want to
+send the contents of a preexisting file to someone as mail,
+you redirect <em class="emphasis">mail</em>'s standard input so that it reads from
+that file instead of your keyboard.
+</p>
+
+<p>
+You can also hook up programs into a <em class="emphasis">pipeline</em>, in which the standard output
+of one program feeds directly into the standard input
+of another; for example,
+you could feed <em class="emphasis">mail</em> output
+directly to the <em class="emphasis">lp</em> program so that messages are printed
+instead of shown on the screen.
+<a name="IXTR3-43" />
+</p>
+
+<p>
+This makes it possible to use Unix utilities as
+building blocks for bigger programs. Many Unix utility programs
+are meant to be used in this way: they each perform
+a specific type of filtering operation on input text.
+Although this isn't a textbook on Unix utilities, they are
+essential to productive shell use. The more popular filtering
+utilities are listed in
+<a href="ch01_07.htm#korn2-CHP-1-TABLE-5">Table 1-5</a>.
+<a name="IXT-1-287061" />
+<a name="IXT-1-287062" />
+<a name="IXT-1-287063" />
+<a name="IXT-1-287064" />
+<a name="IXT-1-287065" />
+<a name="IXT-1-287066" />
+<a name="korn2-IDXTERM-160" />
+
+</p>
+
+<a name="korn2-CHP-1-TABLE-5" /><h4 class="objtitle">Table 1-5. Popular Unix data filtering utilities</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Utility</th>
+<th>Purpose</th>
+</tr>
+
+
+
+
+<tr>
+<td><em class="emphasis">cat</em></td>
+<td>Copy input to output</td>
+</tr>
+
+<tr>
+<td><em class="emphasis">grep</em></td>
+<td>Search for strings in the input</td>
+</tr>
+
+<tr>
+<td><em class="emphasis">sort</em></td>
+<td>Sort lines in the input</td>
+</tr>
+
+<tr>
+<td><em class="emphasis">cut</em></td>
+<td>Extract columns from input</td>
+</tr>
+
+<tr>
+<td><em class="emphasis">sed</em></td>
+<td>Perform editing operations on input</td>
+</tr>
+
+<tr>
+<td><em class="emphasis">tr</em></td>
+<td>Translate characters in the input to other characters</td>
+</tr>
+
+
+</table><p>
+
+<p>
+You may have used some of these before and noticed that they take
+names of input files as arguments and produce output on standard output.
+You may not know, however, that all of them (and most other
+Unix utilities) accept input from standard input if you omit
+the argument.<a href="#FOOTNOTE-13">[13]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-13" /><p> [13]
+If a particular Unix utility doesn't accept standard input when
+you leave out the filename argument, try using <tt class="literal">-</tt> as the argument.
+This is a common, although not universal, convention.
+</p>
+</blockquote>
+
+<p>
+For example, the most basic utility is <em class="emphasis">cat</em>, which simply
+copies its input to its output. If you type <tt class="literal">cat</tt> with a
+filename argument, it will print out the contents of that file
+on your screen. But if you invoke it with no
+arguments, it will read standard input and copy it to standard
+output. Try it: <em class="emphasis">cat</em> will wait for you to type a line of
+text; when you type ENTER, <em class="emphasis">cat</em> will parrot the text back at you. To stop the
+<?troff .hw process?>process, hit CTRL-D at the beginning of a line (see
+below for
+what this character<?troff .ne 10?> means). You will see <tt class="literal">^D</tt> when you
+type CTRL-D. Here's what this should look like:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cat</b></tt>
+<tt class="userinput"><b>Here is a line of text.</b></tt>
+Here is a line of text.
+<tt class="userinput"><b>This is another line of text.</b></tt>
+This is another line of text.
+<tt class="userinput"><b>^D</b></tt>
+$
+</pre></blockquote>
+</p>
+</div>
+
+<a name="korn2-CHP-1-SECT-7.2" /><div class="sect2">
+<h3 class="sect2">1.7.2. I/O Redirection</h3>
+
+<p>
+<a name="IXT-1-287067" />
+<a name="korn2-IDXTERM-162" />
+<a name="IXT-1-287068" />
+
+<em class="emphasis">cat</em> is actually short for "catenate," i.e., link together.
+It accepts multiple
+filename arguments and copies them to the standard output.
+But let's pretend, for the moment, that <em class="emphasis">cat</em>
+and other utilities don't accept
+filename arguments and accept only standard input. As we said
+above, the shell lets you redirect standard input so that it comes
+from a file. The notation <em class="replaceable"><tt>command</em> <tt class="literal">&lt;</tt> <em class="replaceable">filename</tt></em>
+does this; it sets things up so that <em class="emphasis">command</em> takes standard input
+from a file instead of from a terminal.
+</p>
+
+<p>
+For example, if you have a file called <em class="emphasis">fred</em> that contains
+some text, then <tt class="literal">cat &lt; fred</tt> will print <em class="emphasis">fred</em>'s contents
+out onto your terminal. <tt class="literal">sort &lt; fred</tt> will sort the lines in
+the <em class="emphasis">fred</em> file and print the result on your terminal
+(remember: we're pretending that utilities don't take
+filename arguments).
+</p>
+
+<p>
+Similarly, <em class="replaceable"><tt>command</em> <tt class="literal">&gt;</tt> <em class="replaceable">filename</tt></em>
+causes <em class="emphasis">command</em>'s
+standard output to be redirected to the named file.
+<a name="IXT-1-287069" />
+The classic "canonical" example of this is <tt class="literal">date &gt; now</tt>:
+the <em class="emphasis">date</em> command prints the current date and time on the
+standard output; the above command saves it in a file called <em class="emphasis">now</em>.
+</p>
+
+<p>
+Input and output redirectors can be combined.
+<a name="IXT-1-287070" />
+<a name="IXT-1-287071" />
+
+For example,
+the <em class="emphasis">cp</em> command is normally used to copy files; if for some reason
+it didn't exist or was broken, you could use <em class="emphasis">cat</em> in this way:
+</p>
+
+<p>
+<blockquote><pre class="code">
+cat &lt; <em class="replaceable"><tt>file1</em> &gt; <em class="replaceable">file2</tt></em>
+</pre></blockquote>
+</p>
+
+<p>
+This would be similar to <tt class="literal">cp file1 file2</tt>.
+</p>
+
+<p>
+<a name="IXT-1-287072" />
+
+As a mnemonic device, think of <tt class="literal">&lt;</tt> and <tt class="literal">&gt;</tt>
+as "data funnels."
+Data goes into the big end and comes out the small end.
+</p>
+
+<p>
+When used interactively,
+the Korn shell lets you use a shell wildcard after an I/O redirection operator.
+If the pattern matches <em class="emphasis">exactly</em> one file, that file
+is used for I/O redirection.  Otherwise, the pattern is left unchanged, and
+the shell attempts to open a file whose name is exactly what you typed.
+In addition, it is invalid to attempt a redirection with the null string
+as the filename (such as might happen when using the value of a variable,
+and the variable happens to be empty).
+</p>
+
+<p>
+Finally, it is tempting to use the same file for both
+input and output:</p>
+
+<blockquote><pre class="code">
+sort &lt; myfile &gt; myfile      <i class="lineannotation">Sort myfile in place? No!</i>
+</pre></blockquote>
+
+<p>This does <em class="emphasis">not</em> work!  The shell truncates <em class="emphasis">myfile</em>
+when opening it for output, and there won't be any data there for <em class="emphasis">sort</em>
+to process when it runs.
+<a name="IXTR3-44" />
+<a name="IXTR3-45" />
+<a name="IXTR3-46" />
+<a name="IXTR3-47" />
+<a name="IXTR3-48" />
+</p>
+</div>
+
+<a name="korn2-CHP-1-SECT-7.3" /><div class="sect2">
+<h3 class="sect2">1.7.3. Pipelines</h3>
+
+<p>
+<a name="IXT-1-287073" />
+<a name="IXT-1-287074" />
+<a name="IXT-1-287075" />
+<a name="IXT-1-287076" />
+<a name="IXT-1-287077" />
+
+It is also possible to redirect the output of one command into
+the standard input of another running command instead of a file.
+The construct that does this is called the pipe, notated
+as <tt class="literal">|</tt>. A command line that includes two or more commands
+connected with pipes is called a <em class="emphasis">pipeline</em>.
+</p>
+
+<p>
+<a name="IXT-1-287078" />
+<a name="korn2-IDXTERM-179" />
+
+Pipes are very often used with the <em class="emphasis">more</em>
+command, which works just like <em class="emphasis">cat</em> except that it prints
+its output screen by screen, pausing for the user to type
+SPACE (next screen), ENTER (next line), or other commands.
+If you're in a directory with a large number of files and you
+want to see details about them, <tt class="literal">ls -l | more</tt> will give
+you a detailed listing a screen at a time.
+</p>
+
+<p>
+Pipelines can get very complex (see, for example,
+the <em class="emphasis">lsd</em> function in
+<a href="ch04_01.htm">Chapter 4</a> or
+the pipeline version of the C compiler driver in
+<a href="ch07_01.htm">Chapter 7</a>);
+they can also be combined with other I/O redirectors. To
+see a sorted listing of the file <em class="emphasis">fred</em> a screen at a time,
+type <tt class="literal">sort &lt; fred | more</tt>.
+<a name="IXTR3-49" />
+<a name="IXT-1-287079" />
+To print it instead of viewing it
+on your terminal, type <tt class="literal">sort &lt; fred | lp</tt>.
+</p>
+
+<p>
+Here's a more complicated example.
+<a name="korn2-IDXTERM-182" />
+The file <em class="emphasis">/etc/passwd</em>
+stores information about users' accounts on a Unix system.
+Each line in the file contains a user's login name, user ID number,
+encrypted password, home directory, login shell, and other info.
+The first field of each line is the login name;
+fields are separated by colons (<tt class="literal">:</tt>).
+A sample line might look like this:
+
+<a name="IXT-1-287080" />
+<a name="IXT-1-287081" />
+</p>
+
+<p>
+<blockquote><pre class="code">
+billr:5Ae40BGR/tePk:284:93:Bill Rosenblatt:/home/billr:/bin/ksh
+</pre></blockquote>
+</p>
+
+<p>
+To get a sorted listing of all users on the system, type:
+<a name="IXT-1-287082" />
+</p>
+
+<p>
+<blockquote><pre class="code">
+cut -d: -f1 &lt; /etc/passwd | sort
+</pre></blockquote>
+</p>
+
+<p>
+(Actually, you can omit the <tt class="literal">&lt;</tt>,
+since <em class="emphasis">cut</em> accepts
+input filename arguments.)
+The <em class="emphasis">cut</em> command extracts the first field (<em class="emphasis">-f1</em>),
+where fields are separated by colons
+(<em class="emphasis">-d:</em>), from the input.
+The entire pipeline prints a list that looks like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+al
+billr
+bob
+chris
+dave
+</pre></blockquote></p>
+<p><blockquote><pre class="code">
+ed
+frank
+...
+</pre></blockquote>
+</p>
+
+<p>
+If you want to send the list directly to the printer (instead of
+your screen), you can extend the pipeline like this:
+<a name="IXT-1-287083" />
+<a name="IXT-1-287084" />
+</p>
+
+<p>
+<blockquote><pre class="code">
+cut -d: -f1 &lt; /etc/passwd | sort | lp
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-50" />
+Now you should see how I/O redirection and pipelines support the
+Unix building block philosophy.
+The notation is extremely terse and powerful. Just as
+important, the pipe concept eliminates the need for messy
+temporary files to store output of commands before it is
+fed into other commands.
+<a name="IXTR3-51" />
+<a name="IXTR3-52" />
+<a name="IXTR3-53" />
+</p>
+
+<p>
+For example, to do the same sort
+of thing as the above command line on other operating systems
+(assuming that equivalent utilities were available),
+you would need three commands.
+<a name="IXT-1-287085" />
+On Compaq's OpenVMS system, they
+might look like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cut [etc]passwd /d=":" /f=1 /out=temp1</b></tt>
+$ <tt class="userinput"><b>sort temp1 /out=temp2</b></tt>
+$ <tt class="userinput"><b>print temp2</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+After sufficient practice,
+you will find yourself routinely typing in powerful command
+pipelines that do in one line what in other operating systems would require several commands
+(and temporary files) to accomplish.
+<a name="IXTR3-54" />
+<a name="IXTR3-55" />
+
+</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.6. Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.8. Background Jobs</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

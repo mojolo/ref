@@ -1,0 +1,555 @@
+<html><head><title>Relational and Boolean Operators (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.8. Relational and Boolean Operators</h2>
+
+<p>
+<a name="ch07.relat1" />
+<a name="ch07.relat3" />
+<a name="ch07.relat4" />
+<a name="ch07.relat5" />
+Relational and Boolean operators allow you to make comparisons
+between two expressions.
+The relational operators are found in <a href="ch07_08.htm#sedawk-ch-7-tab-4">Table 7.4</a>.</p>
+
+<a name="sedawk-ch-7-tab-4" /><h4 class="objtitle">Table 7.4. Relational Operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Operator</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>&lt;</td>
+<td>Less than
+<a name="IXT-7-265949" />
+<a name="IXT-7-265950" /></td>
+</tr>
+
+<tr>
+<td>&gt;</td>
+<td>Greater than
+<a name="IXT-7-265951" />
+<a name="IXT-7-265952" /></td>
+</tr>
+
+<tr>
+<td>&lt;=</td>
+<td>Less than or equal to
+<a name="IXT-7-265953" />
+<a name="IXT-7-265954" /></td>
+</tr>
+
+<tr>
+<td>&gt;=</td>
+<td>Greater than or equal to
+<a name="IXT-7-265955" />
+<a name="IXT-7-265956" /></td>
+</tr>
+
+<tr>
+<td>==</td>
+<td>Equal to
+<a name="IXT-7-265957" />
+<a name="IXT-7-265958" /></td>
+</tr>
+
+<tr>
+<td>!=</td>
+<td>Not equal to
+<a name="IXT-7-265959" />
+<a name="IXT-7-265960" /></td>
+</tr>
+
+<tr>
+<td>~</td>
+<td>Matches
+<a name="IXT-7-265961" />
+<a name="IXT-7-265962" />
+<a name="IXT-7-265963" /></td>
+</tr>
+
+<tr>
+<td>!~</td>
+<td>Does not match
+<a name="IXT-7-265964" />
+<a name="IXT-7-265965" /></td>
+</tr>
+
+
+</table><p>
+
+<p>A relational expression can be used in place of a pattern
+to control a particular action.
+For instance, if we wanted to limit
+the records selected
+for processing to those that have five fields, we could
+use the following expression:</p>
+
+<blockquote><pre class="code">NF == 5</pre></blockquote>
+
+<p>This relational expression compares 
+the value of <b class="emphasis-bold">NF</b> (the number of fields for each input
+record) to five.  If it is true, the action will be executed;
+otherwise, it will not.</p>
+
+<blockquote><b>NOTE:</b> 
+Make sure you notice that the relational operator "==" ("is equal to") 
+is not the same as the assignment operator "=" ("equals").  
+It is a common error to use "=" instead of "==" to test for equality.</p>
+</blockquote>
+
+<p>We can use a relational expression to validate the <em class="filename">phonelist</em>
+database before attempting to print out the record.</p>
+
+<blockquote><pre class="code">NF == 6 { print $1, $6 }</pre></blockquote>
+
+<p>Then only lines with six fields will be printed.</p>
+
+<p>The opposite of "==" is "!=" ("is not equal to").
+Similarly, you can compare one expression to another
+to see if it is greater than (&gt;) or less than (&lt;)
+or greater than or equal to (&gt;=) or less than or equal
+to (&lt;=).
+The expression</p>
+
+<blockquote><pre class="code">NR &gt; 1</pre></blockquote>
+
+<p>tests whether the number of the current record is greater than 1.
+As we'll see in the next chapter, relational expressions are typically
+used in conditional (<b class="emphasis-bold">if</b>) statements and
+
+are evaluated to
+determine whether or not a particular statement should be executed.</p>
+
+<p>
+<a name="IXT-7-265966" />
+Regular expressions are usually written enclosed in slashes.  These
+can be thought of as regular expression <em class="emphasis">constants</em>, much as
+<b class="emphasis-bold">"hello"</b> is a string constant.  We've seen many examples
+so far:</p>
+
+<blockquote><pre class="code">/^$/ { print "This is a blank line." }</pre></blockquote>
+
+<p>
+<a name="IXT-7-265967" />
+<a name="IXT-7-265968" />
+<a name="IXT-7-265969" />
+<a name="IXT-7-265970" />
+<a name="IXT-7-265971" />
+However, you are not limited to regular expression constants.
+When used with the relational operators
+<b class="emphasis-bold">~</b> ("match") and <b class="emphasis-bold">!~</b> ("no match"),
+the right-hand side of the expression can be any awk expression;
+awk treats it as a string that
+specifies a regular expression.<a href="#FOOTNOTE-48">[48]</a>
+We've already seen an example of the <b class="emphasis-bold">~</b> operator used in a
+pattern-matching rule for the phone database:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-48" /><p> [48]You may also use strings instead of regular expression constants
+when calling the <b class="emphasis-bold">match()</b>, <b class="emphasis-bold">split()</b>, <b class="emphasis-bold">sub()</b>,
+and <b class="emphasis-bold">gsub()</b> functions.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">$5 ~ /MA/   { print $1 ", " $6 }</pre></blockquote>
+
+<p>where the value of field 5 is compared against the regular expression
+"MA."</p>
+
+<p>Since any expression can be used with <b class="emphasis-bold">~</b> and <b class="emphasis-bold">!~</b>,
+regular expressions can be supplied through variables.
+For instance, in the <em class="filename">phonelist</em>
+script, we could replace "/MA/" with <b class="emphasis-bold">state</b>
+and have a procedure that defines the value of state.</p>
+
+<blockquote><pre class="code">$5 ~ state  { print $1 ", " $6 }</pre></blockquote>
+
+<p>This makes the script much more general to use because
+<em class="emphasis">a pattern can change dynamically</em> during execution of the
+script.  For instance, it allows us to get the value of <b class="emphasis-bold">state</b> 
+from a command-line parameter.
+We will talk about passing command-line parameters
+into a script later in this chapter.
+<a name="IXT-7-265972" />
+<a name="IXT-7-265973" />
+<a name="IXT-7-265974" />
+<a name="IXT-7-265975" /></p>
+
+<p>
+<a name="IXT-7-265976" />
+<a name="IXT-7-265977" />
+Boolean operators allow you to combine a series of comparisons.  
+They are listed in <a href="ch07_08.htm#sedawk-ch-7-tab-5">Table 7.5</a>.</p>
+
+<a name="sedawk-ch-7-tab-5" /><h4 class="objtitle">Table 7.5. Boolean Operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Operator</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>||</td>
+<td>Logical OR
+<a name="IXT-7-265978" />
+<a name="IXT-7-265979" />
+<a name="IXT-7-265980" /></td>
+</tr>
+
+<tr>
+<td>&amp;&amp;</td>
+<td>Logical AND
+<a name="IXT-7-265981" />
+<a name="IXT-7-265982" />
+<a name="IXT-7-265983" />
+<a name="IXT-7-265984" /></td>
+</tr>
+
+<tr>
+<td>!</td>
+<td>Logical NOT
+<a name="IXT-7-265985" />
+<a name="IXT-7-265986" />
+<a name="IXT-7-265987" />
+<a name="IXT-7-265988" /></td>
+</tr>
+
+
+</table><p>
+
+<p>Given two or more expressions, <b class="emphasis-bold">||</b> specifies that
+one of them must evaluate to true (non-zero or non-empty)
+for the whole expression to be true.  
+<b class="emphasis-bold">&amp;&amp;</b> specifies that <em class="emphasis">both</em> of the expressions must be true to 
+return true.</p>
+
+<p>The following expression:</p>
+
+<blockquote><pre class="code">NF == 6 &amp;&amp; NR &gt; 1</pre></blockquote>
+
+<p>states that the number of fields must be equal to 6 <em class="emphasis">and</em> that
+the number of the record must be greater than 1.</p>
+
+<p><b class="emphasis-bold">&amp;&amp;</b> has higher precedence than <b class="emphasis-bold">||</b>.  Can you
+tell how the following expression will be evaluated?</p>
+
+<blockquote><pre class="code">NR &gt; 1 &amp;&amp; NF &gt;= 2 || $1 ~ /\t/</pre></blockquote>
+
+<p>The parentheses in the next example show which expression would
+be evaluated first based on the rules of precedence.</p>
+
+<blockquote><pre class="code">(NR &gt; 1 &amp;&amp; NF &gt;= 2) || $1 ~ /\t/</pre></blockquote>
+
+<p>In other words, both of the expressions in parentheses must be
+true <em class="emphasis">or</em> the 
+right hand side must be true.  You can use parentheses to override
+the rules of precedence, as in the following example which
+specifies that two conditions must be true.</p>
+
+<blockquote><pre class="code">NR &gt; 1 &amp;&amp; (NF &gt;= 2 || $1 ~ /\t/)</pre></blockquote>
+
+<p>The first condition must be true <em class="emphasis">and</em> either of two other conditions
+must be true.</p>
+
+<p>Given an expression that is either true or false, the
+<b class="emphasis-bold">!</b> operator inverts the sense of the expression.</p>
+
+<blockquote><pre class="code">! (NR &gt; 1 &amp;&amp; NF &gt; 3)</pre></blockquote>
+
+<p>This expression is true if the parenthesized expression is false.
+This operator is most useful with awk's <b class="emphasis-bold">in</b> operator to see if
+an index is not in an array (as we shall see later), although it has
+other uses as well.</p>
+
+<a name="sedawk-ch-7-sect-8.1" /><div class="sect2">
+<h3 class="sect2">7.8.1. Getting Information About Files</h3>
+
+<p>
+<a name="ch07.file1" />
+<a name="ch07.file2" />
+Now we are going to look at a couple of
+scripts that process the output
+of a UNIX command, <b class="emphasis-bold">ls</b>.   The following
+is a sample of the long listing produced by the command <b class="emphasis-bold">ls -l</b>:<a href="#FOOTNOTE-49">[49]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-49" /><p> [49]Note that on a Berkeley 4.3BSD-derived UNIX system
+such as Ultrix or SunOS 4.1.x, <b class="emphasis-bold">ls -l</b> produces
+an eight-column report; use <b class="emphasis-bold">ls -lg</b> to get the same
+report format shown here.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls -l</b></tt>
+-rw-rw-rw-   1 dale     project   6041 Jan  1 12:31 com.tmp
+-rwxrwxrwx   1 dale     project   1778 Jan  1 11:55 combine.idx
+-rw-rw-rw-   1 dale     project   1446 Feb 15 22:32 dang
+-rwxrwxrwx   1 dale     project   1202 Jan  2 23:06 format.idx</pre></blockquote>
+
+<p>This listing is a report in which data is presented in rows
+and columns.  Each file is presented across a single row.
+The file listing consists of nine columns.
+The file's permissions appear in the first column,
+the size of the file in bytes in
+the fifth column, and the filename is found in
+the last column.  Because
+one or more spaces separate the data in columns,
+we can treat each column as a field.</p>
+
+<p>In our first example,
+we're going to pipe the output of this command to an awk
+script that prints selected fields from the
+file listing.  
+To do this, we'll create a 
+shell script so that we can make the pipe transparent to the user. 
+Thus, the structure of the shell script is:</p>
+
+<blockquote><pre class="code">ls -l $* | awk '<em class="replaceable"><tt>script</tt></em>'</pre></blockquote>
+
+<p>The $* variable is used by the shell and expands to
+all arguments passed from the command line.  (We could use
+$1 here, which would pass the first argument, but passing
+<em class="emphasis">all</em> the arguments provides greater flexibility.) 
+These arguments can be the names of files or directories
+or additional options to the <b class="emphasis-bold">ls</b> command.
+If no arguments are specified, the "$*" will be empty
+and the current directory will be listed.
+Thus, the output of the <b class="emphasis-bold">ls</b> command will be directed to
+awk, which will automatically read standard input, since
+no filenames have been given.</p>
+
+<p>We'd like our awk script to print the size and name of the file.
+That is, print field 5 ($5) and field 9 ($9).</p>
+
+<blockquote><pre class="code">ls -l $* | awk '{ 
+	print $5, "\t", $9
+}'</pre></blockquote>
+
+<p>If we put the above lines in a file named <em class="filename">fls</em>
+and make that file executable, we can enter <b class="emphasis-bold">fls</b>
+as a command.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>fls</b></tt>
+6041     com.tmp
+1778     combine.idx
+1446     dang
+1202     format.idx
+$ <tt class="userinput"><b>fls com*</b></tt>
+6041     com.tmp
+1778     combine.idx</pre></blockquote>
+
+<p>So what our program does is take the long listing and reduce it
+to two fields.  Now, let's add new functionality to our report
+by producing some information that the <b class="emphasis-bold">ls -l</b> listing does not provide. 
+We add each file's size to a running total, to produce
+the total number of bytes used by all files in the listing.
+We can also keep track of the number of files and produce
+that total.
+There are two parts to adding this functionality.  The first is
+to accumulate the totals for each input line.  We create the variable
+<b class="emphasis-bold">sum</b> to accumulate the size of files and the variable
+<b class="emphasis-bold">filenum</b> to accumulate the number of files in the listing.</p>
+
+<blockquote><pre class="code">{
+	sum += $5
+	++filenum
+	print $5, "\t", $9 
+}</pre></blockquote>
+
+<p>The first expression uses the assignment operator
+<b class="emphasis-bold">+=</b>.  It adds the value of field 5 to the present value of the variable
+<b class="emphasis-bold">sum</b>.  
+The second expression increments the present value of 
+the variable <b class="emphasis-bold">filenum</b>.
+This variable is used as a <em class="emphasis">counter</em>, and each 
+time the expression is evaluated, 
+1 is added to the count.</p>
+
+<p>The action we've written will be applied to all input lines.
+The totals that are accumulated in this action must
+be printed after awk has read all the input lines.
+Therefore, we write an action that is controlled by the
+<b class="emphasis-bold">END</b> rule.</p>
+
+<blockquote><pre class="code">END { print "Total: ", sum, "bytes (" filenum " files)" }</pre></blockquote>
+
+<p>We can also use the <b class="emphasis-bold">BEGIN</b> rule to add column headings to the
+report.</p>
+
+<blockquote><pre class="code">BEGIN { print "BYTES", "\t", "FILE" }</pre></blockquote>
+
+<p>Now we can put this script in an executable file named <em class="filename">filesum</em>
+and execute it as a single-word command.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>filesum c* </b></tt>
+BYTES    FILE
+882      ch01
+1771     ch03
+1987     ch04
+6041     com.tmp
+1778     combine.idx
+Total:  12459 bytes (5 files)</pre></blockquote>
+
+<p>What's nice about this command is that it allows you to determine
+the size of all files in a directory or any group of files.</p>
+
+<p>While the basic mechanism works, there are a few problems to
+be taken care of.
+The first problem occurs when you list the entire directory
+using the <b class="emphasis-bold">ls -l</b> command.  
+The listing contains
+a line that specifies the total number of blocks in the directory.
+The partial listing (all files beginning with "c") in the previous
+example does not have this line.
+But the following line would be included in the output if the
+full directory was listed:</p>
+
+<blockquote><pre class="code">total 555</pre></blockquote>
+
+<p>The block total does not interest us because
+the program displays the total file size in bytes.
+Currently, <b class="emphasis-bold">filesum</b> does not print this line; however,
+it does read this line and cause the <b class="emphasis-bold">filenum</b> counter to be incremented.</p>
+
+<p>There is also a problem with this script in how
+it handles subdirectories.  Look at the following
+line from an <b class="emphasis-bold">ls -l</b>:</p>
+
+<blockquote><pre class="code">drwxrwxrwx   3 dale     project         960 Feb  1 15:47 sed</pre></blockquote>
+
+<p>A "d" as the first character in column 1 (file permissions) indicates that
+the file is a subdirectory.  The size of this file (960 bytes) does not
+indicate the size of files in that subdirectory and therefore, it
+is slightly misleading to add it to the file size totals.  Also, it might be
+helpful to indicate that it is a directory.</p>
+
+<p>If you want to list the
+files in subdirectories, supply the <span class="option">-R</span> (recursive)
+option on the command line. 
+It will be passed to the <b class="emphasis-bold">ls</b> command.
+However, the listing is slightly different as it
+identifies each directory.   
+For instance, to identify the subdirectory <em class="filename">old</em>, the
+<b class="emphasis-bold">ls -lR</b> listing produces a blank line followed
+by:</p>
+
+<blockquote><pre class="code">./old:</pre></blockquote>
+
+<p>Our script ignores that
+line and a blank line preceding it but nonetheless they increment
+the file counter.
+Fortunately, we can devise rules 
+to handle these cases. 
+Let's look at the revised, commented script:</p>
+
+<blockquote><pre class="code">ls -l $* | awk '
+# filesum: list files and total size in bytes
+# input: long listing produced by "ls -l"
+
+#1 output column headers
+BEGIN { print "BYTES", "\t", "FILE" }
+
+#2 test for 9 fields; files begin with "-"
+NF == 9 &amp;&amp; /^-/ {
+        sum += $5       # accumulate size of file
+        ++filenum       # count number of files
+        print $5, "\t", $9       # print size and filename
+}
+
+#3 test for 9 fields; directory begins with "d"
+NF == 9 &amp;&amp; /^d/ {
+        print "&lt;dir&gt;", "\t", $9  # print &lt;dir&gt; and name
+}
+
+#4 test for ls -lR line ./dir:
+$1 ~ /^\..*:$/ {
+        print "\t" $0 # print that line preceded by tab
+}
+
+#5 once all is done,
+END {
+	# print total file size and number of files
+	print "Total: ", sum, "bytes (" filenum " files)"
+}'</pre></blockquote>
+
+<p>The rules and their associated actions have been numbered
+to make it easier to discuss them.  The listing
+produced by <b class="emphasis-bold">ls -l</b> contains nine fields for
+a file.  Awk supplies the number of fields
+for a record in the system variable <b class="emphasis-bold">NF</b>.  
+Therefore, rules 2 and 3 test that <b class="emphasis-bold">NF</b> is equal to 9.
+This helps us avoid matching odd blank lines 
+or the line stating the block total. 
+Because we want to handle directories and files differently,
+we use another pattern to match the first character of
+the line.  In rule 2 we test for "-" in the first position
+on the line, which indicates a file.
+The associated action increments
+the file counter and adds the file size to the previous
+total.  In rule 3, we test for a directory, indicated by "d" as
+the first character.  The associated action
+prints "&lt;dir&gt;" in place of the file size.   
+Rules 2 and 3 are <em class="emphasis">compound</em> expressions, 
+specifying two patterns that are
+combined using the <b class="emphasis-bold">&amp;&amp;</b> operator. 
+Both patterns must be matched for the expression to
+be true.</p>
+
+<p>Rule 4 tests for the special case produced by the <b class="emphasis-bold">ls -lR</b>
+listing ("./old:").
+There are a number of patterns that we can write to match
+that line, using regular expressions or relational expressions:</p>
+
+<blockquote><pre class="code">NF == 1			<i class="lineannotation">If the number of fields equals 1 ...</i>
+/^\..*:$/		<i class="lineannotation">If the line begins with a period followed by any number of
+                                                   characters and ends in a colon...</i>
+$1 ~ /^\..*:$/		<i class="lineannotation">If field 1 matches the regular expression...</i></pre></blockquote>
+
+<p>We used the latter expression because it seems to be the most
+specific.  It employs the match operator (~) to test the first
+field against a regular expression.  The associated action
+consists of only a <b class="emphasis-bold">print</b> statement.</p>
+
+<p>Rule 5 is the <b class="emphasis-bold">END</b> pattern and its action is only executed once, 
+printing the sum of file sizes as well as the number of files.</p>
+
+<p>The <b class="emphasis-bold">filesum</b> program demonstrates many of the
+basic constructs used in awk.  What's more, it gives
+you a pretty good idea of the process of developing a
+program (although syntax errors produced by typos
+and hasty thinking have been gracefully omitted).
+If you wish to tinker with this program, you might add a counter
+for a directories, or a rule that handles symbolic links.</p>
+
+<a name="IXT-7-265989" />
+<a name="IXT-7-265990" />
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.7. System Variables</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.9. Formatted Printing</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

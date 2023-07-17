@@ -1,0 +1,243 @@
+<html><head><title>Trapping Exits Caused by Interrupts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.17. Trapping Exits Caused by Interrupts</h2>
+
+<p>If you're <a name="IXT-35-3676" />running a shell script and you press
+<a name="IXT-35-3677" />your <b class="emphasis-bold">interrupt key</b> (<a href="ch05_08.htm#upt3-CHP-5-SECT-8">Section 5.8</a>)
+(like CTRL-c), the shell quits right away. That can be a problem if
+you use temporary files in your script, because the sudden exit might
+leave the temporary files there. The
+<i class="command">trap</i><a name="IXT-35-3678" /> command lets you tell the shell what
+to do before it exits. A <i class="command">trap</i> can be used for a
+normal exit, too. See <a href="ch35_17.htm#upt3-CHP-35-TABLE-1">Table 35-1</a>.
+</p>
+
+<a name="upt3-CHP-35-TABLE-1" /><h4 class="objtitle">Table 35-1. Some Unix signal numbers for trap commands </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Signal number</p>
+</th>
+<th>
+<p>Signal name</p>
+</th>
+<th>
+<p>Explanation</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>EXIT</p>
+</td>
+<td>
+<p><i class="command">exit</i> command</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>HUP</p>
+</td>
+<td>
+<p>When session disconnected</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>2</p>
+</td>
+<td>
+<p>INT</p>
+</td>
+<td>
+<p>Interrupt -- often CTRL-c</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>3</p>
+</td>
+<td>
+<p>QUIT</p>
+</td>
+<td>
+<p>Quit -- often CTRL-\</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>9</p>
+</td>
+<td>
+<p>KILL</p>
+</td>
+<td>
+<p>Kill, often used as a way to stop an errant program (it cannot be
+caught, so don't bother to trap it)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>15</p>
+</td>
+<td>
+<p>TERM</p>
+</td>
+<td>
+<p>From <i class="command">kill</i> command</p>
+</td>
+</tr>
+
+</table><p>
+
+<p><a name="IXT-35-3680" /><a name="IXT-35-3681" /><a name="IXT-35-3682" />Here's
+a script named <i class="command">zmore</i> that uses a temporary file
+named <em class="filename">/tmp/zmore$$</em> in a system temporary-file
+directory. The shell will replace <tt class="literal">$$</tt> with its
+<b class="emphasis-bold">process ID number</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>). Because no other process will have the same
+ID number, that file should have a unique name. The script <b class="emphasis-bold">uncompresses</b> (<a href="ch15_06.htm#upt3-CHP-15-SECT-6">Section 15.6</a>)
+the file named on its command line, then starts the
+<i class="command">more</i> file viewer.<a href="#FOOTNOTE-107">[107]</a> The script uses <i class="command">trap</i>s, so
+it will clean up the <a name="IXT-35-3683" />temporary files, even if the user presses
+CTRL-c. The script also sets a default exit status of 1
+that's reset to 0 if <i class="command">more</i> quits
+on its own (without an interrupt). If you are on a Linux system, you
+may find that <i class="command">gzcat</i> is simply named
+<i class="command">zcat</i>.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-107" /><p> [107]The script could
+run <tt class="literal">gzcat $1 | more</tt> directly, but some versions of
+<i class="command">more</i> can't back up when reading
+from a pipe. You may prefer to use <i class="command">less</i>, at any
+rate.</p> </blockquote>
+
+<p><tt class="literal">exit</tt> <a href="ch35_16.htm#upt3-CHP-35-SECT-16">Section 35.16</a></p>
+
+<blockquote><pre class="code">#!/bin/sh
+# zmore - UNCOMPRESS FILE, DISPLAY WITH more
+# Usage: zmore file
+stat=1  # DEFAULT EXIT STATUS; RESET TO 0 BEFORE NORMAL EXIT
+temp=/tmp/zmore$$
+trap 'rm -f $temp; exit $stat' 0
+trap 'echo "`basename $0`: Ouch! Quitting early." 1&gt;&amp;2' 1 2 15
+
+case $# in
+1) gzcat "$1" &gt;$temp
+   more $temp
+   stat=0
+   ;;
+*) echo "Usage: `basename $0` filename" 1&gt;&amp;2 ;;
+esac</pre></blockquote>
+
+<p><a name="IXT-35-3684" />There are two <i class="command">trap</i>s
+in the script:
+</p>
+
+<ul><li>
+<p><a name="IXT-35-3685" />The first <i class="command">trap</i>,
+ending with the number <tt class="literal">0</tt>, is executed for all
+shell exits -- normal or interrupted. It runs the command line
+between the single quotes. In this example, there are two commands
+separated with a <b class="emphasis-bold">semicolon (;)</b>
+(<a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a>). The first command removes the
+temporary file (using the <span class="option" /><a name="IXT-35-3686" /><b class="emphasis-bold">-f
+option</b> (<a href="ch14_10.htm#upt3-CHP-14-SECT-10">Section 14.10</a>), so
+<i class="command">rm</i> won't give an error message if
+the file doesn't exist yet). The second command
+exits with the value stored in the <em class="emphasis">stat</em> shell
+variable. Look ahead at the rest of the
+script -- <tt class="literal">$stat</tt> will always be 1 unless the
+<i class="command">more</i> command quit on its own, in which case
+<em class="emphasis">stat</em> will be reset to 0. Therefore, this shell
+script will always return the right exit status -- if
+it's interrupted before it finishes,
+it'll return 1; otherwise, 0.<a href="#FOOTNOTE-108">[108]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-108" /><p> [108]It's important to use single quotes rather
+than double quotes around the <i class="command">trap</i>. That way, the
+value of <tt class="literal">$stat</tt> won't be
+interpreted until the trap is actually executed when the script
+exits.</p> </blockquote>
+</li><li>
+<p><a name="IXT-35-3687" /> <a name="IXT-35-3688" />The
+second <i class="command">trap</i> has the numbers <tt class="literal">1</tt>
+<tt class="literal">2</tt> <tt class="literal">15</tt> at the end. These are
+signal numbers that correspond to different kinds of interrupts. On
+newer shells, you can use signal names instead of the numbers.
+There's a short list in <a href="ch35_17.htm#upt3-CHP-35-TABLE-1">Table 35-1</a>. For a list of all signals, type <tt class="literal">kill
+-l</tt><a name="IXT-35-3689" /> (lowercase
+"L") or see your online
+<em class="emphasis">signal</em>(3) or <em class="emphasis">signal</em>(2)
+manual page. Alternatively, look for a file named
+<em class="filename">/usr/include/signal.h</em> or
+<em class="filename">/usr/include/linux/signal.h</em> (which itself just
+includes <em class="filename">/usr/include/asm/signal.h</em>, which is
+where the constants themselves are defined).
+</p>
+
+<p>This trap is done on an abnormal exit (like CTRL-c). It prints a
+message, but it could run any list of commands.
+</p>
+</li></ul>
+<p><a name="IXT-35-3690" />Shell scripts don't always
+have two <i class="command">trap</i>s. Look at the <b class="emphasis-bold">nom</b> (<a href="ch33_08.htm#upt3-CHP-33-SECT-8">Section 33.8</a>) script for
+an example.
+</p>
+
+<p>I usually don't trap signal 3 (QUIT) in scripts that
+I use myself. That gives me an easy way to abort the script without
+springing the trap (removing temporary files, etc.). In scripts for
+general use, though, I usually do trap it.
+</p>
+
+<p><a name="IXT-35-3691" /> <a name="IXT-35-3692" />Also, notice that the
+<i class="command">echo</i> commands in the script have <b class="emphasis-bold">1&gt;&amp;2</b> (<a href="ch36_16.htm#upt3-CHP-36-SECT-16">Section 36.16</a>) at
+the end. This is the standard way to make error messages. In this
+particular script, that doesn't matter much because
+the script is used interactively. But it's a good
+habit to get into for all of your scripts.
+</p>
+
+<p>If your <i class="command">trap</i> runs a series of commands,
+it's probably neater to call a <b class="emphasis-bold">shell function</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>)
+than a list of commands:
+</p>
+
+<blockquote><pre class="code">trap <em class="replaceable"><tt>funcname</tt></em> 1 2 15</pre></blockquote>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.16. Set Exit Status of a Shell </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.18. read: Reading from the Keyboard</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

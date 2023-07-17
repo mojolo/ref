@@ -1,0 +1,1000 @@
+<html><head><title>Command-Line Options and Typed Variables (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 6. Command-Line  Options and  Typed Variables</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch06_01.htm#sect1">Command-Line Options</a><br />
+<a href="ch06_02.htm">Numeric Variables and Arithmetic</a><br />
+<a href="ch06_03.htm">Arithmetic for</a><br />
+<a href="ch06_04.htm">Arrays</a><br />
+<a href="ch06_05.htm">typeset</a><br /></p></div><p>
+You should have a healthy grasp of shell programming techniques
+now that you have gone through the previous chapters. What you
+have learned up to this point
+enables you to write many nontrivial, useful shell scripts and functions.
+</p><p>
+Still, you may have noticed some remaining gaps in the knowledge
+you need to write shell code that behaves like the Unix commands you
+are used to. In particular, if you are an experienced Unix user,
+it might have occurred to you
+that none of the example scripts shown so far have the
+ability to handle <em class="emphasis">options</em> (preceded by a dash (<tt class="literal">-</tt>))
+on the command line.
+
+And if you
+program in a conventional language like C or Pascal, you will have
+noticed that the only type of data that we have seen in shell variables
+is character strings; we haven't seen how to do arithmetic, for example.
+</p><p>
+These capabilities are certainly crucial to the shell's ability to
+function as a useful Unix programming language. In this chapter, we
+show how the Korn shell supports these and related features.
+</p><div class="sect1"><a name="korn2-CHP-6-SECT-1" />
+<h2 class="sect1"><a name="sect1" />6.1. Command-Line Options</h2>
+
+<p>
+<a name="korn2-IDXTERM-1223" />
+<a name="IXT-6-287758" />
+<a name="korn2-IDXTERM-1225" />
+<a name="IXT-6-287759" />
+
+We have already seen many examples of the <em class="emphasis">positional parameters</em>
+(variables called <tt class="literal">1</tt>, <tt class="literal">2</tt>, <tt class="literal">3</tt>, etc.)
+that the shell uses to store the command-line
+arguments to a shell script or function when it runs. We have also
+seen related variables like <tt class="literal">*</tt> and <tt class="literal">@</tt>
+(for the string(s) of all arguments)
+and <tt class="literal">#</tt> (for the number of arguments).
+</p>
+
+<p>
+
+Indeed, these variables hold all the information on the user's
+command line. But consider what happens when options are involved.
+Typical Unix commands have the form <em class="emphasis">command</em>
+[-<em class="emphasis">options</em>] <em class="emphasis">args</em>,
+meaning that there can be zero or more options. If a shell script
+processes the command <tt class="literal">fred bob pete</tt>, then
+<tt class="literal">$1</tt> is `'bob'' and <tt class="literal">$2</tt> is `'pete''.
+But if the command is <tt class="literal">fred -o bob pete</tt>, then
+<tt class="literal">$1</tt> is <em class="emphasis">-o</em>,
+<tt class="literal">$2</tt><?troff .ne 10?> is `'bob'', and <tt class="literal">$3</tt> is
+`'pete''.
+
+</p>
+
+<p>
+You might think you could write code like this to handle it:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ $1 == -o ]]; then
+    <em class="replaceable"><tt>code that processes the -o option</tt></em>
+    1=$2
+    2=$3
+fi
+<i class="lineannotation">normal processing of $1 and $2...</i>
+</pre></blockquote>
+</p>
+
+<p>
+But this code has several problems. First, assignments like
+<tt class="literal">1=$2</tt> are illegal because positional parameters are read-only.
+Even if they were legal, another problem is that
+this kind of code imposes limitations on how many arguments
+the script can handle -- which is very unwise. Furthermore,
+if this command had several possible options, the
+code to handle all of them would get very messy very quickly.
+</p>
+
+<a name="korn2-CHP-6-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">6.1.1. shift</h3>
+
+<p>
+<a name="korn2-IDXTERM-1227" />
+Luckily, the shell provides a way around this problem.
+The command <em class="emphasis">shift</em> performs the function of:
+</p>
+
+<p>
+<blockquote><pre class="code">
+1=$2
+2=$3
+...
+</pre></blockquote>
+</p>
+
+<p>
+for every argument, regardless of how many there are. If you supply
+a numeric argument<a href="#FOOTNOTE-80">[80]</a>
+to <em class="emphasis">shift</em>, it shifts the arguments that
+many times over; for example, <tt class="literal">shift 3</tt> has this effect:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-80" /><p> [80]
+The argument can actually be a numeric expression; the
+shell automatically evaluates it.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+1=$4
+2=$5
+...
+</pre></blockquote>
+</p>
+
+<p>
+This leads immediately to some code that handles a single option
+(call it <em class="emphasis">-o</em>) and arbitrarily many arguments:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ $1 == -o ]]; then
+    <em class="replaceable"><tt>process the -o option</tt></em>
+    shift
+fi
+<i class="lineannotation">normal processing of arguments ...</i>
+</pre></blockquote>
+</p>
+
+<p>
+After the <tt class="literal">if</tt> construct, <tt class="literal">$1</tt>, <tt class="literal">$2</tt>,
+etc., are set to the correct arguments,
+and <tt class="literal">$#</tt> is automatically adjusted, as well.
+<a name="IXTR3-263" />
+</p>
+
+<p>
+We can use <em class="emphasis">shift</em> together with the programming features
+we have seen so far to implement simple option schemes. However,
+we will need additional help when things get more complex.
+The <em class="emphasis">getopts</em> built-in command, which we introduce
+later, provides this help.
+</p>
+
+<p>
+<em class="emphasis">shift</em> by itself gives us enough power to
+implement the <tt class="literal">-</tt><em class="replaceable"><tt>N</tt></em>
+option to the <em class="emphasis">highest</em> script we saw in <a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-1">Task 4-1</a>.
+Recall that this script takes an input file that lists artists
+and the number of albums you have by them. It sorts the list
+and prints out the <em class="emphasis">N</em> highest numbers, in descending order.
+The code that does the actual data processing is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+filename=$1
+howmany=${2:-10}
+sort -nr $filename | head -$howmany
+</pre></blockquote>
+</p>
+
+<p>
+Our original syntax for calling this script was
+<tt class="literal">highest</tt> <em class="replaceable"><tt>filename</tt></em>
+[<em class="replaceable"><tt>N</tt></em>],
+where <em class="emphasis">N</em> defaults to
+10 if omitted. Let's change this to a more conventional Unix syntax,
+in which options are given before arguments:
+<tt class="literal">highest</tt> [<tt class="literal">-</tt><em class="replaceable"><tt>N</tt></em>]
+<em class="replaceable"><tt>filename</tt></em>. Here is how we would write
+the script with this syntax:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ $1 == -+([0-9]) ]]; then
+    howmany=$1
+    shift
+elif [[ $1 == -* ]]; then
+    print 'usage: highest [-N] filename'
+    exit 1
+else
+    howmany="-10"
+fi
+filename=$1
+sort -nr $filename | head $howmany
+</pre></blockquote>
+</p>
+
+<p>
+
+In this code, the option is considered to be supplied if <tt class="literal">$1</tt>
+matches the pattern <tt class="literal">-+([0-9])</tt>. This uses one of the Korn shell's
+regular expression operators, which we saw in <a href="ch04_01.htm">Chapter 4</a>.
+Notice that we didn't surround the pattern with quotes
+(even double quotes); if we did, the shell would interpret it literally,
+not as a pattern. This pattern means
+"A dash followed by one or more digits." If <tt class="literal">$1</tt> matches,
+then we assign it to the variable <tt class="literal">howmany</tt>.
+</p>
+
+<p>
+If <tt class="literal">$1</tt> doesn't match, we test to see if it's an option at all,
+i.e., if it matches the pattern <tt class="literal">-*</tt>.  If it does, then it's invalid;
+we print an error message and exit with error status. If we reach the final
+(<tt class="literal">else</tt>) case, we
+provide the default value for <tt class="literal">howmany</tt> and
+assume that <tt class="literal">$1</tt> is a filename and
+treat it as such in the ensuing code. The rest of the script
+processes the data as before.
+</p>
+
+<p>
+We can extend what we have learned so far
+to a general technique for handling multiple
+options. For the sake of concreteness, assume that our script
+is called <em class="emphasis">bob</em> and we want to handle
+the options <em class="emphasis">-a</em>, <em class="emphasis">-b</em>, and <em class="emphasis">-c</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+while [[ $1 == -* ]]; do
+    case $1 in
+        -a ) <em class="replaceable"><tt>process option -a</tt></em> ;;
+        -b ) <em class="replaceable"><tt>process option -b</tt></em> ;;
+        -c ) <em class="replaceable"><tt>process option -c</tt></em> ;;
+        *  ) print 'usage: bob [-a] [-b] [-c] args ...'
+             exit 1 ;;
+    esac
+    shift
+done
+<i class="lineannotation">normal processing of arguments ...</i>
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-6-287760" />
+
+This code checks <tt class="literal">$1</tt> repeatedly as long as it starts with a dash
+(<tt class="literal">-</tt>).
+
+Then the <tt class="literal">case</tt> construct
+runs the appropriate code depending on which option <tt class="literal">$1</tt> is.
+If the option is invalid (i.e., if it starts with a dash but
+isn't <em class="emphasis">-a</em>, <em class="emphasis">-b</em>, or
+<em class="emphasis">-c</em>), the script prints a usage message
+and returns with an error exit status. After each option is
+processed, the arguments are shifted over. The result is that
+the positional parameters are set to the actual arguments when
+the <tt class="literal">while</tt> loop finishes.
+</p>
+
+<p>
+Notice that by generalizing this code, you can
+handle options of arbitrary
+length, not just one letter (e.g., <tt class="literal">-fred</tt> instead of <tt class="literal">-a</tt>).
+</p>
+</div>
+
+
+
+
+<a name="korn2-CHP-6-SECT-1.2" /><div class="sect2">
+<h3 class="sect2">6.1.2. Options with Arguments</h3>
+
+<p>
+<a name="IXT-6-287761" />
+
+We need to add one more ingredient to make option processing really useful.
+Recall that many commands have options that take their <em class="emphasis">own</em>
+arguments.
+For example, the <em class="emphasis">cut</em> command, on which we relied
+heavily in <a href="ch04_01.htm">Chapter 4</a>, accepts the option <em class="emphasis">-d</em>
+with an argument
+that determines the field delimiter (if it is not the default TAB).
+To handle this type of option, we just use another <em class="emphasis">shift</em>
+when we are processing the option.
+</p>
+
+<p>
+Assume that, in our <em class="emphasis">bob</em> script, the option <em class="emphasis">-b</em> requires
+its own argument. Here is the modified code that processes it:
+</p>
+
+<p>
+<blockquote><pre class="code">
+while [[ $1 == -* ]]; do
+    case $1 in
+        -a ) <em class="replaceable"><tt>process option -a</tt></em> ;;
+        -b ) <em class="replaceable"><tt>process option -b</tt></em>
+             <em class="replaceable"><tt>$2 is the option's argument</tt></em>
+             shift ;;
+        -c ) <em class="replaceable"><tt>process option -c</tt></em> ;;
+        *  ) print 'usage: bob [-a] [-b barg] [-c] args ...'
+             exit 1 ;;
+    esac
+    shift
+done
+<i class="lineannotation">normal processing of arguments ...</i>
+</pre></blockquote>
+<a name="IXTR3-264" />
+</p>
+</div>
+
+<a name="korn2-CHP-6-SECT-1.3" /><div class="sect2">
+<h3 class="sect2">6.1.3. getopts</h3>
+
+<p>
+
+
+So far, we have a complete, though still constrained, way
+of handling command-line options. The above code does not allow
+a user to combine arguments with a single dash, e.g.,
+<tt class="literal">-abc</tt> instead of <tt class="literal">-a -b -c</tt>. It
+also doesn't allow the user to
+specify arguments to options
+without a space in between, e.g.,
+<tt class="literal">-barg</tt> in addition to <tt class="literal">-b arg</tt>.<a href="#FOOTNOTE-81">[81]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-81" /><p> [81]
+<a name="IXT-6-287762" />
+Although most Unix commands allow this, it is actually contrary to the
+Command Syntax Standard Rules originally set forth
+in <em class="emphasis">intro</em>(1)
+of the Unix System V <em class="emphasis">User's Manual</em>.
+These rules have now been codified by POSIX.
+</p>
+</blockquote>
+
+<p>
+The shell provides a built-in way
+to deal with multiple complex options without these constraints.
+The built-in command <em class="emphasis">getopts</em><a href="#FOOTNOTE-82">[82]</a>
+can be used as the condition of the <tt class="literal">while</tt> in an option-processing
+loop. Given a specification of which options are valid
+and which require their own arguments, it sets up the
+body of the loop to process each option in turn.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-82" /><p> [82]
+<a name="IXT-6-287763" />
+<em class="emphasis">getopts</em> replaces the external command <em class="emphasis">getopt</em>(1),
+used in Bourne shell programming;
+<em class="emphasis">getopts</em> is better integrated into the shell's syntax and runs more
+efficiently. C programmers will recognize <em class="emphasis">getopts</em> as very similar
+to the standard library routine <em class="emphasis">getopt</em>(3).
+</p>
+</blockquote>
+
+<p>
+<em class="emphasis">getopts</em> takes at least two arguments. The first
+is a string that can contain letters
+and colons. Each letter is a valid option; if a letter is followed
+by a colon, the option requires an argument.
+If the letter is followed by a <tt class="literal">#</tt>, the option
+requires a numeric argument.
+The <tt class="literal">:</tt> or <tt class="literal">#</tt> may be followed
+by <tt class="literal">[</tt><em class="replaceable"><tt>description</tt></em><tt class="literal">]</tt>,
+i.e., a descriptive string enclosed in square brackets that is used
+when generating usage error messages.  If you append a space with more
+descriptive text to the
+list of option characters, that text is also printed in error messages.
+</p>
+
+<p>
+<em class="emphasis">getopts</em> picks
+options off the command line and assigns each one (without the
+leading dash) to a variable whose
+name is <em class="emphasis">getopts</em>'s second argument.
+As long as there are options
+left to process, <em class="emphasis">getopts</em> returns exit status 0; when the
+options are exhausted, it returns exit status 1, causing the <tt class="literal">while</tt>
+loop to exit.
+</p>
+
+<p>
+By default, <em class="emphasis">getopts</em> loops through <tt class="literal">"$@"</tt>,
+the quoted list of command line arguments.
+However, you may supply additional arguments to <em class="emphasis">getopts</em>,
+in which case it uses those arguments, instead.
+</p>
+
+<p>
+<em class="emphasis">getopts</em> does a few other things that make option processing
+easier; we'll encounter them as we examine
+how to use <em class="emphasis">getopts</em> in the preceding example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+while getopts ":ab:c" opt; do
+    case $opt in
+        a  ) <em class="replaceable"><tt>process option -a</tt></em> ;;
+        b  ) <em class="replaceable"><tt>process option -b</tt></em>
+             <em class="replaceable"><tt>$OPTARG is the option's argument</tt></em> ;;
+        c  ) <em class="replaceable"><tt>process option -c</tt></em> ;;
+        \? ) print 'usage: bob [-a] [-b barg] [-c] args ...'
+             exit 1 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+<i class="lineannotation">normal processing of arguments ...</i>
+</pre></blockquote>
+</p>
+
+<p>
+The call to <em class="emphasis">getopts</em> in the <tt class="literal">while</tt>
+condition sets up the loop to accept the options <em class="emphasis">-a</em>,
+<em class="emphasis">-b</em>, and <em class="emphasis">-c</em>, and specifies
+that <em class="emphasis">-b</em> takes an argument. (We will explain the
+":" that starts the option string in a moment.) Each
+time the loop body is executed, it has the latest option
+available, without a dash (<tt class="literal">-</tt>), in the variable
+<tt class="literal">opt</tt>.
+</p>
+
+<p>
+If the user types an
+invalid option, <em class="emphasis">getopts</em> normally prints an
+error message (of the form
+<tt class="literal">cmd: -o: unknown option</tt>)
+and sets <tt class="literal">opt</tt> to <tt class="literal">?</tt>.
+<em class="emphasis">getopts</em> finishes processing all its options,
+and if an error was encountered, the shell exits.
+However -- now here's an obscure kludge -- if you begin the
+option letter string with a colon, <em class="emphasis">getopts</em> won't print the message,
+and shell will not exit.
+This allows you to handle error messages on your own.
+</p>
+
+<p>
+You may either
+supply the leading colon and provide your own error
+message in a case that handles <tt class="literal">?</tt> and exits manually, as above,
+or you may provide descriptive text within the call to <em class="emphasis">getopts</em>,
+and let the shell handle printing the error message.
+In the latter case, the shell will also automatically exit upon
+encountering an invalid option.
+</p>
+
+<p>
+We have modified the code in the <tt class="literal">case</tt> construct to
+reflect what <em class="emphasis">getopts</em> does.
+<a name="IXT-6-287764" />
+But notice that there are no more <em class="emphasis">shift</em> statements inside the
+<tt class="literal">while</tt> loop: <em class="emphasis">getopts</em> does not rely on
+<em class="emphasis">shift</em>s to
+keep track of where it is. It is unnecessary to shift arguments
+over until <em class="emphasis">getopts</em> is finished,
+i.e., until the <tt class="literal">while</tt>
+loop exits.
+</p>
+
+<p>
+<a name="IXT-6-287765" />
+If an option has an argument, <em class="emphasis">getopts</em> stores it in the variable
+<tt class="literal">OPTARG</tt>, which can be used in the code that processes the
+option.
+</p>
+
+<p>
+The one <em class="emphasis">shift</em> statement left is after the <tt class="literal">while</tt> loop.
+<a name="IXT-6-287766" />
+
+<em class="emphasis">getopts</em> stores in the variable <tt class="literal">OPTIND</tt> the number of
+the next argument to be processed; in this case, that's the number
+of the first (non-option) command-line argument. For example,
+if the command line were <tt class="literal">bob -ab pete</tt>, then <tt class="literal">$OPTIND</tt>
+would be "2".  If it were <tt class="literal">bob -a -b pete</tt>,
+then <tt class="literal">$OPTIND</tt> would be "3".
+<tt class="literal">OPTIND</tt> is reinitialized to 1 whenever you run a function,
+which allows you to use <em class="emphasis">getopts</em> within a function body.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1237" />
+<a name="korn2-IDXTERM-1238" />
+<a name="korn2-IDXTERM-1239" />
+
+The expression <tt class="literal">$(($OPTIND - 1))</tt> is an
+arithmetic expression (as we'll see later in this chapter) equal
+to <tt class="literal">$OPTIND</tt> minus 1. This value is used as the argument to
+<em class="emphasis">shift</em>. The result is that the correct number of arguments
+is shifted out of the way, leaving the "real" arguments
+as <tt class="literal">$1</tt>, <tt class="literal">$2</tt>, etc.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+Before we continue, now is a good time to summarize everything
+that <em class="emphasis">getopts</em> does (including some points
+not mentioned yet):
+</p>
+
+<ol>
+
+<li><p>
+If given the <em class="emphasis">-a</em> option and an argument,
+<em class="emphasis">getopts</em> uses that argument as the program name in any error messages,
+instead of the default, which is the name of the script.
+This is most useful if you are using <em class="emphasis">getopts</em> within
+a function, where <tt class="literal">$0</tt> is the name of the function.
+In that case, it's less confusing if the error message uses the script name
+instead of the function name.
+</p></li>
+
+<li><p>
+Its first (non-option) argument is a string containing all valid option letters.
+If an option requires an argument, a colon follows its letter in
+the string. An initial colon causes <em class="emphasis">getopts</em> not to print an
+error message when the user gives an invalid option.
+</p></li>
+
+<li><p>
+Its second argument is the name of a variable that holds
+each option letter (without any leading dash) as it is processed.
+Upon encountering an error, this variable will contain a literal <tt class="literal">?</tt>
+character.
+</p></li>
+
+<li><p>
+Following an option letter with a <tt class="literal">#</tt> instead
+of a colon indicates that the option takes a numeric argument.
+</p></li>
+
+<li><p>
+When an option takes an argument (the option letter is followed
+by either a color or a <tt class="literal">#</tt> symbol), appending a question
+mark indicates that the option's argument is optional (i.e., not
+required).
+</p></li>
+
+<li><p>
+If additional arguments are given on the <em class="emphasis">getopts</em>
+command line after the option string and variable name, they are used instead
+of <tt class="literal">"$@"</tt>.
+</p></li>
+
+<li><p>
+If an option takes an argument, the argument is stored in the variable
+<tt class="literal">OPTARG</tt>.
+</p></li>
+
+<li><p>
+The variable <tt class="literal">OPTIND</tt> contains a number equal to the next
+command-line argument to be processed. After <em class="emphasis">getopts</em> is done,
+it equals the number of the first "real" argument.
+</p></li>
+
+<li><p>
+If the first character in the option string is <tt class="literal">+</tt>
+(or the second character after a leading colon), then options may start
+with <tt class="literal">+</tt> as well.  In this case, the option variable
+will have a value that starts with <tt class="literal">+</tt>.
+</p></li>
+
+</ol>
+
+<p>
+<em class="emphasis">getopts</em> can do much, much more than described here.
+See <a href="appb_01.htm">Appendix B</a>, which provides the full story.
+</p>
+
+<p>
+<a name="IXT-6-287767" />
+
+The advantages of <em class="emphasis">getopts</em> are that it minimizes extra code
+necessary to process options and fully supports the standard command option
+syntax as specified by POSIX.
+<a name="IXTR3-265" />
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1242" />
+As a more concrete example, let's return to
+our C compiler front-end (<a href="ch04_05.htm#korn2-CHP-4-SIDEBAR-2">Task 4-2</a>). So far,
+we have given our script the ability to process C source files
+(ending in <tt class="literal">.c</tt>), assembly code files (<tt class="literal">.s</tt>), and object code
+files (<tt class="literal">.o</tt>). Here is the latest version of the script:
+</p>
+
+<p>
+<blockquote><pre class="code">
+objfiles=""
+for filename in "$@"; do
+    case $filename in
+        *.c )
+            objname=${filename%.c}.o
+            ccom "$filename" "$objname" ;;
+        *.s )
+            objname=${filename%.s}.o
+            as "$filename" "$objname" ;;
+        *.o )
+            objname=$filename ;;
+        *   )
+            print "error: $filename is not a source or object file."
+            exit 1 ;;
+    esac
+    objfiles+=" $objname"
+done
+ld $objfiles
+</pre></blockquote>
+</p>
+
+<p>
+Now we can give the script the ability to handle options. To know what
+options we'll need, we have to discuss further what compilers do.
+</p>
+
+<a name="korn2-CHP-6-SECT-1.3.1" /><div class="sect3">
+<h3 class="sect3">6.1.3.1. More about C compilers</h3>
+
+<p>
+C compilers on typical modern Unix systems tend to have a bewildering
+array of options.  To make life simple, we'll limit ourselves to the
+most widely-used ones.
+</p>
+
+<p>
+<a name="IXT-6-287768" />
+
+Here's what we'll implement.  All compilers provide the ability
+to eliminate the final linking step, i.e., the call to the linker
+<em class="emphasis">ld</em>. This is useful for compiling C code into
+object code files that will be linked later, and for taking advantage
+of the compiler's error checking separately before trying to link. The
+<em class="emphasis">-c</em> option (compile only) suppresses the link step,
+producing only the compiled object code files.
+</p>
+
+<p>
+<a name="IXT-6-287769" />
+
+C compilers are also capable of including lots of extra information in
+an object code file that can be used by a debugger (though it is ignored by
+the linker and the running program). If you don't know what a
+debugger is, see <a href="ch09_01.htm">Chapter 9</a>.
+The debugger needs lots of information
+about the original C code to be able to do its job; the
+option <em class="emphasis">-g</em> directs the compiler to include this information in
+its object-code output.
+</p>
+
+<p>
+<a name="IXT-6-287770" />
+If you aren't already familiar with Unix C compilers, you may have
+thought it strange when you saw in the last chapter that the linker
+puts its output (the executable program) in a file called <em class="emphasis">a.out</em>.
+This convention is a historical relic that no one ever bothered to
+change.
+<a name="IXT-6-287771" />
+
+Although it's certainly possible to change the executable's
+name with the <em class="emphasis">mv</em> command, the C compiler provides the option
+<em class="emphasis">-o</em> <em class="emphasis">filename</em>,
+which uses <em class="emphasis">filename</em> instead of <em class="emphasis">a.out</em>.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1247" />
+
+Another option we will support here has to do with
+<em class="emphasis">libraries</em>. A library is a collection of object
+code, <em class="emphasis">some</em> of which is to be included in the executable at
+link time. (This is in contrast to a precompiled object code file,
+<em class="emphasis">all</em> of which is linked in.) Each library includes
+a large amount of object code that supports a certain type of interface
+or activity; typical Unix systems have libraries for things like
+networking, math functions, and graphics.
+</p>
+
+<p>
+Libraries are extremely useful as building blocks that help programmers
+write complex programs without having to "reinvent the wheel" every time.
+The C compiler option <em class="emphasis">-l</em> <em class="emphasis">name</em>
+tells the linker to include whatever
+code is necessary from the library <em class="emphasis">name</em><a href="#FOOTNOTE-83">[83]</a>
+in the executable it builds.
+<a name="IXT-6-287772" />
+One particular library called <em class="emphasis">c</em>
+(the file <em class="emphasis">libc.a</em>) is always included. This is known
+as the C runtime library; it contains code for
+C's standard input and output capability, among other things.
+(While Unix compilers normally take library specifications <em class="emphasis">after</em>
+the list of object files, our front-end treats them just like any other
+option, meaning that they must be listed before the object files.)
+<a name="IXTR3-266" />
+<a name="IXTR3-267" />
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-83" /><p> [83]
+This is actually a file called <em class="emphasis">lib</em>name<em class="emphasis">.a</em>
+in a standard library directory such as <em class="emphasis">/lib</em>
+or <em class="emphasis">/usr/lib</em>.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-6-287773" />
+
+Finally, it is possible for a good C compiler to do certain things
+that make its output object code smaller and more efficient. Collectively,
+these things are called <em class="emphasis">optimization</em>. You can think of an
+<em class="emphasis">optimizer</em> as an extra step in the compilation process
+that looks back at the
+object-code output and changes it for the better. The option <em class="emphasis">-O</em>
+invokes the optimizer.
+</p>
+
+<p>
+<a href="ch06_01.htm#korn2-CHP-6-TABLE-1">Table 6-1</a>
+summarizes the options we will build into our C compiler
+front-end.
+<a name="IXT-6-287774" />
+
+</p>
+
+<a name="korn2-CHP-6-TABLE-1" /><h4 class="objtitle">Table 6-1. Popular C compiler options</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">-c</tt></td>
+<td>Produce object code only; do not invoke the linker</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-g</tt></td>
+<td>Include debugging information in object code files</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-l</tt> <em class="replaceable"><tt>lib</tt></em></td>
+<td>Include the library <em class="emphasis">lib</em> when linking</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-o</tt> <em class="replaceable"><tt>exefile</tt></em></td>
+<td><p>
+Produce the executable file <em class="emphasis">exefile</em> instead
+of the default <em class="emphasis">a.out</em>
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-O</tt></td>
+<td>Invoke the optimizer</td>
+</tr>
+
+
+</table><p>
+
+<p>
+You should also bear in mind this information about the options:
+</p>
+
+<ul>
+
+<li><p>
+The options <em class="emphasis">-o</em> and <em class="emphasis">-l</em> <em class="emphasis">lib</em>
+are merely passed on to the
+linker (<em class="emphasis">ld</em>), which processes them on its own.
+</p></li>
+
+<li><p>
+The <em class="emphasis">-l</em> <em class="emphasis">lib</em> option can be used multiple times to link in
+multiple libraries.
+</p></li>
+
+<li><p>
+On most systems, <em class="emphasis">ld</em> requires that library options
+come after object files on the command line.
+(This also violates the conventions we've been working so hard
+to adhere to.)
+In addition, the order of libraries on the command line matters.
+If a routine in <em class="emphasis">libA.a</em> references another
+routine from <em class="emphasis">libB.a</em>,
+then <em class="emphasis">libA.a</em> must appear first on the command
+line (<tt class="literal">-lA -lB</tt>).
+This implies that
+the C library (<em class="emphasis">libc.a</em>) has to be loaded last,
+since routines in other libraries almost always depend upon the
+standard routines in the C library.
+</p></li>
+
+<li><p>
+The <em class="emphasis">-g</em> option is passed to the <em class="emphasis">ccom</em> command
+(the program that does the actual C compilation).
+</p></li>
+
+
+<li><p>
+We will assume that the optimizer is a separate program called
+<em class="emphasis">optimize</em> that accepts an object file as argument and optimizes
+it "in place," i.e., without producing a separate output file.
+</p></li>
+
+</ul>
+
+<p>
+For our front-end, we've chosen to let the shell handle printing
+the usage message.
+Here is the code for the script <em class="emphasis">occ</em> that includes option processing:
+</p>
+
+<p>
+<blockquote><pre class="code">
+# initialize option-related variables
+do_link=true
+debug=""
+link_libs=""
+clib="-lc"
+exefile=""
+opt=false
+
+# process command-line options
+while getopts "cgl:[lib]o:[outfile]O files ..." option; do
+    case $option in
+        c )    do_link=false ;;
+        g )    debug="-g" ;;
+        l )    link_libs+=" -l $OPTARG" ;;
+        o )    exefile="-o $OPTARG" ;;
+        O )    opt=true ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+# process the input files
+objfiles=""
+for filename in "$@"; do
+    case $filename in
+        *.c )
+            objname=${filename%.c}.o
+            ccom $debug "$filename" "$objname"
+            if [[ $opt == true ]]; then
+                optimize "$objname"
+            fi ;;
+        *.s )
+            objname=${filename%.s}.o
+            as "$filename" "$objname" ;;
+            if [[ $opt == true ]]; then
+                optimize "$objname"
+            fi ;;
+        *.o )
+            objname=$filename ;;
+        *   )
+            print "error: $filename is not a source or object file."
+            exit 1 ;;
+    esac
+    objfiles+=" $objname"
+done
+
+if [[ $do_link == true ]]; then
+    ld $exefile $objfiles $link_libs $clib
+fi
+</pre></blockquote>
+</p>
+
+<p>
+Let's examine the option-processing part of this code.
+The first several lines initialize variables that we use later
+to store the status of each of the options. We use "true" and
+"false" for truth values for readability; they are just strings
+and otherwise have no special meaning. The initializations
+reflect these assumptions:
+</p>
+
+<ul>
+
+<li><p>
+We will want to link.
+</p></li>
+
+<li><p>
+We will not want the compiler to generate space-consuming
+debugger information.
+</p></li>
+
+<li><p>
+<a name="IXT-6-287775" />
+The only object-code library we will need is <em class="emphasis">c</em>,
+the standard C runtime library that is automatically linked in.
+</p></li>
+
+<li><p>
+The executable file that the linker creates will be the linker's
+default file, <em class="emphasis">a.out</em>.
+</p></li>
+
+<li><p>
+We will not want to invoke the optimizer.
+</p></li>
+
+</ul>
+
+<p>
+The <tt class="literal">while</tt>, <tt class="literal">getopts</tt>, and <tt class="literal">case</tt>
+constructs process the options in the
+same way as the previous example. Here is what the code that
+handles each option does:
+</p>
+
+<ul>
+
+<li><p>
+If the <em class="emphasis">-c</em> option is given,
+the <tt class="literal">do_link</tt> flag is set to "false,"
+which causes the <tt class="literal">if</tt>
+condition at the end of the script to be false, meaning that the
+linker will not run.
+</p></li>
+
+
+<li><p>
+If <em class="emphasis">-g</em> is given,
+the <tt class="literal">debug</tt> variable is set to "-g".
+This is passed on the command line to the compiler.
+</p></li>
+
+
+<li><p>
+Each <em class="emphasis">-l</em> <em class="emphasis">lib</em> that is given is appended to the variable
+<tt class="literal">link_libs</tt>,
+so that when the <tt class="literal">while</tt> loop exits, <tt class="literal">$link_libs</tt>
+is the entire string of <em class="emphasis">-l</em> options. This string is passed
+to the linker.
+</p></li>
+
+
+<li><p>
+If <em class="emphasis">-o</em> <em class="emphasis">file</em> is given,
+the <tt class="literal">exefile</tt> variable is
+set to "-o <em class="emphasis">file</em>".  This string is passed to the linker.
+</p></li>
+
+
+<li><p>
+If <em class="emphasis">-O</em> is specified, the <tt class="literal">opt</tt> flag is set to
+"true." This specification
+causes the conditional <tt class="literal">if [[ $opt == true ]]</tt> to be true,
+which means that the optimizer will run.
+</p></li>
+
+</ul>
+
+<p>
+The remainder of the code is a modification of the <tt class="literal">for</tt> loop
+we have already seen; the modifications are direct results of the
+above option processing and should be self-explanatory.
+<a name="IXTR3-268" />
+<a name="IXTR3-269" />
+
+</p>
+</div>
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.5. while and until</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.2. Numeric Variables and Arithmetic</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

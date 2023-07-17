@@ -1,0 +1,302 @@
+<html><head><title>Encoding "Binary" Files into ASCII (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.12. Encoding "Binary" Files into ASCII</h2>
+
+<p><a name="upt3-IDXTERM-3053" /> <a name="upt3-IDXTERM-3054" /> <a name="upt3-IDXTERM-3055" /> <a name="upt3-IDXTERM-3056" />
+<a name="upt3-IDXTERM-3057" />Email transport systems were
+originally designed to transmit characters with a seven-bit
+encoding -- like <span class="acronym">ASCII</span>. This meant they could
+send messages with plain English text but not
+"binary" text, such as program
+files or graphics (or non-English text!), that used all of an
+eight-bit byte. <b class="emphasis-bold">Usenet</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>),
+<a name="IXT-21-5715" />the newsgroup system,
+was transmitted like email and had its same seven-bit limitations.
+The solution -- which is still used today -- is to
+<em class="emphasis">encode</em> eight-bit text into characters that use
+only the seven low bits.
+</p>
+
+<p>The first popular solution on Unix-type systems was
+<em class="emphasis">uuencoding</em><a name="IXT-21-5716" />.
+That method is mostly obsolete now (though you'll
+still find it used sometimes); it's been replaced by
+<span class="acronym">MIME</span> encoding. The next two sections cover both of
+those -- though we recommend avoiding
+<em class="emphasis">uuencode</em> like the plague.
+</p>
+
+<a name="upt3-CHP-21-SECT-12.1" /><div class="sect2">
+<h3 class="sect2">21.12.1. uuencoding</h3>
+
+<p><a name="IXT-21-5717" /><a name="IXT-21-5718" /><a name="IXT-21-5719" />The
+<i class="command">uuencode</i><a name="IXT-21-5720" /> utility encodes eight-bit data into a
+seven-bit representation for sending via email or on Usenet. The
+recipient can use <i class="command">uudecode</i> to restore the original
+data. Unfortunately, there are several different and incompatible
+versions of these two utilities. Also, uuencoded data
+doesn't travel well through all mail
+gateways -- partly because uuencoding is sensitive to changes in
+whitespace (space and TAB) characters, and some gateways munge
+(change or corrupt) whitespace. So if you're
+encoding text for transmission, use <span class="acronym">MIME</span> instead
+of <em class="emphasis">uuencode</em> whenever you can.
+</p>
+
+<p>To create an <span class="acronym">ASCII</span> version of a binary file, use
+the <i class="command">uuencode</i> utility. For instance,
+<a name="IXT-21-5721" />a <b class="emphasis-bold">compressed file</b> (<a href="ch15_06.htm#upt3-CHP-15-SECT-6">Section 15.6</a>)
+is definitely eight-bit; it needs encoding.
+</p>
+
+<p>A uuencoded file (there's an example later in this
+article) starts with a <tt class="literal">begin</tt> line that gives the
+file's name; this name comes from the first argument
+you give the <i class="command">uuencode</i> utility as it encodes a
+file. To make <i class="command">uuencode</i> read a file directly, give
+the filename as the second argument. <i class="command">uuencode</i>
+writes the encoded file to its standard output. For example, to
+encode the file <em class="filename">emacs.tar.gz</em> from your
+<em class="filename">~/tarfiles</em> directory and store it in a file
+named <em class="filename">emacs.tar.gz.uu</em>:<a name="IXT-21-5722" />
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>uuencode emacs.tar.gz ~/tarfiles/emacs.tar.gz &gt; emacs.tar.gz.uu</b></tt></pre></blockquote>
+
+<p>You can then insert <em class="emphasis">emacs.tar.gz.uu</em> into a mail
+message and send it to someone. Of course, the
+<span class="acronym">ASCII</span>-only encoding takes more space than the
+original binary format. The encoded file will be about one-third
+larger.<a href="#FOOTNOTE-64">[64]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-64" /><p> [64]If so, why bother
+<i class="command">gzip</i>ping? Why not forget about both
+<i class="command">gzip</i> and <i class="command">uuencode</i>? Well, you
+can't. Remember that <i class="command">tar</i> files
+are binary files to start with, even if every file in the archive is
+an <span class="acronym">ASCII</span> text file. You'd need to
+<i class="command">uuencode</i> a file before mailing it, anyway, so
+you'd still pay the 33 percent size penalty that
+<i class="command">uuencode</i> incurs. Using <i class="command">gzip</i>
+minimizes the damage.</p> </blockquote>
+
+<p>If you'd rather, you can combine the steps above
+into one pipeline. Given only one command-line argument (the name of
+the file for the <tt class="literal">begin</tt> line),
+<i class="command">uuencode</i> will read its standard input. Instead of
+creating the <em class="filename">~/tarfiles/emacs.tar.gz</em>, making a
+second uuencoded file, then mailing that file, you can give
+<i class="command">tar</i> the
+"filename" so it writes to its
+standard output. That feeds the archive down the pipe:<a href="#FOOTNOTE-65">[65]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-65" /><p> [65]With GNU <i class="command">tar</i>, you can use <tt class="literal">tar czf -
+emacs | uuencode ...</tt>. That's not the point
+of this example, though. We're just showing how to
+uuencode some arbitrary data.</p> </blockquote>
+
+<p><tt class="literal">mail</tt> <a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar cf - emacs | gzip | uuencode emacs.tar.gz | \</b></tt>
+    <tt class="userinput"><b>mail -s "uuencoded emacs file" whoever@wherever.com</b></tt></pre></blockquote>
+
+<p>What happens when you receive a uuencoded, compressed
+<i class="command">tar</i> file? The same thing, in reverse.
+You'll get a mail message that looks something like
+this:
+</p>
+
+<blockquote><pre class="code">From: you@whichever.ie
+To: whoever@wherever.com
+Subject: uuencoded emacs file
+
+begin 644 emacs.tar.gz
+M+DQ0"D%L;"!O9B!T:&amp;5S92!P&lt;F]B;&amp;5M&lt;R!C86X@8F4@&lt;V]L=F5D(&amp;)Y(")L
+M:6YK&lt;RPB(&amp;$@;65C:&amp;%N:7-M('=H:6-H"F%L;&amp;]W&lt;R!A(&amp;9I;&amp;4@=&amp;\@:&amp;%V
+M92!T=V\@;W(@;6]R92!N86UE&lt;RX@(%5.25@@&lt;')O=FED97,@='=O(&amp;1I9F9E
+M&lt;F5N= IK:6YD&lt;R!O9B!L:6YK&lt;SH*+DQS($(*+DQI"EQF0DAA&lt;F0@;&amp;EN:W-&lt;
+   ...
+end</pre></blockquote>
+
+<p>So you save the message in a file, complete with headers.
+Let's say you call this file
+<em class="emphasis">mailstuff</em>. How do you get the original files
+back? Use the following sequence of commands:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>uudecode mailstuff</b></tt>
+% <tt class="userinput"><b>gunzip emacs.tar.gz</b></tt>
+% <tt class="userinput"><b>tar xf emacs.tar</b></tt></pre></blockquote>
+
+<p><a name="IXT-21-5723" /><a name="IXT-21-5724" />The <i class="command">uudecode</i> command
+searches through the file, skipping <tt class="literal">From</tt>:, etc.,
+until it sees its special <tt class="literal">begin</tt> line; it decodes
+the rest of the file (until the corresponding <tt class="literal">end</tt>
+line) and creates the file <em class="emphasis">emacs.tar.gz</em>. Then
+<i class="command">gunzip</i><a name="IXT-21-5725" /> recreates your original
+<i class="command">tar</i> file, and <em class="emphasis">tar xf</em> extracts
+the individual files from the archive.
+</p>
+
+<p>Again, though, you'll be better off using
+<span class="acronym">MIME</span> encoding whenever you can.
+</p>
+
+</div>
+<a name="upt3-CHP-21-SECT-12.2" /><div class="sect2">
+<h3 class="sect2">21.12.2. MIME Encoding</h3>
+
+<p><a name="upt3-IDXTERM-3069" /> <a name="upt3-IDXTERM-3070" />
+<a name="upt3-IDXTERM-3071" /> <a name="upt3-IDXTERM-3072" />When <span class="acronym">MIME</span>
+(<a name="IXT-21-5726" />Multipurpose
+Internet Mail Extensions) was designed in the early 1990s, one main
+goal was robust email communications. That meant coming up with a
+mail encoding scheme that would work on all platforms and get through
+all mail transmission paths.
+</p>
+
+<p>Some text is "mostly
+<span class="acronym">ASCII</span>": for instance,
+it's in a language like German or French that uses
+many <span class="acronym">ASCII</span> characters plus some eight-bit
+characters (characters with a octal value greater than 177). The
+<span class="acronym">MIME</span> standard allows that text to be minimally
+encoded in a way that it can be read fairly well without decoding:
+the <em class="emphasis">quoted-printable</em> encoding. Other text is
+full binary -- either not designed for humans to read, or so far
+from <span class="acronym">ASCII</span> that an <span class="acronym">ASCII</span>
+representation would be pointless. In that case,
+you'll want to use the
+<em class="emphasis">base64</em><a name="IXT-21-5727" /><a name="IXT-21-5728" /> encoding.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on:
+mimencode, mailto</p>
+
+<p>Most modern email programs automatically
+<span class="acronym">MIME</span>-encode files. Unfortunately, some
+aren't too smart about it. The
+<a name="IXT-21-5729" /><a name="IXT-21-5730" /><a name="IXT-21-5731" />Metamail
+utilities come with a utility called <i class="command">mimencode</i>
+(also named <i class="command">mmencode</i>) for encoding and decoding
+<span class="acronym">MIME</span> formats. Another Metamail utility,
+<i class="command">mailto</i>, encodes and sends <span class="acronym">MIME</span>
+messages directly -- but let's use
+<i class="command">mimencode</i>, partly because of the extra control it
+gives you.
+</p>
+
+<p>By default, <i class="command">mimencode</i> reads text from standard
+input, uses a base64 encoding, and writes the encoded text to
+standard output. If you add the <span class="option">-q</span> option,
+<i class="command">mimencode</i> uses quoted-printable encoding instead.
+</p>
+
+<p>Unlike uuencoded messages, which contain the filename in the message
+body, <span class="acronym">MIME</span>-encoded messages need information in
+the message header (the lines
+"To:",
+"From:", etc.).
+<a name="IXT-21-5732" /> <a name="IXT-21-5733" />The
+<i class="command">mail</i> utility (except an older version)
+doesn't let you make a message header. So
+let's do it directly: create a mail header with
+<b class="emphasis-bold">cat &gt;</b> (<a href="ch11_02.htm#upt3-CHP-11-SECT-2">Section 11.2</a>), create a mail body with
+<i class="command">mimencode</i>, and send it using a common system mail
+transfer agent,
+<i class="command">sendmail</i><a name="IXT-21-5734" />. (You could automate this with a
+script, of course, but we're just demonstrating.)
+The <span class="acronym">MIME</span> standard header formats are still
+evolving; we'll use a simple set of header fields
+that should do the job. Here's the setup.
+Let's do it first in three steps, using temporary
+files:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat &gt; header</b></tt>
+From: jpeek@oreilly.com
+To: jpeek@jpeek.com
+Subject: base64-encoded smallfile
+MIME-Version: 1.0
+Content-Type: application/octet-stream; name="smallfile.tar.gz"
+Content-Transfer-Encoding: base64
+
+CTRL-d
+$ <tt class="userinput"><b>tar cf - smallfile | gzip | mimencode &gt; body</b></tt>
+$ <tt class="userinput"><b>cat header body | /usr/lib/sendmail -t</b></tt></pre></blockquote>
+
+<p>The <tt class="literal">cat &gt;</tt> command lets me create the
+<em class="filename">header</em> file by typing it in at the terminal; I
+could have used a text editor instead. One important note:
+<em class="emphasis">the header must end with a blank line</em>. The
+second command creates the <em class="filename">body</em> file. The third
+command uses <i class="command">cat</i> to output the header, then the
+body; the message we've built is piped to
+<i class="command">sendmail</i>, whose <span class="option">-t</span> option tells
+it to read the addresses from the message header. You should get a
+message something like this:
+</p>
+
+<blockquote><pre class="code">Date: Wed, 22 Nov 2000 11:46:53 -0700
+Message-Id: &lt;200011221846.LAA18155@oreilly.com&gt;
+From: jpeek@oreilly.com
+To: jpeek@jpeek.com
+Subject: base64-encoded smallfile
+MIME-Version: 1.0
+Content-Type: application/octet-stream; name="smallfile.tar.gz"
+Content-Transfer-Encoding: base64
+
+H4sIACj6GzoAA+1Z21YbRxb1c39FWcvBMIMu3A0IBWxDzMTYDuBgrxU/lKSSVHF3V6erGiGv
+rPn22edU3wRIecrMPLgfEGpVV53LPvtcOktcW6au3dnZ2mrZcfTkb7g6G53O7vb2k06ns7G3
+06HPzt7uDn/Sra1N/L+32dnd29ve3tjD+s3Nna0novN3CHP/yqyTqRBPfk+U+rpknUnlf0Oc
+  ...</pre></blockquote>
+
+<p>Your mail client may be able to extract that file directly. You also
+can use <i class="command">mimencode</i> -<span class="option">u</span>. But
+<i class="command">mimencode</i> doesn't know about mail
+headers, so you should strip off the header first. The <b class="emphasis-bold">behead</b><a name="IXT-21-5735" /> (<a href="ch21_05.htm#upt3-CHP-21-SECT-5">Section 21.5</a>) script
+can do that. For instance, if you've saved the mail
+message in a file <em class="filename">msg</em>:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>behead msg | mimencode -u &gt; smallfile.tar.gz</b></tt></pre></blockquote>
+
+<p><b class="emphasis-bold">Extract</b> (<a href="ch39_02.htm#upt3-CHP-39-SECT-2">Section 39.2</a>) <em class="filename">smallfile.tar.gz</em> and
+compare it to your original <em class="filename">smallfile</em> (maybe
+with <i class="command">cmp</i>). They should be identical.
+</p>
+
+<p><a name="IXT-21-5736" /> <a name="IXT-21-5737" /><a name="IXT-21-5738" />If you're planning to
+do this often, it's important to understand how to
+form an email header and body properly. For more information, see
+relevant Internet <span class="acronym">RFC</span>s (standards documents) and
+O'Reilly's <em class="citetitle">Programming
+Internet Email</em> by David <a name="IXTR3-5805" /> <a name="IXTR3-5806" /> <a name="IXTR3-5807" /> <a name="IXTR3-5808" />Wood.<a name="IXTR3-5809" /> <a name="IXTR3-5810" /> <a name="IXTR3-5811" /> <a name="IXTR3-5812" /> <a name="IXTR3-5813" /> 
+</p>
+
+<p><em class="emphasis">--JP and ML</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.11. Hacking on Characters with tr</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.13. Text Conversion with dd</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

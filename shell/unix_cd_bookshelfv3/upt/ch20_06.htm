@@ -1,0 +1,150 @@
+<html><head><title>Change Many Files by Editing Just One (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch20_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">20.6. Change Many Files by Editing Just One</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: diff</p>
+
+<p>The <i class="command">diff</i><a name="upt3-IDXTERM-2832" /> <a name="upt3-IDXTERM-2833" /> command can make an editing script that
+you give to the <i class="command">ex</i> or <i class="command">ed</i>
+editors or the <b class="emphasis-bold">patch</b> (<a href="ch20_09.htm#upt3-CHP-20-SECT-9">Section 20.9</a>) program. They'll apply your
+same edits to other copies of the same file. This is handy if you
+have a lot of copies of a big file, spread around a network or on a
+lot of disks, and you want to make the same changes to all the
+</p>
+
+<p><img src="figs/bomb.gif" alt="Figure " width="24" /> <a href="ch20_08.htm#upt3-CHP-20-SECT-8">Section 20.8</a></p>
+
+<p>files. In fact, this is how the <a name="IXT-20-245" />Concurrent Version
+Control (CVS) system works. Instead of sending new copies of the
+whole file, just have <i class="command">diff</i> make a script -- and
+use that little script to update all the big files.
+</p>
+
+<p>Here's a demo. I'm going to modify
+a program called pqs.c. Then I'll use diff and
+<a name="IXT-20-246" />ed to apply the same changes to a
+copy of the file named remote-pqs.c (which might be at a remote
+computer):
+</p>
+
+
+<p><tt class="literal">&gt;&gt;</tt> <a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a></p>
+
+<blockquote><pre class="code">1% <tt class="userinput"><b>cp pqs.c remote-pqs.c</b></tt>
+2% <tt class="userinput"><b>cp pqs.c pqs.c.new</b></tt>
+3% <tt class="userinput"><b>vi pqs.c.new</b></tt>
+4% <tt class="userinput"><b>diff pqs.c pqs.c.new</b></tt>
+106,107c106
+&lt;       fprintf(stderr,
+&lt;           "%s: quitting: not able to %s your .pq_profile file.\n",
+--
+&gt;       fprintf(stderr, "%s: quitting: can't %s your .pq_profile file.\n",
+390a390
+&gt;               "WARNING:",
+5% <tt class="userinput"><b>diff -e pqs.c pqs.c.new &gt; edscr</b></tt>
+6% <tt class="userinput"><b>cat edscr</b></tt>
+390a
+                "WARNING:",
+.
+106,107c
+        fprintf(stderr, "%s: quitting: can't %s your .pq_profile file.\n",
+.
+7% <tt class="userinput"><b>echo w &gt;&gt; edscr</b></tt>
+8% <tt class="userinput"><b>ed remote-pqs.c &lt; edscr</b></tt>
+19176
+19184
+9% <tt class="userinput"><b>diff pqs.c.new remote-pqs.c</b></tt>
+10%</pre></blockquote>
+
+<p>At prompt <tt class="literal">1%</tt>, I make the simulated
+"remote" copy of the
+<em class="emphasis">pqs.c</em> file. At prompt <tt class="literal">2%</tt>, I
+make another copy of it; at prompt <tt class="literal">3%</tt>, I edit the
+copy. Prompt <tt class="literal">4%</tt> has a <i class="command">diff</i> that
+shows the changes I made. Then, at prompt <tt class="literal">5%</tt>, I
+run <b class="emphasis-bold">diff -e</b> (<a href="ch11_01.htm#upt3-CHP-11-SECT-1">Section 11.1</a>); I save the result in
+<em class="emphasis">edscr</em>, which I show at prompt
+<tt class="literal">6%</tt>.
+</p>
+
+<p>Prompt <tt class="literal">7%</tt> is important because <em class="emphasis">diff
+-e</em> doesn't add a <tt class="literal">w</tt>
+command to the script file. That tells <i class="command">ed</i> to write
+its changes to the file. I use <b class="emphasis-bold">echo
+w</b> (<a href="ch27_05.htm#upt3-CHP-27-SECT-5">Section 27.5</a>) to add the command.
+</p>
+
+<p>In prompt <tt class="literal">8%</tt>, I give <i class="command">ed</i> the
+name of the "remote" file to edit
+as a command-line argument and give it the script file on its
+standard input. At prompt <tt class="literal">9%</tt>, I do a
+<i class="command">diff</i> that shows the changes have been made and the
+two versions are the same.
+</p>
+
+<p>If you find yourself needing to keep multiple copies of the same set
+of files in sync with each other, you might want to consider using
+CVS. Not only is it a client/server system ready for network use, it
+is also designed for multiple users. Every check-in is logged, and
+updating a whole set of files (called
+"projects") can be done with the
+command <tt class="literal">cvs update</tt>. This can be a great timesaver
+for webmasters maintaining multiple web servers with static (or even
+dynamic) content.
+</p>
+
+<p><a name="IXT-20-247" /><a name="IXT-20-248" />Another great tool for
+synchronizing many filesystems is <i class="command">rsync</i>. This
+program can be used to update a remote filesystem, say a web
+directory, with more current version of existing files or add new
+ones. The synchronization can go both ways. <i class="command">rsync</i>
+even has built-in support for SSH. Here's an example
+of using <i class="command">rsync</i> to publish new web documents to a
+live server:
+</p>
+
+<blockquote><pre class="code">$ rsync -urz -e /<em class="replaceable"><tt>path</em>/<em class="replaceable">to</em>/ssh <em class="replaceable">local_dir hostname</em>:/<em class="replaceable">path</em>/<em class="replaceable">to</em>/<em class="replaceable">web</em>/<em class="replaceable">docs</tt></em></pre></blockquote>
+
+<p>The <tt class="literal">-u</tt> flag tells rsync to update the remote
+filesystem with newer files on the local system. The
+<tt class="literal">-r</tt> flag tells <i class="command">rsync</i> to recurse
+into subdirectories. The <tt class="literal">-z</tt> allows the files to be
+gzipped during transfer (good for slow modem links). While it can be
+a client/server system, <i class="command">rsync</i> can work just fine
+as a peer-to-peer system where it will need to run some commands on
+the remote machine. The <tt class="literal">-e</tt> flag provides the path
+to the
+<i class="command">rsh</i><a name="IXT-20-249" /><a name="IXT-20-250" /> <a name="IXT-20-251" /> or <i class="command">ssh</i> program that
+you to have rsync use. The next argument is the directory on the
+local machine <i class="command">rsync</i> is to copy, and the last
+argument is the hostname and target directory to be updated.
+<i class="command">rsync</i> is a very handy tool, and the manpage
+illustrates its flexibility.<a name="IXTR3-362" /> <a name="IXTR3-363" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch20_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">20.5. Running Editing Scripts Within vi</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">20.7. ed/ex Batch Edits: A Typical Example</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,127 @@
+<html><head><title>More Friendly comm Output (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">11.9. More Friendly comm Output</h2>
+
+<p><a href="ch11_08.htm#upt3-CHP-11-SECT-8">Section 11.8</a> didn't show one
+of my least-favorite <i class="command">comm</i> features. The default
+output (with text in "columns")
+confuses me if the lines of output have much text (especially text
+with spaces). For example, if I'm looking at two
+<b class="emphasis-bold">who</b> (<a href="ch02_08.htm#upt3-CHP-2-SECT-8">Section 2.8</a>)
+listings to compare who was logged on at particular times, the
+columns in the <i class="command">who</i> output are jumbled:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>comm who1 who2</b></tt>
+                root     tty1     Oct 31 03:13
+                jpeek    tty2     Oct 31 03:15
+jpeek    pts/0    Oct 31 03:19
+                jpeek    pts/1    Oct 31 03:19
+                jpeek    pts/2    Oct 31 03:19
+ally     pts/4    Oct 31 03:19
+                jpeek    pts/3    Oct 31 03:19
+        xena     pts/5    Nov  3 08:41</pre></blockquote>
+
+<p>The <i class="command">commer</i> script (see later) filters the
+<i class="command">comm</i> output through <i class="command">sed</i>. It
+converts <i class="command">comm</i>'s indentation
+characters (one TAB for lines in "column
+2" and two TABs for lines in
+"column 3") into labels at the
+start of each output line. The default output looks like this:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>commer who1 who2</b></tt>
+BOTH&gt;root     tty1     Oct 31 03:13
+BOTH&gt;jpeek    tty2     Oct 31 03:15
+ TWO&gt;jpeek    pts/0    Oct 31 03:19
+BOTH&gt;jpeek    pts/1    Oct 31 03:19
+BOTH&gt;jpeek    pts/2    Oct 31 03:19
+ TWO&gt;ally     pts/4    Oct 31 03:19
+BOTH&gt;jpeek    pts/3    Oct 31 03:19
+ ONE&gt;xena     pts/5    Nov  3 08:41</pre></blockquote>
+
+<p>With the <span class="option">-i</span> option, the script uses both labels and
+columns:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>commer -i who1 who2</b></tt>
+BOTH&gt;           root     tty1     Oct 31 03:13
+BOTH&gt;           jpeek    tty2     Oct 31 03:15
+ TWO&gt;jpeek    pts/0    Oct 31 03:19
+BOTH&gt;           jpeek    pts/1    Oct 31 03:19
+BOTH&gt;           jpeek    pts/2    Oct 31 03:19
+ TWO&gt;ally     pts/4    Oct 31 03:19
+BOTH&gt;           jpeek    pts/3    Oct 31 03:19
+ ONE&gt;   xena     pts/5    Nov  3 08:41</pre></blockquote>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: commer</p>
+
+<p>Here's the script. The <i class="command">sed</i>
+substitute (<tt class="literal">s</tt>) commands have one or two TABs
+between the first pair of slashes. Note that the
+<i class="command">sed</i> script is inside double quotes
+(<tt class="literal">"</tt>), so the shell can substitute the value of
+<tt class="literal">$indent</tt> with an ampersand
+(<tt class="literal">&amp;</tt>) into the <i class="command">sed</i> script if
+the <span class="option">-i</span> option was used:
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+# commer - label columns in "comm" output
+# Usage: commer [-i] file1 file2
+#   -i option indents output lines into columns as "comm" does
+#
+# Note that script WILL FAIL if any input lines start with a TAB.
+
+case "$1" in
+-i) indent='&amp;'; shift ;;
+-*|"") echo "Usage: `basename $0` [-i] file1 file2" 1&gt;&amp;2; exit 1 ;;
+esac
+
+# In "comm" output, column 1 (lines in file 1) has no leading TAB.
+# Column 2 (lines in file 2) has one leading TAB.
+# Column 3 (lines in both files) has two leading TABs.
+# Search for these tabs and use them to label lines.
+# (You could replace ONE and TWO with the filenames $1 and $2)
+comm "$1" "$2" |
+sed "{
+/^              / {s//BOTH&gt;$indent/; b}
+/^      / {s// ONE&gt;$indent/; b}
+s/^/ TWO&gt;/
+}"</pre></blockquote>
+
+<a name="ch11-6-fm2xml" /><blockquote><b>NOTE:</b> 
+The <i class="command">commer</i> script will be fooled by lines that
+already have TAB characters at the start. If this might be a problem,
+you can modify the script to search the files (<tt class="literal">grep "^TAB"
+&gt;/dev/null</tt>) before starting <i class="command">comm</i>.
+</p>
+</blockquote>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">11.8. Comparing Two Files with comm</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11.10. make Isn't Just for Programmers!</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

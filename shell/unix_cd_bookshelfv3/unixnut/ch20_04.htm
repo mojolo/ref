@@ -1,0 +1,116 @@
+<html><head><title>Macros (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch20_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">20.4. Macros</h2><p>
+<a name="IXT-20-123608" />
+<a name="unut-ch-20-ix-macros-for-make-utility" />This section summarizes internal macros, modifiers, 
+string substitution, and special macros.</p>
+
+<a name="unut-ch-20-sect-4.1" /><div class="sect2"><h3 class="sect2">20.4.1. Internal Macros</h3>
+<table border="1" cellpadding="3">
+
+<tr><td><tt class="literal">$?</tt></td><td><p>The list of prerequisites that have been changed more recently than the 
+current target.  Can be used only in normal description file 
+entries--not suffix rules.</p>
+</td></tr>
+<tr><td><tt class="literal">$@</tt></td><td><p>The name of the current target, except in description file entries 
+for making libraries, where it becomes the library name.  Can be used
+both in normal description file entries and in suffix rules.</p>
+</td></tr>
+<tr><td><tt class="literal">$$@</tt></td><td><p>The name of the current target.  Can be used only to the right of the 
+colon in dependency lines.
+(May not work on all versions of <tt class="literal">make</tt>.)</p>
+</td></tr>
+<tr><td><tt class="literal">$&lt;</tt></td><td><p>The name of the current prerequisite that has been modified more recently
+than the current target.  
+Can be used only in suffix rules and in the <tt class="literal">.DEFAULT:</tt>  entry.</p>
+</td></tr>
+<tr><td><tt class="literal">$*</tt></td><td><p>The name--without the suffix--of the current prerequisite that has
+been modified more recently than the current target.  Can be used only in
+suffix rules.</p>
+</td></tr>
+<tr><td><tt class="literal">$%</tt></td><td><p>The name of the corresponding <tt class="literal">.o</tt> file when the current target is a 
+library module.  Can be used both in normal description file entries
+and in suffix rules.</p>
+</td></tr>
+</table><p>
+</div>
+
+<a name="unut-ch-20-sect-4.2" /><div class="sect2"><h3 class="sect2">20.4.2. Macro Modifiers</h3><p>Macro modifiers are not available in all variants of <tt class="literal">make</tt>.</p>
+<dl><dt><tt class="literal">D</tt></dt><dd>The directory portion of any internal macro name except <tt class="literal">$?</tt>.  
+Valid uses are: </p>
+
+
+<blockquote><pre class="code">$(*D)   $$(@D)
+$(&lt;D)   $(%D)
+$(@D)</pre></blockquote>
+</dd>
+<dt><tt class="literal">F</tt></dt><dd>The file portion of any internal macro name except <tt class="literal">$?</tt>.
+Valid uses are:</p>
+
+
+<blockquote><pre class="code">$(*F)   $$(@F)
+$(&lt;F)   $(%F)
+$(@F)</pre></blockquote>
+</dd>
+</dl>
+</div>
+
+<a name="unut-ch-20-sect-4.3" /><div class="sect2"><h3 class="sect2">20.4.3. Macro String Substitution</h3><p>String substitution is not available in all variants of <tt class="literal">make</tt>.</p>
+<dl><dt><tt class="literal">$(</tt><tt><em class="replaceable">macro</em></tt><tt class="literal">:</tt><tt><em class="replaceable">s1</em></tt><tt class="literal">=</tt><tt><em class="replaceable">s2</em></tt><tt class="literal">)</tt></dt><dd>Evaluates to the current definition
+of <tt class="literal">$(</tt><em class="emphasis">macro</em></tt><tt class="literal">)</tt>,
+after substituting the string <em class="emphasis">s2</em></tt> for every occurrence
+of <em class="emphasis">s1</em></tt>
+that occurs either immediately before a blank or tab, or at the end of
+the macro definition.</p>
+</dd>
+</dl>
+</div>
+
+<a name="unut-ch-20-sect-4.4" /><div class="sect2"><h3 class="sect2">20.4.4. Macros with Special Handling</h3>
+<table border="1" cellpadding="3">
+
+<tr><td><tt class="literal">MAKEFLAGS</tt></td><td><p>Contains the flags inherited in the environment variable
+<a name="IXT-20-123609" />
+MAKEFLAGS, plus any command-line options.
+Used to pass the flags to subsequent invocations of <tt class="literal">make</tt>,
+usually via command lines in a <tt class="literal">makefile</tt> that
+contain <tt class="literal">$(MAKE)</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">SHELL</tt></td><td><p>Sets the shell that interprets commands.
+<a name="IXT-20-123610" />
+If this macro isn't defined in the
+description file, the value depends on your system.
+Some Unix implementations use the shell from the user's environment (as with
+other macros).  Other implementations (including SVR4) set the default 
+<tt class="literal">SHELL</tt> to <tt class="literal">/bin/sh</tt>.</p>
+</td></tr>
+<tr><td><tt class="literal">VPATH</tt></td><td><p>(Not available in all variants of <tt class="literal">make</tt>.)
+<a name="IXT-20-123611" />
+Specifies a list of directories to search for prerequisites
+when not found in the current directory.</p>
+</td></tr>
+</table><p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch20_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch20_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">20.3. Description File Lines</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">20.5. Special Target Names</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

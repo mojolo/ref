@@ -1,0 +1,156 @@
+<html><head><title>Setup Files Aren't Read When You Want? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.8. Setup Files Aren't Read When You Want?</h2>
+
+<p><a name="IXT-3-7094" /><a name="IXT-3-7095" /><a name="IXT-3-7096" />The C shell reads its
+<em class="emphasis">.cshrc</em>, <em class="emphasis">.login</em>, and
+<em class="emphasis">.logout</em> setup files <b class="emphasis-bold">at
+particular times</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>). Only
+<b class="emphasis-bold">"login" C
+shells</b> (<a href="ch03_04.htm#upt3-CHP-3-SECT-4">Section 3.4</a>) will read the
+<em class="emphasis">.login</em> and <em class="emphasis">.logout</em> files.
+Back when <i class="command">csh</i> was designed, this restriction
+worked fine. The shell that started as you logged in was flagged as a
+login shell, and it read all three files. You started other shells
+(shell escapes, shell scripts, etc.) from that login shell, and they
+would read only <em class="emphasis">.cshrc</em>. The same can be said of
+other shell variants, such as <i class="command">tcsh</i>, though they
+may have multiple startup files -- the problem of distinguishing
+between login and nonlogin shell startup is the same.
+</p>
+
+<p>Now, Unix has <a name="IXT-3-7097" />interactive shells started by window
+systems (like <b class="emphasis-bold">xterm</b> (<a href="ch24_20.htm#upt3-CHP-24-SECT-20">Section 24.20</a>)), <a name="IXT-3-7098" /><a name="IXT-3-7099" />remote shells (like
+<b class="emphasis-bold">rsh</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>)
+or <i class="command">ssh</i>), and other shells that might need some
+things set from the <em class="emphasis">.login</em> or
+<em class="emphasis">.logout</em> files. Depending on how these shells are
+invoked, these might not be login shells -- so they might read
+only <em class="emphasis">.cshrc</em> (or <em class="filename">.tcshrc</em>,
+etc.). How can you handle that? Putting <a name="IXT-3-7100" /><a name="IXT-3-7101" />all your setup commands in
+<em class="emphasis">.cshrc</em> isn't a good idea
+because all <b class="emphasis-bold">subshells</b> (<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) read it . . . you definitely
+don't want to run <b class="emphasis-bold">terminal-setting commands like</b> <b class="emphasis-bold">tset</b> (<a href="ch05_03.htm#upt3-CHP-5-SECT-3">Section 5.3</a>) during
+shell escapes!
+</p>
+
+<p>Most other shells have the same problem. Some, like
+<i class="command">zsh</i> and <i class="command">bash</i>, have several
+setup files that are read at different times -- and probably can
+be set up to do what you want. For other shells, though,
+you'll probably need to do some tweaking.
+</p>
+
+<p>To handle problems at login time, put almost all of your setup
+commands in a file that's read by all instances of
+your shell, login or nonlogin. (In the C shell, use
+<em class="emphasis">.cshrc</em> instead of <em class="emphasis">.login</em>.)
+After the "login-only" commands
+have been read from the setup file, set the
+<em class="emphasis">ENV_SET</em> <b class="emphasis-bold">environment
+variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) as a flag.
+(There's nothing special about this name. You can
+pick any name you want.) You can then use this variable to test
+whether the login-only commands have already been run and skip
+running them again in nonlogin shells.
+</p>
+
+<p>Because the environment variables from a parent process are passed to
+any child processes it starts, the shell will copy the
+"flag" variable to subshells, and
+the <em class="emphasis">.cshrc</em> can test for it. If the variable
+exists, the login-only commands are skipped. That'll
+keep the commands from being read again in a child shell.
+</p>
+
+<p>Here are parts of a <em class="emphasis">.cshrc</em> that show the idea:</p>
+
+<blockquote><pre class="code">...<i class="lineannotation">Normal .cshrc stuff</i>...
+if ($?prompt &amp;&amp; ! $?ENV_SET) then
+    # Do commands that used to go in .login file:
+    setenv EDITOR /usr/ucb/vi
+    tset
+        ...
+    setenv ENV_SET done
+endif</pre></blockquote>
+
+<p>You might put a comment in the file you've
+bypassed -- the <i class="command">csh</i> <em class="filename">.login</em>
+file, the <i class="command">ksh</i> <em class="filename">.profile</em> file,
+etc. -- to explain what you've done.
+</p>
+
+<p>The file that runs when you log out (in the C shell,
+that's
+<em class="filename">.logout</em><a name="IXT-3-7102" />) should probably be read only
+once -- when your last
+("top-level") shell exits. If your
+top-level shell isn't a login shell, you can make it
+read the logout file anyway. Here's how: first,
+along with the previous fixes to your
+<em class="emphasis">.cshrc</em>-type file, add an alias that will read
+your logout file when you use the
+<i class="command">exit</i><a name="IXT-3-7103" /><a name="IXT-3-7104" /> command. Also set
+your shell to <b class="emphasis-bold">force you to use the</b>
+<b class="emphasis-bold">exit</b> <b class="emphasis-bold">command</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>) to log
+out -- in <i class="command">csh</i>, for example, use <em class="emphasis">set
+ignoreeof</em>. <a name="IXT-3-7105" />Here's what the chunk
+of your <em class="filename">.bashrc</em><a name="IXT-3-7106" /> will look like:
+</p>
+
+<p><tt class="literal">case</tt> <a href="ch35_10.htm#upt3-CHP-35-SECT-10">Section
+35.10</a>, <tt class="literal">/</tt> <a href="ch36_25.htm#upt3-CHP-36-SECT-25">Section 36.25</a>,
+<tt class="literal">function</tt> <a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>,
+<tt class="literal">.</tt> <a href="ch35_29.htm#upt3-CHP-35-SECT-29">Section 35.29</a></p>
+
+<blockquote><pre class="code">case "$-/${ENV_SET:-no}" in
+*i*/no)
+    # This is an interactive shell / $ENV_SET was not set earlier.
+    # Make all top-level interactive shells read .bash_logout file:
+    set -o ignoreeof
+    function exit {
+        . ~/.bash_logout
+        builtin exit
+    }
+    ;;
+esac</pre></blockquote>
+
+<p>The <tt class="literal">builtin exit</tt> (<a href="ch27_09.htm#upt3-CHP-27-SECT-9">Section 27.9</a>)
+prevents a loop; it makes sure <i class="command">bash</i> uses its
+internal <i class="command">exit</i> command instead of the
+<em class="emphasis">exit</em> function you've just
+defined. In the <a name="IXT-3-7107" />C shell, use <tt class="literal">""exit</tt>
+(<a href="ch27_10.htm#upt3-CHP-27-SECT-10">Section 27.10</a>) instead. This isn't
+needed on all shells though. If you can't tell from
+your manual page, <b class="emphasis-bold">test with another
+shell</b> (<a href="ch03_06.htm#upt3-CHP-3-SECT-6">Section 3.6</a>) and be ready to
+<b class="emphasis-bold">kill</b> (<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>)
+a looping shell.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.7. Use Absolute Pathnames in Shell Setup Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.9. Gotchas in set prompt Test</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

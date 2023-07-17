@@ -1,0 +1,120 @@
+<html><head><title>Looking for Closure (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch16_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch16_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">16.8. Looking for Closure</h2>
+
+<p><a name="IXT-16-1662" /><a name="IXT-16-1663" /><a name="IXT-16-1664" /><a name="IXT-16-1665" />A common problem in text
+processing is making sure that items that need to occur in pairs
+actually do so.
+</p>
+
+<p>Most Unix text editors include support for making sure that elements
+of C syntax such as parentheses and braces are closed properly. Some
+editors, such as <b class="emphasis-bold">Emacs</b> (<a href="ch19_01.htm#upt3-CHP-19-SECT-1">Section 19.1</a>) and <b class="emphasis-bold">vim</b> (<a href="ch17_01.htm#upt3-CHP-17-SECT-1">Section 17.1</a>), also support syntax coloring and
+checking for text documents -- <span class="acronym">HTML</span> and
+<span class="acronym">SGML</span>, for instance. There's much
+less support in command-line utilities for making sure that textual
+documents have the proper structure. For example,
+<span class="acronym">HTML</span> documents that start a list with
+<tt class="literal">&lt;UL&gt;</tt> need a closing
+<tt class="literal">&lt;/UL&gt;</tt>.
+</p>
+
+<p>Unix provides a number of tools that might help you to tackle this
+problem. Here's a
+<i class="command">gawk</i><a name="IXT-16-1666" /> script written by Dale Dougherty that
+makes sure <tt class="literal">&lt;UL&gt;</tt> and
+<tt class="literal">&lt;/UL&gt;</tt> tags macros come in pairs:
+<a name="IXT-16-1667" /><a name="IXT-16-1668" />
+</p>
+
+<p><tt class="literal">gawk</tt> <a href="ch20_11.htm#upt3-CHP-20-SECT-11">Section 20.11</a></p>
+
+<blockquote><pre class="code">#! /usr/local/bin/gawk -f
+BEGIN {
+    IGNORECASE = 1
+    inList = 0
+    LSlineno = 0
+    LElineno = 0
+    prevFile = ""
+}
+# if more than one file, check for unclosed list in first file
+FILENAME != prevFile {
+    if (inList)
+     printf ("%s: found &lt;UL&gt; at line %d without &lt;/UL&gt; before end of file\n",
+            prevFile, LSlineno)
+    inList = 0
+    prevFile = FILENAME
+}
+# match &lt;UL&gt; and see if we are in list
+/^&lt;UL&gt;/ {
+    if (inList) {
+        printf("%s: nested list starts: line %d and %d\n",
+            FILENAME, LSlineno, FNR)
+    }
+    inList = 1
+    LSlineno = FNR
+}
+/^&lt;\/UL&gt;/ {
+    if (! inList)
+        printf("%s: too many list ends: line %d and %d\n",
+            FILENAME, LElineno, FNR)
+    else
+        inList = 0
+    LElineno = FNR
+}
+# this catches end of input
+END {
+    if (inList)
+        printf ("%s: found &lt;UL&gt; at line %d without &lt;/UL&gt; before end of file\n",
+            FILENAME, LSlineno)
+}</pre></blockquote>
+
+<p>You can adapt this type of script for any place you need to check for
+a start and finish to an item. Note, though, that not all systems
+have <i class="command">gawk</i> preinstalled. You'll
+want to look for an installation of the utility for your system to
+use this script.
+</p>
+
+<p>A more complete <a name="IXT-16-1669" />syntax-checking program could be written
+with the help of a <a name="IXT-16-1670" /> <a name="IXT-16-1671" />lexical analyzer like
+<i class="command">lex</i>. <i class="command">lex</i> is normally used by
+experienced C programmers, but it can be used profitably by someone
+who has mastered <i class="command">awk</i><a name="IXT-16-1672" />
+and is just beginning with C, since it combines an
+<i class="command">awk</i>-like pattern-matching process using
+regular-expression syntax with actions written in the more powerful
+and flexible C language. (See O'Reilly &amp;
+Associates' <em class="emphasis">lex &amp; yacc</em>.)
+</p>
+
+<p>Of course, this kind of problem could be very easily tackled with the
+information in <a href="ch41_01.htm">Chapter 41</a>.
+</p>
+
+<p><em class="emphasis">--TOR and SP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch16_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch16_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">16.7. Find a a Doubled Word</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">16.9. Just the Words, Please</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

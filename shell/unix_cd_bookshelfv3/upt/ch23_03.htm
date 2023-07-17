@@ -1,0 +1,164 @@
+<html><head><title>Using jobs Effectively (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch23_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">23.3. Using jobs Effectively</h2>
+
+<p><a name="upt3-IDXTERM-3266" />So far, you've seen
+how to get processes into and out of the background.
+That's a pretty good start, but what happens when
+you put more than one process in the background? How do you remember
+what's in the background at all? Fortunately the
+<i class="command">jobs</i><a name="IXT-23-5540" /> command, built into Bourne and C shell
+derviates, lists all your current session's
+background jobs. Let's see this in action. In the
+example below, I started several web browsers:
+</p>
+
+<blockquote><pre class="code">[jjohn@marian jjohn]$ jobs
+[1]   Running                 netscape &amp;
+[2]-  Stopped                 lynx
+[3]+  Stopped                 lynx http://aliensaliensaliens.com</pre></blockquote>
+
+<p>Every background process is assigned a <a name="IXT-23-5541" />job
+number by your shell. This number is unique only for your current
+session. It isn't globally unique like a process ID.
+In fact, one job number is assigned to processes that are pipelined
+together. For example, the following line gets only one job number.
+</p>
+
+<blockquote><pre class="code">$ uniq bigfile.dat | sort | wc -l &amp;</pre></blockquote>
+
+<p>In the <i class="command">jobs</i> example above, the first process was
+started with an ampersand, so it was immediately backgrounded. Job 2
+started as a typical interactive session, but I stopped it with
+CTRL-z. A <a name="IXT-23-5542" /><a name="IXT-23-5543" /><a name="IXT-23-5544" />stopped process is not the same as
+a terminated process -- it simply doesn't receive
+any CPU time. It's like a caveman frozen in ice,
+waiting to be thawed out and come back to life. If you find that a
+job is becoming a resource hog, consider using CTRL-z to suspend the
+process until you figure out why it's being so
+gluttonous. The next job listed is a new instance of
+<i class="command">lynx</i>, which is also put into the background so
+that the <i class="command">jobs</i> command could be run for this
+listing. The plus sign next to the job number indicates that that job
+will be in the foreground when <i class="command">fg</i> is typed. That
+job is known as the <em class="emphasis">current
+job</em><a name="IXT-23-5545" /><a name="IXT-23-5546" />. The minus sign indicates the
+<em class="emphasis">previous job</em><a name="IXT-23-5547" /><a name="IXT-23-5548" />, the job that used to be the current job.
+</p>
+
+<p>Job numbers can be supplied to
+<i class="command">fg</i><a name="IXT-23-5549" />. In the given example, the first version
+of <i class="command">lynx</i> can be revived using <i class="command">fg
+%2</i>. You can also kill jobs with the job number. Why have
+two versions of <i class="command">lynx</i> running? The first one can be
+terminated with <i class="command">kill %2</i>. You can also supply
+signal numbers, as you normally would to <i class="command">kill</i>. By
+default <i class="command">kill</i> sends the <a name="IXT-23-5550" /><a name="IXT-23-5551" />TERM (15 on Linux) signal, which
+will stop most processes.
+</p>
+
+<p>When a backgrounded job is terminated or completes, you will be
+notified before the next command prompt is printed. For example:
+</p>
+
+<blockquote><pre class="code">[jjohn@marian jjohn]$ kill -9 %3
+[jjohn@marian jjohn]$
+[3]+  Killed                  xcalc
+[jjohn@marian jjohn]$</pre></blockquote>
+
+<p><a name="IXT-23-5552" />Just as before, the job number is
+printed with a plus sign, indicating that it was the current job.
+Because this process exited abnormally (it was sent a KILL signal),
+the reason is printed next, along with the line that was executed.
+For a process that runs to completion, the output looks slightly
+different:
+</p>
+
+<blockquote><pre class="code">[jjohn@marian jjohn]$ ls | uniq | sort | wc -l &amp;
+     99
+[2] 10501
+[2]+  Done                    ls --color=tty | uniq | sort | wc -l
+[jjohn@marian jjohn]$</pre></blockquote>
+
+<p>Here, the command was put in the background immediately. The shell
+then reported the job number and process ID. Because the command
+completed very quickly, the shell reports that job 2 exited normally
+even before the next command prompt could be printed.
+</p>
+
+<p>As useful as job numbers are, sometimes you don't
+want to bother running <i class="command">jobs</i>, searching for the
+desired command, finding its job number, and then running <i class="command">fg
+%num</i>. Luckily, the job control mechanism uses a simple
+<a name="IXT-23-5553" />pattern-matching scheme so
+that you can supply only part of the command or job you wish to
+foreground or kill. Instead of prefixing the job number with simply
+<tt class="literal">%</tt>, use <tt class="literal">%?</tt><a name="IXT-23-5554" />. The string you supply must be enough
+to disambiguate it from all other jobs. Take this job listing, for
+example:
+</p>
+
+<blockquote><pre class="code">[1]   Running                 netscape &amp;
+[2]   Running                 xcalc &amp;
+[3]-  Stopped                 lynx
+[4]+  Stopped                 lynx http://aliensaliensaliens.com</pre></blockquote>
+
+<p>I can put the <i class="command">xcalc</i> program in the foreground with
+<tt class="literal">fg %?xc</tt>, because <tt class="literal">xc</tt>
+doesn't appear in the other jobs. But I
+can't refer to either of the <i class="command">lynx</i>
+processes with any substring of
+"lynx." If I do, I get something
+like the following.
+</p>
+
+<blockquote><pre class="code">[jjohn@marian jjohn]$ fg %?ly
+bash: fg: ambigious job spec: ly</pre></blockquote>
+
+<p>Instead, I could refer to the second version with <tt class="literal">fg
+%?aliens</tt>. In order to get at the first
+<i class="command">lynx</i> job, its job number must be used explicitly.
+</p>
+
+<p>You may find that your shell attempts to interpret
+<tt class="literal">%?</tt> as a filename wildcard. This is increasingly
+rare, but you may need to escape the <tt class="literal">?</tt>, so that
+you can foreground a process. That can be done like this: <tt class="literal">fg
+%\?</tt><em class="replaceable"><tt>string</tt></em>.
+</p>
+
+<p><a name="IXT-23-5555" />One final
+shortcut to job control: you can put jobs in the foreground simply by
+referring to the job number. For instance, typing
+<tt class="literal">%2</tt> alone at the command prompt will put job number
+2 in the foreground. You can even put jobs into the background with
+this notation: <tt class="literal">%2 &amp;</tt>. This seems a little
+terse, even for Unix, but it will save you some typing.<a name="IXTR3-5641" />
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch23_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">23.2. Job Control Basics</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">23.4. Some Gotchas with Job Control</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

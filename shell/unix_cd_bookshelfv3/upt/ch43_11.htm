@@ -1,0 +1,171 @@
+<html><head><title>Named Pipes: FIFOs (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch43_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch43_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">43.11. Named Pipes: FIFOs</h2>
+
+<p><a name="IXT-43-2312" /><a name="IXT-43-2313" /><a name="IXT-43-2314" />When
+<a name="IXT-43-2315" />you type a pipe
+symbol (<tt class="literal">|</tt>) on a command line, the two processes
+that communicate through the pipe must both have been started from
+that same shell. Newer versions of Unix have a way to let two
+unrelated processes (processes not started from the same parent
+process) communicate: a <em class="emphasis">named pipe</em> or
+<span class="acronym">FIFO</span> (<em class="emphasis">F</em>irst
+<em class="emphasis">I</em>n <em class="emphasis">F</em>irst
+<em class="emphasis">O</em>ut).
+</p>
+
+<p>A <span class="acronym">FIFO</span> works like a pipe, but its interface looks
+like a file. It has a filename and <b class="emphasis-bold">permissions</b> (<a href="ch01_17.htm#upt3-CHP-1-SECT-17">Section 1.17</a>),
+and it's in a directory. Once you make the
+<span class="acronym">FIFO</span>, one process can write to it (with the
+shell's <tt class="literal">&gt;</tt> operator, or
+directly) and another process can read from it (the
+shell's <tt class="literal">&lt;</tt> operator, or
+directly). Unlike a regular file, though, a <span class="acronym">FIFO</span>
+doesn't "fill up"
+with data as a process writes to it: if there's no
+process waiting to read the data, the data is lost. So, when you use
+a <span class="acronym">FIFO</span> between two processes, the processes still
+need to coordinate with each other. There are times that temporary
+files are better.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: mkfifo</p>
+
+<p>The command to make a <span class="acronym">FIFO</span> is
+<i class="command">mkfifo</i><a name="IXT-43-2316" />. (The <span class="acronym">GNU</span> version is
+on the CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>].) Like other files, the default permission is set by
+your umask. There's also a <span class="option">-m</span>
+option that sets the permissions -- with a numeric or symbolic
+mode like <b class="emphasis-bold">chmod</b> (<a href="ch50_05.htm#upt3-CHP-50-SECT-5">Section 50.5</a>) uses. To remove a <span class="acronym">FIFO</span>,
+use -- you guessed it -- <i class="command">rm</i>.
+</p>
+
+<p>Let's look at an example that, although
+it's made up, shows some important things to know
+about <span class="acronym">FIFO</span>s. If you're using a
+window system, you'll use two terminal windows (like
+<b class="emphasis-bold">xterm</b> (<a href="ch24_20.htm#upt3-CHP-24-SECT-20">Section 24.20</a>)); you'll write to the
+<span class="acronym">FIFO</span> from one window and read it from the other.
+Or if you have two terminals, you can use both of them. Otherwise,
+with a single terminal, you can put the writing process in the
+<b class="emphasis-bold">background</b> (<a href="ch23_02.htm#upt3-CHP-23-SECT-2">Section 23.2</a>) and run the reading process in the
+foreground.<a href="#FOOTNOTE-131">[131]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-131" /><p> [131]This may take some juggling because your
+system may require you to start the reading process before the
+writing process. If it does, and if your system has <b class="emphasis-bold">job control</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>), do
+this: start the reading process, stop it with CTRL-z, start the
+writing process in the background, then bring the reading process to
+the foreground.</p> </blockquote>
+
+<p>Start by making the <span class="acronym">FIFO</span>. You can make it from any
+window. (The <span class="acronym">FIFO</span> stays in the filesystem until
+you remove it. You can use it over and over again, though only one
+pair of processes can use it at any one time.) Then have a look with
+<i class="command">ls</i>; the <span class="acronym">FIFO</span> has zero size, it
+has a <tt class="literal">p</tt> type in the <span class="option">-l</span> output and
+a <tt class="literal">|</tt> symbol from <span class="option">-F</span>:
+</p>
+
+<p><tt class="literal">-F</tt> <a href="ch08_10.htm#upt3-CHP-8-SECT-10">Section 8.10</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>mkfifo /tmp/fifo</b></tt>
+$ <tt class="userinput"><b>ls -l /tmp/fifo</b></tt>
+prw-rw-r--    1 jpeek    jpeek           0 Dec 30 00:25 /tmp/fifo
+$ <tt class="userinput"><b>ls -F /tmp/fifo</b></tt>
+/tmp/fifo|</pre></blockquote>
+
+<p>Next, start the process that reads from the <span class="acronym">FIFO</span>.
+Like a program that's reading from a regular
+(anonymous) pipe, the process will block (sit there doing nothing)
+until there's something to read. For now, plain
+<b class="emphasis-bold">cat</b> (<a href="ch12_02.htm#upt3-CHP-12-SECT-2">Section 12.2</a>)
+is a good choice:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat /tmp/fifo</b></tt>
+   <i class="lineannotation">...nothing (yet)...</i></pre></blockquote>
+
+<p><a name="IXT-43-2317" /><a name="IXT-43-2318" />To write to the
+<span class="acronym">FIFO</span>, here's a little <b class="emphasis-bold">shell script</b> (<a href="ch35_01.htm#upt3-CHP-35-SECT-1">Section 35.1</a>)
+that sends the current date and time to its standard output every
+three seconds. You could name it <i class="command">dater</i>:
+</p>
+
+<p><tt class="literal">while</tt> <a href="ch35_15.htm#upt3-CHP-35-SECT-15">Section 35.15</a>,
+<tt class="literal">sleep</tt> <a href="ch24_09.htm#upt3-CHP-24-SECT-9">Section 24.9</a></p>
+
+<blockquote><pre class="code">#!/bin/sh
+
+while sleep 3
+do date
+done</pre></blockquote>
+
+<p>In the other window or terminal, start <i class="command">dater</i> and
+redirect its output to the <span class="acronym">FIFO</span>. The process will
+run, writing data to the <span class="acronym">FIFO</span> periodically:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>dater &gt; /tmp/fifo</b></tt></pre></blockquote>
+
+<p>In your window running <i class="command">cat</i>, the dates should start
+to appear. When you kill the writing process (or it finishes by
+itself), the reader should terminate.
+</p>
+
+<p>Also try reading from the <span class="acronym">FIFO</span> with any other Unix
+program, like the <b class="emphasis-bold">pr</b> (<a href="ch45_06.htm#upt3-CHP-45-SECT-6">Section 45.6</a>) formatter with its <span class="option">-l15</span>
+option (to make output pages 15 lines long, so you
+don't have to wait too long to see the next page
+header). This makes a nice illustration of the way that standard
+pipes, as well as named pipes, work: dribbling output to the reading
+process as the writing process makes it. (Standard pipes may be
+<em class="emphasis">buffered</em>, though, passing output in larger
+chunks.)
+</p>
+
+<p>If you have a third terminal or window, and you start another reading
+process (like <tt class="literal">cat /tmp/fifo</tt>) there, it will block
+until you kill the first reading process (the previous <tt class="literal">cat
+/tmp/fifo</tt>).
+</p>
+
+<p>This can be good food for thought. For instance, what output do you
+see when <b class="emphasis-bold">tail</b> (<a href="ch12_08.htm#upt3-CHP-12-SECT-8">Section 12.8</a>) reads from a pipe or <span class="acronym">FIFO</span>?
+(Answer: nothing until the writing process dies.)
+</p>
+
+<p>To review, though, a <span class="acronym">FIFO</span> is useful anytime two
+processes need to communicate but those processes
+weren't started from the same parent process, so a
+traditional pipe can't work (because the second
+process can't access the open file descriptor from
+the first process).
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch43_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch43_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">43.10. Redirecting Output to More Than One Place</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">43.12. What Can You Do with an Empty File?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

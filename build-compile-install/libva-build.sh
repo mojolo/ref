@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "Building & installing libva from repositories"
+#cd ~/ffmpeg_sources
+git clone https://github.com/intel/libva.git
+cd libva
+./autogen.sh --prefix=/usr/local --libdir=/usr/local/lib/x86_64-linux-gnu --enable-x11=yes --enable-glx=yes
+time make -j$(nproc) VERBOSE=1
+sudo checkinstall -y --deldoc=yes --pkgname=libva2git --pkgversion=1:2.19.0.pre1
+hash -r
+echo "Complete!"

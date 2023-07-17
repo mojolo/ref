@@ -1,0 +1,157 @@
+<html><head><title>Tips for Copy and Paste Between Windows (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.21. Tips for Copy and Paste Between Windows</h2>
+
+<p><a name="upt3-IDXTERM-1061" /> <a name="upt3-IDXTERM-1062" /> <a name="upt3-IDXTERM-1063" /> <a name="upt3-IDXTERM-1064" />
+<a name="upt3-IDXTERM-1065" />One of my favorite uses for an
+<i class="command">xterm</i> (which may seem natural to people
+who've grown up using window systems, but was a
+pleasant surprise for a guy who started computing with teletypes in
+1970) is using a window to accept text pasted from some other window.
+For instance, in writing this book, I'll have one
+window open with something happening that I want to put into the
+book. So I select the text, then paste it into another
+<i class="command">xterm</i> window -- where there's
+usually a text editor (like <i class="command">vi</i>, with its <b class="emphasis-bold">keymaps for pasting text</b> (<a href="ch18_05.htm#upt3-CHP-18-SECT-5">Section 18.5</a>)). 
+</p>
+
+<p>You can also use a text editor or Unix utilities to
+<a name="IXT-5-7497" />reformat text from one window
+before pasting it into another. For instance, you'd
+like to send most of the text in your browser to another window where
+you're composing an email message. But the web site
+used those irritating
+<a name="IXT-5-7498" /><a name="IXT-5-7499" />Microsoft
+Windows-specific quote characters that show up as question marks
+(<tt class="literal">?</tt>) on any other platform. So you paste the text
+into an Emacs window, do a quick run of text substitution, and copy
+the result to paste into the email window.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: requote</p>
+
+<p>Another problem with
+<a name="IXT-5-7500" /><a name="IXT-5-7501" />email messages comes when
+you're sending a reply to someone
+who's used very long or jagged lines and the quoted
+text is a mess. But if you cut the messy text into an
+<i class="command">xterm</i> window running the
+<i class="command">requote</i><a name="IXT-5-7502" /> <a name="IXT-5-7503" /> shell
+script, you'll get a neatened version. In the
+following example, the text I paste (cut from a quoted email message)
+is shown in boldface. Then I press CTRL-d, and the result appears; I
+can paste it back into the email message:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>requote</b></tt>
+<tt class="userinput"><b>&gt; This is a long line of text that runs on and on and wraps to the next</b></tt>
+<tt class="userinput"><b>line without a quote character at the start and it goes on and on and on</b></tt>
+<tt class="userinput"><b>and well you know</b></tt>
+<tt class="userinput"><b>&gt; This is the next line of text</b></tt>
+CTRL-d
+&gt; This is a long line of text that runs on and on and wraps to the next
+&gt; line without a quote character at the start and it goes on and on and
+&gt; on and well you know This is the next line of text</pre></blockquote>
+
+<p>You can pass a <i class="command">fmt</i><a name="IXT-5-7504" /> width option to tell
+<i class="command">requote</i> how wide to make the output lines.
+(Different versions of <i class="command">fmt</i> have different width
+options: <span class="option">-w</span>, <span class="option">-l</span>, etc.)
+<i class="command">requote</i> also works great as a
+<i class="command">vi</i><a name="IXT-5-7505" /> <b class="emphasis-bold">filter-through</b> (<a href="ch17_18.htm#upt3-CHP-17-SECT-18">Section 17.18</a>):
+paste the messy text into <i class="command">vi</i>, and run a command
+like <tt class="literal">!{requote</tt> to requote the text in place.
+</p>
+
+<p><i class="command">requote</i> is a simple script that
+doesn't try to handle multiple levels of quoting
+(<tt class="literal">&gt;&gt; &gt; &gt;&gt;</tt>, etc.). The main
+formatting commands are shown here; the temporary file
+<tt class="literal">$temp</tt> makes sure <i class="command">fmt</i> has read
+all the text before the final <i class="command">sed</i> outputs any of
+it:
+</p>
+<p><tt class="literal">${1+"$@"}</tt> <a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+
+<blockquote><pre class="code">sed 's/^&gt; //' |
+fmt ${1+"$@"} &gt; $temp
+sed 's/^/&gt; /' $temp</pre></blockquote>
+
+<p><a name="IXT-5-7506" />Here's another
+problem like the one <i class="command">requote</i> solves. When I copy
+text from a browser window, my browser usually puts some whitespace
+before each line. When I paste the text, it's a
+mess. I could use a text editor to clean up the lines, but a one-line
+<i class="command">sed</i><a name="IXT-5-7507" /><a name="IXT-5-7508" /> <a name="IXT-5-7509" /> script
+can do the job faster.
+</p>
+
+<p>Let's look at three examples of
+<i class="command">dedent</i>. It removes all space and TAB characters
+from the start of each line it reads on its standard input, and it
+writes the result to standard output.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>dedent &gt; order_confirmation</b></tt>
+   <i class="lineannotation">...paste text into xterm, press CTRL-d...</i>
+$ <tt class="userinput"><b>dedent | fmt &gt; johnson</b></tt>
+   <i class="lineannotation">...paste text into xterm, press CTRL-d...</i>
+$ <tt class="userinput"><b>dedent | mail -s 'article I mentioned' ali</b></tt>
+   <i class="lineannotation">...paste text into xterm, press CTRL-d...</i>
+$</pre></blockquote>
+
+<p>In the first example, I started <i class="command">dedent</i> and pasted
+text into the <i class="command">xterm</i>. After I pressed CTRL-d,
+<i class="command">dedent</i> removed leading whitespace from the pasted
+text and wrote the result to standard output, which the shell had
+redirected to a file named <em class="emphasis">order_confirmation</em>.
+In the second example, <i class="command">dedent</i>'s
+output is piped to <b class="emphasis-bold">fmt</b> (<a href="ch21_02.htm#upt3-CHP-21-SECT-2">Section 21.2</a>) to make the lines neat. (Without
+<i class="command">dedent</i>, most versions of <i class="command">fmt</i>
+would indent the reformatted text.) The third example removes leading
+whitespace, then <b class="emphasis-bold">emails</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) the text to <em class="emphasis">ali</em>.
+</p>
+
+<p>One more thing: many of the tricks discussed earlier may be
+implemented as shell functions or even <i class="command">emacs</i>
+functions or <i class="command">vi</i> macro. If you use a mail user
+agent such as <i class="command">mutt</i>, you can specify your favorite
+editor for email messages and just call the functions or macros while
+you edit. This is how I requote my replies to
+others' email, wrap it to a sane width, and so on.
+In <i class="command">emacs</i>, <tt class="literal">ESC q</tt> is mapped to
+the function <tt class="literal">fill-paragraph</tt>, so if I need a
+paragraph wrapped to a certain width (determined by
+<tt class="literal">default-fill-column</tt>), I just position the cursor
+inside the paragraph and call the function. If the
+<tt class="literal">fill-prefix</tt> variable is properly set (say, to
+<tt class="literal">&gt;)</tt>  it even knows how to wrap several levels of
+nested quoting in email.<a name="IXTR3-7526" /> <a name="IXTR3-7527" /> <a name="IXTR3-7528" /> <a name="IXTR3-7529" /> <a name="IXTR3-7530" /> 
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.20. Problems with Large Selections</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.22. Running a Single Command with xterm -e</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

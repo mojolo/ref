@@ -1,0 +1,115 @@
+<html><head><title>Alternatives to fmt (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.3. Alternatives to fmt</h2>
+
+<p><b class="emphasis-bold">fmt</b><a name="IXT-21-5653" /><a name="IXT-21-5654" /><a name="IXT-21-5655" /> (<a href="ch21_02.htm#upt3-CHP-21-SECT-2">Section 21.2</a>) is hard to do without once
+you've learned about it. Unfortunately,
+it's not available in some versions of Unix. You can
+get the GNU version from the CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>], but it's also
+relatively easy to emulate <a name="IXT-21-5656" />with
+<b class="emphasis-bold">sed</b> (<a href="ch37_04.htm#upt3-CHP-37-SECT-4">Section 37.4</a>)
+and <i class="command">nroff</i><a name="IXT-21-5657" />. Using those two utilities also lets you
+take advantage of the more sophisticated formatting and flexibility
+that <i class="command">sed</i> and <i class="command">nroff</i> macros can
+give you. (If you're doing anything really fancy,
+like <a name="IXT-21-5658" />tables with
+<i class="command">tbl</i>,<a href="#FOOTNOTE-59">[59]</a> you might need <i class="command">col</i> or
+<i class="command">colcrt</i> to clean up
+<i class="command">nroff</i>'s output.)
+</p><blockquote class="footnote"> <a name="FOOTNOTE-59" /><p> [59][The combination of
+<i class="command">tbl</i>, <i class="command">nroff</i>, and
+<i class="command">col</i> can make ASCII tables in a few quick steps.
+The tables aren't sexy, but they can be quite
+complex. They can be emailed or printed anywhere and, because
+they're plain text, don't require
+sophisticated viewing software or equipment. <i class="command">tbl</i>
+is a powerful way to describe tables without worrying about balancing
+columns or wrapping text in them. And if you want nicer-looking
+output, you can feed the same <i class="command">tbl</i> file to
+<i class="command">groff</i>.  -- <em class="emphasis">JP</em>]</p>
+</blockquote>
+
+<p>Here's the script:</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: fmt.sh</p>
+
+<blockquote><pre class="code">#!/bin/sh
+sed '1i\
+.ll 72\
+.na\
+.hy 0\
+.pl 1' $* | nroff</pre></blockquote>
+
+<p>The reason this is so complicated is that, by default,
+<i class="command">nroff</i> makes some assumptions you need to change.
+For example, it assumes an 11-inch page (66 lines) and will add blank
+lines to a short file (or the end of a long file). The
+quick-and-dirty workaround to this is to manually put the
+<i class="command">nroff</i> request <em class="emphasis">.pl 1</em> (page
+length 1 line) at the top of the text you want to reformat.
+<i class="command">nroff</i> also tends to justify lines; you want to
+turn this off with the <tt class="literal">.na</tt> request. You also want
+to turn off hyphenation (<tt class="literal">.hy 0</tt>), and you may want
+to set the line length to 72 instead of
+<i class="command">nroff</i>'s default 65, if only for
+consistency with the real <i class="command">fmt</i> program. All these
+<i class="command">nroff</i> requests get inserted before the first line
+of input by the <i class="command">sed</i> <tt class="literal">1i</tt> command.
+</p>
+
+<p>A fancier script would take a <span class="option">-nn</span> line-length option
+and turn it into a <em class="emphasis">.ll</em> request for
+<i class="command">nroff</i>, etc.
+</p>
+
+<p>Another solution to consider is
+<a name="IXT-21-5659" /> <a name="IXT-21-5660" /><a name="IXT-21-5661" />Damian Conway's
+<tt class="literal">Text::Autoformat</tt> Perl module. It has some very
+sophisticated heurestics to try to figure out how text should be
+formatted, including bulleted and numbered lists. In its simplest
+form, it can be used to read from <em class="emphasis">stdin</em> and
+write to <em class="emphasis">stdout</em>, just as a standard Unix utility
+would do. You can invoke this module from the command line like this:
+</p>
+
+<blockquote><pre class="code">% perl -MText::Autoformat -e 'autoformat' &lt; your_file_here</pre></blockquote>
+
+<p>By default, <i class="command">autoformat</i> formats only one paragraph
+at a time. This behavior can be changed by altering the invocation
+slightly:
+</p>
+
+<blockquote><pre class="code">% perl -MText::Autoformat -e 'autoformat({all =&gt;1})'</pre></blockquote>
+
+<p>The manpage for this module even suggests a way into integrate this
+into <i class="command">vi</i>:
+</p>
+
+<blockquote><pre class="code">map f !Gperl -MText::Autoformat -e'autoformat'</pre></blockquote>
+
+<p><em class="emphasis">--TOR and JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.2. Neatening Text with fmt</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.4. Clean Up Program Comment Blocks</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

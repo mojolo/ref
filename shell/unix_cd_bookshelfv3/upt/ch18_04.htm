@@ -1,0 +1,234 @@
+<html><head><title>vi @-Functions (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch18_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch18_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">18.4. vi @-Functions</h2>
+
+<p><a name="upt3-IDXTERM-2600" />
+<a name="upt3-IDXTERM-2601" />The <b class="emphasis-bold">vi map
+command</b> (<a href="ch18_02.htm#upt3-CHP-18-SECT-2">Section 18.2</a>) lets you define
+keymaps: short names for a series of one or more commands. You can
+enter <tt class="literal">:map</tt> to define a keymap while
+you're editing a file with <i class="command">vi</i>.
+But if you make a mistake, you usually have to re-enter the whole
+<tt class="literal">:map</tt> command to correct the problem.
+</p>
+
+<p><tt class="literal">@</tt>-functions (pronounced
+"at-functions") give you another
+way to define complex commands. You can define 26
+<tt class="literal">@</tt>-functions named <tt class="literal">@a</tt> through
+<tt class="literal">@z</tt>. They're stored in <b class="emphasis-bold">named buffers</b> (<a href="ch17_04.htm#upt3-CHP-17-SECT-4">Section 17.4</a>).
+So if you're also using named buffers for copying
+and pasting text, you'll need to share them with
+your <tt class="literal">@</tt>-functions.
+</p>
+
+<a name="upt3-CHP-18-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">18.4.1. Defining and Using Simple @-Functions</h3>
+
+<p><a name="IXT-18-1691" />To define an
+<tt class="literal">@</tt>-function:
+</p>
+
+<ol><li>
+<p>Enter the command(s) you want to execute onto one or more lines of
+the file you're editing.
+</p>
+</li><li>
+<p>Yank or delete the line(s) into a named buffer with a command like
+<tt class="literal">"ay$</tt> or <tt class="literal">"bD</tt>.
+</p>
+</li><li>
+<p>To use the function, type a command like <tt class="literal">@a</tt> or
+<tt class="literal">@b</tt>. You can repeat the function by typing
+<tt class="literal">@@</tt> or a dot (.). Use <tt class="literal">u</tt> or
+<tt class="literal">U</tt> to undo the effects of the
+<tt class="literal">@</tt>-function.
+</p>
+</li></ol>
+<p>Here's an example. You're editing a
+long HTML file with lines like these:
+</p>
+
+<blockquote><pre class="code">&lt;STRONG&gt;<em class="replaceable"><tt>Some heading here</tt></em>&lt;/STRONG&gt;
+&lt;STRONG&gt;<em class="replaceable"><tt>Another heading here</tt></em>&lt;/STRONG&gt;</pre></blockquote>
+
+<p>When you see one of those lines, you need to change the
+<tt class="literal">STRONG</tt> s to either <tt class="literal">H3</tt> or
+<tt class="literal">H4</tt>. A global substitution with
+<tt class="literal">:%s</tt> won't do the job because some
+lines need <tt class="literal">H3</tt> and others need
+<tt class="literal">H4</tt>; you have to decide line-by-line as you work
+through the file. So you define the function <tt class="literal">@a</tt> to
+change a line to <tt class="literal">H3</tt>, and <tt class="literal">@b</tt> to
+change to <tt class="literal">H4</tt>.
+</p>
+
+<p>To design an <tt class="literal">@</tt>-function, start by thinking how
+you'd make the changes by hand.
+You'd probably move to the start of the line with
+<tt class="literal">0</tt>, move to the right one character with
+<tt class="literal">l</tt>, type <tt class="literal">cw</tt> to change the word
+<tt class="literal">STRONG</tt>, and type in <tt class="literal">H3</tt> (or
+<tt class="literal">H4</tt>). Then you'd press ESC to
+return to command mode. After going to the end of the line with
+<tt class="literal">$</tt>, you'd move to the character
+after the slash with <tt class="literal">T/</tt>, then change the second
+<tt class="literal">STRONG</tt> the way you fixed the first one.
+</p>
+
+<p>To define the function, open a new empty line of your file (first go
+into text-input mode). Then type the keystrokes that will make the
+<tt class="literal">H3</tt> changes; <b class="emphasis-bold">type CTRL-v
+before each ESC or RETURN</b> (<a href="ch18_06.htm#upt3-CHP-18-SECT-6">Section 18.6</a>).
+When you're done, press ESC again to go to command
+mode. Because the commands for the <tt class="literal">H4</tt> change are
+similar, the easiest way to make them is by copying and pasting the
+line for <tt class="literal">H3</tt> (by typing <tt class="literal">yy</tt> and
+<tt class="literal">p</tt>) and then editing the copy. The pair of command
+lines should look like this (where <tt class="literal">^[</tt> stands for
+the CTRL-v ESC keys):
+</p>
+
+<blockquote><pre class="code">0lcwH3^[$T/cwH3^[
+0lcwH4^[$T/cwH4^[</pre></blockquote>
+
+<p>Move to the start of the first line, and delete it into the
+<em class="emphasis">a</em> buffer by typing <tt class="literal">"aD</tt>. Go to
+the next line, and type <tt class="literal">"bD</tt>. (This will leave two
+empty lines; delete them with <tt class="literal">dd</tt> if
+you'd like.) Now, when you type
+<tt class="literal">@a</tt>, it will execute the commands to change a line
+to <tt class="literal">H3</tt>; typing <tt class="literal">@b</tt> on a line will
+change it to have <tt class="literal">H4</tt>. Move through your file
+(maybe with a search: <tt class="literal">/STRONG</tt> ...
+<tt class="literal">n</tt> ...), typing <tt class="literal">@a</tt> or
+<tt class="literal">@b</tt> as you go. Or use <tt class="literal">@@</tt> to make
+the same change you made on a previous line.
+</p>
+
+</div>
+<a name="upt3-CHP-18-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">18.4.2. Combining @-Functions</h3>
+
+<p>An
+<tt class="literal">@</tt><a name="IXT-18-1692" />-function
+can execute other <tt class="literal">@</tt>-functions. For example, here
+are four lines ready for storing as <tt class="literal">@a</tt> through
+<tt class="literal">@d</tt>:
+</p>
+
+<blockquote><pre class="code">0l@c$T/@c   <i class="lineannotation">...becomes @a</i>
+0l@d$T/@d   <i class="lineannotation">...becomes @b</i>
+cwH3^[      <i class="lineannotation">...becomes @c</i>
+cwH4^[      <i class="lineannotation">...becomes @d</i></pre></blockquote>
+
+<p>See that the definition of <tt class="literal">@a</tt> has
+<tt class="literal">@c</tt> in it twice? When you execute
+<tt class="literal">@a</tt>, it will do <tt class="literal">0l</tt> to move to
+the second character on the line, then do <tt class="literal">@c</tt> to
+change the word to <tt class="literal">H3</tt>, move to the end of the
+line, and use <tt class="literal">@c</tt> again. Calling one
+<tt class="literal">@</tt>-function from another can save you from retyping
+repetitive commands.
+</p>
+
+<p>A disadvantage is that <tt class="literal">@@</tt> won't
+always work as you might expect. If you type <tt class="literal">@a</tt> to
+make a change in one place, then move somewhere else and type
+<tt class="literal">@@</tt>, the <tt class="literal">@@</tt> will do what
+<tt class="literal">@c</tt> does (instead of what you might have wanted,
+<tt class="literal">@a</tt>). That's because the
+<tt class="literal">@a</tt> function finishes by doing
+<tt class="literal">@c</tt>.
+</p>
+
+</div>
+<a name="upt3-CHP-18-SECT-4.3" /><div class="sect2">
+<h3 class="sect2">18.4.3. Reusing a Definition</h3>
+
+<p><a name="IXT-18-1693" />You don't have to
+delete the definition line into a buffer with <tt class="literal">dd</tt>.
+If you think you might need to fine-tune the command, you can yank
+(copy) it into a buffer with a command like <tt class="literal">"ay$</tt>.
+Then, if you need to revise the command, re-edit the line and type
+<tt class="literal">"ay$</tt> to put the revised version into the buffer.
+Or use <tt class="literal">"by$</tt> to copy the revised line into another
+buffer.
+</p>
+
+</div>
+<a name="upt3-CHP-18-SECT-4.4" /><div class="sect2">
+<h3 class="sect2">18.4.4. Newlines in an @-Function</h3>
+
+<p><a name="IXT-18-1694" /><a name="IXT-18-1695" />Stored
+<tt class="literal">@</tt>-functions can span multiple lines. For example,
+if you delete the following four lines with <tt class="literal">"z4dd</tt>,
+typing <tt class="literal">@z</tt> will open a newline below
+(<tt class="literal">o</tt>) and insert four newlines of text:
+</p>
+
+<blockquote><pre class="code">oThis is the newline one.
+This is the newline two.
+This is the third line.
+This is the fourth.^[</pre></blockquote>
+
+<p>After you execute the function with <tt class="literal">@z</tt>, your
+cursor will move to the line below the new fourth line. Why? Because
+you included the newlines (RETURNs) in the buffer; each RETURN moves
+down a line -- including the RETURN after the last ESC.
+</p>
+
+<p>If you don't want that, there are two ways to fix it:</p>
+
+<ul><li>
+<p>Delete the first three lines, including the newlines, into the buffer
+by typing <tt class="literal">"z3dd</tt>. Delete the fourth line, without
+its newline, and <em class="emphasis">append</em> it to the buffer by
+typing <tt class="literal">"ZD</tt>. (An uppercase letter like
+<tt class="literal">Z</tt> appends to a named buffer. <tt class="literal">D</tt>
+deletes all of a line except the newline.)
+</p>
+
+<p>Some versions of <i class="command">vi</i> will delete four lines,
+without the last newline, when you use <tt class="literal">"z4D</tt>.
+</p>
+</li><li>
+<p>Type all of the text onto a single line; embed the newlines in that
+line by typing CTRL-v RETURN between each finished line.
+It'll look like this:
+</p>
+<blockquote><pre class="code">oThis is the new line one.^MThis is the new line two.^MThis is the new...</pre></blockquote>
+</li><li>
+<p>Delete that long line into your buffer with <tt class="literal">"zD</tt>.
+Because <tt class="literal">D</tt> doesn't delete the
+final newline, your cursor will stay at the end of the fourth newline
+after you execute the <tt class="literal">@z</tt>.<a name="IXTR3-1741" /> <a name="IXTR3-1742" />
+</p>
+</li></ul>
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch18_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch18_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">18.3. What You Lose When You Use map!</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">18.5. Keymaps for Pasting into a Window Running vi</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

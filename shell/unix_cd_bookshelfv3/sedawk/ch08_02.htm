@@ -1,0 +1,383 @@
+<html><head><title>Looping (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.2. Looping</h2>
+
+<p>
+<a name="ch08.loop" />
+A loop is a construct that allows us to perform one or more actions
+again and again.  In awk, a loop can be specified using a
+<b class="emphasis-bold">while</b>, <b class="emphasis-bold">do</b>, or
+<b class="emphasis-bold">for</b> statement.</p>
+
+<a name="sedawk-ch-8-sect-2.1" /><div class="sect2">
+<h3 class="sect2">8.2.1. While Loop</h3>
+
+<p>
+<a name="IXT-8-266021" />
+The syntax of a <b class="emphasis-bold">while</b> loop is:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">while</b> (<em class="replaceable"><tt>condition</tt></em>) 
+	<em class="replaceable"><tt>action</tt></em></pre></blockquote><p>The newline is optional after the right parenthesis.  The conditional
+expression is evaluated at the top of the loop and, if true, the
+action is performed.  If the expression is never true, the action is
+not performed.  Typically, the conditional expression evaluates to
+true and the action changes a value such that the conditional
+expression eventually returns false and the loop is exited.  For
+instance, if you wanted to perform an action four times, you could
+write the following loop:</p>
+
+<blockquote><pre class="code">i = 1
+while ( i &lt;= 4 ) {
+	print $i
+	++i 
+}</pre></blockquote>
+
+<p>As in an <b class="emphasis-bold">if</b> statement, an action consisting of more
+than one statement must be enclosed in braces.  Note the role of each
+statement.  The first statement assigns an initial value to
+<b class="emphasis-bold">i</b>.  The expression "i &lt;= 4" compares
+<b class="emphasis-bold">i</b> to 4 to determine if the action should be
+executed.  The action consists of two statements, one that simply
+prints the value of a field referenced as "$i" and another that
+increments <b class="emphasis-bold">i</b>.  <b class="emphasis-bold">i</b> is a counter
+variable and is used to keep track of how many times we go through the
+loop.  If we did not increment the counter variable or if the
+comparison would never evaluate to false (e.g., i &gt; 0), then the
+action would be repeated without end.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-8-sect-2.2" /><div class="sect2">
+<h3 class="sect2">8.2.2. Do Loop</h3>
+
+<p>
+<a name="ch08.do" />
+The <b class="emphasis-bold">do</b> loop is a variation of the
+<b class="emphasis-bold">while</b> loop.  The syntax of a <b class="emphasis-bold">do</b>
+loop is:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">do</b>
+	<em class="replaceable"><tt>action</tt></em>
+<b class="emphasis-bold">while</b> (<em class="replaceable"><tt>condition</tt></em>)</pre></blockquote><p>The newline is optional after <b class="emphasis-bold">do</b>.  It is also optional
+after <em class="replaceable"><tt>action</tt></em> providing the statement is terminated
+by a semicolon. The main feature of this loop is that the conditional
+expression appears <em class="emphasis">after</em> the action.  Thus, the action is
+performed at least once. Look at the following <b class="emphasis-bold">do</b> loop.</p>
+
+<blockquote><pre class="code">BEGIN {
+	do {
+		++x
+		print x
+	} while ( x &lt;= 4 )
+}</pre></blockquote>
+
+<p>In this example, the value of <b class="emphasis-bold">x</b> is set in the body
+of the loop using the auto-increment operator.  The body of the loop
+is executed once and the expression is evaluated.  In the previous
+example of a <b class="emphasis-bold">while</b> loop, the initial value of
+<b class="emphasis-bold">i</b> was set before the loop.  The expression was
+evaluated first, then the body of the loop was executed once.  Note
+the value of <b class="emphasis-bold">x</b> when we run this example:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f do.awk</b></tt>
+1
+2
+3
+4
+5</pre></blockquote>
+
+<p>Before the conditional expression is first evaluated,
+<b class="emphasis-bold">x</b> is incremented to 1. (This relies on the fact
+that all awk variables are initialized to zero.)  The body of the loop
+is executed five times, not four; when <b class="emphasis-bold">x</b> equals 4,
+the conditional expression is true and the body of the loop is
+executed again, incrementing <b class="emphasis-bold">x</b> to 5 and printing
+its value.  Only then is the conditional expression evaluated to false
+and the loop exited.  By changing the operator from "&lt;=" to "&lt;",
+or less than, the body of the loop will be executed four times.</p>
+
+<p>To keep in mind the difference between the <b class="emphasis-bold">do</b> loop
+and the <b class="emphasis-bold">while</b> loop, remember that the
+<b class="emphasis-bold">do</b> loop always executes the body of the loop
+<em class="emphasis">at least once</em>.  At the bottom of the procedure,
+you decide if you need to execute it again.</p>
+
+<p>For an example, let's look at a program that loops through the fields
+of a record, referencing as many fields as necessary until their
+cumulative value exceeds 100.  The reason we use a
+<b class="emphasis-bold">do</b> loop is that we will reference at least one of
+the fields.  We add the value of the field to the total, and if the
+total exceeds 100 we don't reference any other fields.  We reference
+the second field only if the first field is less than 100.  Its value
+is added to the total and if the total exceeds 100 then we exit the
+loop.  If it is still less than 100, we execute the loop once again.</p>
+
+<blockquote><pre class="code">{
+	total = i = 0
+	do {
+		++i
+		total += $i
+	} while ( total &lt;= 100 )
+	print i, ":", total
+}</pre></blockquote>
+
+<p>The first line of the script initializes the values of two variables:
+<b class="emphasis-bold">total</b> and <b class="emphasis-bold">i</b>.  The loop
+increments the value of <b class="emphasis-bold">i</b> and uses the field
+operator to reference a particular field.  Each time through the loop,
+it refers to a different field.  When the loop is executed for the
+first time, the field reference gets the value of field one and
+assigns it to the variable <b class="emphasis-bold">total</b>.  The conditional
+expression at the end of the loop evaluates whether
+<b class="emphasis-bold">total</b> exceeds 100.  If it does, the loop is exited.
+Then the value of <b class="emphasis-bold">i</b>, the number of fields that
+we've referred to, and the total are printed.  (This script assumes
+that each record totals at least 100; otherwise, we'd have to check
+that <b class="emphasis-bold">i</b> does not exceed the number of fields for the
+record.  We construct such a test in the example presented in next
+section to show the <b class="emphasis-bold">for</b> loop.)</p>
+
+<p>Here's a test file containing a series of numbers:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat test.do</b></tt>
+45 25 60 20
+10 105 50 40
+33 5 9 67
+108 3 5 4</pre></blockquote>
+
+<p>Running the script on the test file produces the following:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f do.awk test.do</b></tt>
+3 : 130
+2 : 115
+4 : 114
+1 : 108</pre></blockquote>
+
+<p>For each record, only as many fields are referenced as needed for the total
+to exceed 100.</p>
+
+<a name="IXT-8-266022" />
+</div>
+
+
+
+
+<a name="sedawk-ch-8-sect-2.3" /><div class="sect2">
+<h3 class="sect2">8.2.3. For Loop</h3>
+
+<p>
+<a name="ch08.for" />
+The <b class="emphasis-bold">for</b> statement offers a more compact syntax that
+achieves the same result as a <b class="emphasis-bold">while</b> loop.  Although
+it looks more difficult, this syntax is much easier to use and makes
+sure that you provide all the required elements of a loop.  The syntax
+of a <b class="emphasis-bold">for</b> loop is:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">for</b> ( <em class="replaceable"><tt>set_counter</em> ; <em class="replaceable">test_counter</em> ; <em class="replaceable">increment_counter</tt></em> ) 
+    <em class="replaceable"><tt>action</tt></em></pre></blockquote><p>The newline after the right parenthesis is optional.  The
+<b class="emphasis-bold">for</b> loop consists of three expressions:</p>
+
+<dl>
+<dt><em class="emphasis">set_counter</em></tt></i></dt><dd>Sets the initial value for a counter variable.  
+<a name="IXT-8-266023" /></p></dd>
+
+
+<dt><em class="emphasis">test_counter</em></tt></i></dt><dd>States a condition that is tested at the top of the loop.</p></dd>
+
+
+<dt><em class="emphasis">increment_counter</em></tt></i></dt><dd>Increments the counter each time at the bottom of the loop,
+right before testing the <em class="emphasis">test_counter</em></tt> again.</p></dd>
+
+</dl>
+
+<p>Look at this rather common <b class="emphasis-bold">for</b> loop that prints
+each field on the input line.</p>
+
+<blockquote><pre class="code">for ( i = 1; i &lt;= NF; i++ )
+	print $i</pre></blockquote>
+
+<p>As in the previous example, <b class="emphasis-bold">i</b> is a variable that is
+used to reference a field using the field operator.  The system
+variable <b class="emphasis-bold">NF</b> contains the number of fields for the
+current input record, and we test it to determine if
+<b class="emphasis-bold">i</b> has reached the last field on the line.  The
+value of <b class="emphasis-bold">NF</b> is the maximum number of times to go
+through the loop.  Inside the loop, the <b class="emphasis-bold">print</b>
+statement is executed, printing each field on its own line.  A script
+using this construct can print each word on a line by itself, which
+can then be run through <b class="emphasis-bold">sort | uniq -c</b> to get word
+distribution statistics for a file.</p>
+
+<p>You can also write a loop to print from the last field to the first.</p>
+
+<blockquote><pre class="code">for ( i = NF; i &gt;= 1; i-- )
+	print $i</pre></blockquote>
+
+<p>Each time through the loop the counter is decremented.  You could use
+this to reverse the order of fields.</p>
+
+<p>The <b class="emphasis-bold">grades.awk</b> script that we showed earlier
+determined the average of five grades.  We can make the script much
+more useful by averaging any number of grades.  That is, if you were
+to run this script throughout the school year, the number of grades to
+average would increase.  Rather than revising the script to
+accommodate the specific number of fields, we can write a generalized
+script that loops to read however many fields there are.  Our
+earlier version of the program calculated the average of 5 grades
+using these two statements:</p>
+
+<blockquote><pre class="code">total = $2 + $3 + $4 + $5 + $6
+avg = total / 5</pre></blockquote>
+
+<p>We can revise that using a <b class="emphasis-bold">for</b> loop to sum each
+field in the record.</p>
+
+<blockquote><pre class="code">total = 0
+for (i = 2; i &lt;= NF; ++i)
+      total += $i
+avg = total / (NF - 1)</pre></blockquote>
+
+<p>We initialize the variable <b class="emphasis-bold">total</b> each time because
+we don't want its value to accumulate from one record to the next.  At
+the beginning of the <b class="emphasis-bold">for</b> loop, the counter
+<b class="emphasis-bold">i</b> is initialized to 2 because the first numeric
+field is field 2.  Each time through the loop the value of the current
+field is added to <b class="emphasis-bold">total</b>.  When the last field has
+been referenced (<b class="emphasis-bold">i</b> is greater than
+<b class="emphasis-bold">NF</b>), we break out of the loop and calculate the
+average.  For instance, if the record consists of 4 fields, the first
+time through the loop, we assign the value of $2 to
+<b class="emphasis-bold">total</b>.  At the bottom of the loop,
+<b class="emphasis-bold">i</b> is incremented by 1, then compared to
+<b class="emphasis-bold">NF</b>, which is 4.  The expression evaluates to true
+and <b class="emphasis-bold">total</b> is incremented by the value of $3.</p>
+
+<p>Notice how we divide the total by the number of fields minus 1 to
+remove the student name from the count.  The parentheses are required
+around "NF - 1" because the precedence of operators would otherwise
+divide <b class="emphasis-bold">total</b> by <b class="emphasis-bold">NF</b> and then
+subtract 1, instead of subtracting 1 from <b class="emphasis-bold">NF</b> first.</p>
+
+<a name="IXT-8-266024" />
+</div>
+
+
+
+
+<a name="sedawk-ch-8-sect-2.4" /><div class="sect2">
+<h3 class="sect2">8.2.4. Deriving Factorials</h3>
+
+<p>
+<a name="ch08.fact" />
+<a name="ch08.fact2" />
+The factorial of a number is the product of successively multiplying
+that number by one less than that number.  The factorial of 4 is 4
+x 3 x 2 x 1, or 24.  The factorial of 5 is 5 times
+the factorial of 4 or 5 x 24, or 120.  Deriving a factorial for a
+given number can be expressed using a loop as follows:</p>
+
+<blockquote><pre class="code">fact = number
+for (x = number - 1 ; x &gt; 1; x--)
+	fact *= x</pre></blockquote>
+
+<p>where <b class="emphasis-bold">number</b> is the number for which we will derive
+the factorial <b class="emphasis-bold">fact</b>.  Let's say that
+<b class="emphasis-bold">number</b> equals 5.  The first time through the loop
+<b class="emphasis-bold">x</b> is equal to 4.  The action evaluates "5 * 4" and
+assigns the value to <b class="emphasis-bold">fact</b>.  The next time through
+the loop, <b class="emphasis-bold">x</b> is 3 and 20 is multiplied by it.  We go
+through the loop until <b class="emphasis-bold">x</b> equals 1.</p>
+
+<p>Here is the above fragment incorporated into a standalone script
+that prompts the user for a number and then prints the factorial
+of that number.</p>
+
+<blockquote><pre class="code">awk '# factorial: return factorial of user-supplied number
+BEGIN {
+	# prompt user; use printf, not print, to avoid the newline
+	printf("Enter number: ")
+}
+
+# check that user enters a number
+$1 ~ /^[0-9]+$/ { 
+	# assign value of $1 to number &amp; fact
+	number = $1
+	if (number == 0)
+		fact = 1
+	else
+		fact = number
+	# loop to multiply fact*x until x = 1
+	for (x = number - 1; x &gt; 1; x--)
+		fact *= x
+	printf("The factorial of %d is %g\n", number, fact)
+	# exit -- saves user from typing CRTL-D.
+	exit
+}
+
+# if not a number, prompt again.
+{ printf("\nInvalid entry. Enter a number: ") 
+}' -</pre></blockquote>
+
+<p>This is an interesting example of a main input loop that prompts for
+input and reads the reply from standard input.  The
+<b class="emphasis-bold">BEGIN</b> rule is used to prompt the user to enter a
+number.  Because we have specified that input is to come not from a
+file but from standard input, the program will halt after putting out
+the prompt and then wait for the user to type a number.  The first
+rule checks that a number has been entered.  If not, the second rule
+will be applied, prompting the user again to re-enter a number.  We
+set up an input loop that will continue to read from standard input
+until a valid entry is found.  See the <b class="emphasis-bold">lookup</b>
+program in the next section for another example of constructing an
+input loop.</p>
+
+<p>Here's an example of how the <b class="emphasis-bold">factorial</b> program works:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>factorial</b></tt>
+Enter number: <tt class="userinput"><b>5</b></tt>
+The factorial of 5 is 120</pre></blockquote>
+
+<p>Note that the result uses "%g" as the conversion specification format
+in the <b class="emphasis-bold">printf</b> statement.  This permits floating
+point notation to be used to express very large numbers.  Look at the
+following example:</p>
+
+<blockquote><pre class="code">$<tt class="userinput"><b> factorial</b></tt>
+Enter number: <tt class="userinput"><b>33</b></tt>
+The factorial of 33 is 8.68332e+36</pre></blockquote>
+
+<a name="IXT-8-266025" />
+<a name="IXT-8-266026" />
+</div>
+
+
+
+
+<a name="IXT-8-266027" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8. Conditionals, Loops, and Arrays</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.3. Other Statements That Affect
+Flow Control</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

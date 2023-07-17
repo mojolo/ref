@@ -1,0 +1,104 @@
+<html><head><title>Using xev to Learn Keysym Mappings (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.2. Using xev to Learn Keysym Mappings</h2>
+
+<p><a name="IXT-6-854" /><a name="IXT-6-855" />The
+<i class="command">xev</i> client is essential for
+<a name="IXT-6-856" /><a name="IXT-6-857" />debugging
+X Window System <b class="emphasis-bold">keysym mappings</b>
+(<a href="ch06_01.htm#upt3-CHP-6-SECT-1">Section 6.1</a>). When you start up
+<i class="command">xev</i>, a small "event
+window" appears. All events that take place within
+that window are shown on standard output. This means screenfuls of
+output, but it also means that when you type a key, you can
+immediately trace the resulting event. For example, if you need to
+know what keysym is sent when you type the DELETE key on the
+keyboard, just run <i class="command">xev</i> and type the DELETE key in
+the event window. Typical output might be the following:
+</p>
+
+<blockquote><pre class="code">KeyPress event, serial 13, synthetic NO, window 0x800001,
+   root 0x8006d, subw 0x800002, time 1762968270, (50,36),
+   root:(190,176), state 0x0, keycode 27 (keysym 0xffff, Delete),
+   same_screen YES, XLookupString gives 1 characters: "^?"
+
+KeyRelease event, serial 15, synthetic NO, window 0x800001,
+   root 0x8006d, subw 0x800002, time 1762968336, (50,36),
+   root:(190,176), state 0x0, keycode 27 (keysym 0xffff, Delete),
+   same_screen YES, XLookupString gives 1 characters: "^?"</pre></blockquote>
+
+<p><a name="IXT-6-858" />This tells
+you that the DELETE key (keycode 27) is interpreted as keysym
+<tt class="literal">0xffff</tt>, which is <tt class="literal">Delete</tt> and
+character <tt class="literal">^?</tt>. If you do an <tt class="literal">xmodmap
+-pk</tt> (<a href="ch05_01.htm#upt3-CHP-5-SECT-1">Section 5.1</a>), you should see a line
+resembling:<a href="#FOOTNOTE-24">[24]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-24" /><p> [24]The keycode numbers may vary from system
+to system, depending on how your key mappings are configured. For
+example, under a Debian 2.2 install running inside VirtualPC on a
+Powerbook G3, DELETE is keycode 107, whereas under OroborusX on the
+same machine, the same keypress produces keycode 59, the BACKSPACE
+character. On both systems, however, the hexadecimal keysym values
+for DELETE and BACKSPACE are the same: <tt class="literal">0xffff</tt> and
+<tt class="literal">0xff08</tt>, respectively.</p> </blockquote>
+
+<blockquote><pre class="code">27      0xffff (Delete)</pre></blockquote>
+
+<p>If you redefine the <a name="IXT-6-859" />DELETE key as the BACKSPACE key
+and do the same exercise (run <i class="command">xev</i> and press the
+DELETE key), you should see something like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>xmodmap -e "keysym Delete = BackSpace"</b></tt>
+% <tt class="userinput"><b>xev</b></tt>
+        ...
+KeyPress event, serial 13, synthetic NO, window 0x800001,
+   root 0x8006d, subw 0x800002, time 1763440073, (44,39),
+   root:(240,235), state 0x0, keycode 27 (keysym 0xff08, BackSpace),
+   same_screen YES, XLookupString gives 1 characters: "^H"
+
+KeyRelease event, serial 15, synthetic NO, window 0x800001,
+   root 0x8006d, subw 0x800002, time 1763440139, (44,39),
+   root:(240,235), state 0x0, keycode 27 (keysym 0xff08, BackSpace),
+   same_screen YES, XLookupString gives 1 characters: "^H"</pre></blockquote>
+
+<p>This tells you that now the DELETE key (still keycode 27) is being
+interpreted as hexadecimal <tt class="literal">0xff08</tt>, keysym
+<tt class="literal">BackSpace</tt>, and generates character
+"<tt class="literal">^H</tt>."
+<tt class="literal">xmodmap -pk</tt> should show you the following:
+</p>
+
+<blockquote><pre class="code">27      0xff08 (BackSpace)</pre></blockquote>
+
+<p>For more information, see O'Reilly &amp;
+Associates' <em class="citetitle">X Window System
+User's Guide</em>, Volume 3.<a name="IXTR3-963" />
+</p>
+
+<p><em class="emphasis">--LM, EP, and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6. Your X Environment</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.3. X Resource Syntax</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

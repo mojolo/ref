@@ -1,0 +1,84 @@
+<html><head><title>Terminal Setup: Testing Remote Hostname and X Display (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.12. Terminal Setup: Testing Remote Hostname and X Display</h2>
+
+<p><a name="IXT-3-7136" /> <a name="IXT-3-7137" /><a name="IXT-3-7138" />If
+<a name="IXT-3-7139" />you <b class="emphasis-bold">log in from
+other hosts</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) or from hosts
+running the <b class="emphasis-bold">X Window System</b> (<a href="ch24_20.htm#upt3-CHP-24-SECT-20">Section 24.20</a>), the <i class="command">who am i</i><a href="#FOOTNOTE-8">[8]</a> command will probably show a
+hostname and/or window information in parentheses:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-8" /><p> [8]Also try "<i class="command">who mom
+likes</i>" or maybe
+"<i class="command">who is
+responsible?</i>" -- the
+<i class="command">who</i> doesn't really care, as long
+as there are only two arguments. So, "<i class="command">who
+let the dogs out?</i>", as you might expect,
+causes an error.</p> </blockquote>
+
+<blockquote><pre class="code">schampeo@fugazi:1002 $ <tt class="userinput"><b>who am i</b></tt>
+schampeo ttyp7    Jun 19 03:28 (fugazi:0.0)</pre></blockquote>
+
+<p>(Long hostnames may be truncated. Also, note that some versions of
+<i class="command">who am i</i> prepend the name of the local host to the
+username and don't include the remote hostname at
+all in their output. Check yours before you write this test.) The
+information in parentheses can help you configure your terminal based
+on where you've logged in from and/or which display
+you're using. To test it, add commands such as the
+following to your <em class="filename">.profile</em> file. (In C-type
+shells, use a <i class="command">switch</i> statement in
+<em class="filename">.login</em> instead.)
+</p>
+
+<p><tt class="literal">case</tt> <a href="ch35_10.htm#upt3-CHP-35-SECT-10">Section 35.10</a></p>
+
+<blockquote><pre class="code">case "`who am i | sed -n 's/.*(\(.*\))/\1/p'`" in </pre></blockquote>
+
+<p><tt class="literal">\(..\) \1</tt>
+<a href="ch34_11.htm#upt3-CHP-34-SECT-11">Section 34.11</a></p>
+
+<blockquote><pre class="code">*0.0)   <i class="lineannotation">...do commands for X display 0</i> ;;
+mac2*)  <i class="lineannotation">...do commands for the host mac2.foo.com</i> ;;
+"")     <i class="lineannotation">...no output (probably not a remote login)</i> ;;
+*)      <i class="lineannotation">...do commands for other situations</i> ;;
+esac</pre></blockquote>
+
+<p><a name="IXT-3-7140" />That uses
+<b class="emphasis-bold">sed</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>)
+to give the text between the parentheses for that remote host to the
+<tt class="literal">case</tt>. This <tt class="literal">*0.0</tt> case matches
+lines ending with <tt class="literal">0.0</tt>; the <tt class="literal">mac2</tt>
+case matches lines that start with <tt class="literal">mac2</tt>; an empty
+string means <i class="command">sed</i> probably didn't
+find any parentheses; and the <tt class="literal">*</tt> case catches
+everything else.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.11. Terminal Setup: Testing TERM</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.13. Terminal Setup: Testing Port</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

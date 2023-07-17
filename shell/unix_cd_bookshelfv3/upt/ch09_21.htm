@@ -1,0 +1,86 @@
+<html><head><title>grepping a Directory Tree (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.21. grepping a Directory Tree</h2>
+
+<p><a name="IXT-9-137" /><a name="IXT-9-138" /><a name="IXT-9-139" />Want to search every file, in
+some directory and all its subdirectories, to find the file that has
+a particular word or string in it? That's a job for
+<em class="filename">find</em> and one of the <em class="filename">grep</em>
+commands.
+</p>
+
+<p>For example, to search all the files for lines starting with a number
+and containing the words "SALE
+PRICE," you could use:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>egrep '^[0-9].*SALE PRICE' `find . -type f -print`</b></tt>
+./archive/ad.1290: 1.99 a special SALE PRICE
+./archive/ad.0191: 2.49 a special SALE PRICE</pre></blockquote>
+
+<p>Using the backquotes (<tt class="literal">``</tt>) might not work. If
+<em class="filename">find</em> finds too many files,
+<em class="filename">egrep</em><a name="IXT-9-140" />'s command-line
+arguments can get too long. Using
+<em class="filename">xargs</em><a name="IXT-9-141" /> can solve that; it splits long sets
+of arguments into smaller chunks. There's a problem
+with that: if the last "chunk" has
+just one filename and the <em class="filename">grep</em> command finds a
+match there, <em class="filename">grep</em> won't print
+the filename:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -type f -print | xargs fgrep '$12.99</b></tt>'
+./old_sales/ad.0489: Get it for only $12.99!
+./old_sales/ad.0589: Last chance at $12.99, this month!
+Get it for only $12.99 today.</pre></blockquote>
+
+<p>The answer is to add the Unix
+"<a name="IXT-9-142" /> <a name="IXT-9-143" />empty file,"
+<em class="filename">/dev/null</em>. It's a filename
+that's guaranteed never to match but always to leave
+<em class="filename">fgrep</em><a name="IXT-9-144" /> with at least two filenames:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -type f -print | xargs fgrep '$12.99' /dev/null</b></tt></pre></blockquote>
+
+<p>Then <em class="filename">xargs</em> will run commands like these:</p>
+
+<blockquote><pre class="code">fgrep '$12.99' /dev/null ./afile ./bfile ...
+fgrep '$12.99' /dev/null ./archives/ad.0190 ./archives/ad.0290 ...
+fgrep '$12.99' /dev/null ./old_sales/ad.1289</pre></blockquote>
+
+<p>That trick is also good when you use a <b class="emphasis-bold">wildcard</b> (<a href="ch28_03.htm#upt3-CHP-28-SECT-3">Section 28.3</a>) and
+only one file might match it. <em class="filename">grep</em>
+won't always print the file's name
+unless you add <em class="filename">/dev/null</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>grep "whatever" /dev/null /x/y/z/a*</b></tt></pre></blockquote>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_20.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_22.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.20. Finding Files (Much) Faster with a find Database</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.22. lookfor: Which File Has That Word?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

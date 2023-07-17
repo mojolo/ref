@@ -1,0 +1,120 @@
+<html><head><title>Quick Reference
+for awk (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appa_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="appb_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Appendix B. Quick Reference
+for awk</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="appb_01.htm#sect1">Command-Line Syntax</a><br />
+<a href="appb_02.htm">Language Summary for awk</a><br />
+<a href="appb_03.htm">Command Summary for awk</a><br /></p></div><p>This appendix describes the features of the awk scripting language.
+<a name="b.awk1" /></p><div class="sect1"><a name="sedawk-app-b-sect-1" />
+<h2 class="sect1"><a name="sect1" />B.1. Command-Line Syntax</h2>
+
+<p>The syntax for invoking awk has two basic forms: 
+<a name="IXT-B-265238" />
+<a name="IXT-B-265239" />
+<a name="IXT-B-265240" /></p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">awk</b> [<em class="emphasis">-v</em> <em class="emphasis">var</em>=<em class="emphasis">value</em>] [<em class="emphasis">-F</em><em class="emphasis">re</em>] [<em class="emphasis">--</em>] '<em class="emphasis">pattern</em> { <em class="emphasis">action</em> }' <em class="emphasis">var</em>=<em class="emphasis">value</em> <em class="emphasis">datafile(s)</em>
+<b class="emphasis-bold">awk</b> [<em class="emphasis">-v</em> <em class="emphasis">var</em>=<em class="emphasis">value</em>] [<em class="emphasis">-F</em><em class="emphasis">re</em>] <em class="emphasis">-f</em> <em class="emphasis">scriptfile</em> [<b class="emphasis-bold">--</b>] <em class="emphasis">var</em>=<em class="emphasis">value</em> <em class="emphasis">datafile(s)</em></pre></blockquote><p>An awk command line consists of the command, the script and the input
+filename.  Input is read from the file specified on the command line.
+If there is no input file or "-" is specified, then standard input is
+read.  The <em class="emphasis">-F</em> option sets the field separator
+(<b class="emphasis-bold">FS</b>) to <em class="emphasis">re</em>.</p>
+
+<p>The <em class="emphasis">-v</em> option sets the variable
+<em class="emphasis">var</em> to <em class="emphasis">value</em> before
+the script is executed. This happens even before the
+<b class="emphasis-bold">BEGIN</b> procedure is run.  (See the discussion below on
+command-line parameters.)</p>
+
+<p>Following POSIX argument parsing conventions, the "<em class="emphasis">--</em>"
+option marks the end of command-line options.  Using this option, for
+instance, you could specify a <em class="emphasis">datafile</em> that
+begins with "-", which would otherwise be confused with a command-line
+option.</p>
+
+<p>You can specify a script consisting of
+<em class="emphasis">pattern</em> and
+<em class="emphasis">action</em> on the command line, surrounded by
+single quotes.  Alternatively, you can place the script in a separate
+file and specify the name of the <em class="emphasis">scriptfile</em>
+on the command line with the <em class="emphasis">-f</em> option.</p>
+
+<p>Parameters can be passed into awk by specifying them on the command
+line after the script.  This includes setting system variables such as
+<b class="emphasis-bold">FS</b>, <b class="emphasis-bold">OFS</b>, and
+<b class="emphasis-bold">RS</b>.  The <em class="emphasis">value</em> can be a
+literal, a shell variable ($<em class="emphasis">var</em>) or the
+result of a command
+(`<em class="emphasis">cmd</em>`); it must be
+quoted if it contains spaces or tabs.  Any number of parameters can be
+specified.</p>
+
+<p>Command-line parameters are not available until the first line of
+input is read, and thus cannot be accessed in the
+<b class="emphasis-bold">BEGIN</b> procedure.  (Older implementations of awk and
+nawk would process leading command-line assignments before running the
+<b class="emphasis-bold">BEGIN</b> procedure. This was contrary to how things
+were documented in <em class="citetitle">The AWK Programming Language</em>,
+which says that they are processed when awk would go to open them as
+filenames, i.e., after the <b class="emphasis-bold">BEGIN</b> procedure. The
+Bell Labs awk was changed to correct this, and the
+<em class="emphasis">-v</em> option was added at the same time, in early
+1989.  It is now part of POSIX awk.)  Parameters are evaluated in the
+order in which they appear on the command line up until a filename is
+recognized.  Parameters appearing after that filename will be
+available when the next filename is recognized.</p>
+
+<a name="sedawk-app-b-sect-1.1" /><div class="sect2">
+<h3 class="sect2">B.1.1. Shell Wrapper for Invoking awk</h3>
+
+<p>
+<a name="IXT-B-265241" />
+<a name="IXT-B-265242" />
+Typing a script at the system prompt is only practical for simple,
+one-line scripts.  Any script that you might invoke as a command and
+reuse can be put inside a shell script.  Using a shell script to
+invoke awk makes the script easy for others to use.</p>
+
+<p>You can put the command line that invokes awk in a file, giving it a
+name that identifies what the script does.  Make that file executable
+(using the <b class="emphasis-bold">chmod</b> command) and put it in a directory
+where local commands are kept.  The name of the shell script can be
+typed on the command line to execute the awk script.  This is
+preferred for easily used and reused scripts.</p>
+
+<p>
+<a name="IXT-B-265243" />
+<a name="IXT-B-265244" />
+On modern UNIX systems, including Linux, you can use the #! syntax
+to create self-contained awk scripts:</p>
+
+<blockquote><pre class="code"><tt class="literal">#! /usr/bin/awk -f</tt>
+<em class="emphasis">script</em></pre></blockquote><p>Awk parameters and the input filename can be specified on the command
+line that invokes the shell script.  Note that the pathname to use is
+system-dependent.</p>
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appa_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="appb_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">A.3. Command Summary for sed</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">B.2. Language Summary for awk</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

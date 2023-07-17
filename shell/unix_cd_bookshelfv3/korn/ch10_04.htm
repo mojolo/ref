@@ -1,0 +1,723 @@
+<html><head><title>System Security Features (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="appa_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.4. System Security Features</h2>
+
+<p>
+<a name="korn2-IDXTERM-2011" />
+<a name="korn2-IDXTERM-2012" />
+
+Unix security is a problem of legendary notoriety.
+Just about every aspect of a Unix system has some
+security issue associated with it, and it's usually
+the system administrator's job to worry about this
+issue.
+</p>
+
+<blockquote><b>NOTE:</b> 
+
+This is not a textbook on Unix system security.
+Be aware that this section merely touches the tip of the
+iceberg and that there are myriad other aspects to
+Unix system security besides how the shell is set up.
+See the end of the chapter for one book that we recommend.
+</p>
+</blockquote>
+
+<p>
+We first present a list of "tips" for writing shell scripts that
+have a better chance of avoiding security problems.
+Next we cover the <em class="emphasis">restricted shell</em>, which attempts to
+put a straitjacket around the user's environment.
+Then we present the idea of a "trojan horse," and why such
+things should be avoided.  Finally we discuss
+the Korn shell's
+<em class="emphasis">privileged mode</em>, which is
+used with shell scripts that run as if the user were
+<tt class="literal">root</tt>.
+</p>
+
+<a name="korn2-CHP-10-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">10.4.1. Tips for Secure Shell Scripts</h3>
+
+<p>
+Here are some tips for writing more secure shell scripts,
+courtesy of Professor Eugene (Gene) Spafford, the director of Purdue University's
+Center for Education and Research in Information Assurance and Security:<a href="#FOOTNOTE-142">[142]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-142" /><p> [142]
+See <a href="http://www.cerias.purdue.edu">http://www.cerias.purdue.edu</a>.
+<a name="IXT-10-288269" />
+</p>
+</blockquote>
+
+<dl>
+
+<dt><i>Don't put dot in PATH</i></dt>
+<dd>
+This issue was described in <a href="ch03_01.htm">Chapter 3</a>.
+This opens the door wide for "trojan horses,"
+described in the next section.
+</p></dd>
+
+
+<dt><i>Protect bin directories</i></dt>
+<dd>
+Make sure that every directory in <tt class="literal">$PATH</tt> is
+writable only by its owner and by no one else.  The same applies to all
+the programs <em class="emphasis">in</em> the <em class="emphasis">bin</em> directories.
+</p></dd>
+
+
+<dt><i>Design before you code</i></dt>
+<dd>
+Spend some time thinking about what you want to do and how to do it;
+don't just type stuff in with a text editor and keep hacking until
+it seems to work.
+Include code to handle errors and 
+failures gracefully.
+</p></dd>
+
+
+<dt><i>Check all input arguments for validity</i></dt>
+<dd>
+If you expect a number, verify that you got a number.
+Check that the number is in the correct range.
+Do the same thing for other kinds of data; the shell's regular
+expression facilities are particularly useful for this.
+</p></dd>
+
+
+<dt><i>Check error codes from all commands that can return errors</i></dt>
+<dd>
+Things you may not expect to fail might be mischievously forced to fail to cause 
+the script to misbehave.  For instance, it is possible to cause some 
+commands to fail even as <tt class="literal">root</tt> if the argument is a NFS-mounted disk 
+or a character-oriented device file.
+</p></dd>
+
+
+<dt><i>Don't trust passed-in environment variables</i></dt>
+<dd>
+Check and reset them 
+to known values if they are used by subsequent commands (e.g., <tt class="literal">TZ</tt>, 
+<tt class="literal">FPATH</tt>,
+<tt class="literal">PATH</tt>, <tt class="literal">IFS</tt>, etc.).
+The Korn shell automatically resets <tt class="literal">IFS</tt> to its default upon
+startup, ignoring whatever was in the environment, but many other shells don't.
+In all cases it's an excellent idea to explicitly set <tt class="literal">PATH</tt>
+to contain just the system <em class="emphasis">bin</em> directories.
+</p></dd>
+
+
+<dt><i>Start in a known place</i></dt>
+<dd>
+Explicitly <em class="emphasis">cd</em></tt> to a known directory when the script starts so that 
+any subsequent relative pathnames are to a known location.
+Be sure the that <em class="emphasis">cd</em></tt> succeeds:
+
+<blockquote><pre class="code">
+cd <tt><em class="replaceable"><tt>app-dir</tt></em></tt> || exit 1
+</pre></blockquote>
+</p></dd>
+
+
+<dt><i>Use full pathnames for commands</i></dt>
+<dd>
+Do this so you know which 
+version you are getting, regardless of <tt class="literal">$PATH</tt>.
+</p></dd>
+
+
+<dt><i>Use syslog(8) to keep an audit trail</i></dt>
+<dd>
+Log the date and time of invocation, username, etc.;
+see <em class="emphasis">logger</em></tt>(1).
+If you don't have <em class="emphasis">syslog</em></tt>, 
+create a function to keep a log file:
+
+<blockquote><pre class="code">
+function logsys {
+   print -r -- "$@"  &gt;&gt;  /var/adm/logsysfile
+}
+logsys "Run by user "  $(/bin/whoami)  "($USER) at "  $(/bin/date)
+</pre></blockquote>
+
+(<em class="emphasis">whoami</em></tt>(1) prints the login name of
+the effective user ID, a concept described later in this
+chapter.)
+</p></dd>
+
+
+<dt><i>Always quote user input when using that input</i></dt>
+<dd>
+E.g., <tt class="literal">"$1"</tt> and <tt class="literal">"$*"</tt>.
+This prevents malicious user input from being further evaluated and executed.
+
+<a name="IXT-10-288270" />
+<a name="IXT-10-288271" />
+<a name="IXT-10-288272" />
+
+</p></dd>
+
+
+<dt><i>Don't use eval on user input</i></dt>
+<dd>
+Beside quoting user input, <em class="emphasis">don't</em></tt> hand it to the
+shell to reprocess with <em class="emphasis">eval</em></tt>.
+If the user reads your script and sees that it uses <em class="emphasis">eval</em></tt>,
+it's easy to subvert the script into doing almost anything.
+</p></dd>
+
+
+<dt><i>Quote the results of wildcard expansion</i></dt>
+<dd>
+There are several nasty things you can do to a system administrator by 
+creating files with spaces, semicolons, back-quotes, and so on in the 
+filenames.  If administrative scripts don't quote the filename arguments, 
+the scripts can trash -- or give away -- the system.
+</p></dd>
+
+
+<dt><i>Check user input for metacharacters</i></dt>
+<dd>
+Look for metacharacters such as <tt class="literal">$</tt> or <tt class="literal">`</tt>
+(old-style command substitution)
+if using the input in an <em class="emphasis">eval</em></tt> or
+<tt class="literal">$(</tt>...<tt class="literal">)</tt>.
+</p></dd>
+
+
+<dt><i>Test your code and read it critically</i></dt>
+<dd>
+Look for assumptions and mistakes that can be exploited.
+Put yourself into a nasty mood, and read your code with the intent
+of trying to figure out how to subvert it.
+Then fix whatever problems you find.
+</p></dd>
+
+
+<dt><i>Be aware of race conditions</i></dt>
+<dd>
+If an attacker can execute arbitrary 
+commands between any two commands in your script, will it compromise 
+security?   If so, find another way to do it.
+</p></dd>
+
+
+<dt><i>Suspect symbolic links</i></dt>
+<dd>
+When <em class="emphasis">chmod</em>ing or editing a file, check it to be sure it is a file 
+and not a symbolic link to a critical system file.
+(Use <tt class="literal">[[ -L</tt> <em class="replaceable"><tt>file</tt></em> <tt class="literal">]]</tt>
+or <tt class="literal">[[ -h</tt> <em class="replaceable"><tt>file</tt></em> <tt class="literal">]]</tt>
+to test if <em class="emphasis">file</em> is a symbolic link.)
+</p></dd>
+
+
+<dt><i>Have someone else review your code for mistakes</i></dt>
+<dd>
+Often a fresh pair of eyes can spot things that the original
+author of a program misses.
+</p></dd>
+
+
+<dt><i>Use setgid instead of setuid, if possible</i></dt>
+<dd>
+These terms are discussed later in this chapter.  In brief, by using <em class="emphasis">setgid</em>,
+you restrict the amount of damage that can be done to the group that is
+compromised.
+</p></dd>
+
+
+<dt><i>Use a new user instead of root</i></dt>
+<dd>
+If you must use <em class="emphasis">setuid</em></tt> to access a group of files, consider making a 
+new, non-<tt class="literal">root</tt> user for that purpose, and <em class="emphasis">setuid</em></tt> to it.
+</p></dd>
+
+
+<dt><i>Limit setuid code as much as possible</i></dt>
+<dd>
+Make the amount of <em class="emphasis">setuid</em> code as small as you can.
+Move it into a separate program, and
+invoke that from within a larger script when necessary.
+However, be sure to code defensively as if the script can be invoked by 
+anyone from anywhere else!
+</p></dd>
+
+
+</dl>
+
+<p>
+Chet Ramey, the maintainer of <em class="emphasis">bash</em>, offers the
+following prologue for use in shell scripts that need to be more secure:
+</p>
+
+<blockquote><pre class="code">
+# reset IFS, even though ksh doesn't import IFS from the environment,
+# $ENV could set it
+IFS=$' \t\n'
+
+# make sure unalias is not a function, since it's a regular builtin
+# unset is a special builtin, so it will be found before functions
+unset -f unalias
+
+# unset all aliases
+# quote unalias so it's not alias-expanded
+\unalias -a
+
+# make sure command is not a function, since it's a regular builtin
+# unset is a special builtin, so it will be found before functions
+unset -f command
+
+# get a reliable path prefix, handling case where getconf is not
+# available (not too necessary, since getconf is a ksh93 built-in)
+SYSPATH="$(command -p getconf PATH 2&gt;/dev/null)" 
+if [[ -z "$SYSPATH" ]]; then
+        SYSPATH="/usr/bin:/bin"         # pick your poison
+fi
+PATH="$SYSPATH:$PATH"
+</pre></blockquote>
+
+</div>
+
+<a name="korn2-CHP-10-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">10.4.2. Restricted Shell</h3>
+
+<p>
+<a name="IXT-10-288273" />
+<a name="IXT-10-288274" />
+<a name="IXT-10-288275" />
+<a name="IXT-10-288276" />
+
+The restricted shell is designed to put the user into
+an environment where his or her ability to move around
+and write files is severely limited. It's usually used
+for guest accounts.
+When invoked as <em class="emphasis">rksh</em> (or with the <em class="emphasis">-r</em>
+option), <em class="emphasis">ksh</em> acts as a restricted shell.
+
+You can make a user's login shell
+restricted by putting the full pathname to <em class="emphasis">rksh</em>
+in the user's <em class="emphasis">/etc/passwd</em> entry.
+The <em class="emphasis">ksh</em> executable file must have a link to it
+named <em class="emphasis">rksh</em> for this to work.
+</p>
+
+<p>
+The specific constraints imposed by the restricted shell
+disallow the user from doing the following:
+
+</p>
+
+<ul>
+
+<li><p>
+<a name="IXT-10-288277" />
+Changing working directories: <em class="emphasis">cd</em> is
+inoperative. If you try to use it, you will get the
+error message <tt class="literal">ksh: cd: restricted</tt>.
+</p></li>
+
+
+<li><p>
+<a name="IXT-10-288278" />
+Redirecting output to a file: the redirectors
+<tt class="literal">&gt;</tt>, <tt class="literal">&gt;|</tt>, <tt class="literal">&lt;&gt;</tt>,
+and <tt class="literal">&gt;&gt;</tt> are not allowed.
+This includes using <em class="emphasis">exec</em>.
+</p></li>
+
+
+<li><p>
+<a name="IXT-10-288279" />
+Assigning a new value to the environment variables
+<tt class="literal">ENV</tt>, <tt class="literal">FPATH</tt>,
+<tt class="literal">PATH</tt>, or <tt class="literal">SHELL</tt>,
+or trying to change their attributes with <em class="emphasis">typeset</em>.
+</p></li>
+
+
+<li><p>
+<a name="IXT-10-288280" />
+Specifying any pathnames of commands with slashes (/) in them.
+The shell only runs commands found along <tt class="literal">$PATH</tt>.
+</p></li>
+
+<li><p>
+<a name="IXT-10-288281" />
+Adding new built-in commands with the <em class="emphasis">builtin</em> command.
+(This very advanced feature is outside the scope of this book.)
+</p></li>
+
+</ul>
+
+<p>
+<a name="IXT-10-288282" />
+These restrictions go into effect after the
+user's <em class="emphasis">.profile</em> and environment files are run.
+This means that the restricted shell user's entire
+environment is set up in <em class="emphasis">.profile</em>.
+This lets the system
+administrator configure the environment as she
+sees fit.
+</p>
+
+<p>
+To keep the user from overwriting <em class="emphasis">~/.profile</em>, it
+is not enough to make the file read-only by the user.  Either the home
+directory should not be writable by the user, or the
+commands in <em class="emphasis">~/.profile</em> should <em class="emphasis">cd</em>
+to a different directory.
+</p>
+
+<p>
+
+Two common ways of setting up such environments are
+to set up a directory of "safe" commands and have that
+directory be the only one in <tt class="literal">PATH</tt>, and to set
+up a command menu from which the user can't escape without
+exiting the shell.
+In any case, make sure that there is no other shell in any directory
+listed in <tt class="literal">$PATH</tt>; otherwise the user can just run
+that shell and avoid the restrictions listed earlier.
+</p>
+
+<blockquote><b>WARNING:</b> 
+
+Although the ability to restrict the shell has been available
+(if not necessarily compiled in or documented) since the original Version 7 Bourne shell,
+it is rarely used.  Setting up a usable yet correctly restricted environment is
+difficult in practice.  So, caveat emptor.
+<a name="IXTR3-429" />
+</p>
+</blockquote>
+</div>
+
+<a name="korn2-CHP-10-SECT-4.3" /><div class="sect2">
+<h3 class="sect2">10.4.3. Trojan Horses</h3>
+
+<p>
+<a name="IXT-10-288283" />
+
+The concept of a <em class="emphasis">trojan horse</em> was introduced
+briefly in <a href="ch03_01.htm">Chapter 3</a>.
+A trojan horse is something that looks harmless, or
+even useful, but which contains a hidden danger.
+</p>
+
+<p>
+Consider the following scenario.
+User John Q. Programmer (login name <tt class="literal">jprog</tt>) is an
+excellent programmer and
+has quite a collection of personal programs in <em class="emphasis">~jprog/bin</em>.
+This directory occurs first in the <tt class="literal">PATH</tt> variable
+in <em class="emphasis">~jprog/.profile</em>.
+Since he  is such a good programmer, management recently
+promoted him to system administrator.
+</p>
+
+<p>
+This is a whole new field of endeavor, and John -- not knowing
+any better -- has unfortunately
+left his <em class="emphasis">bin</em> directory writable.
+Along comes W. M. Badguy, who creates the following shell script,
+named <em class="emphasis">grep</em>,
+in John's <em class="emphasis">bin</em> directory:
+</p>
+
+<blockquote><pre class="code">
+/bin/grep "$@"
+case $(whoami) in                  <i class="lineannotation">Check effective user ID name</i>
+root)    <em class="replaceable"><tt>nasty stuff here</tt></em>          <i class="lineannotation">Danger Will Robinson, danger!</i>
+         rm ~/jprog/bin/grep       <i class="lineannotation">Hide the evidence</i>
+         ;;
+esac
+</pre></blockquote>
+
+<p>
+In and of itself, this script can do no damage when <tt class="literal">jprog</tt>
+is working <em class="emphasis">as himself</em>.  The problem comes when <tt class="literal">jprog</tt>
+uses the <em class="emphasis">su</em>(1) command.
+This command allows a regular user to "switch user" to a different user.
+By default, it allows a regular user to become <tt class="literal">root</tt> (as long
+as that user knows the password, of course).
+The problem is that normally, <em class="emphasis">su</em>
+uses whatever <tt class="literal">PATH</tt> it inherits.<a href="#FOOTNOTE-143">[143]</a>
+In this case, <tt class="literal">$PATH</tt> includes <em class="emphasis">~jprog/bin</em>.
+Now, when <tt class="literal">jprog</tt>, working as <tt class="literal">root</tt>,
+runs <em class="emphasis">grep</em>, he actually executes the trojan horse
+version in his <em class="emphasis">bin</em>.  This version runs the real <em class="emphasis">grep</em>,
+so <tt class="literal">jprog</tt> gets the results he expects.  But it also silently
+executes the <em class="emphasis">nasty stuff here</em> part, as <tt class="literal">root</tt>.
+This means that Unix will let the script do anything it wants to.  <em class="emphasis">Anything</em>.
+And to make things worse, by removing the trojan horse when it's done, there's
+no longer any evidence.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-143" /><p> [143]
+Get in the habit of using
+<tt class="literal">su -</tt> <em class="replaceable"><tt>user</tt></em>
+to switch to <em class="emphasis">user</em> as if the user were
+doing a real login.
+This prevents the importing of the existing <tt class="literal">PATH</tt>.
+</p>
+</blockquote>
+
+<p>
+Writable <em class="emphasis">bin</em> directories open one door for trojan horses, as does
+having dot in <tt class="literal">PATH</tt>.  Having writable shell scripts in any
+<em class="emphasis">bin</em> directory is another door.
+Just as you close and lock the doors of your house at night, you should
+make sure that you close any doors on your system!
+</p>
+
+</div>
+
+
+<a name="korn2-CHP-10-SECT-4.4" /><div class="sect2">
+<h3 class="sect2">10.4.4. Setuid and Privileged Mode</h3>
+
+<p>
+<a name="korn2-IDXTERM-2029" />
+<a name="korn2-IDXTERM-2030" />
+<a name="korn2-IDXTERM-2031" />
+
+Many problems with Unix security hinge on a Unix file
+attribute called the <em class="emphasis">setuid</em> (set user ID) bit.
+This is like a permission bit (see the earlier discussion of <em class="emphasis">umask</em>):
+when an executable file has it turned on,
+the file runs with an effective user ID equal
+to the owner of the file.
+The effective user ID is distinct from
+the real user ID of the process, and
+Unix applies its permission tests to the process's effective user ID.
+</p>
+
+<p>
+For example, suppose you've written a really nifty game program that keeps
+a private score file showing the top 15 players on your system.
+You don't want to make the score file world-writable, because anyone
+could just come along and edit the file to make themselves the high scorer.
+By making your game setuid to your user ID, the game program can update the
+file, which you own, but no one else can update it.
+(The game program can determine who ran it by looking at its real user ID
+and using that to determine the login name.)
+</p>
+
+<p>
+The setuid facility is a nice feature for games and score files,
+but it becomes much more dangerous when used for <tt class="literal">root</tt>.
+Making programs setuid <tt class="literal">root</tt>
+lets administrators write programs
+that do certain things that require <tt class="literal">root</tt> privilege
+(e.g., configure printers) in a controlled way.
+To set a file's <em class="emphasis">setuid</em> bit, the superuser can type
+<tt class="literal">chmod 4755</tt> <em class="replaceable"><tt>filename</tt></em>;
+the <tt class="literal">4</tt> is the <em class="emphasis">setuid</em> bit.
+</p>
+
+<p>
+A similar facility exists at the group level, known (not surprisingly) as
+<em class="emphasis">setgid</em> (set group ID).  Use <tt class="literal">chmod 2755</tt>
+<em class="replaceable"><tt>filename</tt></em> to turn on setgid permissions.
+When you do an <em class="emphasis">ls -l</em> on a setuid or setgid file,
+the <tt class="literal">x</tt> in the permission mode is replaced with an <tt class="literal">s</tt>;
+for example, <tt class="literal">-rws--s--x</tt> for a file that is readable and
+writable by the owner, executable by everyone, and has both the setuid
+and setgid bits set (octal mode 6711).
+</p>
+
+<p>
+<a name="korn2-IDXTERM-2032" />
+<a name="IXT-10-288284" />
+<a name="IXT-10-288285" />
+
+Modern system administration wisdom says that creating
+setuid and setgid shell scripts is a very, very bad idea.
+This has been especially true under
+the C shell, because its <em class="emphasis">.cshrc</em> environment file
+introduces numerous opportunities for break-ins.
+
+In particular, there are multiple ways of tricking a setuid shell script into
+becoming an <em class="emphasis">interactive</em> shell with an effective user ID
+of <tt class="literal">root</tt>.  This is about the best thing a cracker could hope
+for: the ability to run any command as <tt class="literal">root</tt>.
+</p>
+
+<blockquote><b>NOTE:</b> 
+
+There is an important difference between a setuid shell script and a
+<em class="emphasis">setuid shell</em>.
+The latter is a copy of the shell executable, which has been made
+to belong to <tt class="literal">root</tt> and had the setuid bit applied.  In the previous
+section on trojan horses, suppose that the <em class="emphasis">nasty stuff here</em>
+was this code:
+
+<blockquote><pre class="code">
+cp /bin/ksh ~badguy/bin/myls
+chown root ~badguy/bin/myls
+chmod 4755 ~badguy/bin/myls
+</pre></blockquote></p>
+
+<p>Remember, this code executes as <tt class="literal">root</tt>, so it will work.
+When <tt class="literal">badguy</tt> executes <em class="emphasis">myls</em>, it's a
+machine-code executable file, and the setuid bit <em class="emphasis">is</em> honored.
+Hello shell that runs as <tt class="literal">root</tt>.
+Goodbye <?troff .hw security?>security!
+<a name="IXTR3-430" />
+<a name="IXTR3-431" />
+</p>
+</blockquote>
+
+<p>
+<a name="korn2-IDXTERM-2037" />
+<a name="IXT-10-288286" />
+
+<em class="emphasis">Privileged mode</em> was designed to protect against setuid shell scripts.
+This is a <em class="emphasis">set -o</em> option (<tt class="literal">set -o privileged</tt>
+or <tt class="literal">set -p</tt>), but the shell enters it
+automatically whenever it executes a script whose <em class="emphasis">setuid</em>
+bit is set, i.e., when the effective user ID is different from the real user ID.
+</p>
+
+<p>
+<a name="IXT-10-288287" />
+
+In privileged mode, when a <em class="emphasis">setuid</em> Korn shell
+script is invoked, the shell runs the file <em class="emphasis">/etc/suid_profile</em>.
+This file
+should be written so as to restrict
+<em class="emphasis">setuid</em> shell scripts in much the same way as the
+restricted shell does.
+
+
+At a minimum, it should make
+<tt class="literal">PATH</tt> read-only (<tt class="literal">typeset -r PATH</tt> or
+<tt class="literal">readonly PATH</tt>) and set it
+to one or more "safe" directories. Once again,
+this prevents any decoys from being invoked.
+</p>
+
+<p>
+Since privileged mode is an option, it is possible to
+turn it off with the command <tt class="literal">set +o privileged</tt>
+(or <tt class="literal">set +p</tt>).
+But this doesn't help the potential
+system cracker: the shell automatically changes its
+effective user ID to be the same as the real user
+ID -- i.e., if you turn off privileged mode, you also turn
+off <em class="emphasis">setuid</em>.
+<a name="IXTR3-432" />
+</p>
+
+<p>
+In addition to privileged mode, <em class="emphasis">ksh</em> provides a
+special "agent" program, <em class="emphasis">/etc/suid_exec</em>, that
+runs setuid shell scripts (or shell scripts that are executable but
+not readable).
+</p>
+
+<p>
+For this to work, the script should <em class="emphasis">not</em> start
+with <tt class="literal">#! /bin/ksh</tt>.  When the program is invoked,
+<em class="emphasis">ksh</em> attempts to run the program as a regular
+binary executable.
+When the operating system fails
+to run the script (because it isn't binary, and because it doesn't
+have the name of an interpreter specified with <tt class="literal">#!</tt>),
+<em class="emphasis">ksh</em> realizes that it's a script and
+invokes <em class="emphasis">/etc/suid_exec</em>
+with the name of the script and its arguments.  It also arranges to
+pass an authentication "token" to <em class="emphasis">/etc/suid_exec</em>
+indicating the real and effective user and group IDs of the script.
+<em class="emphasis">/etc/suid_exec</em> verifies that it is safe to run the
+script and then arranges to invoke <em class="emphasis">ksh</em> with the
+proper real and effective user and group IDs on the script.
+</p>
+
+<p>
+Although the combination of privileged mode and <em class="emphasis">/etc/suid_exec</em>
+allows you to avoid many of the attacks on setuid scripts, actually writing scripts that can
+safely be run setuid is a difficult art, requiring a fair
+amount of knowledge and experience.  It should be done very
+carefully.
+</p>
+
+
+
+<p>
+In fact,
+the dangers of setuid and setgid shell scripts
+(at least for shells besides <em class="emphasis">ksh</em>)
+are so great that modern
+Unix systems, meaning both commercial Unix systems and freeware clones
+(4.4-BSD-derived and GNU/Linux), disable the setuid and setgid bits on shell scripts.
+Even if you apply the bits to the file, the operating system does not honor them.<a href="#FOOTNOTE-144">[144]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-144" /><p> [144]
+MacOS X seems to be a notable exception.  Be extra careful if you run
+one or more such systems!
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-10-288288" />
+<a name="IXT-10-288289" />
+
+Although setuid shell scripts don't work on modern systems,
+there are occasions where privileged mode is still useful.
+In particular, there is a widely used third party program named <em class="emphasis">sudo</em>,
+which, to quote the web page,
+"allows a system administrator to give certain users (or groups of users) the ability to run
+some (or all) commands as <tt class="literal">root</tt> or another user while logging the commands and arguments."
+The home page for <em class="emphasis">sudo</em> is
+<a href="http://www.courtesan.com/sudo/">http://www.courtesan.com/sudo/</a>.
+
+A system administrator could easily execute
+<tt class="literal">sudo /bin/ksh -p</tt>
+in order to get a known environment for performing
+administrative tasks.
+</p>
+
+<p>
+<a name="IXT-10-288290" />
+
+Finally, if you would like to learn more about Unix security,
+we recommend
+<em class="emphasis">Practical UNIX &amp; Internet Security</em> by Simson Garfinkel and Gene Spafford.
+It is published by O'Reilly &amp; Associates.
+</p>
+
+<a name="IXTR3-433" />
+<a name="IXTR3-434" />
+<a name="IXTR3-435" />
+<a name="IXTR3-436" />
+<a name="IXTR3-437" />
+<a name="IXTR3-438" />
+
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="appa_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.3. Customizing the Editing Modes</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">A. Related Shells</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

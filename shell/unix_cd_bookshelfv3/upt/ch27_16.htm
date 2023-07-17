@@ -1,0 +1,107 @@
+<html><head><title>Here Documents (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch27_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">27.16. Here Documents</h2>
+
+<p><a name="IXT-27-4935" />So
+<a name="IXT-27-4936" /><a name="IXT-27-4937" /><a name="IXT-27-4938" />far, we've talked
+about three different kinds of quoting: backslashes
+(<tt class="literal">\</tt>), single quotes (<tt class="literal">'</tt>), and
+double quotes (<tt class="literal">"</tt>). The shells support yet one more
+kind of quoting, called <em class="emphasis">here documents</em>. A here
+document is useful when you need to read something from standard
+input, but you don't want to create a file to
+provide that input; you want to put that input right into your shell
+script (or type it directly on the command line). To do so, use the
+<tt class="literal">&lt;&lt;</tt><a name="IXT-27-4939" /> operator, followed by
+a special word:
+</p>
+
+<blockquote><pre class="code">sort &gt;file &lt;&lt;EndOfSort
+zygote
+abacus
+EndOfSort</pre></blockquote>
+
+<p>This is very useful because <b class="emphasis-bold">variables</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>,
+<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) are evaluated during this operation.
+<a name="IXT-27-4940" />Here is a way
+to transfer a file using
+<a name="IXT-27-4941" />anonymous <b class="emphasis-bold">ftp</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>)<a href="#FOOTNOTE-84">[84]</a> from a shell script:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-84" /><p> [84]You might be better off using <i class="command">wget</i> or
+<i class="command">curl</i> for downloads, but this method can be useful
+for automated uploads.</p> </blockquote>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: ftpfile</p>
+
+<blockquote><pre class="code">#!/bin/sh
+# Usage:
+#     ftpfile machine file
+# set -x
+SOURCE=$1
+FILE=$2
+GETHOST="uname -n"
+BFILE=`basename $FILE`
+ftp -n $SOURCE &lt;&lt;EndFTP
+ascii
+user anonymous $USER@`$GETHOST`
+get $FILE /tmp/$BFILE
+EndFTP</pre></blockquote>
+
+<p>As you can see, variable and <b class="emphasis-bold">command
+substitutions</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) are done. If
+you don't want those to be done, put a backslash in
+front of the name of the word:
+</p>
+
+<blockquote><pre class="code">cat &gt;file &lt;&lt;\FunkyStriNG</pre></blockquote>
+
+<p>Notice the funky string. This is done because it is very unlikely
+that I will want to put that particular combination of characters in
+any file. You should be warned that the C shell expects the matching
+word (at the end of the list) to be escaped the same way, i.e.,
+<tt class="literal">\FunkyStriNG</tt>, while the Bourne shell does not. See
+<a href="ch36_19.htm#upt3-CHP-36-SECT-19">Section 36.19</a>.
+</p>
+
+<p><a name="IXT-27-4942" /><a name="IXT-27-4943" /><a name="IXT-27-4944" /><a name="IXT-27-4945" /><a name="IXT-27-4946" />Most Bourne shells also have the
+<tt class="literal">&lt;&lt;-</tt> operator. The dash
+(<tt class="literal">-</tt>) at the end tells the shell to strip any TAB
+characters from the beginning of each line. Use this in shell scripts
+to indent a section of text without passing those TABs to the
+command's standard input.
+</p>
+
+<p>Other shells, notably <i class="command">zsh</i> and later versions of
+<i class="command">ksh</i>, but in the future possibly also
+<i class="command">bash</i>, support a method for taking input from a
+string:
+</p>
+
+<blockquote><pre class="code">$ tr ... &lt;&lt;&lt; "$xyzzy" | ...</pre></blockquote>
+
+<p> <em class="emphasis">-- BB</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch27_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">27.15. Verbose and Echo Settings Show Quoting</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">27.17. "Special" Characters and Operators</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

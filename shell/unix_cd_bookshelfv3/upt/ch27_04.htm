@@ -1,0 +1,94 @@
+<html><head><title>Command Evaluation and Accidentally Overwriting Files (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch27_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">27.4. Command Evaluation and Accidentally Overwriting Files</h2>
+
+<p><a name="IXT-27-4812" /><a name="IXT-27-4813" />Before
+<a name="IXT-27-4814" /><a name="IXT-27-4815" />getting into the
+details of command interpretation, I thought I'd
+give a very simple example of why it's important.
+Here's an error that occurs all the time.
+Let's say you have two files, called
+<em class="filename">file1</em> and <em class="filename">file2</em>. You want
+to create a new version of <em class="filename">file1</em> that has
+<em class="filename">file2</em> added to the end of it.
+That's what
+<i class="command">cat</i><a name="IXT-27-4816" /> is all about, so you give the command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat file1 file2 &gt; file1</b></tt>          <i class="lineannotation">...wrong</i></pre></blockquote>
+
+<p>This looks like it should work. If you've ever tried
+it, you know it doesn't; it erases
+<em class="filename">file1</em>, and then dumps <em class="filename">file2</em>
+into it. Why? The shell (not <i class="command">cat</i>) handles
+<a name="IXT-27-4817" /> <a name="IXT-27-4818" />standard input and output:
+</p>
+
+<ul><li>
+<p>As the shell is processing the command, it sees that
+you're <a name="IXT-27-4819" />redirecting standard output into
+<em class="filename">file1</em>, so it opens the file for writing,
+destroying the data that's already in it.
+</p>
+</li><li>
+<p>Later, after it's finished interpreting the command
+line, the shell executes <i class="command">cat</i>, passing
+<em class="filename">file1</em> and <em class="filename">file2</em> as
+arguments. But <em class="filename">file1</em> is already empty.
+</p>
+</li><li>
+<p><i class="command">cat</i> reads <em class="filename">file1</em> (which is
+empty) and writes it on standard output (which goes into
+<em class="filename">file1</em>).
+</p>
+</li><li>
+<p><i class="command">cat</i> reads <em class="filename">file2</em> (which also
+goes into <em class="filename">file1</em>). At this point,
+<i class="command">cat</i> is finished, so it exits.
+</p>
+</li></ul>
+<p><em class="filename">file1</em> and <em class="filename">file2</em> are
+identical, which isn't what you wanted. But
+it's what you got.
+</p>
+
+<p>Some versions of <i class="command">cat</i> give you a warning message in
+this situation (<tt class="literal">cat: file1:</tt> <tt class="literal">input file is
+output file</tt>). This might lead you to believe that somehow
+<i class="command">cat</i> was smart and managed to protect you. Sadly,
+that's not true. By the time <i class="command">cat</i>
+figures out that an input file and an output file are the same,
+it's too late: <em class="filename">file1</em> is already
+gone. This bit of <i class="command">cat</i>ty cleverness does have a
+function, though: it prevents commands like the following from
+creating infinitely long files:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat file1 file2 &gt;&gt; file2</b></tt></pre></blockquote>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch27_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">27.3. What's a Shell, Anyway?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">27.5. Output Command-Line Arguments One by One</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

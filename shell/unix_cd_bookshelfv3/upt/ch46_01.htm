@@ -1,0 +1,179 @@
+<html><head><title>Connectivity (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch45_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch46_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 46. Connectivity</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch46_01.htm#sect1">TCP/IP -- IP Addresses and Ports</a><br />
+<a href="ch46_02.htm">/etc/services Is Your Friend</a><br />
+<a href="ch46_03.htm">Status and Troubleshooting</a><br />
+<a href="ch46_04.htm">Where, Oh Where Did That Packet Go?</a><br />
+<a href="ch46_05.htm">The Director of Operations: inetd</a><br />
+<a href="ch46_06.htm">Secure Shell (SSH)</a><br />
+<a href="ch46_07.htm">Configuring an Anonymous FTP Server</a><br />
+<a href="ch46_08.htm">Mail -- SMTP, POP, and IMAP</a><br />
+<a href="ch46_09.htm">Domain Name Service (DNS)</a><br />
+<a href="ch46_10.htm">Dynamic Host Configuration Protocol (DHCP)</a><br />
+<a href="ch46_11.htm">Gateways and NAT</a><br />
+<a href="ch46_12.htm">Firewalls</a><br />
+<a href="ch46_13.htm">Gatewaying from a Personal LAN over a Modem</a><br /></p></div><div class="sect1"><a name="upt3-CHP-46-SECT-1" />
+<h2 class="sect1"><a name="sect1" />46.1. TCP/IP -- IP Addresses and Ports</h2>
+
+<p><a name="upt3-IDXTERM-7332" />TCP/IP
+<a name="upt3-IDXTERM-7333" /> <a name="upt3-IDXTERM-7334" />networking is a part of the Open Systems
+Interconnection (OSI) Model. <a name="IXT-46-439" />Much like you
+can string together lots of little single-purpose Unix tools to do
+complex tasks, the OSI Model is made up of specific single-purpose
+layers that work together. Each layer builds on the layers below.
+Layers 1 and 2 are concerned with hardware; physical standards such
+as required voltages and low-level protocols like Ethernet reside
+there. Layers 3 and 4 are networking layers, which this article
+introduces. Layers 5 through 7 are application layers, where
+networking interfaces such as BSD sockets and applications such as
+web browsers, telnet clients, and diagnostic tools live.
+</p>
+
+<p>For most Unixes, the fundamentals of networking (once you get past
+the network device drivers) are the <a name="IXT-46-440" /><a name="IXT-46-441" />Layer
+3 Internet Protocol (IP) and a <a name="IXT-46-442" />Layer 4 protocol on top of it, either
+the <a name="IXT-46-443" /><a name="IXT-46-444" />Transport Control Protocol (TCP), the
+<a name="IXT-46-445" /> <a name="IXT-46-446" /><a name="IXT-46-447" /> <a name="IXT-46-448" />User
+Datagram Protocol (UDP), or the IP Control Message Protocol (ICMP).
+These four protocols are so commonly treated as one unit that
+you'll often see them referred to together as
+TCP/IP.
+</p>
+
+<a name="upt3-CHP-46-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">46.1.1. Internet Protocol (IP)</h3>
+
+<p>IP's job is to get small chunks of data, called
+<a name="IXT-46-449" />packets, from one
+machine to another. It is a "best
+effort" protocol; that is, it makes its best effort
+to deliver each packet to the right host, and if it
+can't, it simply drops the packet on the floor. It
+may seem like losing bits of your data would be a bad thing, but it
+turns out that this feature is part of what allows the Internet to
+route traffic around problems; higher-level protocols and
+applications notice that packets are being dropped and resend them,
+sometimes through better routes.
+</p>
+
+<p><a name="IXT-46-450" /><a name="IXT-46-451" />IP
+identifies machines through <em class="emphasis">IP
+addresses</em><a name="IXT-46-452" />. Every
+machine that wants to communicate with another machine via TCP/IP
+must have a unique IP address, unless it's using
+<b class="emphasis-bold">Network Address Translation (NAT)</b>
+(<a name="IXT-46-453" /><a name="IXT-46-454" /><a href="ch46_01.htm#upt3-CHP-46-SECT-1">Section 46.1</a>). When you
+dial up your ISP with a modem, your ISP assigns you a
+<a name="IXT-46-455" />dynamic
+IP address, good for that modem session. When you have a dedicated
+broadband connection, often your ISP will assign you a small block of
+<a name="IXT-46-456" />static
+IP addresses to use as you like. Each ISP is in turn assigned large
+blocks of IP addresses for them to dole out to their users, and
+traffic on the Internet travels from ISP to ISP based on the
+addresses they hold.
+</p>
+
+<p>The current standard version of <a name="IXT-46-457" />IP is Version 4 (IPv4), which uses
+32-bit addresses. With the explosion of the Internet, addresses are
+being used up at quite an impressive rate; remember that normally
+every single machine connected to the Internet needs its own
+<a name="IXT-46-458" />IP address. Version 6 (IPv6) is, at the
+time of this writing, a proposed standard that uses 128-bit
+addresses. For the purposes of this book, we'll
+gloss over the differences, since they mostly don't
+matter at this level. Our examples will use IPv4 addresses, since
+that's what you're most likely to
+be dealing with for a little while yet.
+</p>
+
+</div>
+<a name="upt3-CHP-46-SECT-1.2" /><div class="sect2">
+<h3 class="sect2">46.1.2. Layer 4 Protocols: TCP, UDP, and ICMP</h3>
+
+<p><a name="IXT-46-459" /><a name="IXT-46-460" /> <a name="IXT-46-461" /> <a name="IXT-46-462" /> <a name="IXT-46-463" />TCP, UDP, and ICMP all
+"sit on top" of IP; that is, they
+use IP to actually deliver the packets.
+</p>
+
+<p>TCP's job is to provide ordered and guaranteed
+delivery. Ordered delivery means that the application at the other
+end of the TCP connection reads data in the same order as it was
+sent. Guaranteed delivery means that TCP keeps track of which packets
+arrived at the other end and resends packets that were dropped.
+Together, these two characteristics provide a network communication
+mechanism that acts very much like a Unix pipe from an
+application's point of view; you simply write bytes
+in one end and they come out the other. Many common network
+applications sit on top of TCP and use these services, including
+telnet, HTTP servers and web browsers, <b class="emphasis-bold">SSH</b> (<a href="ch46_06.htm#upt3-CHP-46-SECT-6">Section 46.6</a>), and
+<b class="emphasis-bold">email</b> (<a href="ch46_08.htm#upt3-CHP-46-SECT-8">Section 46.8</a>). 
+</p>
+
+<p>UDP provides application access to the basic delivery mechanism of IP
+and adds port addressing (see below). Some applications
+don't need guaranteed delivery and want the lower
+overhead of UDP, or want the low-level control of network error
+recovery UDP can provide, or need to be able to do certain kinds of
+broadcast. Services like <b class="emphasis-bold">DNS</b> (<a href="ch46_09.htm#upt3-CHP-46-SECT-9">Section 46.9</a>) and <b class="emphasis-bold">DHCP</b>
+(<a href="ch46_10.htm#upt3-CHP-46-SECT-10">Section 46.10</a>) use UDP rather than TCP, as do many
+Internet games.
+</p>
+
+<p><a name="IXT-46-464" />Both TCP and UDP provide addressing of
+their own above and beyond IP addresses; these addresses are called
+<em class="emphasis">ports</em><a name="IXT-46-465" /> <a name="IXT-46-466" />. Generally,
+simply getting a packet to a machine isn't quite
+enough; if you want two programs to communicate, they need a
+rendezvous point; there can be a lot of programs running on the
+destination machine, and TCP and UDP need to know to which program
+packets should be delivered. An IP address and a port provide the
+means for two programs to hook up and start talking. Every
+communication needs a port on each machine; one side
+"listens" on a well-known port and
+the other side "connects" to that
+port, generating a random port of its own.
+</p>
+
+<p><a name="IXT-46-467" />Ports are represented by an integer
+number. Ports below 1024 are usually accessible only by programs
+running as root and are thus mostly reserved for system services and
+the like. <b class="emphasis-bold">/etc/services</b> (<a href="ch46_02.htm#upt3-CHP-46-SECT-2">Section 46.2</a>) lists most of the well-known ports used by
+the main system services.
+</p>
+
+<p>Finally, <a name="IXT-46-468" />ICMP provides diagnostic and traffic
+control messages. ICMP is primarily used by applications such as
+<b class="emphasis-bold">ping and traceroute</b> (<a href="ch46_04.htm#upt3-CHP-46-SECT-4">Section 46.4</a>) to diagnose problems, check network status,
+and the like. Routers can also use ICMP to control traffic.
+</p>
+
+<p> <em class="emphasis">-- DJPH<a name="IXTR3-628" /> <a name="IXTR3-629" /></em> 
+</p>
+
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch45_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch46_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">45.19. The Portable Bitmap Package</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">46.2. /etc/services Is Your Friend</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

@@ -1,0 +1,161 @@
+<html><head><title>Maps for Repeated Edits (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch18_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch18_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">18.7. Maps for Repeated Edits</h2>
+
+<p><a name="IXT-18-1714" /><a name="IXT-18-1715" />Another way to do this is with<b class="emphasis-bold"> @-functions</b> (<a href="ch18_04.htm#upt3-CHP-18-SECT-4">Section 18.4</a>).
+</p>
+
+<p>Not every keymap is something you want to save in your
+<em class="emphasis">.exrc</em> file. Some maps are handy just because you
+have to do a repetitive series of edits. Developing a complex map to
+repeat your edits can save more time than it takes. For example,
+assume that you have a glossary with entries like this, separated by
+blank lines:
+</p>
+
+<blockquote><pre class="code">map - an ex command which allows you to associate
+a complex command sequence with a single key.</pre></blockquote>
+
+<p>You want to convert this glossary list to HTML format, so that it
+looks like:
+</p>
+
+<blockquote><pre class="code">&lt;DT&gt;map&lt;/DT&gt;
+&lt;DD&gt;
+An ex command which allows you to associate
+a complex command sequence with a single key.
+&lt;/DD&gt;</pre></blockquote>
+
+<p>The best way to define a complex map is to do the edit once manually,
+writing down each keystroke that you must type. Then recreate these
+keystrokes as a map.
+</p>
+
+<ol><li>
+<p>Use <tt class="literal">I</tt> to insert the tag for an data list term
+(<tt class="literal">&lt;DT&gt;</tt>) at the beginning of the line.
+</p>
+</li><li>
+<p>Press ESC to terminate text-input mode. Move just before the dash
+(<tt class="literal">t-</tt>). Use <tt class="literal">3s</tt> to replace the
+dash and space after it with the closing term tag
+(<tt class="literal">&lt;/DT&gt;</tt>).
+</p>
+</li><li>
+<p>Still in text-input mode, press RETURN to insert a new line. (This
+moves the definition to a newline underneath the
+<tt class="literal">&lt;DT&gt;</tt> tags.) Enter the opening data list
+definition (<tt class="literal">&lt;DD&gt;</tt>) tag, and press RETURN
+again. (The definition moves to yet another newline underneath the
+<tt class="literal">&lt;DD&gt;</tt> tag.)
+</p>
+</li><li>
+<p>Press ESC to terminate text-input mode. Your cursor is at the start
+of the definition. Capitalize the first word of the definition
+(<tt class="literal">~</tt>).
+</p>
+</li><li>
+<p>Go to the blank line after the definition (<tt class="literal">}</tt>),
+open a newline above (<tt class="literal">O</tt>), and insert the closing
+data list definition (<tt class="literal">&lt;/DD&gt;</tt>) tag. Press ESC
+to end text-input mode.
+</p>
+</li><li>
+<p>Press RETURN to end the keymap definiton.</p>
+</li></ol>
+<p>That's quite an editing chore if you have to repeat
+it more than a few times. With <tt class="literal">map</tt> you can save
+the entire sequence so that it can be re-executed with a single
+keystroke:
+</p>
+
+<blockquote><pre class="code">map g I&lt;DT&gt;^[t-3s&lt;/DT&gt;^M&lt;DD&gt;^M^[~}O&lt;/DD&gt;^[</pre></blockquote>
+
+<p>(To store a map during a <i class="command">vi</i> session, type a colon
+(:) first.) Note that you have to
+"quote" both the ESC and RETURN
+characters with <b class="emphasis-bold">CTRL-v</b> (<a href="ch18_06.htm#upt3-CHP-18-SECT-6">Section 18.6</a>). <tt class="literal">^[</tt> is the sequence that
+appears when you type <b class="emphasis-bold">CTRL-v</b>
+followed by <b class="emphasis-bold">ESC</b>.
+<tt class="literal">^M</tt> is the sequence shown when you type <b class="emphasis-bold">CTRL-v RETURN</b>.
+</p>
+
+<p>Now, simply typing <tt class="literal">g</tt> will perform the entire
+series of edits. At a slow data rate you can actually see the edits
+happening individually. At a fast data rate it will seem to happen by
+magic.
+</p>
+
+<p>Don't be discouraged if your first attempt at
+keymapping fails. A small error in defining the map can give very
+different results from the ones you expect. You can probably type
+<tt class="literal">u</tt> to undo the edit and try again.
+It's safer to write the file (<tt class="literal">:w</tt>)
+before you use the keymap -- in case your version of
+<i class="command">vi</i> can't undo complex keymaps.
+</p>
+
+<p>If the keymap is complex, or if you're defining
+several maps at once, you can make a temporary keymap file and edit
+the maps there until you've worked out the bugs. For
+instance, write your buffer and type <tt class="literal">:e temp</tt> to
+open a temporary file <em class="emphasis">temp</em>. Make the keymaps,
+one per line -- without a colon (:) first. Write this map file
+(<tt class="literal">:w</tt>), then read it in to the editor (<tt class="literal">:so
+%</tt>). If there's no error, switch to the
+original file (<tt class="literal">:e #</tt> or CTRL-^), and try the map.
+(<a href="ch17_03.htm#upt3-CHP-17-SECT-3">Section 17.3</a> explains <tt class="literal">%</tt>
+and <tt class="literal">#</tt>.) Then, if there are problems, go back to
+the map file (<tt class="literal">:e! #</tt>, where the
+<tt class="literal">!</tt> tells <i class="command">vi</i> not to write the
+mistakes out to the file), fix the keymap, and repeat the process
+until you get what you wanted.
+</p>
+
+<p>In this case, for instance, maybe the next glossary definition starts
+with an uppercase letter, but the <tt class="literal">~</tt> in the keymap
+is changing that letter to lowercase. You need to change the
+<tt class="literal">~</tt> to an <i class="command">ex</i> substitution command
+that <b class="emphasis-bold">converts a lowercase letter to
+uppercase</b> (<a href="ch17_16.htm#upt3-CHP-17-SECT-16">Section 17.16</a>). If
+you've saved the keymap in a temporary file, just
+type <tt class="literal">:e#</tt> and change it:
+</p>
+
+<blockquote><pre class="code">map g I&lt;DT&gt;^[t-3s&lt;/DT&gt;^M&lt;DD&gt;^M^[:s/^./\u&amp;/^M}O&lt;/DD&gt;^[</pre></blockquote>
+
+<p>We've changed <tt class="literal">~</tt> to
+<tt class="literal">:s/^./\u&amp;/^M</tt>. As you can see, complex keymaps
+can be tough to decipher after you've written them,
+which makes the notes you've written even more
+useful.
+</p>
+
+<p><em class="emphasis">--TOR and JP, from <em class="emphasis">Learning the vi
+Editor</em> (O'Reilly, 1998)</em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch18_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch18_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">18.6. Protecting Keys from Interpretation by ex</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">18.8. More Examples of Mapping Keys in vi</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

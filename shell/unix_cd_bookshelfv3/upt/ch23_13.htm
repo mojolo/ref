@@ -1,0 +1,122 @@
+<html><head><title>Stopping Remote Login Sessions (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">23.13. Stopping Remote Login Sessions</h2>
+
+<p><a name="IXT-23-5633" /><a name="IXT-23-5634" /> <a name="IXT-23-5635" /><a name="IXT-23-5636" />Once you start
+<i class="command">telnet</i>, <i class="command">rlogin</i>,
+<i class="command">rsh</i><a name="IXT-23-5637" />, and <i class="command">ssh</i> for an
+interactive login, they basically "take
+over" your
+<a name="IXT-23-5638" />shell. Your keystrokes are sent to
+the shell running on the remote system. So if you type CTRL-z, it
+won't stop the <i class="command">telnet</i> (or
+whatever) job: it'll stop the job running on the
+remote system.
+</p>
+
+<p>It can be very handy to suspend a connection to a remote system and
+resume it, sometime later, with <i class="command">fg</i>. Most of the
+remote login utilities let you do that.
+</p>
+
+<p>To stop a <i class="command">telnet</i><a name="IXT-23-5639" />
+session, start by pressing the escape character. By default, this is
+CTRL-] (Control-right bracket). You should get a
+<i class="command">telnet</i> command prompt. Type <em class="emphasis">z</em>
+to suspend the job, Here's how that looks:
+</p>
+
+<blockquote><pre class="code">myhost$ <tt class="userinput"><b>telnet remhost</b></tt>
+Trying 198.59.115.17...
+Connected to remhost.
+Escape character is '^]'.
+
+SunOS 5.6
+
+login: <tt class="userinput"><b>whoever</b></tt>
+   ...
+remhost% CTRL]
+telnet&gt; <tt class="userinput"><b>z</b></tt>
+
+[1]+  Stopped                 telnet remhost
+
+myhost$</pre></blockquote>
+
+<p>You can use other commands at the <i class="command">telnet</i> command
+prompt. For a list, see your manual page or type
+<em class="emphasis">help</em> at the prompt. If you get to that prompt
+accidentally and don't want to stop the
+<i class="command">telnet</i> session, simply press ENTER once.
+</p>
+
+<p><a name="IXT-23-5640" />Other remote-login utilities
+don't have a command prompt. Their control commands
+start with ENTER-tilde (<tt class="literal">~</tt>) and one more control
+character. The command to stop the session is ENTER, then tilde, then
+CTRL-z. It won't appear on your screen as you type
+it (if it does appear, it didn't work . . . try
+again). For
+example:<a name="IXT-23-5641" />
+</p>
+
+<blockquote><pre class="code">myhost$ <tt class="userinput"><b>ssh remhost</b></tt>
+Last login: Fri Dec 22 09:08:31 2000 from myhost
+NetBSD 1.4.2A (GENERIC) #6: Wed May 31 06:12:46 EST 2000
+
+remhost%
+remhost% ~CTRL-z
+
+[1]+  Stopped                 ssh remhost
+
+myhost$</pre></blockquote>
+
+<p>Notice the extra prompt: it shows me pressing ENTER first, before
+typing the tilde. That isn't necessary if you
+pressed ENTER to complete the previous command line -- but I tend
+to do it all the time, "just in
+case" I didn't type that ENTER.
+</p>
+
+<p>You can stop the remote session in the middle of an interactive job,
+like using a text editor. But I'd recommend getting
+to a shell prompt on the remote system first, if you can. (For
+example, stop the remote job with CTRL-z so you'll
+get a shell prompt on the remote system.) Otherwise, if you bring the
+remote session into the foreground while you're in
+the middle of a full-screen editing job there, for example, the
+remote system won't know that it's
+supposed to redraw the screen when you come back online. Worse, if
+you forget where you were on the remote system, you might type a key
+that could do something disastrous, like deleting lines of the file
+you're editing. Stopping and starting from a known
+point -- a shell prompt -- is the best way
+I've found.
+</p>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-5642" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch23_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">23.12. Linux Virtual Consoles</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24. Starting, Stopping, and Killing Processes</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,114 @@
+<html><head><title>Approximate grep: agrep (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.6. Approximate grep: agrep</h2>
+
+<p><i class="command">agrep</i><a name="IXT-13-5872" /><a name="IXT-13-5873" /> <a name="IXT-13-5874" />
+is one of the nicer additions to the <i class="command">grep</i> family.
+It's not only one of the faster greps around; it
+also has the unique feature of looking for approximate matches.
+It's also record oriented rather than line oriented.
+The three most significant features of <i class="command">agrep</i> that
+are not supported by the <i class="command">grep</i> family are as
+follows:
+</p>
+
+<ol><li>
+<p>The ability to search for <a name="IXT-13-5875" />approximate patterns, with a user-definable
+level of accuracy. For example:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>agrep -2 homogenos foo</b></tt></pre></blockquote>
+<p>will find "homogeneous," as well as
+any other word that can be obtained from
+"homogenos" with at most two
+substitutions, insertions, or deletions.
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>agrep -B homogenos foo</b></tt></pre></blockquote>
+
+<p>will generate a message of the form:</p>
+<blockquote><pre class="code">best match has 2 errors, there are 5 matches, output them? (y/n)</pre></blockquote>
+</li>
+<li>
+<p><i class="command">agrep</i> is record oriented rather than just line
+oriented; a record is by default a line, but it can be user-defined
+with the<a name="IXT-13-5876" />
+<span class="option">-d</span> option specifying a pattern that will be used as
+a record delimiter. For example:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>agrep -d '^From ' 'pizza' mbox</b></tt></pre></blockquote>
+
+<p>outputs all <b class="emphasis-bold">mail messages</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) (delimited by a line beginning with
+<em class="emphasis">From</em> and a space) in the file
+<em class="emphasis">mbox</em> that contain the keyword
+<em class="emphasis">pizza</em>. Another example:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>agrep -d '$$' </b></tt><em class="replaceable"><tt>pattern</tt></em><tt class="userinput"><b> foo</b></tt></pre></blockquote>
+
+<p>will output all paragraphs (separated by an empty line) that contain
+<em class="emphasis">pattern</em>.
+</p>
+</li>
+
+<li>
+<p><i class="command">agrep</i><a name="IXT-13-5877" /> allows multiple patterns with
+<a name="IXT-13-5878" /><a name="IXT-13-5879" />AND (or OR)
+logic queries. For example:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>agrep -d '^From ' 'burger,pizza' mbox</b></tt></pre></blockquote>
+
+<p>outputs all mail messages containing at least one of the two keywords
+(<tt class="literal">,</tt> stands for OR).
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>agrep -d '^From ' 'good;pizza' mbox</b></tt></pre></blockquote>
+
+<p>outputs all mail messages containing both keywords.</p>
+</li></ol>
+
+<p>Putting these options together, one can write queries such as the
+following:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>agrep -d '$$' -2 '&lt;CACM&gt;;</b></tt><em class="replaceable"><tt>TheAuthor</tt></em><tt class="userinput"><b>;Curriculum;&lt;198[5-9]&gt;' bib</b></tt></pre></blockquote>
+
+<p>which outputs all paragraphs referencing articles in CACM between
+1985 and 1989 by <em class="emphasis">TheAuthor</em> dealing with
+Curriculum. Two errors are allowed, but they cannot be in either CACM
+or the year. (The &lt; &gt; brackets forbid errors in the pattern
+between them.)
+</p>
+
+
+
+<p>Other <i class="command">agrep</i> features include searching for
+<a name="IXT-13-5880" />regular expressions (with or without
+errors), using unlimited wildcards, limiting the errors to only
+insertions or only substitutions or any combination, allowing each
+deletion, for example, to be counted as two substitutions or three
+insertions, restricting parts of the query to be exact and parts to
+be approximate, and many more.
+</p>
+
+<p><em class="emphasis">--JP, SW, and UM</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.5. grepping for a List of Patterns</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.7. Search RCS Files with rcsgrep</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

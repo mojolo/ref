@@ -1,0 +1,406 @@
+<html><head><title>Advanced Editing (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 7. Advanced Editing</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch07_01.htm#sect1">Customizing vi </a><br />
+<a href="ch07_02.htm">Executing UNIX Commands </a><br />
+<a href="ch07_03.htm">Saving Commands </a><br />
+<a href="ch07_04.htm">Using ex Scripts </a><br />
+<a href="ch07_05.htm">Editing Program Source Code </a><br /></p></div><p>This chapter introduces you to some of the more advanced capabilities
+of the <em class="emphasis">vi</em> and <em class="emphasis">ex</em> editors.
+You should be reasonably familiar with the material presented in
+the earlier chapters of this book before you start working with the
+concepts presented in this chapter.</p><p>This chapter is divided into five parts.
+The first part discusses a number of ways to
+set options that allow you to customize your editing environment.
+You'll learn how to use the <tt class="literal">set</tt> command and how to create
+a number of different editing environments using <em class="filename">.exrc</em> files.</p><p>The second part discusses how you can execute UNIX commands from
+within <em class="emphasis">vi</em>, and how you can use <em class="emphasis">vi</em> to filter text through
+UNIX commands.</p><p>The third part discusses various ways to save long sequences
+of commands by reducing them to abbreviations, or even to commands
+that use only one keystroke (this is called <em class="emphasis">mapping</em> keys).
+It also includes a section on @-functions, which allow you to
+store command sequences in a buffer.</p><p>The fourth part discusses the use of <em class="emphasis">ex</em> scripts from
+the UNIX command line or from within shell scripts.
+Scripting provides a powerful way to make repetitive edits.</p><p>The fifth part discusses some features of <em class="emphasis">vi</em> that are
+especially useful to programmers.  <em class="emphasis">vi</em> has options that
+control line indentation and an option to display invisible characters
+(specifically tabs and newlines).
+There are search commands that are useful with program code blocks or
+with C functions.</p><div class="sect1"><a name="vi6-ch-7-sect-1" />
+<h2 class="sect1"><a name="sect1" />7.1. Customizing vi </h2>
+
+<p>
+<a name="ch07.custom1" />
+<a name="ch07.custom2" />
+<a name="ch07.custom3" />
+You have seen that <em class="emphasis">vi</em> operates differently on various terminals.
+(For instance, on "dumb" terminals, <em class="emphasis">vi</em> inserts @ symbols
+in place of deleted lines;  on intelligent terminals, <em class="emphasis">vi</em> redraws
+the screen with each edit.)
+On modern UNIX systems,
+<em class="emphasis">vi</em> gets operating instructions
+about your terminal type
+<a name="IXT-7-280959" />
+<a name="IXT-7-280960" />
+from the <em class="emphasis">terminfo</em> terminal database.
+(On older systems, <em class="emphasis">vi</em> uses the
+original <em class="emphasis">termcap</em> database.)<a href="#FOOTNOTE-27">[27]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-27" /><p> [27]The location of these two databases varies from vendor to vendor.
+Try the commands <tt class="literal">man terminfo</tt> and
+<tt class="literal">man termcap</tt> to get more information
+about your specific system.</p>
+
+</blockquote>
+
+<p>There are also a number of options that you can set from within
+<em class="emphasis">vi</em> that affect how it operates.
+For example, you can set a right margin that will cause <em class="emphasis">vi</em>
+to wrap lines automatically,
+so you don't need to hit <span class="keycap">RETURN</span>.</p>
+
+<p>
+<a name="ch07.set" />
+You can change options from within <em class="emphasis">vi</em> by using the <em class="emphasis">ex</em> command
+<tt class="literal">:set</tt>. 
+In addition, whenever <em class="emphasis">vi</em> is started up, it reads a file in your
+<a name="IXT-7-280961" />
+home directory called <em class="filename">.exrc</em> for further operating instructions.
+By placing <tt class="literal">:set</tt> commands in this file,
+you can modify the way <em class="emphasis">vi</em> acts whenever you use it.</p>
+
+<p>You can also set up <em class="filename">.exrc</em> files in local directories to
+initialize various options that you want to use in different
+environments.
+For example, you might define one set of options for
+editing English text, but another set for editing source programs.
+The <em class="filename">.exrc</em> file in your home directory will be executed first, then
+the one in your current directory.</p>
+
+<p>
+<a name="IXT-7-280962" />
+Finally, any commands stored in the shell variable <tt class="literal">EXINIT</tt> will
+be executed by <em class="emphasis">vi</em> on startup.
+The settings in
+<tt class="literal">EXINIT</tt> take precedence over those in the
+home directory
+<em class="filename">.exrc</em> file.</p>
+
+<a name="vi6-ch-7-sect-1.1" /><div class="sect2">
+<h3 class="sect2">7.1.1. The :set Command </h3>
+
+<p>
+<a name="IXT-7-280963" />
+There are two types of options that can be changed with the <tt class="literal">:set</tt>
+command: toggle options, which are either on or off, and
+options that take a numeric or string value (such as the location
+of a margin or the name of a file).</p>
+
+<p>Toggle options may be on or off by default.
+To turn a toggle option on, the command is:</p>
+
+<blockquote><pre class="code">:set <em class="replaceable"><tt>option</tt></em></pre></blockquote>
+
+<p>To turn a toggle option off, the command is:</p>
+
+<blockquote><pre class="code">:set no<em class="replaceable"><tt>option</tt></em></pre></blockquote>
+
+
+<?troff .Nd 10?><p>For example, to specify that pattern searches should ignore case, type:
+<a name="IXT-7-280964" />
+<a name="IXT-7-280965" />
+<a name="IXT-7-280966" />
+<a name="IXT-7-280967" /></p>
+
+<blockquote><pre class="code">:set ic</pre></blockquote>
+
+<p>If you want <em class="emphasis">vi</em> to return to being case-sensitive in
+searches, give the command:</p>
+
+<blockquote><pre class="code">:set noic</pre></blockquote>
+
+<p>
+<a name="IXT-7-280968" />
+<a name="IXT-7-280969" />
+<a name="IXT-7-280970" />
+Some options have a value assigned to them.
+For example, the <tt class="literal">window</tt> option sets the number of lines shown
+in the screen's "window."
+You set values for these options with an equal sign (=):</p>
+
+<blockquote><pre class="code">:set window=20</pre></blockquote>
+
+<p>
+<a name="IXT-7-280971" />
+<a name="IXT-7-280972" />
+<a name="IXT-7-280973" />
+During a <em class="emphasis">vi</em> session, you can check which options <em class="emphasis">vi</em> is
+using.
+The command:</p>
+
+<blockquote><pre class="code">:set all</pre></blockquote>
+
+<p>displays the complete list of options, including options that you
+have set and defaults that <em class="emphasis">vi</em> has "chosen."
+The display should look something like this:<a href="#FOOTNOTE-28">[28]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-28" /><p> [28]The result of <tt class="literal">:set all</tt> depends very much on the version of
+<em class="emphasis">vi</em> you have.
+This is typical of UNIX <em class="emphasis">vi</em>; what comes
+out of the various clones will be different.</p>
+
+</blockquote>
+
+
+
+<?troff-ps-indent 0?><blockquote><pre class="code">autoindent         nomodelines                       noshowmode
+autoprint          nonumber                          noslowopen
+noautowrite        nonovice                          tabstop=8
+beautify           nooptimize                        taglength=0
+directory=/var/tmp paragraphs=IPLPPPQPP LIpplpipnpbp tags=tags /usr/lib/tags
+noedcompatible     prompt                            tagstack
+errorbells         noreadonly                        term=vt102
+noexrc             redraw                            noterse
+flash              remap                             timeout
+hardtabs=8         report=3                          ttytype=vt102
+noignorecase       scroll=11                         warn
+nolisp             sections=NHSHH HUuhsh+c           window=23
+nolist             shell=/bin/ksh                    wrapscan
+magic              shiftwidth=8                      wrapmargin=0
+nomesg             showmatch                         nowriteany</pre></blockquote>
+
+<?troff-ps-indent .25i?><p>You can find out the current value of any individual option by name,
+using the command:</p>
+
+<blockquote><pre class="code">:set <em class="replaceable"><tt>option</tt></em>?</pre></blockquote>
+
+<p>The command:</p>
+
+<blockquote><pre class="code">:set</pre></blockquote>
+
+<p>shows options that you have specifically changed, or set, either in
+your <em class="filename">.exrc</em> file or during the current session.</p>
+
+<?troff .Nd 10?><p>For example, the display might look like this:</p>
+
+<blockquote><pre class="code">number sect=AhBhChDh window=20 wrapmargin=10</pre></blockquote>
+
+<a name="IXT-7-280974" />
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-1.2" /><div class="sect2">
+<h3 class="sect2">7.1.2. The .exrc File </h3>
+
+<p>
+<a name="IXT-7-280975" />
+<a name="IXT-7-280976" />
+<a name="IXT-7-280977" />
+<a name="ch07.exrc" />
+The <em class="filename">.exrc</em> file that controls your own <em class="emphasis">vi</em> environment is
+in your home directory (the directory you are in when you first
+log on).
+You can modify the <em class="filename">.exrc</em> file with the <em class="emphasis">vi</em> editor, just as
+you can any other text file.</p>
+
+<p>If you don't yet have an <em class="filename">.exrc</em> file, simply use <em class="emphasis">vi</em> to
+create one.
+Enter into this file the <tt class="literal">set</tt>, <tt class="literal">ab</tt>, and <tt class="literal">map</tt>
+commands
+that you want to have in effect whenever you use <em class="emphasis">vi</em> or <em class="emphasis">ex</em>.
+(<tt class="literal">ab</tt> and <tt class="literal">map</tt> are discussed later
+in this chapter.) A sample <em class="filename">.exrc</em> file might look
+like this:</p>
+
+<blockquote><pre class="code">set nowrapscan wrapmargin=7
+set sections=SeAhBhChDh nomesg
+map q :w^M:n^M
+map v dwElp
+ab ORA O'Reilly &amp; Associates, Inc.</pre></blockquote>
+
+<p>Since the file is actually read by <em class="emphasis">ex</em> before it enters visual
+mode (<em class="emphasis">vi</em>), commands in <em class="filename">.exrc</em>
+need not have a preceding colon.</p>
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-1.3" /><div class="sect2">
+<h3 class="sect2">7.1.3. Alternate Environments </h3>
+
+<p>
+<a name="IXT-7-280978" />
+<a name="IXT-7-280979" />
+In addition to reading the <em class="filename">.exrc</em> file in your home directory,
+you can allow
+<em class="emphasis">vi</em> to read a file
+called <em class="filename">.exrc</em> in the current directory. This allows
+you to set options that are appropriate
+to a particular project.</p>
+
+<p>For example, you might want to have one set of options in a
+directory mainly used for programming:</p>
+
+<blockquote><pre class="code">set number autoindent sw=4 terse
+set tags=/usr/lib/tags</pre></blockquote>
+
+<p>and another set of options in a directory used for text editing:</p>
+
+<blockquote><pre class="code">set wrapmargin=15 ignorecase</pre></blockquote>
+
+<p>Note that you can set certain options in the <em class="filename">.exrc</em>
+file in your home directory and unset them in a local
+directory.</p>
+
+<p>
+<a name="IXT-7-280980" />
+<a name="IXT-7-280981" />
+You can also define alternate <em class="emphasis">vi</em> environments by saving
+option settings in a file other than <em class="filename">.exrc</em> and reading in
+that file with the <tt class="literal">:so</tt> command.
+(<tt class="literal">so</tt> is short for <tt class="literal">source</tt>.)</p>
+
+<?troff .Nd 10?><p>For example:</p>
+
+<blockquote><pre class="code">:so .progoptions</pre></blockquote>
+
+<p>Local <em class="filename">.exrc</em> files are also useful for defining
+abbreviations and key mappings (described later in this
+chapter). When we write a book or manual, we save all
+abbreviations to be used in that book in an <em class="filename">.exrc</em> file
+in the directory in which the book is being created.</p>
+
+<blockquote><b>NOTE:</b> 
+
+<a name="IXT-7-280982" />
+In all modern versions of <em class="emphasis">vi</em>,
+you have to first set the <tt class="literal">exrc</tt>
+option in your home directory's
+<em class="filename">.exrc</em> file before <em class="emphasis">vi</em>
+will read the <em class="filename">.exrc</em> file in the current directory:</p>
+
+<blockquote><pre class="code">set exrc</pre></blockquote>
+
+<p>This mechanism prevents other people from placing, in your
+working directory, an <em class="filename">.exrc</em>
+file whose commands might jeopardize the security of your system.<a href="#FOOTNOTE-29">[29]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-29" /><p> [29]The original versions of <em class="emphasis">vi</em> automatically read both files,
+if they existed.
+The <tt class="literal">exrc</tt> option closes a potential security hole.</p>
+
+</blockquote>
+</blockquote>
+
+<a name="IXT-7-280983" />
+</div>
+
+
+
+
+<a name="vi6-ch-7-sect-1.4" /><div class="sect2">
+<h3 class="sect2">7.1.4. Some Useful Options </h3>
+
+<p>As you can see when you type <tt class="literal">:set all</tt>,
+there are an awful lot of options that can be set.
+Many of them are used internally by <em class="emphasis">vi</em> and aren't usually changed.
+Others are important in certain cases,
+but not in others  (for example, <tt class="literal">noredraw</tt> and <tt class="literal">window</tt> can
+be useful on a dialup line at a low baud rate).
+The table in <a href="appc_01.htm#vi6-ap-c-sect-1">Section 3.1</a>
+contains a brief description of each option.
+We recommend that you take
+some time to play with setting options&#8212;if an option looks interesting,
+try setting it (or unsetting it) and watch what happens while you edit.
+You may find some surprisingly useful tools.</p>
+
+<p>
+<a name="IXT-7-280984" />
+<a name="IXT-7-280985" />
+As discussed earlier in this book,
+one option,
+<tt class="literal">wrapmargin</tt>,
+is essential for editing non-program
+text.  <tt class="literal">wrapmargin</tt> specifies the size of the right margin that
+will be used to autowrap text as you type.
+(This saves manually typing carriage returns.)
+A typical value is 7 to 15:</p>
+
+<blockquote><pre class="code">:set wrapmargin=10</pre></blockquote>
+
+<p>
+<a name="IXT-7-280986" />
+<a name="IXT-7-280987" />
+Three other options control how <em class="emphasis">vi</em> acts when conducting a search.
+Normally, a search differentiates between uppercase and
+lowercase (<em class="emphasis">foo</em> does not match <em class="emphasis">Foo</em>), wraps around to the beginning
+of the file
+(meaning that you can begin your search anywhere in the
+file and still find all occurrences), and recognizes wildcard
+characters when pattern matching.
+The default settings that control
+<a name="IXT-7-280988" />
+<a name="IXT-7-280989" />
+<a name="IXT-7-280990" />
+<a name="IXT-7-280991" />
+<a name="IXT-7-280992" />
+<a name="IXT-7-280993" />
+<a name="IXT-7-280994" />
+these options are <tt class="literal">noignorecase</tt>, <tt class="literal">wrapscan</tt>,
+and <tt class="literal">magic</tt>, respectively.
+To change any of these defaults, you would set the opposite toggle options:
+<tt class="literal">ignorecase</tt>, <tt class="literal">nowrapscan</tt>, and <tt class="literal">nomagic</tt>.</p>
+
+<p>Options that may be of particular interest to programmers include:
+
+
+<tt class="literal">autoindent</tt>,
+<tt class="literal">showmatch</tt>,
+<tt class="literal">tabstop</tt>,
+<tt class="literal">shiftwidth</tt>,
+<tt class="literal">number</tt>, and
+<tt class="literal">list</tt>,
+as well as their opposite toggle options.</p>
+
+<p>
+<a name="IXT-7-280995" />
+Finally, consider using the <tt class="literal">autowrite</tt> option.
+When set, <em class="emphasis">vi</em> will automatically write out the
+contents of a changed buffer when you issue the <tt class="literal">:n</tt>
+(next) command to move to the next file to be edited, and before
+running a shell command with <tt class="literal">:!</tt>.</p>
+</div>
+
+
+
+
+<a name="IXT-7-280996" />
+<a name="IXT-7-280997" />
+<a name="IXT-7-280998" />
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.5. A Final Look at Pattern Matching </td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.2. Executing UNIX Commands </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

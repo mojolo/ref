@@ -1,0 +1,144 @@
+<html><head><title>Finding Many Things with One Command (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.12. Finding Many Things with One Command</h2>
+
+<p><a name="IXT-9-75" />Running
+<em class="filename">find</em> is fairly time consuming, and for good
+reason: it has to read every inode in the directory tree that
+it's searching. Therefore, combine as many things as
+you can into a single <em class="filename">find</em> command. If
+you're going to walk the entire tree, you may as
+well accomplish as much as possible in the process.
+</p>
+
+<p><a name="IXT-9-76" />Let's work from an
+example. Assume that you want to write a command (eventually for
+inclusion in a <a href="ch27_01.htm">Chapter 27</a> shell script) that sets
+file-access modes correctly. You want to give 771 access to all
+directories, 600 access for all backup files
+(<em class="filename">*.BAK</em>), 755 access for all shell scripts
+(<em class="filename">*.sh</em>), and 644 access for all text files
+(<em class="filename">*.txt</em>). You can do all this with one command:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>find . \( -type d       -a -exec chmod 771 {} \; \) -o \</b></tt>
+<tt class="userinput"><b>         \( -name "*.BAK" -a -exec chmod 600 {} \; \) -o \</b></tt>
+<tt class="userinput"><b>         \( -name "*.sh"  -a -exec chmod 755 {} \; \) -o \</b></tt>
+<tt class="userinput"><b>         \( -name "*.txt" -a -exec chmod 644 {} \; \)</b></tt></pre></blockquote>
+
+<p><a name="IXT-9-77" /> <a name="IXT-9-78" /> <a name="IXT-9-79" />Why does this work? Remember that
+<em class="filename">-exec</em> is really just another part of the
+expression; it evaluates to true when the following command is
+successful. It isn't an independent action that
+somehow applies to the whole <em class="filename">find</em> operation.
+Therefore, <em class="filename">-exec</em> can be mixed freely with
+<em class="filename">-type</em>, <em class="filename">-name</em>, and so on.
+</p>
+
+<p>However, there's another important trick here. Look
+at the first chunk of the command -- the first statement, that is,
+between the first pair of <tt class="literal">\(</tt> and
+<tt class="literal">\)</tt>. It says, "If this file is a
+directory and the <em class="filename">chmod</em> command executes
+successfully . . . " Wait. Why
+doesn't the <em class="filename">-exec</em> execute a
+<em class="filename">chmod</em> on every file in the directory to see
+whether it's successful?
+</p>
+
+<p><a name="IXT-9-80" /><a name="IXT-9-81" /><a name="IXT-9-82" /><a name="IXT-9-83" />Logical expressions
+are evaluated from left to right; in any chunk of the expression,
+evaluation stops once it's clear what the outcome
+is. Consider the logical expression
+"`A AND B' is
+true." If A is false, you know that the result of
+"`A AND B' is
+true" will also be false -- so
+there's no need to look the rest of the statement,
+B.
+</p>
+
+<p>So in the previous multilayered expression, when
+<em class="filename">find</em> is looking at a file, it checks whether the
+file is a directory. If it is, <em class="filename">-type d</em> is true,
+and <em class="filename">find</em> evaluates the
+<em class="filename">-exec</em> (changing the file's
+mode). If the file is not a directory, <em class="filename">find</em>
+knows that the result of the entire statement will be false, so it
+doesn't bother wasting time with the
+<em class="filename">-exec</em>. <em class="filename">find</em> goes on to the
+next chunk after the <a name="IXT-9-84" />OR operator -- because,
+logically, if one part of an OR expression isn't
+true, the next part may be -- so evaluation of an OR . . . OR . .
+. OR . . . expression has to continue until either one chunk is found
+to be true, or they've all been found to be false.
+In this case having the directory first is important, so that
+directories named, for example, <em class="filename">blah.BAK</em>
+don't lose their execute permissions.
+</p>
+
+<p>Of course, there's no need for the
+<em class="filename">-exec</em>s to run the same kind of command. Some
+could delete files, some could change modes, some could move them to
+another directory, and so on.
+</p>
+
+<p>One final point. Although understanding our multilayered
+<em class="filename">find</em> expression was difficult, it really was no
+different from a "garden variety"
+command. Think about what the following command means:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -name "*.c" -print</b></tt></pre></blockquote>
+
+<p>There are two operators:
+<em class="filename">-name</em><a name="IXT-9-85" /> <a name="IXT-9-86" /> (which evaluates to true if the
+file's name ends in <em class="emphasis">.c</em>) and
+<em class="filename">-print</em> (which is always true). The two operators
+are ANDed together; we could stick a <em class="filename">-a</em> between
+the two without changing the result at all. If
+<em class="filename">-name</em> evaluates to false (i.e., if the
+file's name doesn't end in
+<em class="emphasis">.c</em>), <em class="filename">find</em> knows that the
+entire expression will be false. So it doesn't
+bother with <em class="filename">-print</em>. But if
+<em class="filename">-name</em> evaluates to true,
+<em class="filename">find</em> evaluates
+<em class="filename">-print</em> -- which, as a side effect, prints the
+name.
+</p>
+
+<p>As we said in <a href="ch09_06.htm#upt3-CHP-9-SECT-6">Section 9.6</a>,
+<em class="filename">find</em>'s business is evaluating
+expressions -- not locating files. Yes, <em class="filename">find</em>
+certainly locates files; but that's really just a
+side effect. For me, understanding this point was the conceptual
+breakthrough that made <em class="filename">find</em> much more useful.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.11. Custom -exec Tests Applied</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.13. Searching for Files by Type</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

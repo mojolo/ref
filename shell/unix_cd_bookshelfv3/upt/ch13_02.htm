@@ -1,0 +1,117 @@
+<html><head><title>Searching for Text with grep (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.2. Searching for Text with grep</h2>
+
+<p>There are many well-known benefits provided by
+<i class="command">grep</i> to the user who doesn't
+remember what his files contain. Even users of non-Unix systems wish
+they had a utility with its power to search through a set of files
+for an arbitrary text pattern (known as a <a name="IXT-13-5836" />regular expression).
+</p>
+
+<p>The main function of <i class="command">grep</i> is to look for
+<a name="IXT-13-5837" />strings matching
+a regular expression and print only the lines found. Use
+<i class="command">grep</i> when you want to look at how a particular
+word is used in one or more files. For example,
+here's how to list the lines in the file
+<em class="emphasis">ch04</em> that contain either
+<em class="emphasis">run-time</em> or <em class="emphasis">run time</em>:
+</p>
+
+<p><tt class="literal">".."</tt> <a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep "run[- ]time" ch04</b></tt>
+This procedure avoids run-time errors for not-assigned
+and a run-time error message is produced.
+run-time error message is produced.
+program aborts and a run-time error message is produced.
+DIMENSION statement in BASIC is executable at run time.
+This means that arrays can be redimensioned at run time.
+accessible or not open, the program aborts and a run-time</pre></blockquote>
+
+<p>Another use might be to look for a specific HTML tag in a file. The
+following command will list top-level (<tt class="literal">&lt;H1&gt;</tt>
+<tt class="literal">or</tt> <tt class="literal">&lt;h1&gt;</tt>) and second-level
+(<tt class="literal">&lt;H2&gt;</tt> <tt class="literal">or</tt>
+<tt class="literal">&lt;h2&gt;</tt>) headings that have the starting tag at
+the beginning (<tt class="literal">^</tt>) of the line:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>grep "^&lt;[Hh][12]&gt;" ch0[12].html</b></tt>
+ch01.html:&lt;h1&gt;Introduction&lt;/h1&gt;
+ch01.html:&lt;h1&gt;Windows, Screens, and Images&lt;/h1&gt;
+ch01.html:&lt;h2&gt;The Standard Screen-stdscr&lt;/h2&gt;
+ch01.html:&lt;h2&gt;Adding Characters&lt;/h2&gt;
+ch02.html:&lt;H1&gt;Introduction&lt;/H1&gt;
+ch02.html:&lt;H1&gt;What Is Terminal Independence?&lt;/H1&gt;
+ch02.html:&lt;H2&gt;Termcap&lt;/H2&gt;
+ch02.html:&lt;H2&gt;Terminfo&lt;/H2&gt;</pre></blockquote>
+
+<p>In effect, it produces a quick outline of the contents of these files.</p>
+
+<p><i class="command">grep</i><a name="IXT-13-5838" /> is also often used as a <b class="emphasis-bold">filter</b> (<a href="ch01_05.htm#upt3-CHP-1-SECT-5">Section 1.5</a>), to
+select from the output of some other program. For example, you might
+want to find the process id of your inetd, if you just changed the
+configuration file and need to HUP inetd to make it reread the
+configuration file. Using <b class="emphasis-bold">ps</b>
+(<a name="IXT-13-5839" /> <a name="IXT-13-5840" /><a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>) and
+<i class="command">grep</i> together allows you to do this without wading
+through a bunch of lines of output:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ps -aux | grep inetd</b></tt>
+root     321  0.0  0.2  1088  548  ??  Is   12Nov01   0:08.93 inetd -wW
+deb    40033  0.0  0.2  1056  556  p5  S+   12:55PM   0:00.00 grep inetd
+% <tt class="userinput"><b>kill -HUP 321</b></tt></pre></blockquote>
+
+<p><a name="IXT-13-5841" />There are several options commonly used
+with <i class="command">grep</i>. The <span class="option">-i</span> option
+specifies that the search ignore the distinction between upper- and
+lowercase. The <span class="option">-c</span><a name="IXT-13-5842" /> option tells <i class="command">grep</i> to
+return only a count of the number of lines matched. The
+<span class="option">-w</span><a name="IXT-13-5843" /> option searches for the pattern
+"as a word." For example,
+<tt class="literal">grep if</tt> would match words like
+<em class="emphasis">cliff</em> or <em class="emphasis">knife</em>, but
+<tt class="literal">grep -w if</tt> wouldn't. The
+<span class="option">-l</span><a name="IXT-13-5844" /> option returns only the name of the
+file when <i class="command">grep</i> finds a match. This can be used to
+prepare a list of files for another command. The
+<span class="option" /><a name="IXT-13-5845" /><b class="emphasis-bold">-v
+option</b> (<a href="ch13_03.htm#upt3-CHP-13-SECT-3">Section 13.3</a>) reverses the normal
+action, and only prints out lines that don't match
+the search pattern. In the previous example, you can use the
+<span class="option">-v</span> option to get rid of the extra line of output:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ps -aux | grep inetd | grep -v grep</b></tt>
+root     321  0.0  0.2  1088  548  ??  Is   12Nov01   0:08.93 inetd -wW
+% <tt class="userinput"><b>kill -HUP 321</b></tt></pre></blockquote>
+
+<p> <em class="emphasis">-- DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13. Searching Through Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.3. Finding Text That Doesn't Match</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

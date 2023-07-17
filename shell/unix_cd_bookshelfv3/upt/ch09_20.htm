@@ -1,0 +1,191 @@
+<html><head><title>Finding Files (Much) Faster with a find Database (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.20. Finding Files (Much) Faster with a find Database</h2>
+
+<p><a name="upt3-IDXTERM-1620" />
+<a name="upt3-IDXTERM-1621" />If you use <em class="emphasis">find</em> to search for files, you know that it
+can take a long time to work, especially when there are lots of
+directories to search. Here are some ideas for speeding up your
+<em class="filename">find</em>s.
+</p>
+
+<a name="ch09-9-fm2xml" /><blockquote><b>NOTE:</b> 
+By design, setups like these that build a file database
+won't have absolutely up-to-date information about
+all your files.
+</p>
+</blockquote>
+
+<p>If your system has "<a name="IXT-9-132" /><a name="IXT-9-133" />fast
+<em class="filename">find</em>" or
+<em class="filename">locate</em>, that's probably all you
+need. It lets you search a list of all pathnames on the system.
+</p>
+
+<p>Even if you have "fast
+<em class="filename">find</em>" or
+<em class="filename">locate</em>, it still might not do what you need. For
+example, those utilities only search for pathnames. To find files by
+the owner's name, the number of links, the size, and
+so on, you have to use "slow
+<em class="filename">find</em>." In that case -- or,
+when you don't have "fast
+<em class="filename">find</em>" or
+<em class="filename">locate</em> -- you may want to set up your own
+version.
+</p>
+
+<p><em class="filename">slocate</em><a name="IXT-9-134" /> can build and update its own database
+(with its <em class="filename">-u</em> option), as well as search the
+database. The basic "fast
+<em class="filename">find</em>" has two parts. One part
+is a command, a shell script usually named
+<em class="filename">updatedb</em><a name="IXT-9-135" /><a name="IXT-9-136" /> or
+<em class="filename">locate.updatedb</em>, that builds a database of the
+files on your system -- if your system has it, take a look to see
+a fancy way to build the database. The other part is the
+<em class="filename">find</em> or <em class="filename">locate</em> command
+itself -- it searches the database for pathnames that match the
+name (regular expression) you type.
+</p>
+
+<p>To make your own "fast
+<em class="filename">find</em>":
+</p>
+
+<ul><li>
+<p>Pick a filename for the database. We'll use
+<em class="filename">$HOME/.fastfind</em> (some systems use
+<em class="filename">$LOGDIR</em> instead of <em class="filename">$HOME</em>).
+</p>
+</li>
+
+<li>
+<p>Design the <em class="filename">find</em> command you want to use. The
+command to build a database of all the files in your home directory
+might look like this:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cd</b></tt>
+% <tt class="userinput"><b>find . -print | sed "s@^./@@" &gt; .fastfind.new</b></tt>
+% <tt class="userinput"><b>mv -f .fastfind.new .fastfind</b></tt></pre></blockquote>
+
+<p>That doesn't update the database until the new one
+is finished. It also doesn't compress the database.
+If you're short on disk space, use this instead:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cd</b></tt>
+% <tt class="userinput"><b>find . -print | sed "s@^./@@" | gzip &gt; .fastfind.gz</b></tt></pre></blockquote>
+
+<p>The script starts from your home directory, then uses <b class="emphasis-bold">sed</b> (<a href="ch13_09.htm#upt3-CHP-13-SECT-9">Section 13.9</a>) to strip
+the start of the pathname (like <tt class="literal">./</tt>) from every
+entry. (If you're building a database of the whole
+filesystem, don't do that part!) To save more space,
+you can compress with <i>bzip2</i>
+instead; it's slow, but it saved about 25% of the
+disk space for my database.
+</p>
+</li>
+
+<li>
+<p>Set up <b class="emphasis-bold">cron</b> (<a href="ch25_03.htm#upt3-CHP-25-SECT-3">Section 25.3</a>) or <i>at</i> to
+run that <em class="filename">find</em> as often as you want -- usually
+once a day, early in the morning morning, is fine.
+</p>
+</li><li>
+<p>Finally, make a shell script (I call mine <em class="filename">ffind</em>)
+to search the database. If you use <b class="emphasis-bold">egrep</b> (<a href="ch13_04.htm#upt3-CHP-13-SECT-4">Section 13.4</a>), you can
+search with flexible regular expressions:
+</p>
+<blockquote><pre class="code">egrep "$1" $HOME/.fastfind | sed "s@^@$HOME/@"</pre></blockquote>
+
+<p>or, for a <em class="filename">gzip</em>ped database:</p>
+<blockquote><pre class="code">gzcat $HOME/.fastfind.gz | egrep "$1" | sed "s@^@$HOME/@"</pre></blockquote>
+
+<p>The <em class="filename">sed</em> expressions add your home
+directory's pathname (like
+<em class="filename">/usr/freddie</em>) to each line.
+</p>
+</li></ul>
+<p>To search the database, type:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ffind somefile</b></tt>
+/usr/freddie/lib/somefile
+% <tt class="userinput"><b>ffind '/(sep|oct)[^/]*$'</b></tt>
+/usr/freddie/misc/project/september
+/usr/freddie/misc/project/october</pre></blockquote>
+
+<p>You can do much more: I'll get you started. If you
+have room to store more information than just pathnames, you can feed
+your <em class="filename">find</em> output to a command like <em class="filename">ls
+-l</em>. For example, if you do a lot of work with links, you
+might want to keep the files' i-numbers as well as
+their names. You'd build your database with a
+command like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd</b></tt>
+% <tt class="userinput"><b>find . -print | xargs ls -id &gt; .fastfind.new</b></tt>
+% <tt class="userinput"><b>mv -f .fastfind.new .fastfind</b></tt></pre></blockquote>
+
+<p>Or, if your version of <em class="filename">find</em> has the handy
+<em class="filename">-ls</em> operator, use the next script. Watch out for
+really large i-numbers; they might shift the columns and make
+<em class="filename">cut</em> give wrong output. The exact column numbers
+will depend on your system:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd</b></tt>
+% <tt class="userinput"><b>find . -ls | cut -c1-7,67- &gt; .fastfind.new</b></tt>
+% <tt class="userinput"><b>mv -f .fastfind.new .fastfind</b></tt></pre></blockquote>
+
+<p>Then, your <em class="filename">ffind</em> script could search for files
+by i-number. For instance, if you had a file with i-number 1234 and
+you wanted to find all its links:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ffind "^1234 "</b></tt></pre></blockquote>
+
+<p>The space at the end of that regular expression prevents matches with
+i-numbers like 12345. You could search by pathname in the same way.
+To get a bit fancier, you could make your <em class="filename">ffind</em>
+a little <em class="filename">perl</em> or <em class="filename">awk</em> script
+that searches your database by field. For instance,
+here's how to make <em class="filename">awk</em> do the
+previous i-number search; the output is just the matching pathnames:
+</p>
+
+<blockquote><pre class="code">awk '$1 == 1234 {print $2}' $HOME/.fastfind</pre></blockquote>
+
+<p>With some information about Unix shell programming and utilities like
+<em class="filename">awk</em>, the techniques in this article should let
+you build and search a sophisticated file database -- and get
+information much faster than with plain old
+<em class="filename">find</em>.<a name="IXTR3-195" /> <a name="IXTR3-196" /> 
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.19. Wildcards with "Fast find" Database</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.21. grepping a Directory Tree</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

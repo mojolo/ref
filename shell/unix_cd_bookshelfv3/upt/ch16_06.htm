@@ -1,0 +1,181 @@
+<html><head><title>Counting Lines, Words, and Characters: wc (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch16_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch16_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">16.6. Counting Lines, Words, and Characters: wc</h2>
+
+<p>The <i class="command">wc</i><a name="IXT-16-1634" /><a name="IXT-16-1635" /><a name="IXT-16-1636" /><a name="IXT-16-1637" /><a name="IXT-16-1638" /> (word count) command counts the
+number of lines, words, and characters in the files you specify.
+(Like most Unix utilities, <i class="command">wc</i> reads from its
+standard input if you don't specify a filename.) For
+example, the file <em class="emphasis">letter</em> has 120 lines, 734
+words, and 4,297 characters:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>wc letter</b></tt>
+     120     734    4297 letter</pre></blockquote>
+
+<p>You can restrict what is counted by specifying the options
+<span class="option">-l</span> (count lines only),
+<span class="option">-w</span><a name="IXT-16-1639" /> (count words only), and
+<span class="option">-c</span> (count characters only). For example, you can
+count the number of lines in a file:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>wc -l letter</b></tt>
+     120 letter</pre></blockquote>
+
+<p>or you can count the number of
+<a name="IXT-16-1640" /><a name="IXT-16-1641" />files in a directory:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd man_pages</b></tt>
+% <tt class="userinput"><b>ls | wc -w</b></tt>
+     233</pre></blockquote>
+
+<p>The first example uses a file as input; the second example pipes the
+output of an <i class="command">ls</i> command to the input of
+<i class="command">wc</i>. (Be aware that the <b class="emphasis-bold">-a
+option</b> (<a href="ch08_09.htm#upt3-CHP-8-SECT-9">Section 8.9</a>) makes
+<i class="command">ls</i> list dot files. If your
+<i class="command">ls</i><a name="IXT-16-1642" /> command is <b class="emphasis-bold">aliased</b> (<a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>) to
+include <span class="option">-a</span> or other options that add words to the
+normal output -- such as the line <tt class="literal">total</tt>
+<em class="replaceable"><tt>nnn</tt></em> from <em class="emphasis">ls
+-l</em> -- then you may not get the results you want.)
+</p>
+
+<p><a name="IXT-16-1643" />The following command will tell you how
+many more words are in <em class="emphasis">new.file</em> than in
+<em class="emphasis">old.file</em>:<a name="IXT-16-1644" />
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>expr `wc -w &lt; new.file`  -  `wc -w &lt; old.file`</b></tt></pre></blockquote>
+
+<p>Many shells have built-in arithmetic commands and
+don't really need <i class="command">expr </i>; however,
+<i class="command">expr</i> works in all shells.
+</p>
+
+<a name="ch16-5-fm2xml" /><blockquote><b>NOTE:</b> 
+In a programming application, you'll usually want
+<i class="command">wc</i> to read the input files by using a
+<tt class="literal">&lt;</tt> character, as shown earlier. If instead you
+say:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>expr `wc -w new.file` - `wc -w old.file`</b></tt></pre></blockquote>
+
+
+<p>the filenames will show up in the expressions and produce a syntax
+error.<a href="#FOOTNOTE-48">[48]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-48" /><p> [48]You could also type <tt class="literal">cat new.file | wc
+-w</tt>, but this involves two commands, so
+it's <b class="emphasis-bold">less efficient</b>
+(<a href="ch43_02.htm#upt3-CHP-43-SECT-2">Section 43.2</a>).</p> </blockquote>
+</blockquote>
+
+<p>Taking this concept a step further, here's a simple
+shell script to calculate the differences in word count between two
+files: <a name="IXT-16-1645" /><a name="IXT-16-1646" />
+</p>
+
+<blockquote><pre class="code">count_1=`wc -w &lt; $1`   # number of words in file 1
+count_2=`wc -w &lt; $2`   # number of words in file 2
+
+diff_12=`expr $count_1 - $count_2`   # difference in word count
+
+# if $diff_12 is negative, reverse order and don't show the minus sign:
+case "$diff_12" in
+-*) echo "$2 has `expr $diff_12 : '-\(.*\)'` more words than $1" ;;
+*)  echo "$1 has $diff_12 more words than $2" ;;
+esac</pre></blockquote>
+
+<p>If this script were called <em class="emphasis">count.it</em>, then you
+could invoke it like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>count.it draft.2 draft.1</b></tt>
+draft.1 has 23 more words than draft.2</pre></blockquote>
+
+<p>You could modify this script to count lines or characters.</p>
+
+<a name="ch16-8-fm2xml" /><blockquote><b>NOTE:</b> 
+<a name="IXT-16-1647" /> <a name="IXT-16-1648" />Unless the counts are very large, the
+output of <i class="command">wc</i> will have leading spaces. This can
+cause trouble in scripts if you aren't careful. For
+instance, in the previous script, the command:
+</p>
+
+<blockquote><pre class="code">echo "$1 has $count_1 words"</pre></blockquote>
+
+<p>might print:</p>
+
+<blockquote><pre class="code">draft.2 has       79 words</pre></blockquote>
+
+<p>See the extra spaces? Understanding how the shell handles <b class="emphasis-bold">quoting</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) will
+help here. If you can, let the shell read the <i class="command">wc</i>
+output and remove extra spaces. For example, without quotes, the
+shell passes four separate words to <i class="command">echo</i> -- and
+<i class="command">echo</i> adds a single space between each word:
+</p>
+
+<blockquote><pre class="code">echo $1 has $count_1 words</pre></blockquote>
+
+<p>that might print:</p>
+
+<blockquote><pre class="code">draft.2 has 79 words</pre></blockquote>
+
+<p>That's especially important to understand when you
+use <i class="command">wc</i> with <i class="command">test</i> or
+<i class="command">expr</i> commands that don't expect
+spaces in their arguments. If you can't use the
+shell to strip out the spaces, delete them by piping the
+<i class="command">wc</i> output through <b class="emphasis-bold">tr -d '
+'</b> (<a href="ch21_11.htm#upt3-CHP-21-SECT-11">Section 21.11</a>).
+</p>
+</blockquote>
+
+<p>Finally, two notes about file size:</p>
+
+<ul><li>
+<p><em class="emphasis">wc
+-c</em><a name="IXT-16-1649" /> isn't an
+efficient way to count the characters in large numbers of files.
+<i class="command">wc</i> opens and reads each file, which takes time.
+The fourth or fifth column of output from <em class="emphasis">ls
+-l</em><a name="IXT-16-1650" /> (depending on your version) gives the
+character count without opening the file.
+</p>
+</li><li>
+<p>Using character counts (as in the previous item)
+doesn't give you the total disk space used by files.
+That's because, in general, each file takes at least
+one disk block to store. The <b class="emphasis-bold">du</b>
+(<a name="IXT-16-1651" /><a href="ch15_08.htm#upt3-CHP-15-SECT-8">Section 15.8</a>) command gives accurate disk usage.
+</p>
+</li></ul>
+<p><em class="emphasis">--JP, DG, and SP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch16_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch16_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">16.5. Adding Words to ispell's Dictionary</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">16.7. Find a a Doubled Word</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

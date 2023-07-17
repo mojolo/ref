@@ -1,0 +1,237 @@
+<html><head><title>Beware of Sluggish Performance (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch48_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch48_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">48.6. Beware of Sluggish Performance</h2>
+
+<p><a name="upt3-IDXTERM-7715" /> <a name="upt3-IDXTERM-7716" />Contrary
+to popular myth, systems don't just start to fail
+for no reason. If your system is starting to perform poorly, chances
+are it's because of something
+that's been initiated. In most cases, the cause has
+innocuous roots, such as a poorly designed script; however, sluggish
+performance could also mean an external attack. Regardless of the
+origin of the decreasing efficiency, you'll want to
+take steps to locate the problem and remove it before it takes your
+system down.
+</p>
+
+<p>If you notice that your systems performance is degrading, there are
+several built-in utilities you can use to troubleshoot possible
+problems. Probably the most commonly used utility is <b class="emphasis-bold">ps</b> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>); however,
+there are other utilities that can provide useful information.
+</p>
+
+<a name="upt3-CHP-48-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">48.6.1. Check Processes</h3>
+
+<p><a name="IXT-48-1915" /><a name="IXT-48-1916" /><a name="IXT-48-1917" />The first check to perform
+if you think that you have a destructive agent running on your
+machine is the processes currently in operation.
+You'll use the basic
+<i class="command">ps</i><a name="IXT-48-1918" /> command to do this, after first
+checking to make sure that <i class="command">ps</i> itself
+hasn't been replaced by a bogus program (check
+installation date, location, and size to see if the
+<i class="command">ps</i> utility has been replaced).
+</p>
+
+<p>Running the <i class="command">ps</i> command with the flags
+<span class="option">-aux</span> shows each user's processes,
+the CPU and memory usage, time started and command.
+Here's an example of output:
+</p>
+
+<blockquote><pre class="code">&gt; ps -aux
+
+root    6910  0.0  0.1  2088  516  ??  IsJ 30Apr02  1:04.80 /usr/sbin/sshd
+root    6955  0.0  0.0  2600  384  ??  IsJ 30Apr02  0:06.67 /usr/local/sbin/xinetd -pidfile 
+/var/run/xinetd.pid
+root    6970  0.0  0.0   624    0 #C1- IWJ -        0:00.00 /bin/sh /usr/virtual/share/
+pkgs/installed/mysql-server/3.22.32/bin/
+mysql   6994  0.0  0.0 11216  144 #C1- SJ  30Apr02  0:35.83 /usr/local/libexec/
+mysqld --basedir=/usr/local --datadir=/var/db/my
+root    7003  0.0  0.3 10028 2616  ??  SsJ 30Apr02  3:33.55 /usr/local/www/bin/httpd -DSSL
+nobody 38060  0.0  0.3 10324 3116  ??  SJ  12:01PM  0:08.60 /usr/local/www/bin/httpd -DSSL
+nobody 38061  0.0  0.3 10332 2612  ??  SJ  12:01PM  0:08.23 /usr/local/www/bin/httpd -DSSL
+nobody 38062  0.0  0.3 11212 2656  ??  SJ  12:01PM  0:08.89 /usr/local/www/bin/httpd -DSSL
+nobody 38117  0.0  0.2 10352 2580  ??  SJ  12:01PM  0:09.37 /usr/local/www/bin/httpd -DSSL
+nobody 38314  0.0  0.2 10332 2596  ??  SJ  12:03PM  0:08.98 /usr/local/www/bin/httpd -DSSL
+root   62104  0.0  0.0  2112  400  ??  SJ   9:57AM  0:00.16 sshd: shelleyp@ttyp2 (sshd)</pre></blockquote>
+
+<p>In this listing, several processes are being run by root, but all are
+normal processes and accounted for. In addition, several processes
+are being run by "<a name="IXT-48-1919" />nobody," which is the
+generic user used with HTTP web page access. Using additional
+<i class="command">ps</i> flags displays additional information,
+including <span class="option">-e</span> for environment and <span class="option">-f</span>
+for command-line and environment information of swapped-out
+processes.
+</p>
+
+</div>
+<a name="upt3-CHP-48-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">48.6.2. Checking Swap Space</h3>
+
+<p><a name="IXT-48-1920" /><a name="IXT-48-1921" /> <a name="IXT-48-1922" />If your system is under
+<a name="IXT-48-1923" />DoS attack, your <a name="IXT-48-1924" />swap space is a vulnerable point. This
+hard disk space is reserved for use by the operating system and to
+provide space for <a name="IXT-48-1925" />temporary files. If your system is
+sluggish and you suspect a possible DoS attack -- or just a badly
+behaving script that results in a lot of temporary files -- the
+first thing you should check is how much swap space you have.
+</p>
+
+<p>The <i class="command">pstat</i><a name="IXT-48-1926" /> utility can be used to check swap space
+when using the <span class="option">-s</span> option on the command line:
+</p>
+
+<blockquote><pre class="code">pstat -s</pre></blockquote>
+
+<p>The result will be a listing of swap areas by device with available
+and used swap space. If the percentage of used space is much higher
+than normal, you probably have a bad script or external interference.
+Additional utilities can help you determine which.
+</p>
+
+<p>Within <a name="IXT-48-1927" /> <a name="IXT-48-1928" />FreeBSD and other Unix systems,
+<i class="command">swapinfo</i> returns the same information as
+<i class="command">pstat</i> <span class="option">-s</span>. If
+you're running a <a name="IXT-48-1929" />Mac OS X system, instead of
+<i class="command">pstat</i>, you'll use the
+<i class="command">ls</i> command and check the contents of
+<em class="filename">/var/vm</em>:
+</p>
+
+<blockquote><pre class="code">ls -l /var/vm
+-rw-------T   1   root      wheel     000000000  Jun    4    12:56    swapfile0</pre></blockquote>
+
+<p>Since the system wasn't under load, the swap space
+didn't have any contents at the time this command
+was run.
+</p>
+
+</div>
+<a name="upt3-CHP-48-SECT-6.3" /><div class="sect2">
+<h3 class="sect2">48.6.3. Check Network Connections</h3>
+
+<p><a name="IXT-48-1930" /><a name="IXT-48-1931" /><a name="IXT-48-1932" />Another check you can
+run if your system is running sluggishly and you think you might be
+under attack is <i class="command">netstat</i><a name="IXT-48-1933" />. This command will return activity on
+Unix <a name="IXT-48-1934" />sockets as well as
+all of the active Internet connections, including referrals if the
+connection occurs through HTTP.
+</p>
+
+<p>Here's an example of <i class="command">netstat</i>
+output:
+</p>
+
+<blockquote><pre class="code">Active Internet connections
+Proto Recv-Q Send-Q  Local Address          Foreign Address        (state)
+tcp4       0      0  burningbird.http       a25253.upc-a.che.3617  TIME_WAIT
+tcp4       0      0  burningbird.http       pm66.internetsee.4301  TIME_WAIT
+tcp4       0      0  burningbird.http       strider.ccs.neu..4492  TIME_WAIT
+tcp4       0      0  burningbird.http       strider.ccs.neu..4491  TIME_WAIT
+tcp4       0      0  burningbird.http       strider.ccs.neu..4490  TIME_WAIT
+tcp4       0      0  burningbird.http       mailgate.ltsbfou.57600 FIN_WAIT_2
+tcp4       0      0  burningbird.http       mailgate.ltsbfou.57595 FIN_WAIT_2
+tcp4       0     20  burningbird.ssh        adsl-64-168-24-1.1076  ESTABLISHED
+tcp4       0      0  burningbird.submission *.*                    LISTEN
+tcp4       0      0  burningbird.smtp       *.*                    LISTEN
+tcp4       0      0  burningbird.domain     *.*                    LISTEN
+tcp4       0      0  burningbird.http       *.*                    LISTEN
+tcp4       0      0  burningbird.https      *.*                    LISTEN
+tcp4       0      0  burningbird.pop3s      *.*                    LISTEN
+tcp4       0      0  burningbird.ssh        *.*                    LISTEN
+udp4       0      0  burningbird.domain     *.*
+udp4       0      0  burningbird.syslog     *.*
+Active UNIX domain sockets
+Address  Type   Recv-Q Send-Q    Inode     Conn     Refs  Nextref Addr
+e5ed4cc0 stream      0      0 e5f0cbc0        0        0        0 /tmp/mysql.sock
+e5ed4d40 stream      0      0        0        0        0        0
+e5e08380 dgram       0      0        0 e5ed4dc0        0 e5e083c0
+e5e083c0 dgram       0      0        0 e5ed4dc0        0 e5ed4d80
+e5ed4d80 dgram       0      0        0 e5ed4dc0        0        0
+e5ed4dc0 dgram       0      0 e556c040        0 e5e08380        0 /var/run/log</pre></blockquote>
+
+<p>Specifying <i class="command">netstat</i> with the command line option
+<span class="option">-s</span> provides a detailed report of
+per-protocol -- TCP, UDP, IP, and so on -- usage statistics.
+</p>
+
+<p>The <i class="command">netstat</i> program is helpful not only for
+determining if someone is trying to break into your system, but also
+for determining if your system is having basic communication
+problems.
+</p>
+
+</div>
+<a name="upt3-CHP-48-SECT-6.4" /><div class="sect2">
+<h3 class="sect2">48.6.4. Other Checks</h3>
+
+<p><a name="IXT-48-1935" /><a name="IXT-48-1936" /> <a name="IXT-48-1937" />You can use <i class="command">iostat</i>
+to check I/O statistics on your various devices. For instance, to
+check to see what kind of activity is occurring on all devices every
+three seconds for nine runs, issue the following command:
+</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>iostat -odICTw 2 -c 9</b></tt>
+      tty        mlxd0          acd0           fd0           md0             cpu
+ tin tout blk xfr msps  blk xfr msps  blk xfr msps  blk xfr msps  us ni sy in id
+   0    0   0   0  0.0    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0
+   0    0 224  12  167    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0
+   0    0 568  36 55.8    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0
+   0    0 144   5  402    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0
+   0    0 112   7  287    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0
+   0    0  48   3  670    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0
+   0    0 240  15  134    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0
+   0    0 192  12  168    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0
+   0    0  96   6  335    0   0  0.0    0   0  0.0    0   0  0.0   0  0  0  0  0</pre></blockquote>
+
+<p>The result allows you to compare I/O over a period of time. Note that
+in some systems, <i class="command">iostat</i> may be
+<i class="command">io_stat</i>, instead.
+</p>
+
+<p><a name="IXT-48-1938" /><a name="IXT-48-1939" /> <a name="IXT-48-1940" />Another check is
+<i class="command">vmstat</i> (<i class="command">vm_stat</i>), which
+displays the <a name="IXT-48-1941" /><a name="IXT-48-1942" />virtual memory statistics
+for a machine. As with <i class="command">iostat</i>, running the command
+several times over a period of time can show if there is unusual
+activity within virtual memory. For instance, if the free memory
+unexpectedly decreases, no known user is running a process, the
+occurrence of the free memory use is consistent (occurring at a set
+time of day), and no other system processes or
+<em class="emphasis">cron</em> jobs are known to be running, you probably
+have an intruding application running somewhere on the system. Other
+tests can then be used to help you determine what the application
+is.<a name="IXTR3-1965" />
+<a name="IXTR3-1966" />
+</p>
+
+<p> <em class="emphasis">-- SP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch48_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch48_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">48.5. What We Mean by DoS</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">48.7. Intruder Detection</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

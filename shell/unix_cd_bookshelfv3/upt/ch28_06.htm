@@ -1,0 +1,308 @@
+<html><head><title>Automatic Completion (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch28_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">28.6. Automatic Completion</h2>
+
+<p><a name="upt3-IDXTERM-4226" /> <a name="upt3-IDXTERM-4227" />If you hate typing long filenames,
+hostnames, command names -- or almost anything on a command
+line -- you should know about the shells'
+"completion" feature.
+</p>
+
+<p>The basics are pretty simple: just press (in most shells) the TAB
+key, and the shell should "do the right
+thing." But how the shell decides
+what's "right" can
+be complicated -- especially in newer shells, and
+<em class="emphasis">especially</em> in the latest
+<i class="command">zsh</i><a name="IXT-28-4585" />, which has incredibly customizable
+completion. As an example, when you press TAB in
+<i class="command">bash</i>, the shell tries to complete a shell variable
+if the word begins with <tt class="literal">$</tt>, a username if the word
+begins with <tt class="literal">~</tt>, a hostname if the word begins with
+<tt class="literal">@</tt>, or a command (including aliases and functions).
+If none of these works, <i class="command">bash</i> finally tries
+filename completion. As another example, the original
+<a name="IXT-28-4586" />Korn shell does only simple filename
+completion, but the public domain Korn shell has more features.
+</p>
+
+<p>On more-sophisticated shells, completion is actually a function of
+the shell's built-in customizable command editor.
+For instance, in <i class="command">tcsh</i><a name="IXT-28-4587" />, the TAB key is bound to (in other
+words, it runs) the editor's
+<i class="command">complete-word</i> command. This key binding can be
+changed. And <i class="command">tcsh</i>, like other recent shells, has
+plenty of other completion-related editor commands.
+</p>
+
+<p><i class="command">bash</i><a name="IXT-28-4588" /> allows for the customization of the
+different types of completions, as well; you can define a file
+containing the hostnames to check (in <em class="filename">/etc/hosts</em>
+format) when the shell is asked to complete a hostname. Just set the
+environment variable <em class="emphasis">HOSTFILE</em> to the name of the
+file you want. There are extensive built-in functions in
+<i class="command">bash</i>, each associated with a key, to allow for
+extremely flexible management of completions.
+</p>
+
+<p>As you can see, completion varies shell to shell, so
+we'll give an overview here. For more details, see
+your shell's manpage.
+</p>
+
+<a name="upt3-CHP-28-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">28.6.1. General Example: Filename Completion</h3>
+
+<p><a name="IXT-28-4589" /> <a name="IXT-28-4590" /><a name="IXT-28-4591" />Let's look at an
+example of one type of completion, filename completion. Other types
+of completion work in generally the same way.
+</p>
+
+<p><em class="emphasis">Filename completion</em> is one of the most common
+types. You can type the initial part of a filename and then press the
+TAB key. (In the C shell, first enable completion by setting the
+variable <b class="emphasis-bold">filec</b> (<a href="ch30_09.htm#upt3-CHP-30-SECT-9">Section 30.9</a>) or <em class="emphasis">complete</em>, then press
+ESC.) If the shell can figure out the complete filename from the part
+that you've typed, it will fill in the rest of the
+name. If not, it will fill in as much of the name as is unambiguous
+and then let you type some more. For example:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls</b></tt>
+alpha.c    alpha.o   beta.c
+$ <tt class="userinput"><b>cc b </b></tt>TAB
+$ cc beta.c        <i class="lineannotation">Shell fills in the filename automatically</i></pre></blockquote>
+
+<p>(With <i class="command">tcsh</i> and <i class="command">csh</i>, your
+terminal will beep if more than one file matches the name
+you've typed. If all this beeping drives you crazy,
+you can set the <em class="emphasis">nobeep</em> shell variable to turn it
+off.) In this case, only one filename begins with
+<em class="emphasis">b</em>, so the shell can fill in the entire name.
+This works with <b class="emphasis-bold">pathnames</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>) too: each time you press TAB, the shell
+completes the name up to the next slash (<tt class="literal">/</tt>) if it
+can.
+</p>
+
+<p>If you type part of a filename and then type CTRL-d (in
+<i class="command">bash</i>, type TAB twice), the shell lists all the
+files that match whatever you've typed. It then
+redisplays your command line and lets you continue typing. For
+example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cc a </b></tt>CTRL-d
+alpha.c    alpha.o
+% cc alpha.</pre></blockquote>
+
+<p>Two files begin with the letter
+"a"; the shell lists them. It then
+redisplays the <i class="command">cc</i> command, letting you finish the
+filename.
+</p>
+
+<a name="ch28-4-fm2xml" /><blockquote><b>NOTE:</b> 
+Also, be forewarned that filename completion doesn't
+always work correctly. For example, you can't use
+filename completion within some older shell applications. You
+can't mix filename completion with wildcards in any
+shell except <i class="command">zsh</i>. We won't go
+into detail about these rough edges, but if you're
+aware that they exist, you won't have trouble.
+</p>
+</blockquote>
+
+<p>That last example shows a problem with filename completion:
+it's matching the <b class="emphasis-bold">".o file,"</b>
+(<a href="ch01_12.htm#upt3-CHP-1-SECT-12">Section 1.12</a>) named <em class="filename">alpha.o</em>.
+It's a type of file that most users
+wouldn't want to manipulate from the command line;
+they'd rather the shell ignore all
+<em class="emphasis">.o</em> files. <a href="ch28_07.htm#upt3-CHP-28-SECT-7">Section 28.7</a>
+explains the <em class="emphasis">fignore</em> list; it solves this
+problem in most cases. <a href="ch31_10.htm#upt3-CHP-31-SECT-10">Section 31.10</a> shows an
+interesting shortcut to filename completion: <i class="command">cd</i>ing
+to a directory by typing its
+"initials."
+</p>
+
+</div>
+<a name="upt3-CHP-28-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">28.6.2. Menu Completion</h3>
+
+<p><a name="IXT-28-4592" /><a name="IXT-28-4593" /><a name="IXT-28-4594" />The filename
+completion section showed how completion works by default: press TAB,
+and the shell completes as much as it can and then waits for you
+either to press TAB again (to see all possible completions) or to
+type enough of the word to make it unambigious.
+</p>
+
+<p>Menu completion, supported by <i class="command">zsh</i> with the
+<span class="option">-Y</span> option, works differently. The name might be
+confusing at first: it doesn't
+"complete a menu," and it also
+doesn't pop up a menu of possible completions.
+Instead, menu completion replaces the word to be completed with a
+single match from the list of possible completions. Each time you
+press TAB again, the shell shows you the next possible match, in
+turn, under your cursor. If you like one of the choices, just keep
+typing the rest of the command line (or press ENTER to execute it).
+When the shell has shown all the possible matches, it rings the bell
+and restores the original text without a match.
+</p>
+
+<p>Menu completion doesn't work just with filenames. If
+your shell supports it, menu completion probably works with all
+completion modes (filenames, hostnames, etc.).
+</p>
+
+</div>
+<a name="upt3-CHP-28-SECT-6.3" /><div class="sect2">
+<h3 class="sect2">28.6.3. Command-Specific Completion</h3>
+
+<p><i class="command">tcsh</i><a name="IXT-28-4595" /><a name="IXT-28-4596" />
+and <i class="command">zsh</i> let you <a name="IXT-28-4597" />customize completion even farther:
+specific completion instructions for each Unix command you define.
+For instance, the <i class="command">mail</i> command wants email
+addresses on its command line, and you can declare a list of
+addresses that are available to complete (this could be a list of
+friends and associates you send a lot of mail to). You might use the
+<i class="command">ssh</i> and <b class="emphasis-bold">telnet
+commands</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) to connect to
+particular remote hosts, and you'd like to be able
+to complete the hostnames for those particular hosts. (The
+<i class="command">bash</i><a name="IXT-28-4598" /><a name="IXT-28-4599" /> hostname completion feature reads
+hostnames from a file like <em class="filename">/etc/hosts</em> -- but
+it only completes hostnames if the string starts with an
+<tt class="literal">@</tt> character or if you use a special editor command
+for completing hostnames.)
+</p>
+
+<p>The <i class="command">tcsh</i> command
+<i class="command">complete</i><a name="IXT-28-4600" /> defines these custom completions. The
+syntax is hairy, so I won't try to explain all of it
+here. Instead, let's look at an overall example from
+the <b class="emphasis-bold">MH email system</b> (<a href="ch06_02.htm#upt3-CHP-6-SECT-2">Section 6.2</a>)<a name="IXT-28-4601" />. You use MH
+commands directly from a shell prompt instead of first starting an
+email command interpreter and entering commands at the
+interpreter's own prompt, as you do with most other
+email packages. Most MH programs accept a mail folder name as one of
+their command-line arguments. A mail folder name starts with a
+<tt class="literal">+</tt> (plus sign)<a href="#FOOTNOTE-85">[85]</a>
+and can appear anywhere in a command line.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-85" /><p> [85]An MH folder name
+can also start with an <tt class="literal">@</tt> (at sign), but that use
+is less common. Besides, this is just an example!</p> </blockquote>
+
+<p>MH mail folders can be stored anywhere on the filesystem -- even
+on a networked filesystem on a remote computer. Here are the four
+lines that I put in my <b class="emphasis-bold">.tcshrc</b>
+<b class="emphasis-bold">setup file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>): 
+</p>
+
+<p><tt class="literal">{ }</tt> <a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a></p>
+
+<blockquote><pre class="code"># Set up MH folder name completion for "folder", "refile", "scan", "show":
+folders -fast -recurse | \
+     sed -e '/DELETE$/d' -e 's/^/+/' &gt; $HOME/Mail/folderlist
+complete {folder,refile,scan,show} 'C@*@`cat $HOME/Mail/folderlist`@'</pre></blockquote>
+
+<p>The first command builds a file named <em class="emphasis">folderlist</em>
+with a list of strings (in this case, folder names) to complete. I
+don't want completion to include folder names
+I'll never look in, so I filtered the
+<i class="command">folder</i> output with <b class="emphasis-bold">sed</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) to exclude
+the names I don't want -- in this case, folder
+names ending with <em class="emphasis">DELETE</em>. (This list is also
+useful in other places, it turns out, not just in
+<i class="command">tcsh</i> completion.) A <tt class="literal">+</tt> is
+prepended to each folder name because <i class="command">folders</i>
+doesn't add the plus signs, but we need them for
+<i class="command">tcsh</i> matching. So the first few lines of
+<em class="emphasis">folderlist</em> look like this:
+</p>
+
+<blockquote><pre class="code">+drafts
++inbox
++jobs
++jobs/bay-area
++jobs/miscellaneous
+   <i class="lineannotation">...</i></pre></blockquote>
+
+<p>The second command, <i class="command">complete</i>, starts with a list
+in braces of the commands that should complete folder names. The next
+argument is complex and has lots of possible variations; this one
+matches any pattern included with <b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) from
+the <b class="emphasis-bold">cat</b> (<a href="ch12_02.htm#upt3-CHP-12-SECT-2">Section 12.2</a>) command, which gives us the contents of
+<em class="emphasis">folderlist</em>. There are lots of variations! The
+bottom line is how this works... here's an example
+of completing a folder name:
+</p>
+
+<blockquote><pre class="code">tcsh&gt; <tt class="userinput"><b>scan +j </b></tt>TAB
+tcsh&gt; scan +jobs<tt class="userinput"><b>/m </b></tt>TAB
+tcsh&gt; scan +jobs/miscellaneous <tt class="userinput"><b>last:20</b></tt></pre></blockquote>
+
+<p>After completing the folder name (in two steps),
+<i class="command">tcsh</i> leaves a space; I type the rest of the
+command line and press ENTER to run it.
+</p>
+
+</div>
+<a name="upt3-CHP-28-SECT-6.4" /><div class="sect2">
+<h3 class="sect2">28.6.4. Editor Functions for Completion</h3>
+
+<p><a name="IXT-28-4602" /> <a name="IXT-28-4603" /><a name="IXT-28-4604" />Some shells have customizable, built-in
+command-line editors that use key bindings to control how and where
+completion takes place. For example, in <i class="command">tcsh</i>,
+pressing TAB invokes the <i class="command">complete-word</i> function,
+but you can change TAB to do menu completion (as explained above) by
+binding the editor function <i class="command">complete-word-fwd</i> to
+TAB key.
+</p>
+
+<p>In <i class="command">bash</i>, TAB does basic completion with the
+editor's <i class="command">complete</i> function. But
+the <i class="command">bash</i> editor has many more bindings than
+<i class="command">tcsh</i> does. For instance, typing
+<tt class="literal">M-/</tt> runs <i class="command">complete-filename</i>,
+which treats the text before the cursor as a filename and does
+filename completion on it. Typing <tt class="literal">M-$</tt> runs
+<i class="command">complete-variable</i>, which treats the text before
+the cursor as a shell variable and does variable completion on it.
+There are plenty of variations -- like <tt class="literal">C-x $</tt>,
+which invokes the <i class="command">possible-variable-completions</i>
+function to list all shell variable names that could be completed.
+<a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a> has an example of
+<tt class="literal">M-{</tt>, the curly-brace completion function.
+</p>
+
+<p>For details on your particular shell, check its manual page.</p>
+
+<p><em class="emphasis">--JP, ML, and SJC</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch28_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">28.5. String Editing (Colon) Operators</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">28.7. Don't Match Useless Files in Filename Completion</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

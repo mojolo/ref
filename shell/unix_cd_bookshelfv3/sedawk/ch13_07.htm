@@ -1,0 +1,144 @@
+<html><head><title>gent--Get a termcap Entry (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.7. gent--Get a termcap Entry</h2>
+
+<p><em class="emphasis">Contributed by Tom Christiansen</em></p>
+
+<p>
+<a name="ch13.d" />
+Here's a sed script I use to extract a <b class="emphasis-bold">termcap</b> entry.  It works 
+for any <b class="emphasis-bold">termcap</b>-like file, such as disktab.  For example:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gent vt100</b></tt></pre></blockquote>
+
+<p>extracts the vt100 entry from termcap, while:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>gent eagle /etc/disktab</b></tt></pre></blockquote>
+
+<p>gets the eagle entry from disktab.  Now I know it could have
+been done in C or Perl, but I did it a long time ago.  It's also
+interesting because of the way it passes options into the sed
+script.  I know, I know:  it should have been written in <em class="emphasis">sh</em> not <em class="emphasis">csh</em>, too.</p>
+
+<blockquote><pre class="code">#!/bin/csh -f
+
+set argc = $#argv
+
+set noglob
+set dollar = '$'
+set squeeze = 0
+set noback="" nospace=""
+
+rescan:
+    if ( $argc &gt; 0 &amp;&amp; $argc &lt; 3 ) then
+        if ( "$1" =~ -* ) then
+            if ( "-squeeze" =~ $1* ) then
+                set noback='s/\\//g' nospace='s/^[  ]*//'
+                set squeeze = 1
+                shift
+                @ argc --
+                goto rescan 
+            else 
+                echo "Bad switch: $1"
+                goto usage
+            endif
+        endif
+
+        set entry = "$1"
+        if ( $argc == 1 ) then
+            set file = /etc/termcap
+        else
+            set file = "$2"
+        endif
+    else
+        usage:
+            echo "usage: `basename $0` [-squeeze] entry [termcapfile]"
+            exit 1
+    endif
+
+
+sed -n -e \
+"/^${entry}[|:]/ {\
+    :x\
+    /\\${dollar}/ {\
+    ${noback}\
+    ${nospace}\
+    p\
+    n\
+    bx\
+    }\
+    ${nospace}\
+    p\
+    n\
+    /^  / {\
+        bx\
+    }\
+    }\
+/^[^    ]*|${entry}[|:]/ {\
+    :y\
+    /\\${dollar}/ {\
+    ${noback}\
+    ${nospace}\
+    p\
+    n\
+    by\
+    }\
+    ${nospace}\
+    p\
+    n\
+    /^  / {\
+        by\
+    }\
+    }" &lt; $file</pre></blockquote>
+
+<a name="sedawk-ch-13-sect-0.0.0.7" /><div class="sect2">
+<h3 class="sect2">13.7.1. Program Notes for gent</h3>
+
+<p>Once you get used to reading awk scripts, they seem so much easier
+to understand than all but the simplest sed script.  It can
+be a painstaking task to figure out what a small sed script
+like the one shown here is doing.</p>
+
+<p>This script does show how to pass shell variables into a sed
+script.  Variables are used to pass optional sed commands into
+the script, such as the substitution commands that replace
+backslashes and spaces.</p>
+
+<p>This script could be simplified in several ways.
+First of all, the two regular expressions don't seem
+necessary to match the entry.  The first matches the
+name of the entry at the beginning of a line; the second
+matches it elsewhere on the line.  
+The loops labeled <b class="emphasis-bold">x</b> and <b class="emphasis-bold">y</b>
+are identical and even if the two regular expressions were
+necessary, we could have them branch to the same loop.</p>
+</div>
+
+
+
+
+<a name="IXT-13-266393" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.6. readsource--Format Program Source Files for troff</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.8. plpr--lpr Preprocessor</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

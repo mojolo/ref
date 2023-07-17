@@ -1,0 +1,292 @@
+<html><head><title>Close a Window by Killing Its Process(es) (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_21.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch25_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.22. Close a Window by Killing Its Process(es)</h2>
+
+<p><a name="upt3-IDXTERM-3704" /> <a name="upt3-IDXTERM-3705" /> <a name="upt3-IDXTERM-3706" /> <a name="upt3-IDXTERM-3707" />In the <a name="IXT-24-5445" />X Window System,
+there's a process controlling every window. If the
+window (or its process) is frozen and you can't get
+rid of it, the easier way is usually to <b class="emphasis-bold">kill</b> (<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>) the
+process. As <a href="ch24_20.htm#upt3-CHP-24-SECT-20">Section 24.20</a> explains, there may
+be a chain of processes running; the window could come from the
+parent process (as in the case of an <i class="command">xterm</i> with a
+shell running inside of it) or it could be the child (such as when a
+shell script runs an X client like
+<i class="command">xmessage</i> -- as in the <i class="command">nup</i>
+script below). Your job is to use <b class="emphasis-bold">ps</b>
+(<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>) to track down the process(es) behind
+the window and kill the right one(s). We'll look at
+two different examples, then look at a shell script that opens a
+window and, later, closes the window by killing its process.
+</p>
+
+<a name="upt3-CHP-24-SECT-22.1" /><div class="sect2">
+<h3 class="sect2">24.22.1. Example #1: An xterm Window</h3>
+
+<p><a name="IXT-24-5446" /><a name="IXT-24-5447" /> <a name="IXT-24-5448" />Let's say
+you're running <i class="command">vi</i> in an
+<i class="command">xterm</i><a name="IXT-24-5449" /> window, and
+the window seems to be frozen. Start with some detective work: open
+up another <i class="command">xterm</i> window and run
+<tt class="literal">ps</tt> <tt class="literal">alwx</tt> or <tt class="literal">ps
+-ef</tt>. (If you're sure that all the
+processes in the window are owned by you -- and none were
+<b class="emphasis-bold">set user ID</b> (<a href="ch01_17.htm#upt3-CHP-1-SECT-17">Section 1.17</a>) -- you can use run <tt class="literal">ps
+lwx</tt>, for example.) You want a listing that shows the chain
+of process IDs, parent-to-child, in that window. The <b class="emphasis-bold">tty</b> (<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>) of the
+shell inside the <i class="command">xterm</i> will help you find the
+right one, if you know it. For example, I found <tt class="literal">vi
+0568.sgm</tt> running on the tty <tt class="literal">pts/5</tt>, so
+the shell I want (the parent of <i class="command">vi</i>) must also be
+on <tt class="literal">pts/5</tt>. From the shell's parent
+ID, I can find the PID of the <i class="command">xterm</i> that started
+the shell. (I'll cut some of the columns in this
+listing to make it easier to read.)
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ps alwx</b></tt>
+ UID   PID  PPID  STAT TTY    TIME  COMMAND
+1000 11287     1  S    tty2   0:44  xterm -sb -sl 2000
+   ...
+1000 11289 11287  S    pts/5  0:04  bash2
+   ...
+1000  2621 11289  S    pts/5  0:00  vi 0568.sgm</pre></blockquote>
+
+<a name="ch24-4-fm2xml" /><blockquote><b>NOTE:</b> 
+A Unix system cycles its <span class="acronym">PID</span>s. A child process may
+have a <em class="emphasis">lower</em> <span class="acronym">PID</span> than its
+parent! (Here, <tt class="literal">vi</tt>'s
+<span class="acronym">PID</span> is 2621, but its parent's
+<span class="acronym">PID</span> is 11289.)
+</p>
+</blockquote>
+
+<p>Now you need to decide what process to kill. You could simply kill
+them all, assuming you own them (on some systems, the
+<i class="command">xterm</i> process may be owned by
+<em class="emphasis">root</em>, so you can't kill it
+unless you can become superuser). But a little detective work can
+save trouble. For instance, see whether the <i class="command">xterm</i>
+is still alive by trying to open its <b class="emphasis-bold">menus</b> (<a href="ch05_17.htm#upt3-CHP-5-SECT-17">Section 5.17</a>). If a
+menu pops up, the problem is likely with the shell (here,
+<tt class="literal">bash2</tt>) or its child process (here,
+<tt class="literal">vi</tt>). Try killing the most junior process (here,
+<tt class="literal">vi</tt>) first:
+</p>
+<p><tt class="literal">-9</tt> <a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>kill 2671</b></tt>
+% <tt class="userinput"><b>ps 2671</b></tt>
+  PID TTY      STAT   TIME COMMAND
+ 2671 pts/5    S      0:00 vi 0568.sgm
+% <tt class="userinput"><b>kill -9 2671</b></tt>
+%</pre></blockquote>
+
+<p>In this case, killing the process with a plain
+<em class="emphasis">TERM</em> signal didn't do the job;
+<i class="command">ps</i> showed it was still running. So I had to use
+<tt class="literal">kill -9</tt>. After this, if there's a
+shell prompt in the formerly frozen window, you're
+probably okay -- although you may need to reset the terminal modes
+if it's still acting weird. On the other hand, if
+the window is still frozen, kill the next-higher process -- here,
+<tt class="literal">bash2</tt>. Continue killing from the bottom up until
+the window is unfrozen or until the window closes.
+</p>
+
+</div>
+<a name="upt3-CHP-24-SECT-22.2" /><div class="sect2">
+<h3 class="sect2">24.22.2. Example #2: A Web Browser</h3>
+
+<p><a name="IXT-24-5450" /><a name="IXT-24-5451" /> <a name="IXT-24-5452" />The <a name="IXT-24-5453" /><a name="IXT-24-5454" /> <a name="IXT-24-5455" />rule I gave in the
+previous section -- killing the lowest child process
+first -- is usually right for <i class="command">xterm</i> windows,
+but not always right. For example, I'm using a
+development version of the Mozilla browser. It starts a series of
+child processes. But all the processes are designed to run as a unit,
+so killing the lowest child may just leave the browser in an unstable
+state. In cases like this, it's better to kill the
+top-level process (or one of the top, as I'll
+explain) and then check to be sure all the children have died.
+</p>
+
+<p>Start with the long listing of processes. Find the parent and its
+children. Note that, depending on how they were started, they may not
+have a tty of their own -- in general, a window
+doesn't need a tty unless it's
+running a shell-oriented utility. I've cut some
+lines and columns from the example to make it more readable:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ps lwx</b></tt>
+ UID   PID  PPID STAT TTY     TIME COMMAND
+1000  9526   752 S    tty2    0:00 sh /usr/local/mozilla/...
+1000  9536  9526 S    tty2   11:49 /usr/local/mozilla/...
+1000  9538  9536 S    tty2    0:00 /usr/local/mozilla/...
+1000  9539  9538 S    tty2    0:03 /usr/local/mozilla/...
+1000 19843     1 S    tty2    0:00 ./psm
+1000 19846 19843 S    tty2    0:00 ./psm
+1000 19847 19846 S    tty2    0:00 ./psm
+1000 19858  9538 S    tty2    0:00 /usr/local/mozilla/...
+1000 19859 19846 S    tty2    0:00 ./psm
+1000 19866 19846 S    tty2    0:00 ./psm
+1000 32316  9538 S    tty2    0:00 /usr/local/mozilla/...
+1000  5705  9538 S    tty2    0:00 /usr/local/mozilla/...</pre></blockquote>
+
+<p>I started Mozilla from a menu on the window system. The window system
+was started from <em class="emphasis">tty2</em> (by typing
+<i class="command">startx</i> in the second <b class="emphasis-bold">virtual
+console</b> (<a href="ch23_12.htm#upt3-CHP-23-SECT-12">Section 23.12</a>)). So the processes
+are "on" <em class="emphasis">tty2</em>,
+too. I happen to know that the <tt class="literal">./psm</tt> processes are
+started by Mozilla. Although the parent <i class="command">psm</i> is
+owned by the <b class="emphasis-bold">init</b> (<a href="ch24_02.htm#upt3-CHP-24-SECT-2">Section 24.2</a>) process (<span class="acronym">PID</span> 1), these
+were either <b class="emphasis-bold">disowned</b> (<a href="ch23_11.htm#upt3-CHP-23-SECT-11">Section 23.11</a>) by Mozilla, or somehow the top-level
+<i class="command">psm</i> process
+"lost" its parent. Finding this
+sort of disconnected process can be hard. One clue is that its
+<span class="acronym">PID</span> is close to other Mozilla processes. Another
+clue may come when you use an output format like <tt class="literal">ps
+ux</tt>, which shows the starting time ("wall
+clock" time -- not the <span class="acronym">CPU</span>
+<tt class="literal">TIME</tt> column above): you may see that the processes
+all started near the same time of day.
+</p>
+
+<p>The first process in the list, the shell script (starting with
+<tt class="literal">sh</tt>), is what probably started the chain of
+processes running. Often, on Unix systems, a shell script sets the
+environment correctly, then starts another library program running.
+All the other processes here seem to have been started from the
+process with <span class="acronym">PID</span> 9536, which has used 11 minutes
+49 seconds of CPU time. Just to be safe, I'll kill
+both top processes at once:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>kill 9526 9536</b></tt></pre></blockquote>
+
+<p>The browser window closed, to I'm close to done. I
+also need to do another <i class="command">ps</i> to be sure the other
+processes have vanished; note that they may need a few seconds to die
+gracefully on their own. Sometimes you'll get a
+<b class="emphasis-bold">zombie process</b> (<a href="ch24_19.htm#upt3-CHP-24-SECT-19">Section 24.19</a>) that can't be killed, but it
+usually doesn't hurt anything -- unless your
+window's processes have been doing some hardware
+accesses and the zombie is tying up the hardware. <a href="ch24_18.htm#upt3-CHP-24-SECT-18">Section 24.18</a> has some ways to clean up in that case.
+</p>
+
+</div>
+<a name="upt3-CHP-24-SECT-22.3" /><div class="sect2">
+<h3 class="sect2">24.22.3. Closing a Window from a Shell Script</h3>
+
+<p><a name="IXT-24-5456" /><a name="IXT-24-5457" /> <a name="IXT-24-5458" />A <a name="IXT-24-5459" />shell script that opens windows also may
+need a way to close them. The simplest way is by killing the
+window's process. You should be sure that whatever
+this process does, killing it won't cause it to
+leave old lock files and other
+"e-debris" around; it should exit
+cleanly when it gets a signal.
+</p>
+
+<p>The <i class="command">xmessage</i> client works well in a case like
+this. It opens a little window with a text message in it. If the user
+clicks a button in the window, <i class="command">xmessage</i>
+terminates. But, in the example below, I want the shell script to
+close the window instead. Here's how it works:
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: nupndown</p>
+
+<p>The shell script has two <b class="emphasis-bold">links</b>
+(<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>), or names:
+<i class="command">nup</i><a name="IXT-24-5460" /> <a name="IXT-24-5461" /> and <i class="command">ndown</i>. I use them
+on my workstation, which no one else (usually) shares. When I run
+<i class="command">nup</i>, the script brings the network up by dialing
+the modem and making a <span class="acronym">PPP</span> connection. It also
+opens a red <i class="command">xmessage</i> window with the message
+"network up" to remind me that my
+phone line is being tied up. When I'm done online, I
+run <i class="command">ndown</i>. <i class="command">ndown</i> disconnects
+the modem and closes the <i class="command">xmessage</i> window by
+killing its process. Here's the basic script:
+</p>
+
+<p><tt class="literal">$!</tt> <a href="ch27_17.htm#upt3-CHP-27-SECT-17">Section 27.17</a>, <tt class="literal">'...'</tt> <a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a></p>
+
+<blockquote><pre class="code">#!/bin/sh
+pidfile=/tmp/.nup-pid
+
+case "$0" in
+*nup)
+    xmessage -geometry 86x51+645+72 -fg white -bg red 'network up' &amp;
+    echo $! &gt; $pidfile
+    /sbin/ifup ppp0
+    ;;
+*ndown)
+    pid=`cat $pidfile`
+    case "`ps $pid`" in
+    *xmessage*)
+        kill $pid
+        rm -f $pidfile
+        ;;
+    esac
+    /sbin/ifdown ppp0
+    ;;
+esac</pre></blockquote>
+
+<p>When the script is invoked as <i class="command">nup</i>, it starts
+<i class="command">xmessage</i> in the background (that is, <b class="emphasis-bold">disowned</b> (<a href="ch23_11.htm#upt3-CHP-23-SECT-11">Section 23.11</a>)) and
+saves its <span class="acronym">PID</span> in the temporary file. So
+<i class="command">xmessage</i> will keep running after
+<i class="command">nup</i> exits; its <span class="acronym">PID</span> will be
+stored in the temporary file. Later, when the same script is invoked
+as <i class="command">ndown</i>, it reads the temporary file to get the
+<span class="acronym">PID</span> into a shell variable, runs
+<i class="command">ps</i> to be sure that the process still exists and
+that its name still contains <i class="command">xmessage</i> (in case
+another process has replaced <i class="command">xmessage</i> in the
+meantime). If all's well, it kills that process to
+close the <i class="command">xmessage</i> window, then removes the
+temporary file. Finally it shuts down the network.
+</p>
+
+<p>The actual script (on the CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>]) does more error checking: verifying
+you're running the X window system before starting
+<i class="command">xmessage</i>, ensuring the temporary file exists, and
+more. And, of course, this isn't foolproof by any
+means. For instance, if I click the
+"OK" button on the
+<i class="command">xmessage</i> window, it will close while the modem is
+still on. But none of that is the point of this simple example
+script. It's to demonstrate how to close a window by
+killing its process. For instance, maybe your script opens an
+<i class="command">xclipboard</i> window and wants to close it later if
+the user doesn't do so first.<a name="IXTR3-5479" /> <a name="IXTR3-5480" /> <a name="IXTR3-5481" /> <a name="IXTR3-5482" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_21.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch25_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.21. Terminal Windows Without Shells</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">25. Delayed Execution</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

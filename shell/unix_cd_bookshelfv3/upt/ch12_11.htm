@@ -1,0 +1,90 @@
+<html><head><title>GNU tail File Following (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.11. GNU tail File Following</h2>
+
+<p>I like to keep an <i class="command">xterm</i> window open on my Linux
+system so I can watch various log files. Although there are fancier
+<a name="IXT-12-6495" />log-file-monitoring programs (such as
+<i class="command">swatch</i>), <b class="emphasis-bold">tail -f</b>
+(<a href="ch12_10.htm#upt3-CHP-12-SECT-10">Section 12.10</a>) is perfect for me.
+</p>
+
+<p>I also run a weekly <b class="emphasis-bold">cron</b>
+(<a name="IXT-12-6496" /><a href="ch25_02.htm#upt3-CHP-25-SECT-2">Section 25.2</a>) job to rotate log files (rename the files,
+compress and archive them). When this job runs, the log files
+suddenly have new names -- <em class="filename">messages</em> becomes
+<em class="filename">messages.1</em>, for instance -- so the system
+logger starts writing to a different <em class="filename">messages</em>
+file. Then plain <i class="command">tail</i> -<span class="option">f</span> suddenly
+stops showing the log because it doesn't realize
+that the same physical file on the disk suddenly has a new name. When
+this happened, I had to remember to kill and restart
+<i class="command">tail</i> each Sunday morning . . . until I found the
+new version of <span class="acronym">GNU</span> <i class="command">tail</i>, that
+is.
+</p>
+
+<p>The
+<span class="acronym">GNU</span><a name="IXT-12-6497" /> <a name="IXT-12-6498" /> <i class="command">tail</i>
+<span class="option">- -follow</span> option lets you choose how the files
+you're watching should be followed. By default,
+<span class="acronym">GNU</span> <i class="command">tail</i> acts like the standard
+<i class="command">tail</i>: it opens a file for reading and gets a
+<b class="emphasis-bold">file descriptor</b> (<a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a>) number, which it constantly watches for
+changes. But if that file is renamed and a new file with the old name
+(and a new inode) takes its place, the file descriptor may point to a
+file that's not in use anymore.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: tail</p>
+
+<p>The
+<span class="acronym">GNU</span><a name="IXT-12-6499" /> <a name="IXT-12-6500" /> <i class="command">tail</i> options,
+<span class="option">- -follow=name</span> and <span class="option">- -retry</span>, tell
+it to watch the actual file name, not the open file descriptor.
+Here's what happens Sunday mornings when
+I'm using this:
+</p>
+
+<p><tt class="literal">{ }</tt> <a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a></p>
+
+<blockquote><pre class="code">kludge# <tt class="userinput"><b>tail --follow=name --retry ~jerry/tmp/startx.log \</b></tt>
+<tt class="userinput"><b>  /var/log/{messages,maillog,secure}</b></tt>
+   <i class="lineannotation">...lots of log messages...</i>
+tail: `/var/log/secure' has been replaced;  following end of new file
+tail: `/var/log/maillog' has been replaced;  following end of new file
+tail: `/var/log/messages' has been replaced;  following end of new file
+Dec 31 04:02:01 kludge syslogd 1.3-3: restart.
+Dec 31 04:02:01 kludge syslogd 1.3-3: restart.
+Dec 31 04:02:05 kludge anacron[8397]: Updated timestamp for job
+`cron.weekly' to 2000-12-31</pre></blockquote>
+
+<p>It's just what I've always needed.</p>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-6523" /> <a name="IXTR3-6524" /> <a name="IXTR3-6525" /></em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.10. How to Look at Files as They Grow</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12.12. Printing the Top of a File</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

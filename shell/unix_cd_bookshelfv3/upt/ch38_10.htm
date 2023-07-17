@@ -1,0 +1,224 @@
+<html><head><title>Using Wildcards with tar (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch38_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">38.10. Using Wildcards with tar</h2>
+
+<p><a name="upt3-IDXTERM-6271" /> <a name="upt3-IDXTERM-6272" />
+<a name="upt3-IDXTERM-6273" />When extracting files from a
+<i class="command">tar</i> archive, it's handy to be
+able to use wildcards. You have to <b class="emphasis-bold">protect
+them</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) from the shell, so
+that they are passed directly to <i class="command">tar</i>.
+</p>
+
+<a name="upt3-CHP-38-SECT-10.1" /><div class="sect2">
+<h3 class="sect2">38.10.1. Without GNU tar</h3>
+
+<p>In general, <i class="command">tar</i> can't do wildcard
+matching on the filenames within an archive. There's
+a terribly ugly hack that you can use to select the files you want
+anyway. Try a command like this:
+</p>
+
+<p><tt class="literal">'...'</tt> <a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar xvf /dev/rst0 `tar tf /dev/rst0 | egrep  'lib/(foo|bar)'`</b></tt></pre></blockquote>
+
+<p><a name="IXT-38-3022" />What
+you're doing here is using <i class="command">tar</i>
+twice. <em class="emphasis">tar t</em> will print the names of all the
+files on the tape. The pattern supplied to <b class="emphasis-bold">egrep</b> (<a name="IXT-38-3023" /><a href="ch13_04.htm#upt3-CHP-13-SECT-4">Section 13.4</a>)
+selects the pathnames containg <em class="filename">lib/foo</em> or
+<em class="filename">lib/bar</em>, and the resulting filenames are passed
+to the first <i class="command">tar</i> command, which actually extracts
+the files from the archive. Note that these patterns are <b class="emphasis-bold">regular expressions, not wildcards</b> (<a href="ch32_02.htm#upt3-CHP-32-SECT-2">Section 32.2</a>). 
+</p>
+
+<p>Here's another subtle but important point. Because
+the regular expression patterns in the example above are not anchored
+with <b class="emphasis-bold">^ or $ characters</b> (<a href="ch32_04.htm#upt3-CHP-32-SECT-4">Section 32.4</a>), they can match anywhere in the file
+pathnames. So <tt class="literal">lib/(foo|bar)</tt> would match a pathname
+like <em class="emphasis">lib/foo</em> as well as a pathname like
+<em class="emphasis">/usr/lib/glib/foo.h</em>.
+</p>
+
+</div>
+<a name="upt3-CHP-38-SECT-10.2" /><div class="sect2">
+<h3 class="sect2">38.10.2. With GNU tar</h3>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: GNU tar</p>
+
+<p><a name="upt3-IDXTERM-6276" />
+<a name="upt3-IDXTERM-6277" />
+<a name="upt3-IDXTERM-6278" />One of the many improvements in GNU
+<i class="command">tar</i> is that it understands wildcards in the names
+of files within an archive. (Remember that because you want
+<i class="command">tar</i>, not the shell, to see these wildcards, you
+have to <a name="IXT-38-3024" /><b class="emphasis-bold">quote</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) the
+filename arguments that have wildcards.)
+</p>
+
+<p>Unlike the examples in the previous section, GNU
+<i class="command">tar</i> uses <b class="emphasis-bold">wildcards, not
+regular expressions</b> (<a href="ch32_02.htm#upt3-CHP-32-SECT-2">Section 32.2</a>). Unlike
+shells, the wildcard expressions in GNU <i class="command">tar</i> can
+match across slashes (<tt class="literal">/</tt>) in
+<a name="IXT-38-3025" />pathnames.
+</p>
+
+<p><a name="IXT-38-3026" />Here's a demonstration
+of using wildcards: we want to extract all subdirectories named
+<em class="emphasis">editor</em>. Command 1 shows how
+you'd do it in non-GNU <i class="command">tar</i>: list
+the exact pathnames of the subdirectories. Notice that
+<i class="command">tar</i> extracts the directory and any subdirectories
+too. Command 2 shows the easy way to do the job with GNU
+<i class="command">tar</i>: make a wildcard expression that ends with a
+slash and the directory name. As before, <i class="command">tar</i>
+extracts the directory and any subdirectories. What if you want to
+extract anything with the string <em class="emphasis">editor</em> in its
+name -- including individual files? Make a wildcard pattern
+without the slash and a filename surrounded by stars, as in command
+3. Finally, command 4 shows an example of how (different than in
+shells) a wildcard can match across the <tt class="literal">/</tt>
+characters in pathnames. Command 4 extracts only directories named
+<em class="emphasis">editor</em> somewhere (possibly several layers)
+underneath a directory named <em class="emphasis">skin</em>:
+</p>
+
+<p><tt class="literal">&gt;</tt> <a href="ch28_12.htm#upt3-CHP-28-SECT-12">Section 28.12</a></p>
+
+<blockquote><pre class="code">1$ <tt class="userinput"><b>tar xvf mozilla.tar package/chrome/en-US/locale/en-US/editor</b></tt> \
+&gt; <tt class="userinput"><b>package/chrome/classic/skin/classic/content/editor</b></tt> \
+&gt; <tt class="userinput"><b>...</b></tt>
+package/chrome/en-US/locale/en-US/editor/
+package/chrome/en-US/locale/en-US/editor/contents.rdf
+package/chrome/en-US/locale/en-US/editor/editor.dtd
+  ...
+package/chrome/classic/skin/classic/editor/
+package/chrome/classic/skin/classic/editor/EditModeTabs.css
+  ...
+package/chrome/classic/skin/classic/editor/images/
+package/chrome/classic/skin/classic/editor/images/Map_Copy.gif
+  ...
+2$ <tt class="userinput"><b>tar xvf mozilla.tar '*/editor'</b></tt>
+package/chrome/en-US/locale/en-US/editor/
+package/chrome/en-US/locale/en-US/editor/contents.rdf
+package/chrome/en-US/locale/en-US/editor/editor.dtd
+  ...
+package/chrome/classic/skin/classic/editor/
+package/chrome/classic/skin/classic/editor/EditModeTabs.css
+  ...
+package/chrome/classic/skin/classic/editor/images/
+package/chrome/classic/skin/classic/editor/images/Map_Copy.gif
+  ...
+3$ <tt class="userinput"><b>tar xvf mozilla.tar '*editor*'</b></tt>
+package/defaults/pref/editor.js
+package/components/editor.xpt
+  ...
+package/chrome/en-US/locale/en-US/editor/
+package/chrome/en-US/locale/en-US/editor/contents.rdf
+package/chrome/en-US/locale/en-US/editor/editor.dtd
+  ...
+package/chrome/comm/content/communicator/editorBindings.xul
+package/chrome/comm/content/communicator/search/search-editor.js
+  ...
+4$ <tt class="userinput"><b>tar xvf mozilla.tar '*/skin/*/editor'</b></tt>
+package/chrome/classic/skin/classic/editor/
+package/chrome/classic/skin/classic/editor/EditModeTabs.css
+  ...
+package/chrome/classic/skin/classic/editor/images/
+package/chrome/classic/skin/classic/editor/images/Map_Copy.gif
+  ...
+package/chrome/blue/skin/blue/editor/
+package/chrome/blue/skin/blue/editor/contents.rdf
+  ...
+package/chrome/blue/skin/blue/editor/images/
+package/chrome/blue/skin/blue/editor/images/Map_Copy.gif
+  ...
+package/chrome/modern/skin/modern/editor/
+package/chrome/modern/skin/modern/editor/contents.rdf
+  ...</pre></blockquote>
+
+<p>There's more about wildcard matching in the GNU
+<i class="command">tar</i> <i class="command">info</i> page (but not its
+<em class="emphasis">manpage</em>).
+</p>
+
+</div>
+<a name="upt3-CHP-38-SECT-10.3" /><div class="sect2">
+<h3 class="sect2">38.10.3. Wildcard Gotchas in GNU tar</h3>
+
+<p>One subtle (but sometimes important!) difference between GNU
+<i class="command">tar</i> and other versions comes when
+you're trying to extract a file whose name contains
+a wildcard character. You'll probably have to type a
+backslash (<tt class="literal">\</tt>) before that name. Also, because the
+shell may also try to interpret that wildcard character -- or at
+least the backslash -- you also may need to quote the backslashed
+expression! (<a href="ch27_18.htm#upt3-CHP-27-SECT-18">Section 27.18</a> shows a situation
+like this one, with multiple layers of backslash interpretation.)
+</p>
+
+<p><a name="IXT-38-3027" />Here's an example.
+We're archiving the system binary file named
+<i class="command">[</i> (or <i class="command">test</i>) (<a href="ch35_26.htm#upt3-CHP-35-SECT-26">Section 35.26</a>): 
+</p>
+
+<blockquote><pre class="code">5$ <tt class="userinput"><b>which [</b></tt>
+/usr/bin/[
+6$ <tt class="userinput"><b>cd /tmp</b></tt>
+7$ <tt class="userinput"><b>tar cvf tartest.tar /usr/bin/[</b></tt>
+tar: Removing leading `/' from member names
+usr/bin/[
+8$ <tt class="userinput"><b>tar xvf tartest.tar usr/bin/[</b></tt>
+tar: usr/bin/[: Not found in archive
+tar: Error exit delayed from previous errors
+9$ <tt class="userinput"><b>tar xvf tartest.tar usr/bin/\[</b></tt>
+tar: usr/bin/[: Not found in archive
+tar: Error exit delayed from previous errors
+10$ <tt class="userinput"><b>tar xvf tartest.tar 'usr/bin/\['</b></tt>
+usr/bin/[</pre></blockquote>
+
+<p>Storing the file in the archive, in command 7, is simple. The shell
+doesn't have anything to expand;
+<i class="command">tar</i> simply stores the name as-is because wildcards
+make sense only when <i class="command">tar</i> is
+<em class="emphasis">extracting</em> from an archive. In command 8,
+though, when we try to extract the file into the current directory,
+<i class="command">tar</i> says it isn't
+there -- because it's now treating
+<tt class="literal">[</tt> as a wildcard pattern. Adding a single backslash
+in command 9 doesn't help because the shell strips
+it off before <i class="command">tar</i> sees it. We need to put quotes
+around the backslash, as in command 10, to make
+<i class="command">tar</i> match the actual name.<a name="IXTR3-3053" /> <a name="IXTR3-3054" /> <a name="IXTR3-3055" />
+</p>
+
+<p><em class="emphasis">--JP and TOR<a name="IXTR3-3056" /> <a name="IXTR3-3057" /> <a name="IXTR3-3058" /></em>
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch38_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">38.9. On-Demand Incremental Backups of a Project</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">38.11. Avoid Absolute Paths with tar</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

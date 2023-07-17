@@ -1,0 +1,178 @@
+<html><head><title>History by Number (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch30_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">30.7. History by Number</h2>
+
+<p><a name="upt3-IDXTERM-4651" />Most of the history examples
+we've shown use the first few letters in a
+command's name: <tt class="literal">!em</tt> to repeat the
+previous Emacs command, for example. But you also can recall previous
+commands by their numbered position in the history list.
+That's useful when you have several command lines
+that start with the same command. It's also more
+useful than <b class="emphasis-bold">interactive command-line
+editing</b> (<a href="ch30_14.htm#upt3-CHP-30-SECT-14">Section 30.14</a>) when
+you'd like to see a lot of previous commands at once
+and then choose one of them by number.
+</p>
+
+<p>To list previous commands, use the
+<i class="command">history</i><a name="IXT-30-4221" /> command. For instance, in
+<i class="command">bash</i> and the C shells, <i class="command">history
+20</i> shows your last 20 commands. In <i class="command">zsh</i>
+and the Korn shell, use a hyphen before the number: <i class="command">history
+-20</i> (also see the discussion of <i class="command">fc</i>,
+later in this article). Here's an example:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>history 8</b></tt>
+ 15  show last +upt/authors
+ 16  vi ../todo
+ 17  co -l 0444.sgm
+ 18  vi 0444.sgm
+ 19  ci -u 0444.sgm
+ 20  rcsdiff -u3.4 0444.sgm &gt; /tmp/0444-diff.txt
+ 21  scp /tmp/0444-diff.txt webhost:adir/11.03-diff.txt
+ 22  getmail;ndown
+$ <tt class="userinput"><b>rm !20:$</b></tt>
+rm /tmp/0444-diff.txt
+$ <tt class="userinput"><b>!16</b></tt>
+vi ../todo</pre></blockquote>
+
+<p>The number at the start of each line is the history number. So, to
+remove the <a name="IXT-30-4222" />temporary file I created in command 20
+(the name of which I'd already forgotten!), I can
+use <b class="emphasis-bold">!20:$</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>) to pass that filename as an argument to
+<i class="command">rm</i>. And to repeat command 16 (<i class="command">vi
+../todo</i>), I can type <tt class="literal">!16</tt>.
+</p>
+
+<p>This sort of thing is often faster than using arrow keys and editor
+commands to recall and edit previous commands. It lets me see several
+commands all at once, which makes it easier to spot the one(s) I want
+and to remember what I was doing as I worked. I use it so often that
+I've got a set of aliases that list bigger and
+bigger chunks of previous commands and an alias that searches
+history, giving me a chunk of matching command lines. Here they are
+in C shell syntax:
+</p>
+<p><tt class="literal">less</tt> <a href="ch12_03.htm#upt3-CHP-12-SECT-3">Section 12.3</a>, <tt class="literal">\!*</tt> <a href="ch29_03.htm#upt3-CHP-29-SECT-3">Section 29.3</a></p>
+
+<blockquote><pre class="code">alias h     history 5     # show last five lines
+alias hi    history 10    # show last ten lines
+alias his   history 20    # show last 20 lines
+alias hist  'history 40 | less'        # show last 40; pipe to 'less'
+alias histo 'history 70 | less'        # show last 70; pipe to 'less'
+alias H     'history -r | fgrep "\!*"' # find something in history</pre></blockquote>
+
+<p>The <i class="command">history</i><a name="IXT-30-4223" /> -<span class="option">r</span> option shows the
+list in <a name="IXT-30-4224" />reverse order: most recent first. If you
+don't give a count of lines to list,
+you'll see all of them.</p>
+
+<a name="ch30-3-fm2xml" /><blockquote><b>WARNING:</b> 
+Be careful! In <i class="command">bash</i><a name="IXT-30-4225" />, <i class="command">history</i>
+-<span class="option">r</span> reads the current history file and uses it as the
+history from that point onward, trashing any current history for that
+shell if it has not yet been written to the history file (defined in
+the environment variable <em class="emphasis">HISTFILE</em>).
+</p>
+</blockquote>
+
+<p>To avoid typing the <i class="command">history</i> command, you can
+<b class="emphasis-bold">include the history number in your
+prompt</b> (<a name="IXT-30-4226" /><a name="IXT-30-4227" /><a href="ch04_03.htm#upt3-CHP-4-SECT-3">Section 4.3</a>). Then you can
+repeat a recent command by glancing up your screen to find the
+command number from its prompt.
+</p>
+
+<p>There's another way to see a list of your previous
+commands in <i class="command">bash</i><a name="IXT-30-4228" /><a name="IXT-30-4229" /><a name="IXT-30-4230" />,
+<i class="command">ksh</i>, and <i class="command">zsh</i>: the command
+<i class="command">fc</i><a name="IXT-30-4231" /> -<span class="option">l</span> (lowercase L,
+for "list"). (In
+<i class="command">ksh</i>, the command <i class="command">history</i> is
+actually just an alias that executes <i class="command">fc -l</i>.) By
+itself, <i class="command">fc -l</i> lists the previous 16 commands:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>fc -l</b></tt>
+   ...
+19      ls -F
+20      less expn.c
+21      vi expn.c
+22      make
+23      expn info@oreilly.com
+24      fc -l</pre></blockquote>
+
+<p>For an even shorter list, give <i class="command">fc</i> the first number
+or name you want to list. For instance, <tt class="literal">fc -l vi</tt>
+or <tt class="literal">fc -l 21</tt> would give the last four lines above.
+You can also use a second argument that ends the range before the
+current line. If you type <tt class="literal">fc -l vi expn</tt> or
+<tt class="literal">fc -l 21 23</tt>, you'll see commands
+21 through 23.
+</p>
+
+<p><i class="command">tcsh</i> and <i class="command">zsh</i> automatically keep
+<a name="IXT-30-4232" />timestamps with their
+history. The <i class="command">tcsh</i> command
+<i class="command">history</i><a name="IXT-30-4233" /> shows the time of day by default. In
+<i class="command">zsh</i>, you can see this info with the options
+<span class="option">-d</span>, which shows the
+<a name="IXT-30-4234" /><a name="IXT-30-4235" />times, <span class="option">-f</span>,
+which shows both dates and times, <a name="IXT-30-4236" />and <span class="option">-D</span>, which shows
+elapsed times. For example, the <i class="command">scp</i> command
+started running at 12:23 (PM) and took 1 minute 29 seconds to run:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>fc -l -f -4</b></tt>
+ 1003  10/23/2000 12:23  nup
+ 1004  10/23/2000 12:23  scp ../upt3_changes.html webhost:adir/.
+ 1005  10/23/2000 12:25  less /etc/hosts
+ 1006  10/23/2000 12:25  getmail;ndown
+% <tt class="userinput"><b>fc -l -D -5</b></tt>
+ 1003  0:29  nup
+ 1004  1:29  scp ../upt3_changes.html webhost:adir/.
+ 1005  0:05  less /etc/hosts
+ 1006  0:21  getmail;ndown
+ 1007  0:00  fc -l -f -4</pre></blockquote>
+
+<p><i class="command">zsh</i> also has several related options for
+<i class="command">fc</i> that allow for the history to be written out to
+a file, read in from a file, et cetera. The other shells allow for
+even more extended functionality. In <i class="command">bash</i>, for
+example, <i class="command">fc</i><a name="IXT-30-4237" />
+-<span class="option">e</span> with appropriate options will start an editor
+(defined by the <em class="emphasis">FCEDIT</em> environment variable) and
+load up a new file containing the recent history items. Think of it
+is jump starting a script from a sequence of (hopefully) successfully
+executed commands. See the other shells' manual
+pages for more details.<a name="IXTR3-4336" /> 
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch30_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">30.6. Using !$ for Safety with Wildcards</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">30.8. History Substitutions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

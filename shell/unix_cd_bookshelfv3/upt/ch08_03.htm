@@ -1,0 +1,165 @@
+<html><head><title>Finding Oldest or Newest Files with ls -t and ls -u (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.3. Finding Oldest or Newest Files with ls -t and ls -u</h2>
+
+<p><a name="IXT-8-6539" />Your
+<a name="IXT-8-6540" /><a name="IXT-8-6541" /><a name="IXT-8-6542" />directory might have 50, 100, or more files.
+Which files haven't been used for a while? You might
+save space by removing them. You read or edited a file yesterday, but
+you can't remember its name? These commands will
+help you find it. (If you want a quick review of Unix file times, see
+<a href="ch08_02.htm#upt3-CHP-8-SECT-2">Section 8.2</a>.)
+</p>
+
+<p>In this example, I'll show you my <b class="emphasis-bold">bin</b> (<a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a>) directory
+full of shell scripts and other programs -- I want to see which
+programs I don't use very often. You can use the
+same technique for directories with text or other files.
+</p>
+
+<p><a name="IXT-8-6543" />The
+<i class="command">ls</i> command has options to change the way it orders
+files. By default, <i class="command">ls</i> lists files alphabetically.
+For finding old files, use the
+<span class="option">-t</span><a name="IXT-8-6544" /><a name="IXT-8-6545" /> option. This sorts files by their
+<em class="emphasis">modification time</em>, or the last time the file was
+changed. The newest files are listed first. Here's
+what happens:
+</p>
+
+<blockquote><pre class="code">jerry@ora ~/.bin
+60 % <tt class="userinput"><b>ls -t</b></tt>
+weather       unshar        scandrafts    rn2mh         recomp
+crontab       zloop         tofrom        rmmer         mhprofile
+rhyes         showpr        incc          mhadd         append
+rhno          rfl           drmm          fixsubj       README
+pickthis      maillog       reheader      distprompter  rtfm
+cgrep         c-w           zrefile       xmhprint      saveart
+dirtop        cw            zscan         replf         echoerr
+which         cx            zfolders      fols
+tcx           showmult      alifile       incs</pre></blockquote>
+
+<p>I just added a shell script named <em class="emphasis">weather</em>
+yesterday; you can see it as the first file in the first column. I
+also made a change to my script named <em class="emphasis">crontab</em>
+last week; it's shown next. The oldest program in
+here is <i class="command">echoerr</i>; it's listed
+last.<a href="#FOOTNOTE-35">[35]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-35" /><p> [35]On some systems, <em class="emphasis">ls -t</em>
+will list the files in one column, with the newest file first.
+Although that's usually a pain, I actually find that
+more convenient when I'm interested in the most
+recent files. If your system does that and you don't
+like the single-column display, you can use <em class="emphasis">ls
+-Ct</em>. On other systems, if a single-column display would be
+handy, use <em class="emphasis">ls -1t</em>; the
+"<tt class="literal">1</tt>" option means
+"one column." You can also use
+<em class="emphasis">ls -lt</em>, since long listings also list one file
+per line. Throughout this article, we'll assume
+you're using an <i class="command">ls</i> version that
+makes multicolumn output.</p> </blockquote>
+
+<p><em class="emphasis">ls -t</em> is also great for
+<a name="IXT-8-6546" />file-time comparisons <b class="emphasis-bold">in a script</b> (<a href="ch08_15.htm#upt3-CHP-8-SECT-15">Section 8.15</a>).
+<em class="emphasis">ls -t</em> is quite useful when I've
+forgotten whether I've edited a file recently. If
+I've changed a file, it will be at or near the top
+of the <em class="emphasis">ls -t</em> listing. For example, I might ask,
+"Have I made the changes to that letter I was going
+to send?" If I haven't made the
+changes (but only think I have), my letter will most likely appear
+somewhere in the middle of the listing.
+</p>
+
+<p>The <span class="option">-u</span><a name="IXT-8-6547" /><a name="IXT-8-6548" /><a name="IXT-8-6549" /> option shows the
+files' last-access time instead of the
+last-modification time. The <span class="option">-u</span> option
+doesn't do anything with plain
+<i class="command">ls</i> -- you have to use it with another option
+like <span class="option">-t</span> or <span class="option">-l</span>. The next listing
+shows that I've recently used the
+<i class="command">rtfm</i> and <i class="command">rmmer</i> files. I
+haven't read <em class="emphasis">README</em> in a long
+time, though -- oops:
+</p>
+
+<blockquote><pre class="code">jerry@ora ~/.bin
+62 % <tt class="userinput"><b>ls -tu</b></tt>
+rtfm          cx            drmm          saveart       fixsubj
+rmmer         c-w           zscan         scandrafts    echoerr
+rfl           cw            zrefile       rhno          dirtop
+mhprofile     distprompter  xmhprint      rhyes         cgrep
+showmult      recomp        zloop         replf         append
+tcx           crontab       zfolders      reheader      alifile
+tofrom        mhadd         which         incs          README
+rn2mh         pickthis      unshar        maillog
+weather       incc          showpr        fols</pre></blockquote>
+
+<p>(Some Unixes don't update the
+<a name="IXT-8-6550" />last-access time of executable files when
+you run them. Shell scripts are always read, so their
+<a name="IXT-8-6551" />last-access times will always be
+updated.)
+</p>
+
+<p><a name="IXT-8-6552" />The
+<span class="option">-c</span><a name="IXT-8-6553" /><a name="IXT-8-6554" /> option shows when the
+file's inode information was last changed. The inode
+time tells when the file was created, when you used
+<i class="command">chmod</i> to change the permissions, and so on.
+</p>
+
+<blockquote><pre class="code">jerry@ora ~/.bin
+64 % <tt class="userinput"><b>ls -tc</b></tt>
+weather      maillog       reheader      recomp        incs
+crontab      tcx           rn2mh         fols          cx
+cgrep        zscan         tofrom        rmmer         cw
+zloop        zrefile       mhadd         fixsubj       c-w
+dirtop       rfl           drmm          mhprofile     echoerr
+pickthis     showmult      alifile       append        which
+rhno         rtfm          showpr        saveart       README
+unshar       incc          scandrafts    distprompter
+rhyes        zfolders      xmhprint      replf</pre></blockquote>
+
+<p>If you're wondering just how long ago a file was
+modified (or accessed), add the
+<span class="option">-l</span><a name="IXT-8-6555" /> <a name="IXT-8-6556" /> option
+for a long listing. As before, adding <span class="option">-u</span> shows the
+last-access time; <span class="option">-c</span> shows inode change time. If I
+look at the access times of a few specific files, I find that I
+haven't read <em class="emphasis">README</em> since 2001.
+</p>
+
+<blockquote><pre class="code">jerry@ora ~/.bin
+65 % <tt class="userinput"><b>ls -ltu README alifile maillog</b></tt>
+-rwxr-xr-x   1 jerry    ora           59 Feb  2  2002 maillog
+-rwxr-xr-x   1 jerry    ora          213 Nov 29  2001 alifile
+-rw-r--r--   1 jerry    ora         3654 Nov 27  2001 README</pre></blockquote>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.2. The Three Unix File Times</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.4. List All Subdirectories with ls -R</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

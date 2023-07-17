@@ -1,0 +1,1128 @@
+<html><head><title>Numeric Variables and Arithmetic (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.2. Numeric Variables and Arithmetic</h2>
+
+<p>
+
+<a name="IXT-6-287776" />
+<a name="IXT-6-287777" />
+
+The expression <tt class="literal">$(($OPTIND - 1))</tt> in the last example gives
+a clue as to how the shell can do integer arithmetic.
+As you might guess, the shell interprets words surrounded by
+<tt class="literal">$((</tt> and <tt class="literal">))</tt> as arithmetic expressions. Variables
+in arithmetic expressions do <em class="emphasis">not</em> need to be preceded
+by dollar signs.
+It is OK to supply the dollar sign, except when assigning a
+value to a variable.
+</p>
+
+<p>
+
+<a name="IXT-6-287778" />
+<a name="IXT-6-287779" />
+<a name="IXT-6-287780" />
+<a name="IXT-6-287781" />
+
+Arithmetic expressions are evaluated inside double quotes,
+like variables and command substitutions.
+We're <em class="emphasis">finally</em> in a position to state the definitive rule
+about quoting strings: When in doubt, enclose a string in single quotes, unless it
+contains any expression involving a dollar sign,
+in which case you should use double quotes.
+</p>
+
+<p>
+
+<a name="IXT-6-287782" />
+For example, the <em class="emphasis">date</em>(1) command on modern
+versions of Unix accepts arguments that tell it how to format
+its output. The argument <tt class="literal">+%j</tt> tells it to print the day of
+the year, i.e., the number of days since December 31st of the
+previous
+year.
+</p>
+
+<p>
+We can use <tt class="literal">+%j</tt> to print a little holiday anticipation
+message:
+</p>
+
+<p>
+<blockquote><pre class="code">
+print "Only $(( (365-$(date +%j)) / 7 )) weeks until the New Year!"
+</pre></blockquote>
+</p>
+
+<p>
+We'll show where this fits in the overall scheme of command-line
+processing in <a href="ch07_01.htm">Chapter 7</a>.
+</p>
+
+<p>
+<a name="IXT-6-287783" />
+The arithmetic expression feature
+is built in to the Korn shell's syntax, and it was
+available in the Bourne shell (most versions) only through the external
+command <em class="emphasis">expr</em>(1). Thus it is yet another example of a
+desirable feature provided by an external command (i.e., a syntactic kludge)
+being better integrated into the shell.
+
+<tt class="literal">[[</tt>...<tt class="literal">]]</tt>
+and <em class="emphasis">getopts</em> are also examples of this
+design trend.
+<a name="IXT-6-287784" />
+<a name="IXT-6-287785" />
+<a name="IXT-6-287786" />
+<a name="IXT-6-287787" />
+<a name="IXT-6-287788" />
+<a name="IXT-6-287789" />
+<a name="IXT-6-287790" />
+<a name="IXT-6-287791" />
+<a name="IXT-6-287792" />
+<a name="IXT-6-287793" />
+<a name="IXT-6-287794" />
+<a name="IXT-6-287795" />
+<a name="IXT-6-287796" />
+
+</p>
+
+<p>
+While <em class="emphasis">expr</em> and <em class="emphasis">ksh88</em> were
+limited to integer arithmetic, <em class="emphasis">ksh93</em> supports
+floating-point arithmetic.  As we'll see shortly, you can do just about any calculation
+in the Korn shell that you could do in C or most other programming languages.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1277" />
+
+Korn shell arithmetic operators are equivalent to
+their counterparts in the C language.
+Precedence and associativity are the same as in C.
+(More details on the Korn shell's compatibility with the C language may
+be found in <a href="appb_01.htm">Appendix B</a>; said details are of interest
+mostly to people already familiar with C.)
+<a href="ch06_02.htm#korn2-CHP-6-TABLE-2">Table 6-2</a>
+shows the arithmetic operators that are supported, in order from highest
+precedence to lowest.
+Although some of these
+are (or contain) special characters, there is no need to backslash-escape them,
+because they are within the <tt class="literal">$((</tt>...<tt class="literal">))</tt> syntax.
+</p>
+
+<a name="korn2-CHP-6-TABLE-2" /><h4 class="objtitle">Table 6-2. Arithmetic operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Operator</th>
+<th>Meaning</th>
+<th>Associativity</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">++</tt> <tt class="literal">--</tt></td>
+<td>Increment and decrement, prefix and postfix</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">+</tt> <tt class="literal">-</tt> <tt class="literal">!</tt> <tt class="literal">~</tt></td>
+<td>Unary plus and minus; logical and bitwise negation</td>
+<td>Right to left</td>
+</tr>
+
+<tr>
+<td><tt class="literal">**</tt></td>
+<td><p>
+Exponentiation<a href="#FOOTNOTE-84">[84]</a>
+</p></td>
+<td>Right to left</td>
+</tr>
+
+<tr>
+<td><tt class="literal">*</tt> <tt class="literal">/</tt> <tt class="literal">%</tt></td>
+<td>Multiplication, division, and remainder</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">+</tt> <tt class="literal">-</tt></td>
+<td>Addition and subtraction</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt;&lt;</tt> <tt class="literal">&gt;&gt;</tt></td>
+<td>Bit-shift left and right</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&lt; &lt;= &gt; &gt;=</tt></td>
+<td>Comparisons</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">==</tt> <tt class="literal">!=</tt></td>
+<td>Equal and not equal</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&amp;</tt></td>
+<td>Bitwise and</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">^</tt></td>
+<td>Bitwise exclusive-or</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">|</tt></td>
+<td>Bitwise or</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">&amp;&amp;</tt></td>
+<td>Logical and (short circuit)</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">||</tt></td>
+<td>Logical or (short circuit)</td>
+<td>Left to right</td>
+</tr>
+
+<tr>
+<td><tt class="literal">?:</tt></td>
+<td>Conditional expression</td>
+<td>Right to left</td>
+</tr>
+
+<tr>
+<td><p>
+<tt class="literal">= += -= *= /= %= &amp;= ^= &lt;&lt;= &gt;&gt;=</tt>
+</p></td>
+<td>Assignment operators</td>
+<td>Right to left</td>
+</tr>
+
+<tr>
+<td><tt class="literal">,</tt></td>
+<td>Sequential evaluation</td>
+<td>Left to right</td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-84" /><p> [84]
+<em class="emphasis">ksh93m</em> and newer.
+The <tt class="literal">**</tt> operator is not in the C language.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-6-287797" />
+<a name="IXT-6-287798" />
+
+Parentheses can be used to group subexpressions.
+
+The arithmetic expression syntax (like C) supports relational operators
+as "truth values" of 1 for true and 0 for false.
+</p>
+
+<p>
+For example, <tt class="literal">$((3 &gt; 2))</tt> has the value 1;
+<tt class="literal">$(( (3 &gt; 2) || (4 &lt;= 1) ))</tt> also
+has the value 1, since at least one of the two subexpressions is true.
+</p>
+
+<p>
+If you're familiar with C, C++ or Java, the operators listed in
+<a href="ch06_02.htm#korn2-CHP-6-TABLE-2">Table 6-2</a> will be familiar.
+But if you're not, some of them warrant a little explanation.
+</p>
+
+<p>
+The assignment forms of the regular operators are a convenient shorthand for
+the more conventional way of updating a variable.  For example, in Pascal or
+Fortran you might write <tt class="literal">x = x + 2</tt> to add 2 to <tt class="literal">x</tt>.
+The <tt class="literal">+=</tt> lets you do that more compactly:
+<tt class="literal">$((x += 2))</tt> adds 2 to <tt class="literal">x</tt> and stores the
+result back in <tt class="literal">x</tt>.
+(Compare this to the recent addition of the <tt class="literal">+=</tt> operator
+to <em class="emphasis">ksh93</em> for string concatenation.)
+</p>
+
+<p>
+Since adding and subtracting 1 are such frequent operations,
+the <tt class="literal">++</tt> and <tt class="literal">--</tt> operators provide an even
+more abbreviated way to do them.
+As you might guess, <tt class="literal">++</tt> adds 1, while <tt class="literal">--</tt>
+subtracts 1.
+These are unary operators.
+Let's take a quick look at how they work.
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>i=5</b></tt>
+$ <tt class="userinput"><b>print $((i++)) $i</b></tt>
+5 6
+$ <tt class="userinput"><b>print $((++i)) $i</b></tt>
+7 7
+</pre></blockquote>
+</p>
+
+<p>
+What's going on here?  In both cases, the value of <tt class="literal">i</tt> is increased
+by one.  But the value returned by the operator depends upon its placement relative
+to the variable being operated upon.  A <em class="emphasis">postfix</em> operator (one
+that occurs after the variable) returns the variable's <em class="emphasis">old</em> value
+as the result of the expression and then increments the variable.
+By contrast, a <em class="emphasis">prefix</em> operator, which comes in front of the
+variable, increments the variable first and then returns the new value.
+The <tt class="literal">--</tt> operator works the same as <tt class="literal">++</tt>,
+but it decrements the variable by one, instead of incrementing it.
+</p>
+
+<p>
+
+The shell also supports base <em class="emphasis">N</em> numbers,
+where <em class="emphasis">N</em> can be up to 64.  The notation
+<em class="replaceable"><tt>B</em><tt class="literal">#</tt><em class="replaceable">N</tt></em>
+means "<em class="emphasis">N</em> base <em class="emphasis">B</em>."  Of course,
+if you omit the <em class="replaceable"><tt>B</tt></em><tt class="literal">#</tt>, the
+base defaults to 10.
+The digits are <tt class="literal">0</tt>-<tt class="literal">9</tt>,
+<tt class="literal">a</tt>-<tt class="literal">z</tt> (10-35),
+<tt class="literal">A</tt>-<tt class="literal">Z</tt> (36-61),
+<tt class="literal">@</tt> (62), and <tt class="literal">_</tt> (63).
+(When the base is less than or equal to 36, you may use mixed case letters.)
+For example:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print the ksh number 43#G is $((43#G))</b></tt>
+the ksh number 43#G is 42
+</pre></blockquote>
+<a name="IXTR3-270" />
+</p>
+
+<p>
+Interestingly enough, you can use shell variables to contain subexpressions,
+and the shell substitutes the value of the variable when doing arithmetic.
+For example:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>almost_the_answer=10+20</b></tt>
+$ <tt class="userinput"><b>print $almost_the_answer</b></tt>
+10+20
+$ <tt class="userinput"><b>print $(( almost_the_answer + 12 ))</b></tt>
+42
+</pre></blockquote>
+</p>
+
+<a name="korn2-CHP-6-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">6.2.1. Built-in Arithmetic Functions</h3>
+
+<p>
+
+The shell provides a number of built-in arithmetic and trigonometric functions
+for use with <tt class="literal">$((</tt>...<tt class="literal">))</tt>.
+They are called using C function call syntax.  The trigonometric functions
+expect arguments to be in radians, not in degrees.
+(There are 2<img src="figs/U03C0.gif" alt="Figure " /> radians in a circle.)
+For example, remembering way back to high-school days, recall that
+45 degrees is <img src="figs/U03C0.gif" alt="Figure " /> divided by 4.  Let's say we need the
+cosine of 45 degrees:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>pi=3.1415927</b></tt>       <i class="lineannotation">Approximate value for pi</i>
+$ <tt class="userinput"><b>print the cosine of pi / 4 is $(( cos(pi / 4) ))</b></tt>
+the cosine of pi / 4 is 0.707106772982
+</pre></blockquote>
+</p>
+
+<p>
+A better approximation of <img src="figs/U03C0.gif" alt="Figure " /> may be obtained using the <tt class="literal">atan</tt>
+function:
+</p>
+
+<blockquote><pre class="code">
+pi=$(( 4. * atan(1.) ))                     <i class="lineannotation">A better value for pi</i>
+</pre></blockquote>
+
+<p>
+<a href="ch06_02.htm#korn2-CHP-6-TABLE-3">Table 6-3</a> lists the built-in arithmetic functions.
+</p>
+
+<a name="korn2-CHP-6-TABLE-3" /><h4 class="objtitle">Table 6-3. Built-in arithmetic functions</h4><table border="1" cellpadding="3">
+
+
+
+
+
+<tr>
+<th>Function</th>
+<th>Returns</th>
+<th>Function</th>
+<th>Returns</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">abs</tt></td>
+<td>Absolute value</td>
+<td><p>
+<tt class="literal">hypot</tt><a href="#FOOTNOTE-85">[85]</a>
+</p></td>
+<td>Euclidean distance</td>
+</tr>
+
+<tr>
+<td><tt class="literal">acos</tt></td>
+<td>Arc cosine</td>
+<td><tt class="literal">int</tt></td>
+<td>Integer part</td>
+</tr>
+
+<tr>
+<td><tt class="literal">asin</tt></td>
+<td>Arc sine</td>
+<td><tt class="literal">log</tt></td>
+<td>Natural logarithm</td>
+</tr>
+
+<tr>
+<td><tt class="literal">atan</tt></td>
+<td>Arc tangent</td>
+<td><tt class="literal">pow</tt><a href="#FOOTNOTE-85">[85]</a></td>
+<td>Exponentiation (<em class="emphasis">x</em><sup class="superscript"><em class="emphasis">y</em></sup>)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">atan2</tt><a href="#FOOTNOTE-85">[85]</a></td>
+<td>Arc tangent of two variables</td>
+<td><tt class="literal">sin</tt></td>
+<td>Sine</td>
+</tr>
+
+<tr>
+<td><tt class="literal">cos</tt></td>
+<td>Cosine</td>
+<td><tt class="literal">sinh</tt></td>
+<td>Hyperbolic sine</td>
+</tr>
+
+<tr>
+<td><tt class="literal">cosh</tt></td>
+<td>Hyperbolic cosine</td>
+<td><tt class="literal">sqrt</tt></td>
+<td>Square root</td>
+</tr>
+
+<tr>
+<td><tt class="literal">exp</tt></td>
+<td>Exponential (<em class="emphasis">e</em><sup class="superscript"><em class="emphasis">x</em></sup>)</td>
+<td><tt class="literal">tan</tt></td>
+<td>Tangent</td>
+</tr>
+
+<tr>
+<td><tt class="literal">fmod</tt><a href="#FOOTNOTE-85">[85]</a></td>
+<td>Floating-point remainder</td>
+<td><tt class="literal">tanh</tt></td>
+<td>Hyperbolic tangent</td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-85" /><p> [85]
+Added in <em class="emphasis">ksh93e</em>.
+</p>
+</blockquote>
+
+
+</div>
+
+<a name="korn2-CHP-6-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">6.2.2. Arithmetic Conditionals</h3>
+
+<p>
+<a name="korn2-IDXTERM-1281" />
+<a name="IXT-6-287799" />
+
+<a name="IXT-6-287800" />
+
+<a name="IXT-6-287801" />
+
+Another construct, closely related to <tt class="literal">$((</tt>
+...<tt class="literal">))</tt>, is
+<tt class="literal">((</tt>...<tt class="literal">))</tt> (without the leading dollar sign). We use this
+for evaluating arithmetic condition tests, just as <tt class="literal">[[</tt>...<tt class="literal">]]</tt>
+is used for string, file attribute, and other types of tests.
+</p>
+
+<p>
+<tt class="literal">((</tt>...<tt class="literal">))</tt>
+is almost identical to
+<tt class="literal">$((</tt>...<tt class="literal">))</tt>.
+However, it was designed for use
+in <tt class="literal">if</tt> and <tt class="literal">while</tt>
+constructs. Instead of producing a textual result, it just sets its
+exit status according to the truth of the expression: 0 if true,
+1 otherwise. So, for example, <tt class="literal">((3 &gt; 2))</tt> produces exit
+status 0, as does <tt class="literal">(( (3 &gt; 2) || (4 &lt;= 1) ))</tt>, but
+<tt class="literal">(( (3 &gt; 2) &amp;&amp; (4 &lt;= 1) ))</tt> has exit status 1 since the second
+subexpression isn't true.
+</p>
+
+<p>
+You can also use numerical values for truth values within
+this construct.
+<a name="IXT-6-287802" />
+It's like the analogous concept in C:
+a value of 0 means <em class="emphasis">false</em> (i.e., returns exit status 1),
+and a non-zero value means <em class="emphasis">true</em> (returns exit status 0),
+e.g., <tt class="literal">(( 14 ))</tt> is true.
+See the code for the <em class="emphasis">kshdb</em>
+debugger in <a href="ch09_01.htm">Chapter 9</a> for more examples of this.
+<a name="IXTR3-271" />
+</p>
+</div>
+
+
+<a name="korn2-CHP-6-SECT-2.3" /><div class="sect2">
+<h3 class="sect2">6.2.3. Arithmetic Variables and Assignment</h3>
+
+<p>
+
+<a name="korn2-IDXTERM-1287" />
+<a name="korn2-IDXTERM-1288" />
+
+The <tt class="literal">((</tt>...<tt class="literal">))</tt> construct can also be used to define
+numeric variables and assign values to them. The statement:
+</p>
+
+<p>
+<blockquote><pre class="code">
+(( <em class="replaceable"><tt>var</em>=<em class="replaceable">expression</tt></em> ))
+</pre></blockquote>
+</p>
+
+<p>
+creates the numeric variable <em class="emphasis">var</em> (if it doesn't already exist)
+and assigns to it the result of <em class="emphasis">expression</em>.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+<a name="korn2-IDXTERM-1289" />
+<a name="IXT-6-287803" />
+
+The double-parentheses syntax is what's recommended.  However,
+if you prefer to use a command for doing arithmetic, the shell
+provides one: the built-in command <em class="emphasis">let</em>. The syntax is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+let <em class="replaceable"><tt>var</em>=<em class="replaceable">expression</tt></em>
+</pre></blockquote>
+</p>
+
+<p>
+It is not necessary (because it's actually redundant)
+to surround the expression with
+<tt class="literal">$((</tt> and <tt class="literal">))</tt> in a <em class="emphasis">let</em> statement.
+When not using quotes,
+there must not be any space on either side
+of the equal sign (<tt class="literal">=</tt>). However, it is good practice to surround expressions
+with quotes, since many characters are treated as special by
+the shell (e.g., <tt class="literal">*</tt>, <tt class="literal">#</tt>, and parentheses); furthermore, you must
+quote expressions that include whitespace (spaces or TABs). See
+<a href="ch06_02.htm#korn2-CHP-6-TABLE-4">Table 6-4</a>
+for examples.
+Once you have quotes, you can use spaces:
+
+<blockquote><pre class="code">
+let "x = 3.1415927" "y = 1.41421"
+</pre></blockquote>
+</p>
+
+<p>
+While <em class="emphasis">ksh88</em> only allowed you to use integer variables,
+<em class="emphasis">ksh93</em> no longer has this restriction, and variables may
+be floating point as well.  (An <em class="emphasis">integer</em> is what was
+called a "whole number" in school, a number that doesn't have
+a fractional part, such as 17 or 42.  Floating-point numbers,
+in contrast, can have fractional parts, such as 3.1415927.)
+The shell looks for a decimal point in order to determine that a value
+is floating point.  Without one, values are treated as integers.
+This is primarily an issue for division: integer division truncates
+any fractional part.  The <tt class="literal">%</tt> operator requires an
+integer divisor.
+</p>
+
+<p>
+The shell provides two built-in aliases for declaring
+numeric variables: <em class="emphasis">integer</em> for integer variables
+and <em class="emphasis">float</em> for floating point variables.
+(These are both aliases for the <em class="emphasis">typeset</em> command
+with different options.
+More details are provided in <a href="ch06_05.htm#korn2-CHP-6-SECT-5.3">Section 6.5.3</a>,
+later in this chapter.)
+</p>
+
+<p>
+Finally,
+all assignments to both integer and floating-point variables
+are automatically evaluated as arithmetic expressions.  This means that you
+don't need to use the <em class="emphasis">let</em> command:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>integer the_answer</b></tt>
+$ <tt class="userinput"><b>the_answer=12+30</b></tt>
+$ <tt class="userinput"><b>print $the_answer</b></tt>
+42
+</pre></blockquote>
+</p>
+
+
+<a name="korn2-CHP-6-TABLE-4" /><h4 class="objtitle">Table 6-4. Sample expression assignments</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Assignment</th>
+<th>Value</th>
+</tr>
+
+<tr>
+<th><tt class="literal">let x=</tt></th>
+<th><tt class="literal">$x</tt></th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">x=1+4</tt></td>
+<td>5</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'x = 1 + 4'</tt></td>
+<td>5</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'x = 1.234 + 3'</tt></td>
+<td>4.234</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'x = (2+3) * 5'</tt></td>
+<td>25</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'x = 2 + 3 * 5'</tt></td>
+<td>17</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'x = 17 / 3'</tt></td>
+<td>5</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'x = 17 / 3.0'</tt></td>
+<td>5.66666666667</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'17 % 3'</tt></td>
+<td>2</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'1 &lt;&lt; 4'</tt></td>
+<td>16</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'48 &gt;&gt; 3'</tt></td>
+<td>6</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'17 &amp; 3'</tt></td>
+<td>1</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'17 | 3'</tt></td>
+<td>19</td>
+</tr>
+
+<tr>
+<td><tt class="literal">'17 ^ 3'</tt></td>
+<td>18</td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a href="ch06_02.htm#korn2-CHP-6-SIDEBAR-1">Task 6-1</a>
+is a small task that makes use of arithmetic.
+</p>
+
+<a name="korn2-CHP-6-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 6-1</h4>
+
+<p>
+<a name="IXT-6-287804" />
+
+Write a script called <em class="emphasis">pages</em> that, given the name of a text
+file, tells how many pages of output it contains. Assume that
+there are 66 lines to a page, but provide an option allowing the
+user to override that.
+</p>
+
+</td></tr></table><p></blockquote>
+<p>
+<a name="IXT-6-287805" />
+We'll make our option <tt class="literal">-</tt><em class="replaceable"><tt>N</em>, a la <em class="emphasis">head</tt></em>. The syntax for
+this single option is so simple that we need not bother with <em class="emphasis">getopts</em>.
+Here is the code:
+</p>
+
+<p>
+<blockquote><pre class="code">
+if [[ $1 == -+([0-9]) ]]; then
+    (( page_lines = ${1#-} ))
+    shift
+else
+    (( page_lines = 66 ))
+fi
+let file_lines="$(wc -l &lt; $1)"
+
+(( pages = file_lines / page_lines ))
+if (( file_lines % page_lines &gt; 0 )); then
+    (( pages++ ))
+fi
+
+print "$1 has $pages pages of text."
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-6-287806" />
+Note that we use the arithmetical conditional
+<tt class="literal">(( file_lines % page_lines &gt; 0 ))</tt> rather than the
+<tt class="literal">[[</tt>...<tt class="literal">]]</tt> form.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+<a name="korn2-IDXTERM-1294" />
+At the heart of this code is the Unix utility <em class="emphasis">wc</em>(1), which
+counts the number of lines, words, and characters (bytes) in its
+input. By default, its output looks something like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+8      34     161  bob
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">wc</em>'s output means that the file
+<em class="emphasis">bob</em> has 8 lines, 34 words, and
+161 characters. <em class="emphasis">wc</em> recognizes the
+options <em class="emphasis">-l</em>, <em class="emphasis">-w</em>, and
+<em class="emphasis">-c</em>, which tell it to print only the number of lines,
+words, or characters, respectively.
+</p>
+
+<p>
+<a name="IXT-6-287807" />
+
+<em class="emphasis">wc</em> normally prints the name of its input file (given as argument).
+Since we want only the number of lines, we have to do two things. First, we give it input from file redirection instead,
+as in <tt class="literal">wc -l &lt; bob</tt> instead of <tt class="literal">wc -l bob</tt>.
+This produces the number of lines preceded by one or more spaces.
+</p>
+
+<p>
+Unfortunately, that space complicates matters:
+the statement <tt class="literal">let file_lines=$(wc -l &lt; $1)</tt> becomes
+<tt class="literal">let file_lines=</tt> <em class="replaceable"><tt>N</tt></em> after command substitution; the space
+after the equal sign is an error. That leads to the second modification,
+the quotes around the command substitution expression. The
+statement <tt class="literal">let file_lines="</tt> <em class="replaceable"><tt>N</tt></em><tt class="literal">"</tt>
+is perfectly legal, and
+<em class="emphasis">let</em> knows how to remove the leading space.
+
+
+</p>
+
+<p>
+The first <tt class="literal">if</tt> clause in the <em class="emphasis">pages</em> script
+checks to see if the first command line argument is an option.
+If so, it
+strips the dash (<tt class="literal">-</tt>) off and assigns
+the result to the variable <tt class="literal">page_lines</tt>.
+<em class="emphasis">wc</em> in the command substitution expression returns the
+number of lines in the file whose name is given as argument.
+<a name="IXTR3-272" />
+<a name="IXTR3-273" />
+<a name="IXTR3-274" />
+</p>
+
+<p>
+The next group of lines calculates the number of pages and,
+if there is a remainder after the division, adds 1. Finally,
+the appropriate message is printed.
+</p>
+
+<p>
+
+<a name="korn2-IDXTERM-1299" />
+<a name="korn2-IDXTERM-1300" />
+
+As a bigger example of arithmetic, we now complete our
+version of the C shell's <em class="emphasis">pushd</em> and <em class="emphasis">popd</em> functions
+(<a href="ch04_07.htm#korn2-CHP-4-SIDEBAR-7">Task 4-7</a>).
+Remember that these functions operate
+on <tt class="literal">DIRSTACK</tt>, a stack of directories represented as a string
+with the directory names separated by spaces.
+<a name="IXT-6-287808" />
+<a name="IXT-6-287809" />
+The C shell's <em class="emphasis">pushd</em> and <em class="emphasis">popd</em> take additional
+types of arguments:
+</p>
+
+<ul>
+
+<li><p>
+<tt class="literal">pushd +n</tt> takes the <em class="emphasis">n</em>th directory in the stack
+(starting with 0), rotates it to the top, and <em class="emphasis">cd</em>s to it.
+</p></li>
+
+<li><p>
+<tt class="literal">pushd</tt> without arguments doesn't complain; instead, it swaps
+the two top directories on the stack and <em class="emphasis">cd</em>s to the new top.
+</p></li>
+
+<li><p>
+<tt class="literal">popd +n</tt> takes the <em class="emphasis">n</em>th directory in the stack and just
+deletes it.
+</p></li>
+
+</ul>
+
+<?troff .Nd 10?>
+
+<p>
+The most useful of these features is the ability to get at the <em class="emphasis">n</em>th directory
+in the stack. Here are the latest versions of both functions:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function pushd {                # push current directory onto stack
+    dirname=$1
+    if [[ -d $dirname &amp;&amp; -x $dirname ]]; then
+        cd $dirname
+        DIRSTACK="$dirname DIRSTACK"
+        print "$DIRSTACK"
+    else
+        print "still in $PWD."
+        return 1
+    fi
+}
+
+function popd {                 # pop directory off the stack, cd there
+    if [[ -n $DIRSTACK ]]; then
+        top=${DIRSTACK%% *}
+        DIRSTACK=${DIRSTACK#* }
+        cd $top
+        print "$PWD"
+    else
+        print "stack empty, still in $PWD."
+        return 1
+    fi
+}
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-6-287810" />
+
+
+<a name="korn2-IDXTERM-1304" />
+To get at the <em class="emphasis">n</em>th directory, we use a
+<tt class="literal">while</tt> loop that transfers
+the top directory to a temporary copy of the stack <em class="emphasis">n</em> times.
+We'll put the loop into a function called <em class="emphasis">getNdirs</em> that looks
+like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function getNdirs {
+    stackfront=''
+    let count=0
+    while (( count &lt; $1 )); do
+        stackfront="$stackfront ${DIRSTACK%% *}"
+        DIRSTACK=${DIRSTACK#* }
+        let count++
+    done
+}
+</pre></blockquote>
+</p>
+
+<p>
+The argument passed to <em class="emphasis">getNdirs</em> is the <em class="emphasis">n</em> in question.
+The variable <tt class="literal">stackfront</tt> is the temporary copy that contains
+the first <em class="emphasis">n</em> directories when the loop is done. <tt class="literal">stackfront</tt>
+starts as null; <tt class="literal">count</tt>, which counts the number of loop iterations,
+starts as 0.
+</p>
+
+<p>
+<a name="IXT-6-287811" />
+<a name="IXT-6-287812" />
+<a name="IXT-6-287813" />
+
+The first line of the loop body
+appends the top of the stack (<tt class="literal">${DIRSTACK%% *}</tt>) to <tt class="literal">stackfront</tt>;
+the second line deletes the top from the stack. The last line
+increments the counter for the next iteration.
+The entire loop executes
+<em class="emphasis">n</em> times, for values of <tt class="literal">count</tt>
+from 0 to <em class="emphasis">n</em>-1.
+</p>
+
+<p>
+<a name="IXT-6-287814" />
+<a name="IXT-6-287815" />
+
+When the loop finishes, the last directory in <tt class="literal">$stackfront</tt> is
+the <em class="emphasis">n</em>th directory. The expression
+<tt class="literal">${stackfront##* }</tt>
+extracts this directory. Furthermore, <tt class="literal">DIRSTACK</tt> now contains
+the "back" of the stack, i.e.,
+the stack <em class="emphasis">without</em> the first <em class="emphasis">n</em> directories.
+With this in mind, we can now write the code for the improved
+versions of <em class="emphasis">pushd</em> and <em class="emphasis">popd</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function pushd {
+    if [[ $1 == ++([0-9]) ]]; then
+        # case of pushd +n: rotate n-th directory to top
+        num=${1#+}
+        getNdirs $num
+
+        newtop=${stackfront##* }
+        stackfront=${stackfront%$newtop}
+
+        DIRSTACK="$newtop $stackfront $DIRSTACK"
+        cd $newtop
+
+    elif [[ -z $1 ]]; then
+        # case of pushd without args; swap top two directories
+        firstdir=${DIRSTACK%% *}
+        DIRSTACK=${DIRSTACK#* }
+        seconddir=${DIRSTACK%% *}
+        DIRSTACK=${DIRSTACK#* }
+        DIRSTACK="$seconddir $firstdir $DIRSTACK"
+        cd $seconddir
+
+    else
+        # normal case of pushd dirname
+        dirname=$1
+        if [[ -d $dirname &amp;&amp; -x $dirname ]]; then
+            cd $dirname
+            DIRSTACK="$dirname $DIRSTACK"
+            print "$DIRSTACK"
+        else
+            print still in "$PWD."
+            return 1
+        fi
+    fi
+}
+
+function popd {      # pop directory off the stack, cd to new top
+    if [[ $1 == ++([0-9]) ]]; then
+        # case of popd +n: delete n-th directory from stack
+        num=${1#+}
+        getNdirs $num
+        stackfront=${stackfront% *}
+        DIRSTACK="$stackfront $DIRSTACK"
+
+    else
+        # normal case of popd without argument
+        if [[ -n $DIRSTACK ]]; then
+            top=${DIRSTACK%% *}
+            DIRSTACK=${DIRSTACK#* }
+            cd $top
+            print "$PWD"
+        else
+            print "stack empty, still in $PWD."
+            return 1
+        fi
+    fi
+}
+</pre></blockquote>
+</p>
+
+<p>
+These functions have grown rather large; let's look at them in turn.
+The <tt class="literal">if</tt> at the beginning of <em class="emphasis">pushd</em>
+checks if the first argument is an option of the form
+<tt class="literal">+</tt><em class="replaceable"><tt>N</tt></em>.  If so, the first block
+of code is run. The first statement simply strips the plus sign (+)
+from the argument and assigns the result -- as an integer -- to
+the variable <tt class="literal">num</tt>. This, in turn, is passed to the
+<em class="emphasis">getNdirs</em> function.
+</p>
+
+<p>
+The next two assignment statements set <tt class="literal">newtop</tt> to the <em class="emphasis">n</em>th
+directory -- i.e., the last directory in <tt class="literal">$stackfront</tt> -- and
+delete that directory from <tt class="literal">stackfront</tt>. The final two
+lines in this part of <em class="emphasis">pushd</em> put the stack back together again
+in the appropriate order and <em class="emphasis">cd</em> to the new top directory.
+</p>
+
+<p>
+The <tt class="literal">elif</tt> clause tests for no argument, in which case <em class="emphasis">pushd</em>
+should swap the top two directories on the stack. The first four lines
+of this clause assign the top two directories to <tt class="literal">firstdir</tt> and
+<tt class="literal">seconddir</tt> and delete these from the stack. Then, as above,
+the code puts the stack back together
+in the new order and <em class="emphasis">cd</em>s to
+the new top directory.
+</p>
+
+<p>
+The <tt class="literal">else</tt> clause corresponds to the usual case, where the user
+supplies a directory name as argument.
+</p>
+
+<p>
+<a name="IXT-6-287816" />
+<em class="emphasis">popd</em> works similarly.
+The <tt class="literal">if</tt> clause checks for the
+<tt class="literal">+</tt><em class="replaceable"><tt>N</tt></em> option,
+which in this case means delete the <em class="emphasis">N</em>th
+directory.
+<tt class="literal">num</tt> receives the integer count;
+the <em class="emphasis">getNdirs</em> function puts the first <em class="emphasis">N</em>
+directories into <tt class="literal">stackfront</tt>. Then the line
+<tt class="literal">stackfront=${stackfront% *}</tt>
+deletes the last directory (the <em class="emphasis">N</em>th
+directory) from
+<tt class="literal">stackfront</tt>. Finally, the stack is put back together with
+the <em class="emphasis">N</em>th directory missing.
+</p>
+
+<p>
+The <tt class="literal">else</tt> clause covers the usual case, where the user doesn't
+supply an argument.
+
+<a name="IXTR3-275" />
+<a name="IXTR3-276" />
+</p>
+
+<p>
+Before we leave this subject, here are a few exercises that should
+test your understanding of this code:
+</p>
+
+<ol>
+
+<li><p>
+Add code to <em class="emphasis">pushd</em> that exits with an error message if
+the user supplies no argument and the stack contains fewer than
+two directories.
+</p></li>
+
+
+<li><p>
+Verify that when the user specifies <tt class="literal">+</tt><em class="replaceable"><tt>N</tt></em>
+and <em class="emphasis">N</em> exceeds the number of directories in the stack, both
+<em class="emphasis">pushd</em> and <em class="emphasis">popd</em> use the last directory as
+the <em class="emphasis">N</em>th directory.
+</p></li>
+
+
+<li><p>
+Modify the <em class="emphasis">getNdirs</em> function so that it checks for the
+above condition and exits with an appropriate error message if true.
+</p></li>
+
+
+<li><p>
+Change <em class="emphasis">getNdirs</em> so that it uses <em class="emphasis">cut</em> (with
+command substitution), instead of the <tt class="literal">while</tt> loop,
+to extract the first <em class="emphasis">N</em> directories. This uses less code
+but runs more slowly because of the extra processes generated.
+<a name="IXTR3-277" />
+<a name="IXTR3-278" />
+<a name="IXTR3-279" />
+
+</p></li>
+</ol>
+
+<p>
+<a name="IXTR3-280" />
+<a name="IXTR3-281" />
+
+</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6. Command-Line Options and Typed Variables</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.3. Arithmetic for</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

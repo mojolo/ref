@@ -1,0 +1,111 @@
+<html><head><title>Finding (Anyone's) Home Directory, Quickly (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch31_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch31_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">31.11. Finding (Anyone's) Home Directory, Quickly</h2>
+
+<p><a name="IXT-31-4146" /><a name="IXT-31-4147" /> <a name="IXT-31-4148" /><a name="IXT-31-4149" /><a name="IXT-31-4150" /><a name="IXT-31-4151" />Most shells have a shortcut for the
+pathname to your home directory: a tilde (<tt class="literal">~</tt>),
+often called "twiddle" by
+Unix-heads. You can use <tt class="literal">~</tt> in a pathname to the
+home directory from wherever you are. For example, from any
+directory, you can list your home directory or edit your
+<em class="filename">.cshrc</em> file in it by typing:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls ~</b></tt>
+   ...
+% <tt class="userinput"><b>vi ~/.cshrc</b></tt></pre></blockquote>
+
+<p><a name="IXT-31-4152" /><a name="IXT-31-4153" /><a name="IXT-31-4154" /><a name="IXT-31-4155" />If
+you're using a very old Bourne shell, one that does
+not support the tilde convention, try the <tt class="literal">$HOME</tt> or
+<tt class="literal">$LOGDIR</tt> variables instead.
+</p>
+
+<p>You could change your current directory to your home directory by
+typing <tt class="literal">cd ~</tt> or <tt class="literal">cd $HOME</tt>, but
+all shells have a shorter shortcut: typing plain
+<tt class="literal">cd</tt> with no argument also takes you home.
+</p>
+
+<p>If your shell understands the tilde, it should also have an
+abbreviation for other users' home directories: a
+tilde with the username on the end. For example, the home directory
+for <em class="emphasis">mandi</em>, which might really be
+<em class="filename">/remote/users/m/a/mandi</em>, could be abbreviated
+<em class="emphasis">~mandi</em>. On your account, if Mandi told you to
+copy the file named <em class="filename">menu.c</em> from her
+<em class="filename">src</em> directory, you could type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cp ~mandi/src/menu.c .</b></tt></pre></blockquote>
+
+<p><a name="IXT-31-4156" /><a name="IXT-31-4157" /><a name="IXT-31-4158" /><a name="IXT-31-4159" /><a name="IXT-31-4160" />Don't confuse this with
+filenames like <em class="filename">report~</em>. Some programs, like the
+GNU <b class="emphasis-bold">Emacs</b> (<a href="ch19_04.htm#upt3-CHP-19-SECT-4">Section 19.4</a>) editor and <i class="command">vi</i>, may create
+temporary filenames that end with a <tt class="literal">~</tt> (tilde).
+</p>
+
+<p><a name="IXT-31-4161" /><a name="IXT-31-4162" />Your version of the Bourne shell might
+also emulate the special
+"directory"
+<em class="emphasis">/u</em> -- if your system administrator
+hasn't already set up <em class="emphasis">/u</em>, that
+is. It's a directory full of <b class="emphasis-bold">symbolic links</b> (<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>)
+to users' home directories. For instance,
+<em class="filename">/u/jane</em> could be a link to
+<em class="filename">/home/users/jane</em>. Many systems are now using
+<em class="filename">/home</em> for home directories, in favor of the old
+<em class="filename">/usr/users</em> or <em class="filename">/u</em>
+conventions. Darwin uses <em class="filename">/Users/username</em> (note
+the uppercase <em class="emphasis">U</em>!), but the tilde works the same
+there, too.
+</p>
+
+<p>If all else fails, here's a trick
+that's probably too ugly to type a lot, but
+it's useful in Bourne shell scripts, where you
+don't want to
+"<a name="IXT-31-4163" />hardcode"
+users' home directory pathnames. This command calls
+the C shell to put <em class="emphasis">mandi</em>'s home
+directory pathname into <em class="emphasis">$dir</em>:
+</p>
+
+<blockquote><pre class="code">username=mandi
+dir=`csh -fc "echo ~$username"`</pre></blockquote>
+
+<p>In fact, using <b class="emphasis-bold">echo</b> (<a href="ch27_05.htm#upt3-CHP-27-SECT-5">Section 27.5</a>) yourself is a good way to see how
+<tt class="literal">~</tt> works. Try <tt class="literal">echo ~</tt>,
+<tt class="literal">echo ~/xyz</tt>, <tt class="literal">echo ~xyz</tt>, and so
+on. Note that different shells do different things when
+<tt class="literal">~</tt><em class="replaceable"><tt>user</tt></em>
+doesn't match any user: some print an error, others
+return the unmatched string.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch31_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch31_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">31.10. cd by Directory Initials</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">31.12. Marking Your Place with a Shell Variable</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

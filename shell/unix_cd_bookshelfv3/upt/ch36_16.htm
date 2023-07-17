@@ -1,0 +1,202 @@
+<html><head><title>n&gt;&amp;m: Swap Standard Output and Standard Error (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">36.16. n&gt;&amp;m: Swap Standard Output and Standard Error</h2>
+
+<p><a name="upt3-IDXTERM-5886" /> <a name="upt3-IDXTERM-5887" />
+<a name="upt3-IDXTERM-5888" />
+<a name="upt3-IDXTERM-5889" />By default, a command's
+standard error goes to your terminal. The standard output goes to the
+terminal or is redirected somewhere (to a file, down a pipe, into
+backquotes).
+</p>
+
+<p>Sometimes you want the opposite. For instance, you may need to send a
+command's standard output to the screen and grab the
+error messages (standard error) with backquotes. Or you might want to
+send a command's standard output to a file and the
+standard error down a pipe to an error-processing command.
+Here's how to do that in the Bourne shell. (The C
+shell can't do this, although
+<i class="command">tcsh</i> can.)
+</p>
+
+<p><a name="upt3-IDXTERM-5890" />File
+descriptors 0, 1, and 2 are, respectively, the standard input,
+standard output, and standard error (<a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a> explains). Without redirection,
+they're all associated with the terminal file
+<b class="emphasis-bold">/dev/tty</b> (<a href="ch36_15.htm#upt3-CHP-36-SECT-15">Section 36.15</a>). It's easy to redirect any
+descriptor to any file -- if you know the filename. For instance,
+to redirect file descriptor 2 to <em class="emphasis">errfile</em>, type:
+</p>
+
+<blockquote><pre class="code">$ <em class="replaceable"><tt>command</tt></em><tt class="userinput"><b> 2&gt;errfile</b></tt></pre></blockquote>
+
+<p><a name="IXT-36-3307" /> <a name="IXT-36-3308" />You know that a pipe and backquotes
+also redirect the standard output:
+</p>
+
+<blockquote><pre class="code">$ <em class="replaceable"><tt>command</tt></em><tt class="userinput"><b> | ...</b></tt>
+$ <tt class="userinput"><b>var=`</b></tt><em class="replaceable"><tt>command</tt></em><tt class="userinput"><b>`</b></tt></pre></blockquote>
+
+<p>But there's no filename associated with the pipe or
+backquotes, so you can't use the
+<tt class="literal">2&gt;</tt> redirection. You need to rearrange the file
+descriptors without knowing the file (or whatever) that
+they're associated with. Here's
+how. You may find it useful to run this short Perl script, which
+simply prints "stdout" to standard
+output, and "stderr" to standard
+error:
+</p>
+
+<blockquote><pre class="code">#!/usr/bin/perl
+
+print STDOUT "stdout\n";
+print STDERR "stderr\n";</pre></blockquote>
+
+<p>Let's start slowly. We will combine both standard
+output and standard error, sending them both as output, to be used as
+the input to a pipe or as the output of backquotes. The Bourne shell
+operator
+<em class="replaceable"><tt>n</em><tt class="literal">&gt;&amp;</tt><em class="replaceable">m</tt></em>
+rearranges the files and file descriptors. It says,
+"Make file descriptor <em class="emphasis">n</em> point
+to the same file as file descriptor
+<em class="emphasis">m</em>." Let's use
+that operator on the previous example. We'll send
+standard error to the same place standard output is going:
+</p>
+
+<blockquote><pre class="code">$ <em class="replaceable"><tt>command</tt></em> <tt class="userinput"><b>2&gt;&amp;1 | ...</b></tt>
+$ <tt class="userinput"><b>var=`</b></tt><em class="replaceable"><tt>command</tt></em><tt class="userinput"><b> 2&gt;&amp;1`</b></tt></pre></blockquote>
+
+<p>In both those examples, <tt class="literal">2&gt;&amp;1</tt> means
+"send standard error (file descriptor 2) to the same
+place standard output (file descriptor 1) is going."
+Simple, eh?
+</p>
+
+<p>You can use more than one
+<em class="replaceable"><tt>n</em><tt class="literal">&gt;&amp;</tt><em class="replaceable">m</tt></em>
+operator. The shell reads them left-to-right before it executes the
+command.
+</p>
+
+<p><a name="IXT-36-3309" />"Oh!"
+you might say. "To swap standard output and standard
+error -- make <em class="emphasis">stderr</em> go down a pipe and
+<em class="emphasis">stdout</em> go to the screen -- I could do
+this!"
+</p>
+
+<blockquote><pre class="code">$ <em class="replaceable"><tt>command</tt></em> <tt class="userinput"><b>2&gt;&amp;1 1&gt;&amp;2 | ...</b></tt>     <i class="lineannotation">wrong...</i></pre></blockquote>
+
+<p>Sorry, Charlie. When the shell sees <tt class="literal">2&gt;&amp;1
+1&gt;&amp;2</tt>, the shell first does
+<tt class="literal">2&gt;&amp;1</tt>. You've seen that
+before -- it makes file descriptor 2 (<em class="emphasis">stderr</em>)
+go the same place as file descriptor 1 (<em class="emphasis">stdout</em>).
+Then the shell does <tt class="literal">1&gt;&amp;2</tt>. It makes
+<em class="emphasis">stdout</em> (<tt class="literal">1</tt>) go the same place
+as <em class="emphasis">stderr</em> (<tt class="literal">2</tt>)... but
+<em class="emphasis">stderr</em> is already going the same place as
+<em class="emphasis">stdout</em>, down the pipe.
+</p>
+
+<p>This is one place the other file descriptors, 3 through 9 (and higher
+in <i class="command">bash</i>), come in handy. They normally
+aren't used. You can use one of them as a
+"holding place," to remember where
+another file descriptor "pointed."
+For example, one way to read the operator
+<tt class="literal">3&gt;&amp;2</tt> is "make
+<tt class="literal">3</tt> point the same place as
+<tt class="literal">2</tt>." After you use
+<tt class="literal">3&gt;&amp;2</tt> to grab the location of
+<tt class="literal">2</tt>, you can make <tt class="literal">2</tt> point
+somewhere else. Then make <tt class="literal">1</tt> point where
+<tt class="literal">2</tt> used to (where <tt class="literal">3</tt> points now).
+</p>
+
+<p>We'll take that step-by-step below. The command line
+you want is one of these:
+</p>
+
+<blockquote><pre class="code">$ <em class="replaceable"><tt>command</tt></em><tt class="userinput"><b>3&gt;&amp;2 2&gt;&amp;1 1&gt;&amp;3 | ...</b></tt>
+$ <tt class="userinput"><b>var=`</b></tt><em class="replaceable"><tt>command</tt></em><tt class="userinput"><b> 3&gt;&amp;2 2&gt;&amp;1 1&gt;&amp;3`</b></tt></pre></blockquote>
+
+<p>How does it work? <a href="ch36_16.htm#upt3-CHP-36-FIG-3">Figure 36-3</a> through <a href="ch36_16.htm#upt3-CHP-36-FIG-6">Figure 36-6</a> break the second command line (with the
+backquotes) into the same steps the shell follows as it rearranges
+the file descriptors. You can try these on your terminal, if
+you'd like. Each figure adds another
+<em class="replaceable"><tt>n</em><tt class="literal">&gt;&amp;</tt><em class="replaceable">m</tt></em>
+operator and shows the location of each file descriptor after that
+operator.
+</p>
+
+<a name="upt3-CHP-36-FIG-3" /><div class="figure"><img src="figs/upt3_3603.gif" alt="Figure 36-3" width="427" /></div><h4 class="objtitle">Figure 36-3. File descriptors before redirection</h4>
+
+<a name="upt3-CHP-36-FIG-4" /><div class="figure"><img src="figs/upt3_3604.gif" alt="Figure 36-4" width="427" /></div><h4 class="objtitle">Figure 36-4. File descriptors after 3&gt;&amp;2 redirection</h4>
+
+<p>The figures use a <i class="command">grep</i> command reading two files.
+<em class="emphasis">afone</em> is readable, and <i class="command">grep</i>
+finds one matching line in it; the line is written to the standard
+output. <em class="emphasis">bfoen</em> is misspelled and so is not
+readable; <i class="command">grep</i> writes an error message to the
+standard error. In each figure, you'll see the
+terminal output (if any) just after the variable-setting command with
+the backquotes. The text grabbed by the backquotes goes into the
+shell variable; the <i class="command">echo</i> command shows that text.
+</p>
+
+<a name="upt3-CHP-36-FIG-5" /><div class="figure"><img src="figs/upt3_3605.gif" alt="Figure 36-5" width="427" /></div><h4 class="objtitle">Figure 36-5. File descriptors after 3&gt;&amp;2 2&gt;&amp;1 redirection</h4>
+
+<p>By <a href="ch36_16.htm#upt3-CHP-36-FIG-6">Figure 36-6</a> the redirection is correct. Standard
+output goes to the screen, and standard error is captured by the
+backquotes.
+</p>
+
+<a name="upt3-CHP-36-FIG-6" /><div class="figure"><img src="figs/upt3_3606.gif" alt="Figure 36-6" width="427" /></div><h4 class="objtitle">Figure 36-6. File descriptors after 3&gt;&amp;2 2&gt;&amp;1 1&gt;&amp;3 redirection</h4>
+
+<p>Open files are automatically closed when a process exits, but
+it's safer to close the files yourself as soon as
+you're done with them. That way, if you forget and
+use the same descriptor later for something else (for instance, use
+F.D. 3 to redirect some other command, or a subprocess uses F.D. 3),
+you won't run into conflicts. Use
+<em class="replaceable"><tt>m</tt></em><tt class="literal">&lt;&amp;-</tt> to close
+input file descriptor <em class="replaceable"><tt>m</tt></em> and
+<em class="replaceable"><tt>m</tt></em><tt class="literal">&gt;&amp;-</tt> to close
+output file descriptor <em class="replaceable"><tt>m</tt></em>. If you need to,
+you can close standard input with <tt class="literal">&lt;&amp;-</tt> and
+standard <a name="IXTR3-3442" />output with
+<tt class="literal">&gt;&amp;-</tt>.
+</p>
+
+<p> <em class="emphasis">-- JP<a name="IXTR3-3443" /> <a name="IXTR3-3444" /> <a name="IXTR3-3445" /> <a name="IXTR3-3446" /></em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.15. Overview: Open Files and File Descriptors</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.17. A Shell Can Read a Script from Its Standard Input, but...</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

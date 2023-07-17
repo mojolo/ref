@@ -1,0 +1,634 @@
+<html><head><title>Hold That Line (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.3. Hold That Line</h2>
+
+<p>
+<a name="ch06.hold" />
+<a name="IXT-6-265772" />
+<a name="IXT-6-265773" />
+The pattern space is a buffer that contains the current input line.
+There is also a set-aside buffer called the <em class="emphasis">hold
+space</em>.  The contents of the pattern space can be copied to
+the hold space and the contents of the hold space can be copied to the
+pattern space.  A group of commands allows you to move data between
+the hold space and the pattern space.  The hold space is used for
+temporary storage, and that's it.  Individual commands can't address
+the hold space or alter its contents.</p>
+
+<p>The most frequent use of the hold space is to have it retain a
+duplicate of the current input line while you change the original in
+the pattern space.  The commands that affect the pattern space are:</p>
+
+<a name="sedawk-ch-6-tab-1" /><table border="1" cellpadding="3">
+
+<tr>
+<th>Command</th>
+<th>Abbreviation</th>
+<th>Function</th>
+</tr>
+
+
+
+
+<tr>
+<td>Hold</td>
+<td><b class="emphasis-bold">h</b> or <b class="emphasis-bold">H</b></td>
+<td><p>Copy or append contents of pattern space to hold space.</p></td>
+</tr>
+
+<tr>
+<td>Get</td>
+<td><b class="emphasis-bold">g</b> or <b class="emphasis-bold">G</b></td>
+<td><p>Copy or append contents of hold space to pattern space.</p></td>
+</tr>
+
+<tr>
+<td>Exchange</td>
+<td><b class="emphasis-bold">x</b></td>
+<td><p>Swap contents of hold space and pattern space.</p></td>
+</tr>
+
+
+</table><p>
+<p>
+<a name="ch06.h1" />
+<a name="IXT-6-265774" />
+<a name="IXT-6-265775" />
+<a name="IXT-6-265776" />
+<a name="IXT-6-265777" />
+Each of these commands can take an address that specifies a single
+line or a range of lines.  The hold
+(<b class="emphasis-bold">h</b>,<b class="emphasis-bold">H</b>) commands move data into
+the hold space and the get (<b class="emphasis-bold">g</b>,<b class="emphasis-bold">G</b>)
+commands move data from the hold space back into the pattern space.
+The difference between the lowercase and uppercase versions of the
+same command is that the lowercase command overwrites the contents of
+the target buffer, while the uppercase command appends to the buffer's existing
+contents.</p>
+
+<p>The hold command replaces the contents of the hold space with the
+contents of the pattern space.  The get command replaces the contents
+of the pattern space with the contents of the hold space.</p>
+
+<p>The Hold command puts a newline followed by the contents of the
+pattern space after the contents of the hold space.  (The newline is
+appended to the hold space even if the hold space is empty.)  The Get
+command puts a newline followed by the contents of the hold space
+after the contents of the pattern space.</p>
+
+<p>
+<a name="IXT-6-265778" />
+<a name="IXT-6-265779" />
+The exchange command swaps the contents of the two buffers.  It has no
+side effects on either buffer.</p>
+
+<p>Let's use a trivial example to illustrate putting lines into the hold
+space and retrieving them later.  We are going to write a script that
+reverses pairs of lines.  For a sample file, we'll use a list of
+numbers:</p>
+
+<blockquote><pre class="code">1
+2
+11
+22
+111
+222</pre></blockquote>
+
+<p>The object is to reverse the order of the lines beginning with 1 and
+the lines beginning with 2.  Here's how we use the hold space: we copy
+the first line to the hold space--and hold on to it--while
+we clear the pattern space.  Then sed reads the second line into the
+pattern space and we append the line from the hold space to the end of
+the pattern space.  Look at the script:</p>
+
+<blockquote><pre class="code"># Reverse flip
+/1/{
+h
+d
+}
+/2/{
+G
+}</pre></blockquote>
+
+<p>Any line matching a "1" is copied to the hold space and deleted from
+the pattern space.  Control passes to the top of the script and the
+line is not printed.  When the next line is read, it matches the
+pattern "2" and the line that had been copied to the hold space is
+now appended to the pattern space.  Then both lines are printed.  In
+other words, we save the first line of the pair and don't output it
+until we match the second line.</p>
+
+<p>Here's the result of running the script on the sample file:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -f sed.flip test.flip</b></tt>
+2
+1
+22
+11
+222
+111</pre></blockquote>
+
+<p>
+<a name="IXT-6-265780" />
+The hold command followed by the delete command is a fairly common
+pairing.  Without the delete command, control would reach the bottom
+of the script and the contents of the pattern space would be output.
+If the script used the next (<b class="emphasis-bold">n</b>) command instead of
+the delete command, the contents of the pattern space would also be
+output.  You can experiment with this script by removing the delete
+command altogether or by putting a next command in its place.  You
+could also see what happens if you use <b class="emphasis-bold">g</b> instead of
+<b class="emphasis-bold">G</b>.
+<a name="IXT-6-265781" /></p>
+
+<p>Note that the logic of this script is poor, though the script is
+useful for demonstration purposes.  If a line matches the first
+instruction and the next line fails to match the second instruction,
+the first line will not be output.  This is a hole down which lines
+disappear.</p>
+
+<a name="sedawk-ch-6-sect-3.1" /><div class="sect2">
+<h3 class="sect2">6.3.1. A Capital Transformation</h3>
+
+<p>
+<a name="IXT-6-265782" />
+In the previous chapter, we introduced the transform command
+(<b class="emphasis-bold">y</b>) and described how it can exchange lowercase
+letters for uppercase letters on a line.  Since this command acts on
+the entire contents of the pattern space, it is something of a chore
+to do a letter-by-letter transformation of a portion of the line.  But
+it is possible, though convoluted, as the following example will
+demonstrate.</p>
+
+<p>While working on a programming guide, we found that the names of
+statements were entered inconsistently.  They needed to be uppercase,
+but some were lowercase while others had an initial capital letter.
+While the task was simple--to capitalize the name of the
+statement--there were nearly 100 statements and it seemed a
+tedious project to write that many explicit substitutions of the form:</p>
+
+<blockquote><pre class="code">s/find the Match statement/find the MATCH statement/g</pre></blockquote>
+
+<p>The transform command could do the lowercase-to-uppercase conversion
+but it applies the conversion to the entire line.  The hold space
+makes this task possible because we use it to store a copy of the
+input line while we isolate and convert the statement name in the
+pattern space.  Look at the script first:</p>
+
+<blockquote><pre class="code"># capitalize statement names
+/the .* statement/{
+h
+s/.*the \(.*\) statement.*/\1/
+y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/
+G
+s/\(.*\)\n\(.*the \).*\( statement.*\)/\2\1\3/
+}</pre></blockquote>
+
+<p>The address limits the procedure to lines that match "the .* statement".
+Let's look at what each command does:</p>
+
+<dl>
+<dt><tt class="literal">h</tt></dt><dd><p>The hold command copies the current input line into the hold space.
+<a name="IXT-6-265783" />
+Using the sample line "find the Match statement," we'll show the
+contents of the pattern space and of the hold space.  After 
+the <b class="emphasis-bold">h</b> command, both the pattern space and 
+the hold space are identical.</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><tt><em class="replaceable"><tt>Pattern Space:</tt></em></tt></td>
+<td><tt class="literal">find the Match statement</tt></td>
+</tr>
+
+<tr>
+<td><tt><em class="replaceable"><tt>Hold Space:</tt></em></tt></td>
+<td><tt class="literal">find the Match statement</tt></td>
+</tr>
+
+
+</table><p></dd>
+
+
+<dt><tt class="literal">s/.*the \(.*\) statement.*/\1/</tt></dt><dd><p>The substitute command extracts the name of the statement from the
+line and replaces the entire line with it.</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><em class="replaceable"><tt>Pattern Space:</tt></em></td>
+<td><tt class="literal">Match</tt></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>Hold Space:</tt></em></td>
+<td><tt class="literal">find the Match statement</tt></td>
+</tr>
+
+
+</table><p></dd>
+
+
+<dt><tt class="literal">y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/</tt></dt><dd><p>The transform command changes each lowercase letter to an uppercase
+letter.</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><tt><em class="replaceable"><tt>Pattern Space:</tt></em></tt></td>
+<td><tt class="literal">MATCH</tt></td>
+</tr>
+
+<tr>
+<td><tt><em class="replaceable"><tt>Hold Space:</tt></em></tt></td>
+<td><tt class="literal">find the Match statement</tt></td>
+</tr>
+
+
+</table><p></dd>
+
+
+<dt><tt class="literal">G</tt></dt><dd><p>The Get command appends the line saved in the hold space to the
+pattern space.</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><em class="replaceable"><tt>Pattern Space:</tt></em></td>
+<td><tt class="literal">MATCH\nfind the Match statement</tt></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>Hold Space:</tt></em></td>
+<td><tt class="literal">find the Match statement</tt></td>
+</tr>
+
+
+</table><p></dd>
+
+
+<dt><tt class="literal">s/\(.*\)\n\(.*the \).*\( statement.*\)/\2\1\3/</tt></dt><dd><p>The substitute command matches three different parts of the pattern
+space: 1) all characters up to the embedded newline, 2) all characters
+following the embedded newline and up to and including "the" followed
+by a space, and 3) all characters beginning with a space and followed
+by "statement" up to the end of the pattern space.  The name of the
+statement as it appeared in the original line is matched but not
+saved.  The replacement section of this command recalls the saved
+portions and reassembles them in a different order, putting the
+capitalized name of the command in between "the" and "statement."</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><tt><em class="replaceable"><tt>Pattern Space:</tt></em></tt></td>
+<td><tt class="literal">find the MATCH statement</tt></td>
+</tr>
+
+<tr>
+<td><tt><em class="replaceable"><tt>Hold Space:</tt></em></tt></td>
+<td><tt class="literal">find the Match statement</tt></td>
+</tr>
+
+
+</table><p></dd>
+
+</dl>
+
+<p>Let's look at a test run.  Here's our sample file:</p>
+
+<blockquote><pre class="code">find the Match statement
+Consult the Get statement.
+using the Read statement to retrieve data</pre></blockquote>
+
+<p>Running the script on the sample file produces:</p>
+
+<blockquote><pre class="code">find the MATCH statement
+Consult the GET statement.
+using the READ statement to retrieve data</pre></blockquote>
+
+<p>As you can see from this script, skillful use of the hold space can
+aid in isolating and manipulating portions of the input line.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-6-sect-3.2" /><div class="sect2">
+<h3 class="sect2">6.3.2. Correcting Index Entries (Part II)</h3>
+
+<p>In the previous chapter, we looked at a shell script named
+<b class="emphasis-bold">index.edit</b>.  This script extracts index entries
+from one or more files and automatically generates a sed script
+consisting of a substitute command for each index entry.  We mentioned
+that a small failing of the script was that it did not look out for regular
+expression metacharacters that appeared as literals in an index entry,
+such as the following:</p>
+
+<blockquote><pre class="code">.XX "asterisk (*) metacharacter"</pre></blockquote>
+
+<p>After processing this entry, the original <b class="emphasis-bold">index.edit</b> 
+generated the following substitute command:</p>
+
+<blockquote><pre class="code">/^\.XX /s/asterisk (*) metacharacter/asterisk (*) metacharacter/</pre></blockquote>
+
+<p>While it "knows" to escape the period before ".XX", it doesn't protect
+the metacharacter "*".  The problem is that the pattern "(*)" does not
+match "(*)" and the substitute command would fail to be applied.  The
+solution is to modify <b class="emphasis-bold">index.edit</b> so
+it looks for metacharacters and escapes them.  There's one more
+twist: a different set of metacharacters is recognized in the
+replacement string.</p>
+
+<p>We have to maintain two copies of the index entry.  The first copy we
+edit to escape regular expression metacharacters and then use for the
+pattern.  The second copy we edit to escape the metacharacters special
+to the replacement string.  The hold space keeps the second copy while
+we edit the first copy, then we swap the two and edit the second copy.
+Here's the script:</p>
+
+<blockquote><pre class="code">#! /bin/sh
+# index.edit -- compile list of index entries for editing
+#		new version that matches metacharacters
+grep "^\.XX" $* | sort -u |
+sed '
+h
+s/[][\\*.]/\\&amp;/g
+x
+s/[\\&amp;]/\\&amp;/g
+s/^\.XX //
+s/$/\//
+x
+s/^\\\.XX \(.*\)$/\/^\\.XX \/s\/\1\//
+G
+s/\n//'</pre></blockquote>
+
+<p>
+<a name="IXT-6-265784" />
+The hold command puts a copy of the current index entry into the hold
+space.  Then the substitute command looks for any of the following
+metacharacters: "]", "[", "\", "*" or ".".  This regular
+expression is rather interesting: 1) if the close bracket is the first
+character in a character class, it is interpreted literally, not as
+the closing delimiter of the class; and 2) of the metacharacters
+specified, only the backslash has a special meaning in a character
+class and must be escaped.  Also, there is no need to escape the
+metacharacters "^" and "$" because they only have special meaning if
+in the first or last positions in a regular expression, respectively,
+which is impossible given the structure of the index entry.  After
+escaping the metacharacters, the exchange command swaps the contents
+of the pattern space and the hold space.</p>
+
+<p>Starting with a new copy of the line, the substitute command adds a
+backslash to escape either a backslash or an ampersand for the
+replacement string.  Then another substitute command removes the ".XX" from the line and the one after that appends a slash (/) to
+the end of the line, preparing a replacement string that looks like:</p>
+
+<blockquote><pre class="code">"asterisk (*) metacharacter"/</pre></blockquote>
+
+<p>
+<a name="IXT-6-265785" />
+Once again, the exchange command swaps the pattern space and the hold
+space.  With the first copy in the pattern space, we need to prepare
+the pattern address and the substitute pattern.  The substitute
+command saves the index entry, and replaces the line with the first
+part of the syntax for the substitute command:</p>
+
+<blockquote><pre class="code">\/^\\.XX \/s\/\1\//</pre></blockquote>
+
+<p>Using the sample entry, the pattern space would have the following
+contents:</p>
+
+<blockquote><pre class="code">/^\.XX /s/"asterisk (\*) metacharacter"/</pre></blockquote>
+
+<p>
+<a name="IXT-6-265786" />
+Then the Get command takes the replacement string in the hold space
+and appends it to the pattern space.  Because Get also
+inserts a newline, the substitute command is necessary to remove it.
+The following line is output at the end:</p>
+
+<blockquote><pre class="code">/^\.XX /s/"asterisk (\*) metacharacter"/"asterisk (*) metacharacter"/</pre></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-6-sect-3.3" /><div class="sect2">
+<h3 class="sect2">6.3.3. Building Blocks of Text</h3>
+
+<p>
+<a name="ch06.block1" />
+<a name="ch06.block2" />
+The hold space can be used to collect a block of lines before
+outputting them.  Some <b class="emphasis-bold">troff</b> requests and macros
+are block-oriented, in that commands must surround a block of text.
+Usually a code at the beginning enables the format and one at the end
+disables the format.  HTML-coded documents also contain many
+block-oriented constructs.  For instance, "&lt;p&gt;" begins a
+paragraph and "&lt;/p&gt;" ends it.  In the next example, we'll look
+at placing HTML-style paragraph tags in a plain text file.  For this
+example, the input is a file containing variable-length lines that
+form paragraphs; each paragraph is separated from the next one by a
+blank line.  Therefore, the script must collect all lines in the hold
+space until a blank line is encountered.  The contents of the hold
+space are retrieved and surrounded with the paragraph tags.</p>
+
+<p>Here's the script:</p>
+
+<blockquote><pre class="code">/^$/!{
+     H
+     d
+     }
+/^$/{
+	x
+	s/^\n/&lt;p&gt;/
+	s/$/&lt;\/p&gt;/
+	G
+	}</pre></blockquote>
+
+<p>Running the script on a sample file produces:</p>
+
+<blockquote><pre class="code">&lt;p&gt;My wife won't let me buy a power saw.  She is afraid of an
+accident if I use one.
+So I rely on a hand saw for a variety of weekend projects like
+building shelves.
+However, if I made my living as a carpenter, I would
+have to use a power
+saw.  The speed and efficiency provided by power tools
+would be essential to being productive.&lt;/p&gt;
+
+&lt;p&gt;For people who create and modify text files,
+sed and awk are power tools for editing.&lt;/p&gt;
+
+&lt;p&gt;Most of the things that you can do with these programs
+can be done interactively with a text editor.  However,
+using these programs can save many hours of repetitive
+work in achieving the same result.&lt;/p&gt;</pre></blockquote>
+
+<p>The script has basically two parts, corresponding to each address.
+Either we do one thing if the input line is <em class="emphasis">not</em></tt>
+blank or a different thing if it is.  If the input line is not blank,
+it is appended to the hold space (with <b class="emphasis-bold">H</b>), and then
+deleted from the pattern space.  The delete command prevents the line
+from being output and clears the pattern space.  Control passes back
+to the top of the script and a new line is read.  The general idea is
+that we don't output any line of text; it is collected in the hold
+space.</p>
+
+<p>If the input line is blank, we process the contents of the hold space.
+To illustrate what the second procedure does, let's use the second
+paragraph in the previous sample file and show what happens.  After a
+blank line has been read, the pattern space and the hold space have
+the following contents:</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><tt><em class="replaceable"><tt>Pattern Space:</tt></em></tt></td>
+<td><tt class="literal">^$</tt></td>
+</tr>
+
+<tr>
+<td><tt><em class="replaceable"><tt>Hold Space:</tt></em></tt></td>
+<td><p><tt class="literal">\nFor people who create and modify text files,
+\nsed and awk are power tools for editing.</tt></p></td>
+</tr>
+
+
+</table><p>
+<p>A blank line in the pattern space is represented as "^$", the regular
+expression that matches it.  The embedded newlines are represented in
+the hold space by "\n".  Note that the Hold command puts a newline in
+the hold space and then appends the current line to the hold space.
+Even when the hold space is empty, the Hold command places a newline
+before the contents of the pattern space.</p>
+
+<p>
+<a name="IXT-6-265787" />
+The exchange command (<b class="emphasis-bold">x</b>) swaps the contents of the
+hold space and the pattern space.  The blank line is saved in the hold
+space so we can retrieve it at the end of the procedure.  (We could
+insert a newline in other ways, also.)</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><tt><em class="replaceable"><tt>Pattern Space:</tt></em></tt></td>
+<td><p><tt class="literal">\nFor people who create and modify text files,
+\nsed and awk are power tools for editing.</tt></p></td>
+</tr>
+
+<tr>
+<td><tt><em class="replaceable"><tt>Hold Space:</tt></em></tt></td>
+<td><tt class="literal">^$</tt></td>
+</tr>
+
+
+</table><p>
+<p>Now we make two substitutions: placing "&lt;p&gt;" at the beginning of
+the pattern space and "&lt;/p&gt;" at the end.  The first substitute
+command matches "^\n" because a newline is at the beginning of the
+line as a consequence of the Hold command.  The second substitute
+command matches the end of the pattern space ("$" does not match any
+embedded newlines but only the terminal newline.)</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td><tt><em class="replaceable"><tt>Pattern Space:</tt></em></tt></td>
+<td><p><tt class="literal">&lt;p&gt;For people who create and modify text files,
+\nsed and awk are power tools for editing.&lt;/p&gt;</tt></p></td>
+</tr>
+
+<tr>
+<td><tt><em class="replaceable"><tt>Hold Space:</tt></em></tt></td>
+<td><tt class="literal">^$</tt></td>
+</tr>
+
+
+</table><p>
+
+<p>Note that the embedded newline is preserved in the pattern space.  The
+last command, <b class="emphasis-bold">G</b>, appends the blank line in the hold
+space to the pattern space.  Upon reaching the bottom of the script,
+sed outputs the paragraph we had collected in the hold space and coded
+in the pattern space.</p>
+
+<p>
+<a name="IXT-6-265788" />
+This script illustrates the mechanics of collecting input and holding
+on to it until another pattern is matched.  It's important to pay
+attention to flow control in the script.  The first procedure in the
+script does not reach bottom because we don't want any output
+<em class="emphasis">yet</em></tt>.  The second procedure does reach bottom,
+clearing the pattern space and the hold space before we begin
+collecting lines for the next paragraph.</p>
+
+<p>This script also illustrates how to use addressing to set up exclusive
+addresses, in which a line must match one or the other address.  You
+can also set up addresses to handle various exceptions in the input
+and thereby improve the reliability of a script.  For instance, in the
+previous script, what happens if the last line in the input file is
+<em class="emphasis">not</em></tt> blank?  All the lines collected since the
+last blank line will not be output.  There are several ways to handle
+this, but a rather clever one is to manufacture a blank line that the
+blank-line procedure will match later in the script.  In other words,
+if the last line contains a line of text, we will copy the text to the
+hold space and clear the contents of the pattern space with the
+substitute command.  We make the current line blank so that it matches
+the procedure that outputs what has been collected in the hold space.
+Here's the procedure:</p>
+
+<blockquote><pre class="code">${
+/^$/!{
+     H
+     s/.*//
+     }
+}</pre></blockquote>
+
+<p>This procedure must be placed in the script
+<em class="emphasis">before</em></tt> the two procedures shown earlier.  The
+addressing symbol "$" matches only the last line in the file.  Inside
+this procedure, we test for lines that are not blank.  If the line
+is blank, we don't have to do anything with it.  If the current line is
+not blank, then we append it to the hold space.  This is what we do in
+the other procedure that matches a non-blank line.  Then we use the
+substitute command to create a blank line in the pattern space.</p>
+
+<p>Upon exiting this procedure, there is a blank line in the pattern
+space.  It matches the subsequent procedure for blank lines that adds
+the HTML paragraph codes and outputs the paragraph.</p>
+
+<a name="IXT-6-265789" />
+<a name="IXT-6-265790" />
+</div>
+
+
+
+
+<a name="IXT-6-265791" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.2. A Case for Study</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.4. Advanced Flow Control Commands</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

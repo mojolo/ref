@@ -1,0 +1,87 @@
+<html><head><title>Running a Series of Commands on a File (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch30_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">30.10. Running a Series of Commands on a File</h2>
+
+<p>[There are times when history is not the best way to repeat commands.
+Here, Jerry gives an example where a few well-chosen aliases can make
+a sequence of commands, all run on the same file, even easier to
+execute.  -- TOR]
+</p>
+
+<p>While I was writing the articles for this book, I needed to look
+through a set of files, one by one, and run certain commands on some
+of those files. I couldn't know which files would
+need which commands, or in what order. So I typed a few temporary
+aliases on the C shell command line. (I could have used <b class="emphasis-bold">shell functions</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>)
+on <i class="command">sh</i>-like shells.) Most of these aliases run
+<b class="emphasis-bold">RCS</b> (<a href="ch39_05.htm#upt3-CHP-39-SECT-5">Section 39.5</a>)
+commands, but they could run any Unix command (compilers, debuggers,
+printers, and so on).
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>alias h 'set f="\!*";co -p -q "$f" | grep NOTE'</b></tt>
+% <tt class="userinput"><b>alias o 'co -l "$f"'</b></tt>
+% <tt class="userinput"><b>alias v 'vi "$f"'</b></tt>
+% <tt class="userinput"><b>alias i 'ci -m"Fixed NOTE." "$f"'</b></tt></pre></blockquote>
+
+<p>The <i class="command">h</i> alias stores the filename in a <b class="emphasis-bold">shell variable</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>).
+Then it runs a command on that file. What's nice is
+that, after I use <i class="command">h</i> once, I don't
+need to type the filename again. Other aliases get the filename from
+<tt class="literal">$f</tt>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>h ch01_summary</b></tt>
+NOTE: Shorten this paragraph:
+% <tt class="userinput"><b>o</b></tt>
+RCS/ch01_summary,v  -&gt;  ch01_summary
+revision 1.3 (locked)
+done
+% <tt class="userinput"><b>v</b></tt>
+"ch01_summary" 23 lines, 1243 characters
+   ...</pre></blockquote>
+
+<p>Typing a new <i class="command">h</i> command stores a new filename.</p>
+
+<p>If you always want to do the same commands on a file, you can store
+all the commands in one alias:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>alias d 'set f="\!*"; co -l "$f" &amp;&amp; vi "$f" &amp;&amp; ci "$f"'</b></tt>
+% <tt class="userinput"><b>d ch01_summary</b></tt></pre></blockquote>
+
+<p>The <a name="IXT-30-4254" /> <a name="IXT-30-4255" /><tt class="literal">&amp;&amp;</tt> (two
+ampersands) (<a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a>) means that the following
+command won't run unless the previous command
+returns a zero ("success") status.
+If you don't want that, use <tt class="literal">;</tt>
+(semicolon) (<a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a>) instead of
+<tt class="literal">&amp;&amp;</tt>.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch30_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">30.9. Repeating a Cycle of Commands</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">30.11. Check Your History First with :p</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

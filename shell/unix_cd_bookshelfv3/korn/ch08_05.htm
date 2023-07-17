@@ -1,0 +1,676 @@
+<html><head><title>Coroutines (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.5. Coroutines</h2>
+
+<p>
+<a name="korn2-IDXTERM-1754" />
+We've spent the last several pages on almost microscopic details
+of process behavior. Rather than continue our descent into the murky
+depths, we'll revert to a higher-level view of processes.
+</p>
+
+<p>
+Earlier in this chapter, we
+covered ways of controlling multiple simultaneous jobs within an
+interactive login session; now we consider multiple process control
+within shell programs.
+When two (or more) processes are explicitly
+programmed to run simultaneously and possibly communicate with each
+other, we call them <em class="emphasis">coroutines</em>.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1755" />
+
+This is actually nothing new: a pipeline is an example of
+coroutines. The shell's pipeline construct
+encapsulates a fairly sophisticated set of rules about
+how processes interact with each other. If we take a closer look at
+these rules, we'll be better able to understand other ways of handling
+coroutines -- most of which turn out to be simpler than pipelines.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1756" />
+<a name="IXT-8-288117" />
+
+When you invoke a simple pipeline, say <tt class="literal">ls | more</tt>, the shell
+invokes a series of Unix primitive operations, a.k.a. <em class="emphasis">system calls</em>.
+In effect, the shell tells Unix to do the following things;
+in case you're interested, we include in parentheses
+the actual system call used at each step:
+</p>
+
+<ol>
+
+<li><p>
+<a name="IXT-8-288118" />
+
+Create the pipe that will handle I/O between the processes
+(the <em class="emphasis">pipe</em> system call).
+</p></li>
+
+
+<li><p>
+<a name="IXT-8-288119" />
+
+Create two subprocesses, which we'll call P1 and P2
+(<em class="emphasis">fork</em>).
+</p></li>
+
+
+<li><p>
+<a name="IXT-8-288120" />
+<a name="IXT-8-288121" />
+
+Set up I/O between the processes so that P1's standard output feeds
+into P2's standard input (<em class="emphasis">dup</em>, <em class="emphasis">close</em>).
+</p></li>
+
+
+<li><p>
+<a name="IXT-8-288122" />
+
+Start <em class="emphasis">/bin/ls</em> in process P1 (<em class="emphasis">exec</em>).
+</p></li>
+
+
+<li><p>
+Start <em class="emphasis">/bin/more</em> in process P2 (<em class="emphasis">exec</em>).
+</p></li>
+
+
+<li><p>
+<a name="IXT-8-288123" />
+
+Wait for both processes to finish (<em class="emphasis">wait</em>).
+</p></li>
+</ol>
+
+<p>
+You can probably imagine how the above steps change when the
+pipeline involves more than two processes.
+<a name="IXTR3-370" />
+<a name="IXTR3-371" />
+<a name="IXTR3-372" />
+</p>
+
+<p>
+Now let's make things simpler. We'll see how to get multiple processes
+to run
+at the same time if the processes do not need to communicate. For
+example, we want the processes <em class="emphasis">dave</em> and <em class="emphasis">bob</em> to run as
+coroutines, without communication, in a shell script.
+Both should run to completion before the script exits.
+Our initial solution would be this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+dave &amp;
+bob
+</pre></blockquote>
+</p>
+
+<p>
+Assume for the moment that <em class="emphasis">bob</em> is the last command in the script.
+The above works -- but only if <em class="emphasis">dave</em> finishes first.
+<a name="IXT-8-288124" />
+<a name="IXT-8-288125" />
+
+If  <em class="emphasis">dave</em> is still running when the script finishes, it becomes an
+<em class="emphasis">orphan</em>, i.e., it enters one of the "funny states" we mentioned
+earlier in this chapter. Never mind the details of orphanhood; just
+believe that you don't want this to happen, and if it does, you may
+need to use the "runaway process" method of stopping it, discussed
+earlier in this chapter.
+(For example, consider the case where <em class="emphasis">dave</em> goes on a resource
+binge, slowing your system way down -- it's much harder to stop it if
+the parent script has already exited.)
+</p>
+
+<a name="korn2-CHP-8-SECT-5.1" /><div class="sect2">
+<h3 class="sect2">8.5.1. wait</h3>
+
+<p>
+<a name="korn2-IDXTERM-1769" />
+There is a way of making sure the script doesn't finish before
+<em class="emphasis">dave</em> does: the built-in command <em class="emphasis">wait</em>. Without arguments,
+<em class="emphasis">wait</em> simply waits until all background jobs have finished. So to
+make sure the above code behaves properly, we would
+add <em class="emphasis">wait</em>, like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+dave &amp;
+bob
+wait
+</pre></blockquote>
+</p>
+
+<p>
+Here, if <em class="emphasis">bob</em> finishes first, the parent shell waits for
+<em class="emphasis">dave</em> to finish before finishing itself.
+</p>
+
+<p>
+If your script has more than one background job and you need to wait for
+specific ones to finish, you can give <em class="emphasis">wait</em> the same type of job
+argument (with a percent sign) as you would use with <em class="emphasis">kill</em>,
+<em class="emphasis">fg</em>, or <em class="emphasis">bg</em>.
+</p>
+
+<p>
+However, you will probably find that <em class="emphasis">wait</em>
+without arguments suffices for all coroutines you will ever program.
+Situations in which you would need to wait for specific background jobs
+are quite complex and beyond the scope of this book.
+<a name="IXTR3-373" />
+</p>
+</div>
+
+<a name="korn2-CHP-8-SECT-5.2" /><div class="sect2">
+<h3 class="sect2">8.5.2. Advantages and Disadvantages of Coroutines</h3>
+
+<p>
+<a name="korn2-IDXTERM-1771" />
+In fact, you may be wondering why you would ever need to program
+coroutines that don't communicate with each other. For example, why not
+just run <em class="emphasis">bob</em> after <em class="emphasis">dave</em> in the usual way? What advantage is
+there in running the two jobs simultaneously?
+</p>
+
+<p>
+<a name="IXT-8-288126" />
+<a name="IXT-8-288127" />
+<a name="IXT-8-288128" />
+
+If you are running
+on a computer with one processor (CPU), there is a performance
+advantage -- but only if you have the <em class="emphasis">bgnice</em> option turned off
+(see <a href="ch03_01.htm">Chapter 3</a>), and even then only in certain situations.
+</p>
+
+<p>
+<a name="IXT-8-288129" />
+<a name="IXT-8-288130" />
+
+Roughly speaking, you can
+characterize a process in terms of how it uses system resources in
+three ways: whether it is <em class="emphasis">CPU intensive</em> (e.g., does lots of
+number crunching), <em class="emphasis">I/O intensive</em> (does a lot of reading or
+writing to the disk), or <em class="emphasis">interactive</em> (requires user
+intervention).
+</p>
+
+<p>
+We already know from <a href="ch01_01.htm">Chapter 1</a> that it makes no sense to run an
+interactive job in the background. But apart from that,
+the more two or more processes differ in these three
+criteria, the better it is to run them simultaneously.
+For example, a number-crunching statistical calculation would do well
+when running at the same time as a long, I/O-intensive database query.
+</p>
+
+<p>
+On the other hand, if two processes use resources in similar ways,
+it may even be less efficient to run them at the same time
+as it would be to run them sequentially. Why? Basically, because
+under such circumstances, the operating system often has to
+"time-slice" the resource(s) in contention.
+</p>
+
+<p>
+<a name="IXT-8-288131" />
+For example, if both
+processes are disk hogs, the operating system may enter a mode
+where it constantly switches control of the disk back and forth between the
+two competing processes; the system ends up spending at least as
+much time doing the switching as it does on the processes themselves.
+This phenomenon is known as <em class="emphasis">thrashing</em>; at its most severe,
+it can cause a system to come to a virtual standstill.
+Thrashing is a common problem; system administrators and operating
+system designers both spend lots of time trying to minimize it.
+</p>
+</div>
+
+<a name="korn2-CHP-8-SECT-5.3" /><div class="sect2">
+<h3 class="sect2">8.5.3. Parallelization</h3>
+
+<p>
+<a name="korn2-IDXTERM-1778" />
+<a name="korn2-IDXTERM-1779" />
+But if you have a computer with multiple CPUs<a href="#FOOTNOTE-123">[123]</a>
+you should be less concerned about thrashing.
+Furthermore, coroutines can provide dramatic increases in
+speed on this type of machine, which is often called a
+<em class="emphasis">parallel</em> computer; analogously,
+breaking up a process into coroutines is sometimes called
+<em class="emphasis">parallelizing</em> the job.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-123" /><p> [123]
+Multiprocessor systems were once to be found only as large-scale
+servers kept in special climate-controlled machine rooms.
+Today, multiprocessor desktop systems are available and
+becoming increasingly common, although systems with
+more than around 4 CPUs still tend to be mostly
+in machine rooms.
+</p>
+</blockquote>
+
+<p>
+Normally, when you start a background job on a multiple-CPU machine,
+the computer assigns it to the next available processor. This
+means that the two jobs are actually -- not just metaphorically -- running
+at the same time.
+</p>
+
+<p>
+In this case, the running time of the coroutines is essentially equal to
+that of the longest-running job plus a bit of overhead, instead of the
+sum of the run times of all processes (although if the CPUs all share
+a common disk drive, the possibility of I/O-related thrashing still
+exists). In the best case -- all jobs
+having the same run time and no I/O contention -- you get a
+speedup factor equal to the number of CPUs.
+<a name="IXTR3-374" />
+
+</p>
+
+<p>
+Parallelizing a program is often not easy; there are several
+subtle issues involved and there's plenty of room for error.
+Nevertheless,
+it's worthwhile to know how to parallelize a shell script whether or
+not you have a parallel machine, especially since such machines are
+becoming more and more common, even on the desktop.
+</p>
+
+<p>
+We'll show how to do this
+by means of
+<a href="ch08_05.htm#korn2-CHP-8-SIDEBAR-3">Task 8-3</a>,
+a simple task whose
+solution is amenable to parallelization.
+</p>
+
+
+
+
+<a name="korn2-CHP-8-SIDEBAR-3" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 8-3</h4>
+
+<p>
+<a name="IXT-8-288132" />
+
+Augment the C compiler front-end script to compile
+each source file in <?troff .hw parallel?>parallel.
+</p>
+</td></tr></table><p></blockquote>
+
+<p>
+If you have multiple CPUs, there is potential for
+considerable speedup by compiling multiple source
+files in parallel.  Each file is independent of
+the next, and thus creating multiple object files
+simultaneously gets more work done, faster.
+</p>
+
+<p>
+The changes are relatively straightforward:
+fire off the compilation pipeline into the background,
+and then add a <em class="emphasis">wait</em> statement
+before doing the final link step:
+</p>
+
+<blockquote><pre class="code">
+# initialize option-related variables
+do_link=true
+debug=""
+link_libs=""
+clib="-lc"
+exefile=""
+
+# initialize pipeline components
+compile=" | ccom"
+assemble=" | as"
+optimize=""
+
+# process command-line options
+while getopts "cgl:[lib]o:[outfile]O files ..." opt; do
+    case $opt in
+        c )    do_link=false ;;
+        g )    debug="-g" ;;
+        l )    link_libs+=" -l $OPTARG" ;;
+        o )    exefile="-o $OPTARG" ;;
+        O )    optimize=" | optimize" ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+# process the input files
+for filename in "$@"; do
+    case $filename in
+        *.c )
+            objname=${filename%.c}.o ;;
+        *.s )
+            objname=${filename%.s}.o
+            compile="" ;;
+        *.o )
+            objname=$filename  # just link it directly with the rest
+            compile=""
+            assemble="" ;;
+        *   )
+        print "error: $filename is not a source or object file."
+        exit 1 ;;
+    esac
+
+    # run a pipeline for each input file; parallelize by backgrounding
+    eval cat \$filename $compile $assemble $optimize \&gt; \$objname &amp;
+    objfiles+=" $objname"
+    compile=" | ccom"
+    assemble=" | as"
+done
+
+wait    # wait for all compiles to finish before linking
+if [[ $do_link == true ]]; then
+    ld $exefile $objfiles $link_libs $clib
+fi
+</pre></blockquote>
+
+<p>
+This is a straightforward example of parallelization,
+with the only "gotcha" being to make sure that all the compilations
+are done before doing the final link step.
+Indeed, many versions of <em class="emphasis">make</em> have a
+"run this many jobs in parallel" flag, precisely to obtain
+the speedup from simultaneous compilation of independent files.
+</p>
+
+<p>
+But all of life is not so simple; sometimes just
+firing more jobs off into the background won't do the trick.
+For example, consider multiple changes to the same database:
+the database software (or something, somewhere) has to ensure
+that two different processes aren't trying to update the
+same record at the same time.
+</p>
+
+<p>
+Things get even more involved when working at a lower level,
+with multiple threads of control within a single process
+(something not visible at the shell level, thankfully).
+Such problems, known as <em class="emphasis">concurrency control</em> issues, become
+much more difficult as the complexity of the application
+increases. Complex concurrent programs often have much more
+code for handling the special cases than for the actual job
+the program is supposed to do!
+</p>
+
+<p>
+Therefore it shouldn't surprise you that much research has been
+and is being done on parallelization, the ultimate goal being
+to devise a tool that parallelizes code automatically.
+(Such tools do exist; they usually work in the confines of some
+narrow subset of the problem.)
+Even if you don't have access to a multiple-CPU machine,
+parallelizing a shell script is an interesting exercise that should
+acquaint you with some of the issues that surround coroutines.
+<a name="IXTR3-375" />
+<a name="IXTR3-376" />
+</p>
+
+</div>
+
+
+<a name="korn2-CHP-8-SECT-5.4" /><div class="sect2">
+<h3 class="sect2">8.5.4. Coroutines with Two-Way Pipes</h3>
+
+<p>
+
+
+<a name="korn2-IDXTERM-1784" />
+<a name="korn2-IDXTERM-1785" />
+<a name="korn2-IDXTERM-1786" />
+<a name="korn2-IDXTERM-1787" />
+
+Now that we have seen how to program coroutines that don't communicate
+with each other, we'll build on that foundation and discuss how to
+get them to communicate -- in a more sophisticated way than with a
+pipeline. The Korn shell has
+a set of features that allow programmers to set up two-way
+communication between coroutines.
+
+These features aren't included in most Bourne shells.
+</p>
+
+<p>
+
+<a name="IXT-8-288133" />
+<a name="IXT-8-288134" />
+<a name="IXT-8-288135" />
+<a name="IXT-8-288136" />
+<a name="IXT-8-288137" />
+
+If you start a background process by appending <tt class="literal">|&amp;</tt> to a command
+instead of <tt class="literal">&amp;</tt>, the Korn shell sets up a special two-way
+pipeline between the parent shell and the new background process.
+
+<em class="emphasis">read -p</em> in the parent shell reads a line of the background
+process' standard output; similarly, <em class="emphasis">print -p</em> in the parent shell
+feeds into the standard input of the background process.
+<a href="ch08_05.htm#korn2-CHP-8-FIG-2">Figure 8-2</a> shows how this works.
+
+</p>
+
+<a name="korn2-CHP-8-FIG-2" /><div class="figure"><img src="figs/ksh2.0802.gif" alt="Figure 8-2" width="381" /></div><h4 class="objtitle">Figure 8-2. Coroutine I/O</h4>
+
+<p>
+<a name="IXT-8-288138" />
+
+This scheme has some intriguing possibilities. Notice the following
+things: first, the parent shell communicates with the background process
+independently of its own standard input and output. Second, the
+background process need not have any idea that a shell script is
+communicating with it in this manner. This means that the background
+process can be almost any preexisting program that uses its standard input
+and output in normal ways.<a href="#FOOTNOTE-124">[124]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-124" /><p> [124]
+Note that <em class="emphasis">sort</em>(1) doesn't quite fit here.
+<em class="emphasis">sort</em> has to read <em class="emphasis">all</em> its input
+before it can generate any output.  You can still use <em class="emphasis">sort</em>
+in a coprocess, but you'd have to close the file descriptor used to write
+to the coprocess first.  The way to do this is to move the coprocess's
+input file descriptor to a numbered file descriptor and then close it.
+Both of these involve the <em class="emphasis">exec</em> command, which is
+covered in the next chapter.
+</p>
+</blockquote>
+
+<p>
+<a href="ch08_05.htm#korn2-CHP-8-SIDEBAR-4">Task 8-4</a>
+is a task that shows a simple example.
+</p>
+
+<a name="korn2-CHP-8-SIDEBAR-4" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 8-4</h4>
+
+<p>
+<a name="IXT-8-288139" />
+                    
+<a name="korn2-IDXTERM-1795" />
+<a name="korn2-IDXTERM-1796" />
+<a name="IXT-8-288140" />
+<a name="korn2-IDXTERM-1798" />
+You would like to have an online calculator, but the existing Unix
+utility <em class="emphasis">dc</em>(1) uses Reverse Polish Notation (RPN),
+a la Hewlett-Packard calculators. You'd rather have one that works like the
+$3.95 model you got with that magazine subscription. Write a calculator
+program that accepts standard algebraic notation.
+</p>
+
+</td></tr></table><p></blockquote>
+<p>
+The objective here is to write the program without reimplementing the
+calculation engine that <em class="emphasis">dc</em> already has -- in other words, to write a
+program that translates algebraic notation to RPN and passes the
+translated line to <em class="emphasis">dc</em> to do the actual calculation.
+<a name="IXT-8-288141" />
+(The utility <em class="emphasis">bc</em>(1) actually provides similar functionality.)
+</p>
+
+<p>
+We'll assume that the function <em class="emphasis">alg2rpn</em>, which does the
+translation, already exists: given a line of algebraic notation as
+argument, it prints the RPN equivalent on the standard output. If we
+have this, then the calculator program (which we'll call <em class="emphasis">adc</em>) is
+very simple:
+</p>
+
+<p>
+<blockquote><pre class="code">
+dc |&amp;
+
+while read line'?adc&gt; '; do
+    print -p "$(alg2rpn $line)"
+    read -p answer
+    print "    = $answer"
+done
+</pre></blockquote>
+</p>
+
+<p>
+The first line of this code starts <em class="emphasis">dc</em> as a coroutine with a
+two-way pipe. Then the <tt class="literal">while</tt> loop prompts the user for a line
+and reads it until the user types CTRL-D for end-of-input.
+The loop body converts the line to RPN, passes it to <em class="emphasis">dc</em> through
+the pipe, reads <em class="emphasis">dc</em>'s answer, and prints it after an equal sign.
+For example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>adc</b></tt>
+adc&gt; <tt class="userinput"><b>2 + 3</b></tt>
+    = 5
+adc&gt; <tt class="userinput"><b>(7 * 8) + 54</b></tt>
+    = 110
+adc&gt; <tt class="userinput"><b>^D</b></tt>
+$
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-377" />
+<a name="IXTR3-378" />
+<a name="IXTR3-379" />
+Actually -- as you may have noticed -- it's not entirely necessary to have a
+two-way pipe with <em class="emphasis">dc</em>. You could do it with a standard pipe and
+let <em class="emphasis">dc</em> do its own output, like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+{ while read line'?adc&gt; '; do
+      print "$(alg2rpn $line)"
+  done
+} | dc
+</pre></blockquote>
+</p>
+
+<p>
+The only difference from the above is the lack
+of equal sign before each answer is printed.
+</p>
+
+<p>
+<a name="IXT-8-288142" />
+<a name="IXT-8-288143" />
+
+But what if you wanted to make a fancy graphical user interface
+(GUI), like the <em class="emphasis">xcalc</em> program that comes with many X Window System
+installations? Then, clearly, <em class="emphasis">dc</em>'s own output would not be
+satisfactory, and you would need full control of your own standard
+output in the parent process. The user interface would have to capture
+<em class="emphasis">dc</em>'s output and display it in the window properly.
+The two-way pipe is an excellent solution to this problem: just imagine
+that, instead of
+<tt class="literal">print "    = $answer"</tt>,
+there is a call to a
+routine that displays the answer in the "readout"
+section of the calculator window.
+<a name="IXTR3-380" />
+</p>
+
+<p>
+
+All of this suggests that the two-way pipe scheme is great for writing
+shell scripts that interpose a software layer between the user (or some
+other program) and an existing program that uses standard input and
+output. In particular, it's great for writing new interfaces to old,
+standard Unix programs that expect line-at-a-time, character-based user
+input and output. The new interfaces could be GUIs, or they could be
+network interface programs that talk to users over links to remote
+machines. In other words, the Korn shell's two-way pipe construct is
+designed to help develop very up-to-date software!
+</p>
+</div>
+
+<a name="korn2-CHP-8-SECT-5.5" /><div class="sect2">
+<h3 class="sect2">8.5.5. Two-Way Pipes Versus Standard Pipes</h3>
+
+<p>
+<a name="korn2-IDXTERM-1806" />
+<a name="IXT-8-288144" />
+<a name="IXT-8-288145" />
+<a name="IXT-8-288146" />
+<a name="IXT-8-288147" />
+
+Before we leave the subject of coroutines, we'll complete the circle by
+showing how the two-way pipe construct compares to regular pipelines. As you may have been able to figure out by now, it is possible to
+program a standard pipeline by using <tt class="literal">|&amp;</tt> with
+<em class="emphasis">print -p</em>.
+</p>
+
+<p>
+This has the advantage of reserving the parent shell's standard output
+for other use.
+
+The disadvantage is that the child process'
+standard output is directed to the two-way pipe: if the parent process
+doesn't read it with <em class="emphasis">read -p</em>, it's effectively lost.
+<a name="IXTR3-381" />
+<a name="IXTR3-382" />
+<a name="IXTR3-383" />
+<a name="IXTR3-384" />
+<a name="IXTR3-385" />
+<a name="IXTR3-386" />
+
+</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.4. trap</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.6. Shell Subprocesses and Subshells</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

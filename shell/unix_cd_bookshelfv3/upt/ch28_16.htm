@@ -1,0 +1,109 @@
+<html><head><title>Separating Commands with Semicolons (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch28_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">28.16. Separating Commands with Semicolons</h2>
+
+<p><a name="IXT-28-4690" /><a name="IXT-28-4691" />When the shell sees a semicolon
+(<tt class="literal">;</tt>) on a command line, it's
+treated as a command separator -- basically like pressing the
+ENTER key to execute a command. When would you want to use a
+semicolon instead of pressing ENTER?</p>
+
+<ul><li>
+<p>It's nice when you want to execute a series of
+commands, typing them all at once at a single prompt.
+You'll see all of them on the same command line and
+they'll be grouped together in the <b class="emphasis-bold">history list</b> (<a href="ch30_07.htm#upt3-CHP-30-SECT-7">Section 30.7</a>).
+This makes it easy to see, later, that you intended this series of
+commands to be executed one after another. And you can re-execute
+them all with a simple history command.
+</p>
+
+<p>As an example, here's a series of commands that puts
+a listing of the current directory into a temporary file, emails the
+listing, then overwrites the previous version of the file:
+</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>ll &gt; $tf-1; mail -s backup joe &lt; $tf-1; mv $tf-1 listing</b></tt></pre></blockquote>
+<p>I can repeat that same command later by using a <b class="emphasis-bold">history substitution</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>) like <tt class="literal">!ll</tt>.
+</p>
+</li><li>
+<p>It's useful with <b class="emphasis-bold">sleep</b> (<a name="IXT-28-4692" /><a href="ch25_09.htm#upt3-CHP-25-SECT-9">Section 25.9</a>) to run a command after a delay. The next
+example shows a series of commands in a C shell alias that you might
+use to print a warning and give the user a chance to abort before the
+last command (<i class="command">exit</i>, which ends the current shell)
+is executed. Be sure to read the important note after this example:
+</p>
+<blockquote><pre class="code">alias bye 'echo "Type CTRL-c to abort logout"; sleep 10; exit'</pre></blockquote>
+<p>Note that, in C-type shells and older Bourne-type shells, pressing
+your <b class="emphasis-bold">interrupt key</b> (<a href="ch24_10.htm#upt3-CHP-24-SECT-10">Section 24.10</a>) -- like CTRL-c -- will stop execution
+of all jobs on the current command line. The alias above works in
+shells like that. But in some shells, like <i class="command">bash2</i>,
+<a name="IXT-28-4693" />interrupting a command in a string
+of commands separated by semicolons will affect only that single
+command. So I couldn't rewrite the alias above for
+<i class="command">bash2</i> because, if I pressed CTRL-c while the
+<i class="command">sleep</i> command was executing, that would simply
+abort <i class="command">sleep</i> -- and proceed to run
+<i class="command">exit</i>, which would log me out immediately!
+</p>
+</li><li>
+<p><a name="IXT-28-4694" /><a name="IXT-28-4695" /><a name="IXT-28-4696" />If you're running a
+series of commands that take some time to complete, you can type all
+the commands at once and leave them to run unattended. For example, I
+have little shell scripts named <b class="emphasis-bold">nup and
+ndown</b> (<a href="ch24_22.htm#upt3-CHP-24-SECT-22">Section 24.22</a>) (which run
+<i class="command">/sbin/ifup</i> and <i class="command">/sbin/ifdown</i>,
+respectively) to start and disable the
+net<a name="IXT-28-4697" />work. On a
+system with a dialup modem and a long file transfer to perform,
+it's nice to be able to type a series of commands
+that bring up the network, do a couple of file transfers, then bring
+down the network. I can type this string, go about my business
+somewhere else, and come back later:
+</p>
+<blockquote><pre class="code">$ <tt class="userinput"><b>nup;ptbk;getmail;ndown</b></tt></pre></blockquote>
+<p>After <i class="command">nup</i> returns, the network is up (the modem
+has connected). So the shell runs <b class="emphasis-bold">ptbk</b> (<a href="ch38_09.htm#upt3-CHP-38-SECT-9">Section 38.9</a>) to make a
+backup of my work on this book. Next, <i class="command">getmail</i> gets
+my email (it basically runs <i class="command">fetchmail</i>). When
+<i class="command">getmail</i> finishes, <i class="command">ndown</i> hangs
+up the modem. This can take several minutes from start to finish, but
+the shell manages it all while I do something else. (If I
+didn't have a windowing system with multiple
+<i class="command">xterm</i>s, I could have put that string of commands
+into a <b class="emphasis-bold">subshell</b> (<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>) in the <b class="emphasis-bold">background</b> (<a href="ch23_02.htm#upt3-CHP-23-SECT-2">Section 23.2</a>).)
+This is one place that a GUI interface for network control really
+loses to command-line utilities and the shell.
+</p>
+</li></ul>
+<p>Two related operators, <a name="IXT-28-4698" /> <a name="IXT-28-4699" /> <a name="IXT-28-4700" /> <a name="IXT-28-4701" /><b class="emphasis-bold">&amp;&amp; and
+||</b> (<a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a>), work like a semicolon,
+but they only execute the next command if the previous one succeeded
+or failed, respectively.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch28_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">28.15. Handling Lots of Text with Temporary Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">28.17. Dealing with Too Many Arguments</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

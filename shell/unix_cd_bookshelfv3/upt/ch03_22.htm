@@ -1,0 +1,169 @@
+<html><head><title>Writing a Simple Manpage with the -man Macros (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_21.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.22. Writing a Simple Manpage with the -man Macros</h2>
+
+<p>If you're not satisfied with the simple manual pages
+we discussed in <a href="ch03_21.htm#upt3-CHP-3-SECT-21">Section 3.21</a>,
+here's how to go all the way and create a
+"real" manual page. As we said, the
+best way to create a manual page is to copy one that already exists.
+So here's a sample for you to copy. Rather than
+discuss it blow by blow, I'll include lots of
+comments (these start with <tt class="literal">.\"</tt> or
+<tt class="literal">\"</tt>).
+</p>
+
+<blockquote><pre class="code">.\" Title: Program name, manual section, and date</pre></blockquote>
+
+<p><tt class="literal">1</tt> <a href="ch02_01.htm#upt3-CHP-2-SECT-1">Section 2.1</a></p>
+
+<blockquote><pre class="code">.TH GRIND 1
+.\" Section heading: NAME, followed by command name and one line summary
+.\" It's important to copy this exactly; the "whatis" database (used
+.\" for apropos) looks for the summary line.
+.SH NAME
+grind \- create output from input
+.\" Section heading: SYNOPSIS, followed by syntax summary
+.SH SYNOPSIS
+.B grind              \" .B: bold font; use it for the command name.
+[ -b ] [ -c ] [ -d ]  \" Put optional arguments in square brackets.
+[ input [ output ]]   \" Arguments can be spread across several lines.
+.br                   \" End the synopsis with an explicit line break (.br)
+.\" A new section: DESCRIPTION, followed by what the command does
+.SH DESCRIPTION
+.I Grind       \" .I:  Italic font for the word "Grind"
+performs lots of computations. Input to
+.IR grind ,    \" .IR: One word italic, next word roman, no space between.
+is taken from the file
+.IR input ,
+and output is sent to the file
+.IR output ,
+which default to standard input and standard output if not specified.
+.\" Another section: now we're going to discuss the -b, -c, and -d options
+.SH OPTIONS
+.\" The .TP macro precedes each option
+.TP
+.B \-b  \" print the -b option in bold.
+Print output in binary.
+.TP
+.B \-c  \" \- requests a minus sign, which is preferable to a hyphen (-)
+Eliminate ASCII characters from input before processing.
+.TP
+.B \-d
+Cause daemons to overrun your computer.
+.\" OK, we're done with the description and the options; now mention
+.\" other requirements (like environment and files needed) as well as
+.\" what can go wrong. You can add any other sections you want.
+.SH FILES
+.PD 0
+.TP 20
+.B /dev/null
+data file
+.TP
+.B /tmp/grind*
+temporary file (typically 314.159 Gigabytes)
+.PD
+.SH BUGS
+In order to optimize computational speed, this program always produces
+the same result, independent of the input.
+.\" Use .LP between paragraphs
+.LP
+If the moon is full,
+.I grind
+may destroy your input file. To say nothing of your sex life.
+.\" Good manual pages end by stating who wrote the program.
+.SH AUTHOR
+I wouldn't admit to this hack if my life depended on it.</pre></blockquote>
+
+<p>After all that, you should have noticed that there are four important
+macros (listed in <a href="ch03_22.htm#upt3-CHP-3-TABLE-1">Table 3-1</a>) to know about.
+</p>
+
+<a name="upt3-CHP-3-TABLE-1" /><h4 class="objtitle">Table 3-1. Important -man macros </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Macro</p>
+</th>
+<th>
+<p>Meaning</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>.TH</p>
+</td>
+<td>
+<p>Title of the manual page.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>.SH</p>
+</td>
+<td>
+<p>Section heading; one for each section.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>.TP</p>
+</td>
+<td>
+<p>Formats options correctly (sets up the "hanging
+indent").
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>.LP</p>
+</td>
+<td>
+<p>Used between paragraphs in a section.</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>For some arcane reason, all manual pages use the silly
+<tt class="literal">.B</tt>, <tt class="literal">.BI</tt>, etc. macros to make
+font changes. I've adhered to this style in the
+example, but it's much easier to use inline font
+changes: <tt class="literal">\fI</tt> for <em class="emphasis">italic</em>,
+<tt class="literal">\fB</tt> for <b class="emphasis-bold">bold</b>, and
+<tt class="literal">\fR</tt> for roman. There may be some systems on which
+this doesn't work properly, but
+I've never seen any.<a name="IXTR3-7198" /> 
+</p>
+
+<p><em class="emphasis">--ML and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_21.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.21. Make Your Own Manpages Without Learning troff</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4. Interacting with Your Environment</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

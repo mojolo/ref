@@ -1,0 +1,101 @@
+<html><head><title>Save Disk Space and Programming: Multiple Names for a Program (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">36.8. Save Disk Space and Programming: Multiple Names for a Program</h2>
+
+<p><a name="IXT-36-3228" />If you're
+writing:<a name="IXT-36-3229" /><a name="IXT-36-3230" />
+</p>
+
+<ul><li>
+<p>several programs that do the same kinds of things,</p>
+</li><li>
+<p>programs that use a lot of the same code (as you're
+writing the second, third, etc., programs, you copy a lot of lines
+from the first program), or
+</p>
+</li><li>
+<p>a program with several options that make big changes in the way it
+works,
+</p>
+</li></ul>
+
+<p>you might want to write just one program and make
+<a name="IXT-36-3231" /><b class="emphasis-bold">links</b> (<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>, <a href="ch10_03.htm#upt3-CHP-10-SECT-3">Section 10.3</a>) to it instead. The program can find the name
+you called it with and, through <i class="command">case</i> or
+<i class="command">test</i> commands, work in different ways. For
+instance, the <a name="IXT-36-3232" /><a name="IXT-36-3233" />Berkeley Unix
+commands <i class="command">ex</i>, <i class="command">vi</i>,
+<i class="command">view</i>, <i class="command">edit</i>, and others are all
+links to the same executable file. This takes less disk space and
+makes maintenance easier. It's usually sensible only
+when most of the code is the same in each program. If the program is
+full of name tests and lots of separate code, this technique may be
+more trouble than it's worth.</p>
+
+<p><a name="IXT-36-3234" /><a name="IXT-36-3235" />Depending on how the script program is
+called, this name can be a simple relative pathname like
+<tt class="literal">prog</tt> or <tt class="literal">./prog</tt> -- it can
+also be an absolute pathname like
+<tt class="literal">/usr/joe/bin/prog</tt> (<a href="ch31_02.htm#upt3-CHP-31-SECT-2">Section 31.2</a> explains pathnames). There are a couple of
+ways to handle this in a shell script. If there's
+just one main piece of code in the script, as in the
+<i class="command">lf</i> script, a <i class="command">case</i> that tests
+<tt class="literal">$0</tt> might be best. The asterisk
+(<tt class="literal">*</tt>) wildcard at the start of each case (see
+<a href="ch35_11.htm#upt3-CHP-35-SECT-11">Section 35.11</a>) handles the different pathnames
+that might be used to call the script:
+</p>
+
+<blockquote><pre class="code">case "$0" in
+*<em class="replaceable"><tt>name1</tt></em>)
+    <i class="lineannotation">...do this when called as name1...</i>
+    ;;
+*<em class="replaceable"><tt>name2</tt></em>)
+    <i class="lineannotation">...do this when called as name2...</i>
+    ;;
+    ...
+*)  <i class="lineannotation">...print error and exit if $0 doesn't match...</i>
+    ;;
+esac</pre></blockquote>
+
+<p><a name="IXT-36-3236" />You might
+also want to use <b class="emphasis-bold">basename</b> (<a href="ch36_13.htm#upt3-CHP-36-SECT-13">Section 36.13</a>) to strip off any leading pathname and store
+the cleaned-up <tt class="literal">$0</tt> in a variable called
+<em class="emphasis">myname</em>. You can test <tt class="literal">$myname</tt>
+anywhere in the script and also use it for error messages:
+</p>
+
+<blockquote><pre class="code">myname=`basename $0`
+   ...
+case "$myname" in
+   ...
+
+echo "$myname: aborting; error in xxxxxx" 1&gt;&amp;2
+   ...</pre></blockquote>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.7. Parameter Substitution</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.9. Finding the Last Command-Line Argument</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

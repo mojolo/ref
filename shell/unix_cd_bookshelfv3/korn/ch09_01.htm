@@ -1,0 +1,1025 @@
+<html><head><title>Debugging Shell Programs (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 9. Debugging Shell Programs</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch09_01.htm#sect1">Basic Debugging Aids</a><br />
+<a href="ch09_02.htm">A Korn Shell Debugger</a><br /></p></div><p>
+We hope that we have convinced you that
+the Korn shell can be used as a serious Unix programming environment.
+It certainly has plenty of features, control structures, etc.
+But another essential part of a programming environment is a set
+of powerful, integrated <em class="emphasis">support tools</em>.
+
+For example,
+there is a wide assortment of screen editors, compilers,
+debuggers, profilers, cross-referencers, etc., for languages like
+C, C++ and Java.
+<a name="IXT-9-288166" />
+<a name="korn2-IDXTERM-1845" />
+If you program in one of these languages,
+you probably take such tools for granted, and you would
+undoubtedly cringe at the thought of having to develop code with, say,
+the <em class="emphasis">ed</em> editor and the <em class="emphasis">adb</em> machine-language debugger.
+</p><p>
+But what about programming support tools for the Korn shell? Of
+course, you can use any editor you like, including <em class="emphasis">vi</em> and
+Emacs. And because the shell is an interpreted language,
+you don't need a compiler.<a href="#FOOTNOTE-126">[126]</a>
+But there are no other tools available. The most serious problem
+is the lack of a debugger.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-126" /><p> [126]
+<a name="IXT-9-288167" />
+Actually, if you are really concerned about efficiency, there
+are shell code compilers on the market; some convert shell
+scripts to C code that often runs quite a bit faster; however,
+these tools are usually for Bourne shell scripts. Other "compilers"
+simply convert the script into a binary form so that customers
+can't read the program.
+</p>
+</blockquote><p>
+This chapter addresses that lack. The shell does have a few
+features that help in debugging shell scripts; we'll see these in the
+first part of the chapter.
+
+The Korn shell also has a couple of
+new features, not present in most Bourne shells, that make it
+possible to implement a full-blown debugging tool.
+<a name="IXT-9-288168" />
+We show these features; more importantly, we present <em class="emphasis">kshdb</em>,
+a Korn shell debugger that uses them. <em class="emphasis">kshdb</em> is basic yet
+quite usable, and its implementation serves as an extended example of
+various shell programming techniques from throughout this book.
+</p><div class="sect1"><a name="korn2-CHP-9-SECT-1" />
+<h2 class="sect1"><a name="sect1" />9.1. Basic Debugging Aids</h2>
+
+<p>
+<a name="korn2-IDXTERM-1848" />
+
+What sort of functionality do you need to debug a program?
+At the most empirical level, you need a way of determining <em class="emphasis">what</em>
+is causing your program to behave badly and <em class="emphasis">where</em> the
+problem is in the code. You usually start with an obvious <em class="emphasis">what</em>
+(such as an error message, inappropriate output, infinite loop, etc.),
+try to work backwards until you find a <em class="emphasis">what</em> that is closer to
+the actual problem (e.g., a variable with a bad value, a bad option
+to a command), and eventually arrive at the exact <em class="emphasis">where</em> in your
+program. Then you can worry about <em class="emphasis">how</em> to fix it.
+</p>
+
+<p>
+Notice that these steps represent a process of starting with obvious
+information and ending up with often obscure facts gleaned through
+deduction and intuition. Debugging aids make it easier to deduce and
+intuit by providing relevant information easily or even automatically,
+preferably without modifying your code.
+<a name="IXTR3-392" />
+
+</p>
+
+<p>
+<a name="IXT-9-288169" />
+
+The simplest debugging aid (for any language)
+is the output statement, <em class="emphasis">print</em> in
+the shell's case. Indeed, old-time programmers debugged their
+Fortran code by inserting <tt class="literal">WRITE</tt> cards into their decks.
+You can debug by putting
+lots of <em class="emphasis">print</em> statements in your code
+(and removing them later), but you will
+have to spend lots of time narrowing down not only <em class="emphasis">what</em>
+exact information you want but also <em class="emphasis">where</em> you need to see it.
+You will also probably have to wade through lots and lots of
+output to find the information that you really want.
+</p>
+
+<a name="korn2-CHP-9-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">9.1.1. Set Options</h3>
+
+<p>
+<a name="korn2-IDXTERM-1851" />
+<a name="korn2-IDXTERM-1852" />
+<a name="korn2-IDXTERM-1853" />
+
+Luckily, the shell has a few basic features that give you
+debugging functionality beyond that of <em class="emphasis">print</em>.
+The most basic of these are options to the <em class="emphasis">set -o</em> command
+(as covered in <a href="ch03_01.htm">Chapter 3</a>). These options can also be
+used on the command line when running a script, as
+<a href="ch09_01.htm#korn2-CHP-9-TABLE-1">Table 9-1</a> shows.
+</p>
+
+<p>
+<a name="IXT-9-288170" />
+
+The <em class="emphasis">verbose</em> option simply echoes (to standard error)
+whatever input the shell gets. It
+is useful for finding the exact point at
+which a script is bombing. For example, assume your script looks
+like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+fred
+bob
+dave
+pete
+ed
+ralph
+</pre></blockquote>
+</p>
+
+<a name="korn2-CHP-9-TABLE-1" /><h4 class="objtitle">Table 9-1. Debugging options</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th><p>set -o option</p></th>
+<th><p>Command-line option</p></th>
+<th><p>Action</p></th>
+</tr>
+
+
+
+
+<tr>
+<td><em class="emphasis">noexec</em></td>
+<td><em class="emphasis">-n</em></td>
+<td><p>
+Don't run commands; check for syntax errors only
+</p></td>
+</tr>
+
+<tr>
+<td><em class="emphasis">verbose</em></td>
+<td><em class="emphasis">-v</em></td>
+<td><p>
+Echo commands before running them
+</p></td>
+</tr>
+
+<tr>
+<td><em class="emphasis">xtrace</em></td>
+<td><em class="emphasis">-x</em></td>
+<td><p>
+Echo commands after command-line processing
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXT-9-288171" />
+None of these commands are standard Unix programs, and they all
+do their work silently. Say the script
+crashes with a cryptic message like "segmentation violation."
+This tells you nothing about which command caused the error.
+If you type <tt class="literal">ksh -v</tt> <em class="replaceable"><tt>scriptname</tt></em>,
+you might see this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+fred
+bob
+dave
+segmentation violation
+pete
+ed
+ralph
+</pre></blockquote>
+</p>
+
+<p>
+Now you know that <em class="emphasis">dave</em> is the probable culprit -- though it is also
+possible that <em class="emphasis">dave</em> bombed because of something it expected
+<em class="emphasis">fred</em> or <em class="emphasis">bob</em> to do (e.g., create an input file) that
+they did incorrectly.
+<a name="IXTR3-393" />
+
+</p>
+
+<p>
+
+<a name="korn2-IDXTERM-1857" />
+
+<a name="IXT-9-288172" />
+The <em class="emphasis">xtrace</em> option is more powerful: it echoes each command
+and its arguments, after the command
+has been through parameter substitution, command substitution,
+and the other steps of command-line processing (as listed in
+<a href="ch07_01.htm">Chapter 7</a>).
+If necessary, the output is quoted in such as a way as to allow it to be
+reused later as input to the shell.
+</p>
+
+<p>
+Here is an example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>set -o xtrace</b></tt>
+$ <tt class="userinput"><b>fred=bob</b></tt>
++ fred=bob
+$ <tt class="userinput"><b>print "$fred"</b></tt>
++ print bob
+bob
+$ <tt class="userinput"><b>ls -l $(whence emacs)</b></tt>
++ whence emacs
++ ls -l /usr/bin/emacs
+-rwxr-xr-x    2 root     root      3471896 Mar 16 20:17 /usr/bin/emacs
+$
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+As you can see, <em class="emphasis">xtrace</em> starts each line it prints with <tt class="literal">+</tt>.
+
+<a name="korn2-IDXTERM-1859" />
+This is actually customizable: it's the value of the built-in shell variable
+<tt class="literal">PS4</tt>.<a href="#FOOTNOTE-127">[127]</a>
+If you set <tt class="literal">PS4</tt>
+to "<tt class="literal">xtrace-&gt;</tt> "
+(e.g., in your <em class="emphasis">.profile</em> or environment file),
+you'll get
+<em class="emphasis">xtrace</em> listings that look like this:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-127" /><p> [127]
+As with <tt class="literal">PS1</tt> and <tt class="literal">PS3</tt>, this variable
+also undergoes parameter, command, and arithmetic substitution before its
+value is printed.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>ls -l $(whence emacs)</b></tt>
+xtrace-&gt; whence emacs
+xtrace-&gt; ls -l /usr/bin/emacs
+-rwxr-xr-x    2 root     root      3471896 Mar 16 20:17 /usr/bin/emacs
+$
+</pre></blockquote>
+</p>
+
+<p>
+
+<a name="IXT-9-288173" />
+An even better way of customizing <tt class="literal">PS4</tt> is to use a
+built-in variable we haven't seen yet: <tt class="literal">LINENO</tt>, which
+holds the number of the currently running line in a shell script.
+Put this line in your <em class="emphasis">.profile</em> or environment file:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS4='line $LINENO: '
+</pre></blockquote>
+</p>
+
+<p>
+We use the same technique as we did with <tt class="literal">PS1</tt> in
+<a href="ch03_01.htm">Chapter 3</a>: using single quotes to postpone
+the evaluation of the string until each time the shell prints the prompt.
+This prints messages of the form
+<tt class="literal">line</tt> <em class="replaceable"><tt>N</tt></em><tt class="literal">:</tt> in your
+trace output.
+<a name="IXT-9-288174" />
+You could even include the name of the shell
+script you're debugging in this prompt by using
+the positional parameter <tt class="literal">$0</tt>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS4='$0 line $LINENO: '
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-394" />
+<a name="IXTR3-395" />
+As another example, say you are trying to track down a bug
+in a script called <em class="emphasis">fred</em> that contains this code:
+</p>
+
+<p>
+<blockquote><pre class="code">
+dbfmq=$1.fmq
+...
+fndrs=$(cut -f3 -d' ' $dfbmq)
+</pre></blockquote>
+</p>
+
+<p>
+You type <tt class="literal">fred bob</tt> to run it in the normal way, and it hangs.
+Then you type <tt class="literal">ksh -x fred bob</tt>, and you see this:
+</p>
+
+<p>
+<blockquote><pre class="code">
++ dbfmq=bob.fmq
+...
++ + cut -f3 -d
+</pre></blockquote>
+</p>
+
+<p>
+
+It hangs again at this point. You notice that <em class="emphasis">cut</em> doesn't
+have a filename argument, which means that there must be something
+wrong with the variable <tt class="literal">dbfmq</tt>. But it has executed the assignment
+statement <tt class="literal">dbfmq=bob.fmq</tt> properly... ah-<em class="emphasis">hah</em>!
+You made a typo in the variable name inside the command substitution
+construct.<a href="#FOOTNOTE-128">[128]</a>
+You fix it, and the script works properly.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-128" /><p> [128]
+We should admit that if you turned on the <em class="emphasis">nounset</em> option
+at the top of this script, the shell would have flagged this error.
+</p>
+</blockquote>
+
+<p>
+When set at the global level, the <em class="emphasis">xtrace</em> option applies
+to the main script and to any POSIX-style functions (those created with the
+<em class="replaceable"><tt>name</tt></em> <tt class="literal">()</tt> syntax).
+If the code you are trying to debug calls <tt class="literal">function</tt>-style
+functions that are defined
+elsewhere (e.g., in your <em class="emphasis">.profile</em> or environment file), you can
+trace through these in the same way with an option to the <em class="emphasis">typeset</em>
+command.
+<a name="IXT-9-288175" />
+<a name="IXT-9-288176" />
+<a name="IXT-9-288177" />
+
+Just enter the command <tt class="literal">typeset -ft</tt> <em class="replaceable"><tt>functname</tt></em>,
+and the named function will be traced whenever it runs. Type
+<tt class="literal">typeset +ft</tt> <em class="replaceable"><tt>functname</tt></em> to turn tracing off.
+You can also put <tt class="literal">set -o xtrace</tt> into the function body itself,
+which is good when the function is within the script being debugged.
+<a name="IXTR3-396" />
+
+<a name="IXTR3-397" />
+
+</p>
+
+<p>
+<a name="IXT-9-288178" />
+
+The last option is <em class="emphasis">noexec</em>, which reads in the shell
+script and checks for syntax errors but doesn't execute anything. It's
+worth using if your script is syntactically complex (lots of loops,
+code blocks, string operators, etc.) and the bug has side effects (like
+creating a large file or hanging up the system).
+</p>
+
+<p>
+<a name="IXT-9-288179" />
+
+You can turn on these options with <tt class="literal">set -o</tt> in your shell scripts,
+and, as explained in <a href="ch03_01.htm">Chapter 3</a>, turn them off
+with <tt class="literal">set +o</tt> <em class="replaceable"><tt>option</tt></em>.
+For example, if you're debugging a
+script with a nasty side effect, and you have localized
+it to a certain chunk of code, you can precede that chunk with
+<tt class="literal">set -o xtrace</tt> (and, perhaps, close it with
+<tt class="literal">set +o xtrace</tt>) to watch it in more detail.
+</p>
+
+<blockquote><b>NOTE:</b> 
+
+The <em class="emphasis">noexec</em> option is a "one-way" option.
+Once turned on, you can't turn it off again!  That's because the shell only
+prints commands and doesn't execute them.  This includes the
+<tt class="literal">set +o noexec</tt> command you'd want to use
+to turn the option off.
+Fortunately, this only applies to shell scripts; the shell ignores
+this option when it's interactive.
+<a name="IXTR3-398" />
+<a name="IXTR3-399" />
+<a name="IXTR3-400" />
+<a name="IXTR3-401" />
+</p>
+</blockquote>
+
+</div>
+
+<a name="korn2-CHP-9-SECT-1.2" /><div class="sect2">
+<h3 class="sect2">9.1.2. Fake Signals</h3>
+
+<p>
+<a name="korn2-IDXTERM-1875" />
+<a name="IXT-9-288180" />
+
+<a name="korn2-IDXTERM-1877" />
+A more sophisticated set of debugging aids is the shell's
+"fake debugging signals," which can be used in <em class="emphasis">trap</em> statements to
+get the shell to act under certain conditions. Recall from
+the previous chapter that <em class="emphasis">trap</em> allows you to install some
+code that runs when a particular signal is sent to your script.
+</p>
+
+<p>
+Fake signals act like real ones, but they are generated by
+the shell (as opposed to real signals, which the underlying operating
+system generates). They represent runtime events that are likely to
+be interesting to debuggers -- both human ones and software tools -- and
+can be treated just like real signals within shell scripts.
+The four fake signals and their meanings are listed in
+<a href="ch09_01.htm#korn2-CHP-9-TABLE-2">Table 9-2</a>.
+
+
+
+</p>
+
+<a name="korn2-CHP-9-TABLE-2" /><h4 class="objtitle">Table 9-2. Fake signals</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Fake signal</th>
+<th>When sent</th>
+</tr>
+
+
+
+
+<tr>
+<td>EXIT</td>
+<td><p>
+The shell exits from a function or script
+</p></td>
+</tr>
+
+<tr>
+<td>ERR</td>
+<td><p>
+A command returns a non-zero exit status
+</p></td>
+</tr>
+
+<tr>
+<td>DEBUG</td>
+<td><p>
+Before every statement (<em class="emphasis">after</em> in <em class="emphasis">ksh88</em>)
+</p></td>
+</tr>
+
+<tr>
+<td>KEYBD</td>
+<td><p>
+When reading characters in the editing modes
+(not for debugging)
+<a name="korn2-IDXTERM-1878" />
+<a name="IXT-9-288181" />
+<a name="IXT-9-288182" />
+<a name="IXT-9-288183" />
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+The KEYBD signal is not used for debugging.
+It is an advanced feature, for which
+we delay discussion until
+<a href="ch10_01.htm">Chapter 10</a>.
+</p>
+
+<a name="korn2-CHP-9-SECT-1.2.1" /><div class="sect3">
+<h3 class="sect3">9.1.2.1. EXIT</h3>
+
+<p>
+The EXIT trap, when set, runs its code when the function or
+script within which it was set exits.
+Here's a simple example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function func {
+    trap 'print "exiting from the function"' EXIT
+    print 'start of the function'
+}
+
+trap 'print "exiting from the script"' EXIT
+print 'start of the script'
+func
+</pre></blockquote>
+</p>
+
+<p>
+If you run this script, you see this output:
+</p>
+
+<p>
+<blockquote><pre class="code">
+start of the script
+start of the function
+exiting from the function
+exiting from the script
+</pre></blockquote>
+</p>
+
+<p>
+In other words, the script starts by
+setting the trap for its own exit.
+Then it prints a message and finally
+calls the function.
+The function does the same -- sets a trap for its exit and prints a message.
+(Remember that <tt class="literal">function</tt>-style functions can have their own local
+traps that supersede any traps set by the surrounding script, while
+POSIX functions share traps with the main script.)
+</p>
+
+<p>
+The function then exits, which causes the shell to send
+it the fake signal EXIT, which in turn runs the
+code <tt class="literal">print "exiting from the function"</tt>.
+Then the script exits, and its own
+EXIT trap code is run.
+Note also that traps "stack;" the EXIT fake signal is sent to each running
+function in turn as each more recently called function exits.
+</p>
+
+<p>
+An EXIT trap occurs no matter how the script or function exits, whether
+normally (by finishing the last statement),
+by an explicit <em class="emphasis">exit</em> or <em class="emphasis">return</em> statement,
+or by receiving a "real"
+signal such as INT or TERM. Consider the following inane<?troff .ne 10?> number-guessing
+program:
+</p>
+
+<p>
+<blockquote><pre class="code">
+trap 'print "Thank you for playing!"' EXIT
+
+magicnum=$(($RANDOM%10+1))
+print 'Guess a number between 1 and 10:'
+while read guess'?number&gt; '; do
+    sleep 10
+    if (( $guess == $magicnum )); then
+        print 'Right!'
+        exit
+    fi
+    print 'Wrong!'
+done
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-9-288184" />
+This program picks a number between 1 and 10 by getting a random
+number (via the built-in variable <tt class="literal">RANDOM</tt>,
+see <a href="appb_01.htm">Appendix B</a>), extracting the last
+digit (the remainder when divided by 10), and adding 1. Then
+it prompts you for a guess, and
+after 10 seconds, it tells you if you guessed right.
+</p>
+
+<p>
+If you did, the program exits with the message, "Thank
+you for playing!", i.e., it runs the EXIT trap code.
+If you were wrong, it prompts you
+again and repeats the process until you get it right.
+If you get bored with this little game
+and hit CTRL-C while waiting for it to tell you
+whether you were right, you also see the message.
+<a name="IXTR3-402" />
+
+</p>
+</div>
+
+
+<a name="korn2-CHP-9-SECT-1.2.2" /><div class="sect3">
+<h3 class="sect3">9.1.2.2. ERR</h3>
+
+<p>
+<a name="korn2-IDXTERM-1884" />
+<a name="korn2-IDXTERM-1885" />
+The fake signal ERR enables you to run code whenever a command
+in the surrounding script or function exits with non-zero status.
+<a name="IXT-9-288185" />
+<a name="IXT-9-288186" />
+
+Trap code for ERR can take advantage of the built-in
+variable <tt class="literal">?</tt>, which holds the exit status of the previous command.
+It survives the trap and is accessible at the beginning of the
+trap-handling code.
+</p>
+
+<p>
+A simple but effective use of this is to put the following code
+into a script you want to debug:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function errtrap {
+    typeset es=$?
+    print "ERROR: Command exited with status $es."
+}
+
+trap errtrap ERR
+</pre></blockquote>
+</p>
+
+<p>
+The first line saves the nonzero exit status in the local variable <tt class="literal">es</tt>.
+
+</p>
+
+<p>
+For example, if the shell can't find a command, it returns status 1.
+If you put the code in a script with a line of gibberish
+(like "lskdjfafd"), the shell responds with:
+</p>
+
+<p>
+<blockquote><pre class="code">
+<em class="replaceable"><tt>scriptname</em>: line <em class="replaceable">N</tt></em>: lskdjfafd:  not found
+ERROR: command exited with status 1.
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">N</em> is the number of the line in the script that contains
+the bad command. In this case, the shell prints the line number
+as part of its own error-reporting mechanism, since the error
+was a command that the shell could not find. But if the nonzero
+exit status comes from another program, the shell doesn't report
+the line number. For example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function errtrap {
+    typeset es=$?
+    print "ERROR: Command exited with status $es."
+}
+
+trap errtrap ERR
+
+function bad {
+    return 17
+}
+
+bad
+</pre></blockquote>
+</p>
+
+<p>
+This only prints <tt class="literal">ERROR: Command exited with status 17.</tt>
+</p>
+
+<p>
+It would obviously be an improvement to include the line number
+in this error message.
+<a name="IXT-9-288187" />
+
+The built-in variable <tt class="literal">LINENO</tt> exists,
+but if you use it inside a function,
+it evaluates to the line number in the function, not in the overall
+file. In other words, if you used <tt class="literal">$LINENO</tt> in
+the <em class="emphasis">print</em> statement
+in the <em class="emphasis">errtrap</em> routine, it would always evaluate to 2.
+</p>
+
+<p>
+To get around this problem, we simply pass <tt class="literal">$LINENO</tt> as an
+argument to the trap handler, surrounding it in single quotes
+so that it doesn't get evaluated until the fake signal actually
+comes in:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function errtrap {
+    typeset es=$?
+    print "ERROR line $1: Command exited with status $es."
+}
+trap 'errtrap $LINENO' ERR
+...
+</pre></blockquote>
+</p>
+
+<p>
+If you use this with the above example, the result is the message,
+<tt class="literal">ERROR line 12: Command exited with status 17.</tt> This is
+much more useful. We'll see a variation on this technique shortly.
+</p>
+
+<p>
+This simple code is actually not a bad all-purpose debugging
+mechanism. It takes into account that a nonzero exit status
+does not necessarily indicate an undesirable condition or event:
+remember that every control construct with a conditional
+(<tt class="literal">if</tt>, <tt class="literal">while</tt>, etc.) uses a nonzero exit status to
+mean "false."  Accordingly, the shell doesn't generate ERR traps
+when statements or expressions in the "condition" parts<?troff .ne 10?> of control
+structures produce nonzero exit statuses.
+</p>
+
+<p>
+But a disadvantage is that exit statuses are not as uniform
+(or even as meaningful) as they should be, as we explained in
+<a href="ch05_01.htm">Chapter 5</a>. A particular exit status need not
+say anything about the nature of the error or even
+that there was an error.
+<a name="IXTR3-403" />
+<a name="IXTR3-404" />
+
+</p>
+</div>
+
+
+<a name="korn2-CHP-9-SECT-1.2.3" /><div class="sect3">
+<h3 class="sect3">9.1.2.3. DEBUG</h3>
+
+<p>
+<a name="korn2-IDXTERM-1891" />
+<a name="korn2-IDXTERM-1892" />
+The final debugging-related fake signal, DEBUG, causes the trap code to be run before
+every statement in the surrounding function or script.<a href="#FOOTNOTE-129">[129]</a>
+This has two possible uses. First is the use for humans, as a
+sort of a "brute force" method of tracking a certain element of
+a program's state that you notice is going awry.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-129" /><p> [129]
+This is a notable change from <em class="emphasis">ksh88</em>, where the trap
+was run <em class="emphasis">after</em> each statement.
+</p>
+</blockquote>
+
+<p>
+For example, you notice that the value of a particular variable
+is running amok. The naive approach would be to put in lots of
+<em class="emphasis">print</em> statements to check the variable's value at several
+points. The DEBUG trap makes this easier:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function dbgtrap {
+    print "<em class="replaceable"><tt>badvar</em> is $<em class="replaceable">badvar</tt></em>"
+}
+
+trap dbgtrap DEBUG
+
+... <i class="lineannotation">Section of code in which problem occurs ...</i>
+
+trap - DEBUG            # turn off DEBUG trap
+</pre></blockquote>
+</p>
+
+<p>
+This code prints the value of the wayward variable before every
+statement between the two <em class="emphasis">trap</em>s.
+</p>
+
+<p>
+The second and far more important use of the DEBUG trap is as
+a primitive for implementing Korn shell debuggers. In fact, it would
+be fair to say that the DEBUG trap reduces the task of implementing
+a useful shell debugger from a large-scale software development
+project to a manageable exercise. We will get to this shortly.
+<a name="IXTR3-405" />
+<a name="IXTR3-406" />
+<a name="IXTR3-407" />
+<a name="IXTR3-408" />
+
+</p>
+</div>
+
+<a name="korn2-CHP-9-SECT-1.2.4" /><div class="sect3">
+<h3 class="sect3">9.1.2.4. Signal delivery order</h3>
+
+<p>
+It is possible for multiple signals to arrive simultaneously (or close to it).
+In that case, the shell runs the trap commands in the following order:
+</p>
+
+<ol>
+
+<li><p>
+DEBUG
+</p></li>
+
+<li><p>
+ERR
+</p></li>
+
+<li><p>
+Real Unix signals, in order of signal number
+</p></li>
+
+<li><p>
+EXIT
+</p></li>
+
+</ol>
+
+</div>
+</div>
+
+<a name="korn2-CHP-9-SECT-1.3" /><div class="sect2">
+<h3 class="sect2">9.1.3. Discipline Functions</h3>
+
+<p>
+<a name="IXT-9-288188" />
+
+In <a href="ch04_01.htm">Chapter 4</a>, we introduced
+the Korn shell's compound variable notation, such as <tt class="literal">${person.name}</tt>.
+Using this notation,
+<em class="emphasis">ksh93</em> provides special functions, called
+<em class="emphasis">discipline functions</em>, that give you control over 
+variables when they are referenced, assigned to, and unset.
+Simple versions of such functions might look like this:
+</p>
+
+<blockquote><pre class="code">
+dave=dave                       <i class="lineannotation">Create the variable</i>
+function dave.set {             <i class="lineannotation">Called when dave is assigned to</i>
+    print "dave just got assigned '${.sh.value}'"
+}
+
+function dave.get {             <i class="lineannotation">Called when $dave retrieved</i>
+    print "dave's value referenced, it's '$dave'"    # this is safe
+
+    .sh.value="dave was here"   <i class="lineannotation">Change what $dave returns, dave not changed</i>
+}
+
+function dave.unset {           <i class="lineannotation">Called when dave is unset</i>
+    print "goodbye dave!"
+    unset dave   # actually make dave go away
+}
+</pre></blockquote>
+
+<blockquote><b>NOTE:</b> 
+
+The <em class="emphasis">unset</em> discipline
+function <em class="emphasis">must</em> actually use the <em class="emphasis">unset</em>
+command to unset the variable -- this does not cause an infinite loop.
+Otherwise, the variable won't be unset,
+which in turn leads to very surprising behavior.
+</p>
+</blockquote>
+
+<p>
+Here is what happens once all of these functions are in place:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print $dave</b></tt>
+dave's value referenced, it's 'dave'                    <i class="lineannotation">From dave.get</i>
+dave was here                                           <i class="lineannotation">From print</i>
+$ <tt class="userinput"><b>dave='who is this dave guy, anyway?'</b></tt>
+dave just got assigned 'who is this dave guy, anyway?'  <i class="lineannotation">From dave.set</i>
+$ <tt class="userinput"><b>unset dave</b></tt>
+goodbye dave!                                           <i class="lineannotation">From dave.unset</i>
+$ <tt class="userinput"><b>print $dave</b></tt>
+
+$
+</pre></blockquote>
+
+<p>
+Discipline functions may only be applied to global variables.
+They may not be used with local variables -- those you create
+with <em class="emphasis">typeset</em> inside a <tt class="literal">function</tt>-style
+function.
+</p>
+
+<p>
+<a href="ch09_01.htm#korn2-CHP-9-TABLE-3">Table 9-3</a> summarizes the built-in discipline
+functions.
+</p>
+
+<a name="korn2-CHP-9-TABLE-3" /><h4 class="objtitle">Table 9-3. Predefined discipline functions</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Name</th>
+<th>Purpose</th>
+</tr>
+
+
+
+<tr>
+<td><em class="replaceable"><tt>variable</tt></em><tt class="literal">.get</tt></td>
+<td><p>
+Called when a variable's value is retrieved.
+Assigning to <tt class="literal">.sh.value</tt> changes the value returned
+but not the variable itself.
+</p></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>variable</tt></em><tt class="literal">.set</tt></td>
+<td><p>
+Called when a variable is assigned to.  <tt class="literal">${.sh.value}</tt> is
+the new value being assigned.  Assigning to <tt class="literal">.sh.value</tt>
+changes the value being assigned.
+</p></td>
+</tr>
+
+<tr>
+<td><em class="replaceable"><tt>variable</tt></em><tt class="literal">.unset</tt></td>
+<td><p>
+Called when a variable is unset.
+This function must use <em class="emphasis">unset</em> on
+the variable to actually unset it.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+As we've just seen, within the discipline functions, there are two
+special variables that the shell sets which give you information,
+as well as one variable that you can set to change how the shell behaves.
+<a href="ch09_01.htm#korn2-CHP-9-TABLE-4">Table 9-4</a> describes these variables and what
+they do.
+</p>
+
+<a name="korn2-CHP-9-TABLE-4" /><h4 class="objtitle">Table 9-4. Special variables for use in discipline functions</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Variable</th>
+<th>Purpose</th>
+</tr>
+
+
+
+<tr>
+<td><tt class="literal">.sh.name</tt></td>
+<td><p>
+The name of the variable for which the discipline function is being run.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">.sh.subscript</tt></td>
+<td><p>
+The current subscript for an array variable.
+(The discipline functions apply to the entire
+array, not each subscripted element.)
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">.sh.value</tt></td>
+<td><p>
+The new value being assigned
+in a <em class="emphasis">set</em> discipline function.
+If assigned to in a <em class="emphasis">get</em> discipline
+function, changes the value returned.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+At first glance, it's not clear what the value of discipline functions
+is.  But they're perfect for implementing a very useful debugger
+feature, called <em class="emphasis">watchpoints</em>.
+We're now ready to get down to writing our shell script debugger.
+</p>
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.6. Shell Subprocesses and Subshells</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.2. A Korn Shell Debugger</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

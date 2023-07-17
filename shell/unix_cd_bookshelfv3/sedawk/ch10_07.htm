@@ -1,0 +1,325 @@
+<html><head><title>Debugging (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.7. Debugging</h2>
+
+<p>
+<a name="ch10.bug1" />
+<a name="ch10.bug2" />
+<a name="ch10.bug3" />
+No aspect of programming is more frustrating or more essential than
+debugging.  In this section, we'll look at ways to debug awk scripts
+and offer advice on how to correct an awk program that fails to do
+what it is supposed to do.</p>
+
+<p>Modern versions of awk do a pretty good job of reporting syntax
+errors.  But even with good error detection, it is often difficult to
+isolate the problem.  The techniques for discovering the source of the
+problem are a modest few and are fairly obvious.  Unfortunately, most
+awk implementations come with no debugging tools or extensions.</p>
+
+<p>There are two classes of problems with a program.  The first is really
+a bug in the program's logic.  The program runs--that is, it
+finishes without reporting any error messages, but it does not produce
+the result you wanted.  For instance, perhaps it does not create any
+output.  This bug could be caused by failing to use a
+<b class="emphasis-bold">print</b> statement to output the result of a
+calculation.  Program errors are mental errors, if you will.</p>
+
+<p>The second class of error is one in which the program fails to execute
+or complete execution.  This could result from a syntax error and
+cause awk to spit code at you that it is unable to interpret.  Many
+syntax errors are the result of a typo or a missing brace or
+parenthesis.  Syntax errors usually generate error messages that help
+direct you to the problem.  Sometimes, however, a program may cause
+awk to fail (or "core dump") without producing any reasonable error
+message.<a href="#FOOTNOTE-70">[70]</a> 
+This may also be caused by a syntax error, but there could be problems
+specific to the machine.  We have had a few larger scripts that dumped
+core on one machine while they ran without a problem on another.  You
+could, for instance, be running up against limitations set for awk for
+that particular implementation.  See <a href="ch10_08.htm#sedawk-ch-10-sect-8">Section 10.8</a>,
+later in this chapter.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-70" /><p> [70]This indicates that the awk implementation is poor. Core dumps are
+very rare in modern versions of awk.</p>
+
+</blockquote>
+
+<p>You should be clear in your mind which type of program bug
+you are trying to find: an error in the script's logic or an error in
+its syntax.</p>
+
+<a name="sedawk-ch-10-sect-7.1" /><div class="sect2">
+<h3 class="sect2">10.7.1. Make a Copy</h3>
+
+<p>
+<a name="IXT-10-266189" />
+Before you begin debugging a program, make a copy of it.  This is
+extremely important.  To debug an awk script, you have to change it.
+These modifications may point you to the error but many changes will
+have no effect or may introduce new problems.  It's good to be able to
+restore changes that you make.  However, it is bothersome to restore
+each change that you make, so I like to continue making changes until
+I have found the problem.  When I know what it is, I go back to the
+original and make the change.  In effect, that restores all the other
+inconsequential changes that were made in the copy.</p>
+
+<p>It is also helpful to view the process of creating a program as a
+series of stages.  Look at a core set of features as a single stage.
+Once you have implemented these features and tested them, make a copy
+of the program before going to the next stage to develop new features.
+That way, you can always return to the previous stage if you have
+problems with the code that you add.</p>
+
+<p>
+<a name="IXT-10-266190" />
+We would recommend that you formalize this process, and go so far as
+to use a source code management system, such as SCCS (Source Code
+Control System), RCS (Revision Control System), or CVS (Concurrent
+Versioning System, which is compatible with RCS).  The latter two are
+freely available from any GNU FTP mirror site.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-10-sect-7.2" /><div class="sect2">
+<h3 class="sect2">10.7.2. Before and After Photos</h3>
+
+<p>What is difficult in debugging awk is that you don't always know what
+is happening during the course of the program.  You can inspect the
+input and the output, but there is no way to stop the program in
+mid-course and examine its state.  Thus, it is difficult to know which
+part of the program is causing a problem.</p>
+
+<p>A common problem is determining when or where in the program the
+assignment of a variable takes place.  The first method of attack is
+to use the <b class="emphasis-bold">print</b> statement to print the value of
+the variable at various points in the program.  For instance, it is
+common to use a variable as a flag to determine that a certain
+condition has occurred.  At the beginning of the program, the flag
+might be set to 0.  At one or more points in the program, the value of
+this flag might be set to 1.  The problem is to find where the change
+actually occurs.  If you want to check the flag at a particular part
+of the program, use <b class="emphasis-bold">print</b> statements before and
+after the assignment.  For instance:</p>
+
+<blockquote><pre class="code">print flag, "before"
+if (! $1) {
+	.
+	.
+	.
+	flag = 1
+}
+print flag, "after"</pre></blockquote>
+
+<p>If you are unsure about the result of a substitution command or any
+function, print the string before and after the function is called:</p>
+
+<blockquote><pre class="code">print $2
+sub(/ *\(/, "(", $2)
+print $2</pre></blockquote>
+
+<p>The value of printing the value before the substitution command is to
+make sure that the command sees the value that you think should be
+there.  A previous command might have changed that variable.  The
+problem may turn out to be that the format of the input record is not
+as you thought.  Checking the input carefully is a very important step
+in debugging.  In particular, use <b class="emphasis-bold">print</b> statements
+to verify that the sequence of fields is as you expect.  When you find
+that input is causing the problem, you can either fix the input or
+write new code to accommodate it.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-10-sect-7.3" /><div class="sect2">
+<h3 class="sect2">10.7.3. Finding Out Where the Problem Is</h3>
+
+<p>
+<a name="IXT-10-266191" />
+<a name="IXT-10-266192" />
+The more modular a script is--that is, the more it can be broken
+down into separate parts--the easier it is to test and debug the
+program.  One of the advantages of writing functions is that you can
+isolate what is going on inside the function and test it without
+affecting other parts of the program.  You can omit an entire action
+and see what happens.</p>
+
+<p>If a program has a number of branching constructs, you might find that
+an input line falls through one of branches.  Test that the input
+reaches part of a program.  For instance, when debugging the
+<b class="emphasis-bold">masterindex</b> program,
+described in <a href="ch12_01.htm">Chapter 12, "Full-Featured Applications"</a>, we wanted to know if an entry
+containing the word "retrieving" was being handled in a particular
+part of the program. We inserted the following line in the part of the
+program where we thought it should be encountered:</p>
+
+<blockquote><pre class="code">if ($0 ~ /retrieving/) print "&gt;&gt; retrieving" &gt; "/dev/tty"</pre></blockquote>
+
+<p>When the program runs, if it encounters the string "retrieving," it
+will print the message.  ("&gt;&gt;" is used as a pair of characters that
+will instantly call attention to the output; "!!" is also a good one.)</p>
+
+<p>Sometimes you might not be sure which of several
+<b class="emphasis-bold">print</b> statements are causing a problem.  Insert
+identifiers into the <b class="emphasis-bold">print</b> statement that will
+alert you to the <b class="emphasis-bold">print</b> statement being executed.
+In the following example, we simply use the variable name to identify
+what is printed with a label:</p>
+
+<blockquote><pre class="code">if (PRIMARY)
+	print ("&gt;&gt;PRIMARY:", PRIMARY)
+else
+	if (SECONDARY)
+		print ("&gt;&gt;SECONDARY:", SECONDARY)
+	else
+		print ("&gt;&gt;TERTIARY:", TERTIARY)</pre></blockquote>
+
+<p>This technique is also useful for investigating whether or not parts
+of the program are executed at all.  Some programs get to be like
+remodeled homes: a room is added here, a wall is taken down there.
+Trying to understand the basic structure can be difficult.  You might
+wonder if each of the parts is truly needed or indeed if it is ever
+executed at all.</p>
+
+<p>If an awk program is part of a pipeline of several programs, even
+other awk programs, you can use the <b class="emphasis-bold">tee</b> command to
+redirect output to a file, while also piping the output to the next
+command.  For instance, look at the shell script for running the
+<b class="emphasis-bold">masterindex</b> program, as shown in <a href="ch12_01.htm">Chapter 12, "Full-Featured Applications"</a>:</p>
+
+<blockquote><pre class="code">$INDEXDIR/input.idx $FILES |
+sort -bdf -t:  +0 -1 +1 -2 +3 -4 +2n -3n | uniq |
+$INDEXDIR/pagenums.idx | tee page.tmp |
+$INDEXDIR/combine.idx |
+$INDEXDIR/format.idx</pre></blockquote>
+
+<p>By adding "tee page.tmp", we are able to capture the output of the
+<b class="emphasis-bold">pagenums.idx</b> program in a file named
+<em class="filename">page.tmp</em>.  The same output is also piped to
+<b class="emphasis-bold">combine.idx</b>.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-10-sect-7.4" /><div class="sect2">
+<h3 class="sect2">10.7.4. Commenting Out Loud</h3>
+
+<p>
+<a name="IXT-10-266193" />
+Another technique is simply commenting out a series of lines that may
+be causing problems to see whether they really are. We recommend
+developing a consistent two-character symbol such as "#%" to comment
+out lines temporarily.  Then you will notice them on subsequent
+editing and remember to deal with them.  It also becomes easier to
+remove the symbols and restore the lines with a single editing command
+that does not affect program comments:</p>
+
+<blockquote><pre class="code">#% if ( thisFails )
+	print "I give up"</pre></blockquote>
+
+<p>Using the comment here eliminates the conditional, so the
+<b class="emphasis-bold">print</b> statement is executed unconditionally.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-10-sect-7.5" /><div class="sect2">
+<h3 class="sect2">10.7.5. Slash and Burn</h3>
+
+<p>When all else fails, arm yourself with your editor's delete command
+and begin deleting portions of the program until the error disappears.
+Of course, make a copy of the program and delete lines from the
+temporary copy.  This is a very crude technique, but an effective one
+to use before giving up altogether or starting over from scratch.  It
+is sometimes the only way to discover what is wrong when the only
+result you get is that the program dumps core.  The idea is the same
+as above, to isolate the problem code.  Remove a function, for
+instance, or a <b class="emphasis-bold">for</b> loop to see if it is the cause
+of the problem.  Be sure to cut out complete units: for instance, all
+the statements within braces and the matching braces.  If the problem
+persists--the program continues to break--then cut out
+another large section of the program.  Sooner or later, you will find
+the part that is causing the problem.</p>
+
+<p>You can use "slash and burn" to learn how a program works.  First, run
+the original program on sample input, saving the output.  Begin by
+removing a part of the program that you don't understand.  Then run
+the modified program on sample input and compare the output to the
+original.  Look to see what changed.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-10-sect-7.6" /><div class="sect2">
+<h3 class="sect2">10.7.6. Getting Defensive About Your Script</h3>
+
+<p>There are all types of input errors and inconsistencies that will turn
+up bugs in your script.  You probably didn't consider that
+<em class="emphasis">user</em> errors will be pointed to as problems with
+<em class="emphasis">your</em> program.  Therefore, it is a good idea to
+surround your core program with "defensive" procedures designed to
+trap inconsistent input records and prevent the program from failing
+unexpectedly.  For instance, you might want to verify each input
+record before processing it, making sure that the proper number of
+fields exist or that the kind of data that you expect is found in a
+particular field.</p>
+
+<p>Another aspect of incorporating defensive techniques is error
+handling.  In other words, what do you want to have happen once the
+program detects an error?  While in some cases you can have the
+program continue, in other cases it may be preferable that the program
+print an error message and/or halt.</p>
+
+<p>It is also appropriate to recognize that awk scripts are typically
+confined to the realm of quick fixes, programs that solve a particular
+problem rather than solving a class of problems encountered by many
+different users.  Because of the nature of these programs, it is not
+really necessary that they be professional quality.  Thus, it is not
+necessary to write 100% user-proof programs.  For one thing, defensive
+programming is quite time-consuming and frequently tedious.  Secondly,
+as amateurs, we are at liberty to write programs that perform the way
+we expect them to; a professional has to write for an audience and
+must account for their expectations. In brief, if you are writing the
+script for others to use, consider how it may be used and what
+problems its users may encounter before considering the program
+complete.  If not, maybe the fact that the script works--even for
+a very narrow set of circumstances--is good enough and all there
+is time for.</p>
+</div>
+
+
+
+
+<a name="IXT-10-266194" />
+<a name="IXT-10-266195" />
+<a name="IXT-10-266196" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.6. Generating Columnar Reports</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.8. Limitations</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

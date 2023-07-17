@@ -1,0 +1,272 @@
+<html><head><title>Starting Remote X Clients (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="part3.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.10. Starting Remote X Clients</h2>
+
+<p><a name="IXT-6-916" /><a name="upt3-IDXTERM-1199" /> <a name="upt3-IDXTERM-1200" /> <a name="upt3-IDXTERM-1201" />One of the unique
+advantages of window systems such as X is that you can run
+<a name="IXT-6-917" />applications
+remotely and view them on the local display (as opposed to systems
+that merely allow for the execution of shared applications by the
+local host, such as Windows and the Mac OS prior to OS X). Even Mac
+OS X, except insofar as it can run an X server, does not allow for a
+split between an application's display and its
+execution. Only X-aware applications may be executed in such a
+fashion.
+</p>
+
+<a name="upt3-CHP-6-SECT-10.1" /><div class="sect2">
+<h3 class="sect2">6.10.1. Starting Remote X Clients from Interactive Logins</h3>
+
+<p><a name="IXT-6-918" /><a name="IXT-6-919" />You
+<a name="IXT-6-920" /><a name="IXT-6-921" />can try this easily
+enough by doing an <i class="command">rlogin</i> or
+<i class="command">telnet</i><a href="#FOOTNOTE-33">[33]</a> to the remote host,
+setting the <a name="IXT-6-922" /> <a name="IXT-6-923" />DISPLAY environment
+variable and starting up an X client. Of course, it helps to have an
+X server already running on your local machine. In the following
+example, we start up a new <i class="command">xload</i> client running on
+the host <em class="emphasis">ruby</em>: <a name="IXT-6-924" />
+</p><blockquote class="footnote"> <a name="FOOTNOTE-33" /><p> [33]Most of the recent
+distributions of Unix default to the use of <i class="command">ssh</i> as
+a secure replacement for the various r* command, (rsh, rcp, rlogin,
+et al.), so you may want to skip ahead to <a href="ch05_01.htm">Chapter 5</a>.</p> </blockquote>
+
+<blockquote><pre class="code">sapphire:joan % <tt class="userinput"><b>rlogin ruby</b></tt>
+Password:
+Last login: Mon Mar 12 16:27:23 from sapphire.oreilly.com
+NetBSD 1.4.2A (ORA-GENERIC) #6: Wed May 31 06:12:46 EEST 2000
+
+TERM = (vt100) <tt class="userinput"><b>xterm</b></tt>
+
+ruby:joan % <tt class="userinput"><b>setenv DISPLAY sapphire:0</b></tt>
+ruby:joan % <tt class="userinput"><b>xload &amp;</b></tt></pre></blockquote>
+
+<p>(You must, of course, have an account on the remote system.)</p>
+
+<p>The first thing that might go wrong is that you may run into
+<a name="IXT-6-925" />server access control. If you see the
+following error:
+</p>
+
+<blockquote><pre class="code">Xlib:  connection to "sapphire:0" refused by server
+Xlib:  Client is not authorized to connect to Server
+Error: Can't open display: sapphire:0</pre></blockquote>
+
+<p><a name="IXT-6-926" />you can
+probably fix it by typing <tt class="literal">xhost +ruby</tt> in a
+<em class="emphasis">sapphire</em> window and running the command again on
+<em class="emphasis">ruby</em>.<a href="#FOOTNOTE-34">[34]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-34" /><p> [34]The security-conscious may
+prefer to use the fully qualified domain name on the
+<i class="command">xhost</i> command line (such as <tt class="literal">xhost
++ruby.oreilly.com</tt>).</p> </blockquote>
+
+<p>Once you have networking and access control issues solved, you should
+be able to display clients from the remote machine. The next issue is
+how to run remote clients <em class="emphasis">easily</em>.
+</p>
+
+<p>If you have <b class="emphasis-bold">ssh</b>
+(<a name="IXT-6-927" /><a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>), its X
+forwarding handles authorization (setting
+<em class="emphasis">DISPLAY</em>) and also encrypts the connection to
+make it secure. Here's an example using
+<i class="command">ssh</i> for an interactive login:
+</p>
+
+<blockquote><pre class="code">sapphire:joan % <tt class="userinput"><b>ssh ruby</b></tt>
+joan's passphrase:
+Last login: Mon Mar 12 16:27:23 from sapphire.oreilly.com
+NetBSD 1.4.2A (ORA-GENERIC) #6: Wed May 31 06:12:46 EEST 2000
+
+TERM = (vt100) <tt class="userinput"><b>xterm</b></tt>
+
+ruby:joan % <tt class="userinput"><b>xload &amp;</b></tt></pre></blockquote>
+
+</div>
+<a name="upt3-CHP-6-SECT-10.2" /><div class="sect2">
+<h3 class="sect2">6.10.2. Starting a Remote Client with rsh and ssh</h3>
+
+<p><a name="IXT-6-928" /><a name="IXT-6-929" />If <a name="IXT-6-930" /><a name="IXT-6-931" />you have <i class="command">ssh</i>,
+that's the easiest way to start a remote client:
+</p>
+
+<blockquote><pre class="code">sapphire:joan % <tt class="userinput"><b>ssh ruby -n xterm &amp;</b></tt></pre></blockquote>
+
+<p>If you aren't running an SSH agent,
+you'll need to enter your password before the remote
+command can run. If you have trouble, try the <i class="command">ssh</i>
+-<span class="option">f</span> option -- with no ampersand
+(<tt class="literal">&amp;</tt>) at the end of the command line.
+</p>
+
+<p>If you don't have <i class="command">ssh</i>, the best
+way to start a remote client is the same way you'd
+start any remote command: using the <i class="command">rsh</i> command:
+</p>
+
+<blockquote><pre class="code">sapphire:joan % <tt class="userinput"><b>rsh ruby -n xterm -display sapphire:0</b></tt></pre></blockquote>
+
+<p>There are a few issues to be ironed out first, though.</p>
+
+<p>To run <i class="command">rsh</i> successfully, make sure that you have
+permission to run
+<a name="IXT-6-932" />remote shells on the remote machine.
+This means that the local machine must be listed either in the remote
+machine's
+<em class="filename">/etc/hosts.equiv</em><a name="IXT-6-933" /> <a name="IXT-6-934" /> <a name="IXT-6-935" /> file or in your personal
+<em class="filename">$HOME/.rhosts</em> file on the remote machine. For
+example, an <em class="filename">.rhosts</em> file might read:
+<a name="IXT-6-936" /><a name="IXT-6-937" /><a name="IXT-6-938" />
+</p>
+
+<blockquote><pre class="code">sapphire.ora.com
+harry.ora.com</pre></blockquote>
+
+<p>If the host is properly set up on the remote machine, then
+<i class="command">rsh</i> will execute properly, and
+<i class="command">rlogin</i> will no longer ask for a password when you
+try to connect to the remote machine. If it is not set up properly,
+then <i class="command">rlogin</i> will prompt for a password, and
+<i class="command">rsh</i> will fail with the message <tt class="literal">Permission
+denied</tt>.
+</p>
+
+<p><a name="IXT-6-939" />Using
+<em class="filename">.rhosts</em> or <em class="filename">/etc/hosts.equiv</em>
+for this purpose might be considered a breach of security: it means
+that if someone breaks into your account on one machine, he can break
+into your account on all other machines as well. Clearly, you want to
+be careful what hosts you list in <em class="filename">.rhosts</em>. For
+that reason, it's better to use the fully qualified
+domain name (i.e., <em class="emphasis">harry.ora.com</em> instead of just
+<em class="emphasis">harry</em>).
+</p>
+
+<p>There are a few more rules:</p>
+
+<ul><li>
+<p>For security reasons, the <em class="filename">.rhosts</em> file will be
+ignored if it is publically writable. Make sure that the
+<em class="filename">.rhosts</em> file is writable only by you.
+</p>
+</li><li>
+<p>Make sure that you are running the correct <i class="command">rsh</i>
+command. Some systems have a
+<em class="emphasis">restricted</em><a name="IXT-6-940" /> shell, also named <i class="command">rsh</i>.
+If you get the following error:
+</p>
+<blockquote><pre class="code">ruby: ruby: No such file or directory</pre></blockquote>
+<p>or:</p>
+<blockquote><pre class="code">ruby: ruby: cannot open</pre></blockquote>
+<p>where <tt class="literal">ruby</tt> is the name of the system that you
+wanted to run the remote shell on, the problem is probably that you
+are using the wrong <i class="command">rsh</i> command. Use the <b class="emphasis-bold">which</b> (<a name="IXT-6-941" /> <a name="IXT-6-942" /><a href="ch01_06.htm#upt3-CHP-1-SECT-6">Section 1.6</a>) or <b class="emphasis-bold">whereis</b> (<a href="ch01_03.htm#upt3-CHP-1-SECT-3">Section 1.3</a>) command
+to see which <i class="command">rsh</i> you are using:
+</p>
+<blockquote><pre class="code">sapphire:joan % <tt class="userinput"><b>which rsh</b></tt>
+/bin/rsh
+sapphire:joan % <tt class="userinput"><b>echo $path</b></tt>
+/bin /usr/bin /usr/bin/X11 /usr/bsd</pre></blockquote>
+<p>On some <a name="IXT-6-943" /> <a name="IXT-6-944" />System V-derived systems such as IRIX,
+the restricted shell <i class="command">rsh</i> might live in
+<em class="filename">/bin</em>, while the remote shell
+<i class="command">rsh</i> (the one you want) resides in
+<em class="filename">/usr/bsd</em><a name="IXT-6-945" /> <a name="IXT-6-946" />. <em class="filename">/bin</em> often shows
+up in search paths earlier than <em class="filename">/usr/bsd</em>, so on
+those systems you need to redefine your path explicitly so that
+<em class="filename">/usr/bsd</em> is searched before
+<em class="filename">/bin</em>. Alternately, you can supply the full path
+to the command when you invoke it.
+</p>
+</li>
+<li>
+<p>You may need to append the
+<span class="option">-n</span><a name="IXT-6-947" /> option to <i class="command">rsh</i> to
+avoid a <tt class="literal">Stopped</tt> error message on some machines.
+</p>
+</li>
+<li>
+<p>You need to be sure that the directory containing X binaries is
+defined in your search path in your <b class="emphasis-bold">shell setup
+file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) on the remote system.
+</p>
+</li>
+<li>
+<p>If you are using <a name="IXT-6-948" /> <a name="IXT-6-949" /> <a name="IXT-6-950" />host-based access control, you need to
+execute the <i class="command">xhost</i> client to extend access to the
+remote host before the <i class="command">rsh</i> command is run.
+Otherwise, clients from the remote host will not have permission to
+access your display. If you are using <a name="IXT-6-951" /> <a name="IXT-6-952" /> <a name="IXT-6-953" />user-based access control, you may
+need to run the <i class="command">xauth</i> command to copy your access
+code to the remote machine.
+</p>
+</li>
+<li>
+<p>You have to use the
+<span class="option">-display</span><a name="IXT-6-954" /> option in calling a remote shell, or
+the <tt class="literal">Can't</tt> <tt class="literal">Open display</tt> error
+will be returned. (Alternatively, you can have your
+<a name="IXT-6-955" /><a name="IXT-6-956" />DISPLAY
+environment variable hard-coded into your <b class="emphasis-bold">shell
+setup file</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>) on the remote
+machine, but this is a <em class="emphasis">very bad idea</em>.) See
+<a href="ch35_08.htm#upt3-CHP-35-SECT-8">Section 35.8</a> for more information on setting
+your display.
+</p>
+</li>
+<li>
+<p>Be careful not to use <tt class="literal">unix:0.0</tt> or
+<tt class="literal">:0.0</tt> as the display name! Otherwise, the client
+will display the window on the local display of the remote host. If
+this succeeds, the user on that display could either become very
+annoyed or take advantage of the sudden access to your account by
+reading personal files and sending nasty mail to your boss. You would
+have no warning; all you would know is that your window
+didn't appear. So, before running
+<em class="emphasis">another</em> client, you may want to log in to the
+remote system and do a <i class="command">ps</i><a name="IXT-6-957" /> to ensure that
+you're not already running the application on the
+remote display.
+</p>
+</li></ul>
+<p><i class="command">ssh</i><a name="IXT-6-958" /> expects slightly different files
+than does <i class="command">rsh</i>, although the server may be
+configured to allow the use of both <em class="filename">.rhosts</em> and
+<em class="filename">.shosts</em><a name="IXT-6-959" />, as well as the system-level
+<em class="filename">/etc/hosts.equiv</em> and
+<em class="filename">/etc/ssh/shosts.equiv</em> files. Many administrators
+have wisely chosen to avoid <i class="command">rsh</i> and related
+commands altogether, even to the point of disallowing fallback to
+<i class="command">rsh</i> from a <i class="command">ssh</i> login attempt.
+More information about the peculiarities of <i class="command">ssh</i>
+may be found in <a href="ch51_01.htm">Chapter 51</a>.<a name="IXTR3-973" /> <a name="IXTR3-974" /> <a name="IXTR3-975" />
+</p>
+
+<p><em class="emphasis">--LM, EP, JP, and SJC</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="part3.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.9. Listing the Current Resources for a Client: appres</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">III. Working with Files and Directories</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

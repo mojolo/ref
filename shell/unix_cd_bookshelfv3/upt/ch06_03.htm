@@ -1,0 +1,184 @@
+<html><head><title>X Resource Syntax (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.3. X Resource Syntax</h2>
+
+<p><a name="upt3-IDXTERM-1124" /> <a name="upt3-IDXTERM-1125" /><a name="IXT-6-860" />Virtually all X Window System
+clients are customizable.<a href="#FOOTNOTE-25">[25]</a> You can specify how a client looks on the
+screen -- its size and placement, its border and background color
+or pattern, whether the window has a scrollbar, and so on. This
+article introduces X resources and shows their syntax.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-25" /><p> [25]Not to be confused with the
+extensive customization of window decorations and the like now
+possible with window managers such as Enlightenment, Afterstep, FVWM,
+or Sawfish. If you have a difficult time visualizing what is affected
+by these resource assignments apart from the fancy decoration around
+the windows themselves, try killing your window manager and viewing
+just the X clients themselves, in all of their sparse glory.</p>
+</blockquote>
+
+<p>Traditional Unix applications rely on command-line options to allow
+users to customize the way they work. X applications support
+command-line options too, but often not for all features. Almost
+every feature of an X program can be controlled by a variable called
+a <a name="IXT-6-861" /><em class="emphasis">resource</em>;
+you can change the behavior or appearance of a program by changing
+the <em class="emphasis">value</em> associated with a resource variable.
+</p>
+
+<p>Resource variables may be Boolean (such as <tt class="literal">scrollBar:
+True</tt>) or take a numeric or string value
+(<tt class="literal">borderWidth: 2</tt> or <tt class="literal">foreground:
+blue</tt>). What's more, in applications
+written with the X Toolkit (or an Xt-based toolkit such as the Motif
+toolkit), resources may be associated with separate
+<em class="emphasis">objects</em><a name="IXT-6-862" /> (or
+"widgets") within an application.
+There is a syntax that allows for separate control over both a
+<em class="emphasis">class</em><a name="IXT-6-863" /><a name="IXT-6-864" /> of objects in the application
+and an individual <em class="emphasis">instance</em> of an object. This is
+illustrated by these resource specifications for a hypothetical
+application called <i class="command">xclient</i>:
+</p>
+
+<blockquote><pre class="code">xclient*Buttons.foreground:     blue
+xclient*help.foreground:        red</pre></blockquote>
+
+<p>The first resource specification makes the foreground color blue for
+all buttons in the <i class="command">xclient</i> application (in the
+class <tt class="literal">Buttons</tt>); the second resource specification
+makes the foreground color red for the <tt class="literal">help</tt> button
+in this application (an instance of the class
+<tt class="literal">Buttons</tt>). Resource settings can be even simpler
+than this.
+</p>
+
+<p>The values of resources can be set as application defaults using a
+number of different mechanisms, including resource files in your home
+directory and a program called <i class="command">xrdb</i> (X resource
+database manager). As we'll see, the
+<i class="command">xrdb</i> program stores resources directly in the X
+server, making them available to all clients, regardless of the
+machine on which the clients run.<a href="#FOOTNOTE-26">[26]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-26" /><p> [26]Remember, in X the
+client server model is the inverse of what you may be used to; the
+server is local, and displays clients that may be running
+remotely.</p> </blockquote>
+
+<p>Placing resources in files allows you to set many resources at once
+without the restrictions encountered when using command-line options.
+<a name="IXT-6-865" /><a name="IXT-6-866" /><a name="IXT-6-867" />In addition to a primary resource file
+(often called <em class="filename">.Xdefaults</em>,
+<em class="filename">.Xresources</em>, or <em class="filename">xrdb</em>) in
+your home directory, which determines defaults for the clients you
+yourself run, the system administrator can create system-wide
+resource files to set defaults for all instances of the application
+run on this machine. It is also possible to create resource files to
+set some resources for just the local machine, some for all machines
+in a network, and some for one or more specific machines.<a href="#FOOTNOTE-27">[27]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-27" /><p> [27]While this is often okay for applications such as
+<em class="filename">xterm</em> that have not been modified much since the
+early nineties, app-defaults files can be more trouble than
+they're worth in a rapid application development
+environment, as they can quickly get out of sync with changes in the
+application itself from one version to the next.</p> </blockquote>
+
+<p>The various resource files are automatically read in and processed in
+a certain order
+<a name="IXT-6-868" />within an application by a set of
+routines called the <em class="emphasis">resource manager</em>. The syntax
+for resource specifications and the rules of precedence by which the
+resource manager processes them are intended to give you the maximum
+flexibility in setting resources with the minimum amount of text. You
+can specify a resource that controls only one feature of a single
+application, such as the red <tt class="literal">help</tt> button in the
+hypothetical <i class="command">xclient</i> settings listed earlier. You
+can also specify a resource that controls one feature of multiple
+objects within multiple applications with a single line.
+</p>
+
+<p>Command-line options normally take precedence over any prior resource
+settings; so you can set up the files to control the way you
+<em class="emphasis">normally</em> want your application to work and then
+use command-line options (in an <b class="emphasis-bold">alias or shell
+function</b> (<a href="ch29_01.htm#upt3-CHP-29-SECT-1">Section 29.1</a>), for instance) to
+specify changes you need for only one or two instances of the
+application.
+</p>
+
+<p>The basic syntax of a resource definition file is fairly simple. Each
+client recognizes certain resource variables that can be assigned a
+value; see the client's manpage for a list.
+</p>
+
+<p><em class="emphasis">Toolkits</em> are a <a name="IXT-6-869" /> <a name="IXT-6-870" />mechanism for simplifying the design and
+coding of applications and making them operate in a consistent way.
+Toolkits provide a standard set of objects or widgets, such as menus,
+command buttons, dialog boxes, scrollbars, and so on. If a client was
+built with the X Toolkit, this should be noted on its manual page. In
+addition to certain application-specific resource variables, most
+clients that use the X Toolkit recognize a common set of resource
+variables.
+</p>
+
+<p>The most basic line you can have in a resource definition file
+consists of the name of a client, followed by a dot (.) or an
+asterisk (<tt class="literal">*</tt>), and the name of a variable. A colon
+(:) and whitespace separate the client and variable names from the
+actual value of the resource variable. The following line gives a
+scrollbar to all instances of the <i class="command">xterm</i> client:
+</p>
+
+<blockquote><pre class="code">xterm*scrollBar:        True</pre></blockquote>
+
+<p>If the name of the client is omitted, the variable is
+<em class="emphasis">global</em>: it applies to all instances of all
+clients (in this case, all clients that can have a scrollbar). If the
+same variable is specified as a global variable and a client-specific
+variable, the value of the client-specific variable takes precedence
+for that client. However, if the name of the client is omitted, the
+line should generally begin with an asterisk.
+</p>
+
+<p>Be sure not to omit the colon inadvertently at the end of a resource
+specification. This is an easy mistake to make, and the resource
+manager provides no error messages. If there is an error in a
+resource specification (including a syntax error such as the omission
+of the colon or a misspelling), the specification is ignored. The
+value you set will simply not take effect.
+</p>
+
+<p><a name="IXT-6-871" />A line starting with an
+<a name="IXT-6-872" />exclamation point
+(<tt class="literal">!</tt>) is ignored as a comment. If the last character
+on a line is a <a name="IXT-6-873" />backslash (<tt class="literal">\</tt>),
+the resource definition on that line is assumed to continue on the
+next line.<a name="IXTR3-964" /> <a name="IXTR3-965" /> 
+</p>
+
+<p><em class="emphasis">--VQ and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.2. Using xev to Learn Keysym Mappings</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.4. X Event Translations</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

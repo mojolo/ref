@@ -1,0 +1,131 @@
+<html><head><title>Basic Operation (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch18_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch18_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">18.3. Basic Operation</h2><p>This section outlines the steps to follow when using SCCS:</p>
+<ul><li><p>Creating an SCCS file</p>
+</li><li><p>Retrieving a file</p>
+</li><li><p>Creating new releases and branches</p>
+</li><li><p>Recording changes</p>
+</li><li><p>Caveats</p>
+</li></ul>
+
+<a name="unut-ch-18-sect-2.1" /><div class="sect2"><h3 class="sect2">18.3.1. Creating an SCCS File</h3><p>
+<a name="IXT-18-123489" />The <tt class="literal">admin</tt> command with the <tt class="literal">-i</tt> option 
+creates and initializes SCCS files.
+For example:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>admin -ich01 s.ch01</b></tt></pre></blockquote>
+<p>creates a new SCCS file and initializes it with the contents of
+<tt class="literal">ch01</tt>, which becomes <em class="emphasis">delta 1.1</em>.
+The message &#8220;No id
+keywords (cm7)&#8221; appears if you do not specify any keywords.  
+In general, &#8220;id keywords&#8221; refer to variables
+in the files that are replaced with appropriate values by <tt class="literal">get</tt>,
+identifying the date and time of creation, the version retrieved, 
+etc.  A listing of identification keywords occurs later in this chapter.</p>
+<p>Once the <tt class="literal">s.ch01</tt> file is created, the original <tt class="literal">ch01</tt> file
+can be removed, since it can be easily regenerated with the <tt class="literal">get</tt> 
+command.</p>
+</div>
+
+<a name="unut-ch-18-sect-2.2" /><div class="sect2"><h3 class="sect2">18.3.2. Retrieving a File</h3><p>
+<a name="IXT-18-123490" />
+<a name="IXT-18-123491" />
+<a name="IXT-18-123492" />The <tt class="literal">get</tt> command can retrieve any version of 
+a file from SCCS.  Using the example above, you can retrieve <tt class="literal">ch01</tt>
+by entering:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>get -e s.ch01</b></tt></pre></blockquote>
+<p>and the messages: </p>
+<blockquote><pre class="code">1.1
+new delta 1.2
+272 lines</pre></blockquote>
+<p>may appear.  This indicates that you are &#8220;getting&#8221; <em class="emphasis">delta 1.1</em>,
+and the resulting file has 272 lines of text.  When the file is
+<a name="IXT-18-123493" />
+<a name="IXT-18-123494" />
+<a name="IXT-18-123495" />
+reentered into the SCCS file <tt class="literal">s.ch01</tt> with the <tt class="literal">delta</tt> command,
+its changes are <em class="emphasis">delta 1.2</em>.</p>
+<p>The <tt class="literal">-e</tt> option indicates to SCCS that you intend to make 
+more changes to the file and then reenter it into SCCS.  
+Without this option, you will receive the file with read-only permissions.
+The <tt class="literal">-e</tt> option, besides releasing the file with read-write 
+permissions, also creates a file <tt class="literal">p.ch01</tt>, which records 
+information that is used by SCCS when the file is 
+returned.</p>
+</div>
+
+<a name="unut-ch-18-sect-2.3" /><div class="sect2"><h3 class="sect2">18.3.3. Creating New Releases and Branches</h3><p>The <tt class="literal">-r</tt> option to <tt class="literal">get</tt> tells SCCS what release and
+level number you want, but if no level is specified, it defaults
+to the highest level available. With the command:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>get -r3.2 ch01</b></tt></pre></blockquote>
+<p>delta 3.2 is the release.  However, the command:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>get -r3 ch01</b></tt></pre></blockquote>
+<p>returns the highest-numbered level in release 3,
+for example, <tt class="literal">3.8</tt>.  With the <tt class="literal">-r</tt>
+option omitted, <tt class="literal">get</tt> defaults to the highest release,
+highest level--in other words, the latest version.</p>
+<p>When major changes are in store for a file, you may want to begin a new
+release of the file by &#8220;getting&#8221; the file with the
+next highest release number.  For example, if the latest release of
+a file is 3.2, and you want to start release 4, enter:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>get -e -r4 ch01</b></tt></pre></blockquote>
+<p>You receive the message:</p>
+<blockquote><pre class="code">3.2
+new delta 4.1
+53 lines</pre></blockquote>
+<p>If you want to make a change to an older version of the same file, you can
+enter:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>get -e -r2.2 ch01</b></tt></pre></blockquote>
+<p>and receive the message:</p>
+<blockquote><pre class="code">2.2
+new delta 2.2.1.1
+121 lines</pre></blockquote>
+<p>You have now created a new branch from the trunk, stemming from
+version 2.2.  Changes in this delta
+will not affect those in the trunk deltas, i.e., 2.3, 3.1, etc.</p>
+</div>
+
+<a name="unut-ch-18-sect-2.4" /><div class="sect2"><h3 class="sect2">18.3.4. Recording Changes</h3><p>Once changes have been made to the SCCS file, return it to SCCS with:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>delta s.ch01</b></tt></pre></blockquote>
+<p>You are prompted for comments on the changes.  The <tt class="literal">delta</tt>
+<a name="IXT-18-123496" />
+command then does its own <tt class="literal">get</tt> and uses <tt class="literal">diff</tt> to compare 
+the new version of the file with the most recent version.
+It then prints messages giving the new release number
+and the number of lines that were inserted, deleted, and unchanged.</p>
+</div>
+
+<a name="unut-ch-18-sect-2.5" /><div class="sect2"><h3 class="sect2">18.3.5. Caveats</h3><p>Here are some things to bear in mind when using SCCS:</p>
+<ul><li><p>You can't store binary data in an SCCS file.
+Solaris SCCS allows it by encoding the file using <tt class="literal">uuencode</tt>.</p>
+</li><li><p>SCCS doesn't preserve the execute bit from the file permissions of
+files checked into it. This is important particularly for shell
+scripts: you have to explicitly make them executable after retrieving
+them from SCCS. This should be automated using <tt class="literal">make</tt>.</p>
+</li><li><p>Using ID keywords (see the next section) in
+your <em class="emphasis">printf</em>(3S) format strings can lead to
+disaster.  Find some indirect way to generate these strings for printing.</p>
+</li></ul>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch18_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch18_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">18.2. Overview of Commands</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">18.4. Identification Keywords</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

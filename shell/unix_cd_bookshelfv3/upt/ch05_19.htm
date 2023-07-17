@@ -1,0 +1,126 @@
+<html><head><title>Working with xclipboard (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.19. Working with xclipboard</h2>
+
+<p>The <i class="command">xclipboard</i><a name="upt3-IDXTERM-1045" /> <a name="upt3-IDXTERM-1046" />
+<a name="upt3-IDXTERM-1047" />
+client does exactly what you might think: it allows you to save
+multiple <b class="emphasis-bold">text selections</b> (<a href="ch05_13.htm#upt3-CHP-5-SECT-13">Section 5.13</a>) and <a name="upt3-IDXTERM-1048" /> <a name="upt3-IDXTERM-1049" />copy them to other windows. Text you copy
+from an <i class="command">xterm</i> window can be made the
+<a name="IXT-5-7491" />CLIPBOARD selection (and thus
+automatically appear in the <i class="command">xclipboard</i> window). To
+set this up, you first need to customize <i class="command">xterm</i>
+using resources.<a href="#FOOTNOTE-21">[21]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-21" /><p> [21]Since there can be only one
+CLIPBOARD selection at a time, you can only run one
+<i class="command">xclipboard</i> per display.</p> </blockquote>
+
+<p><a name="IXT-5-7492" />For text you copy from an
+<i class="command">xterm</i> to be pasted automatically into
+<i class="command">xclipboard</i>, the text must be made the CLIPBOARD
+selection. You set this up to happen by specifying a few <b class="emphasis-bold">translations</b> (<a href="ch05_04.htm#upt3-CHP-5-SECT-4">Section 6.4</a>)
+for <i class="command">xterm</i>.<a href="#FOOTNOTE-22">[22]</a> Here are the translations I use to
+coordinate <i class="command">xterm</i> with
+<i class="command">xclipboard</i>:
+</p><blockquote class="footnote"> <a name="FOOTNOTE-22" /><p> [22]If
+you're using a terminal emulator other than
+<i class="command">xterm</i>, the program should also allow this sort of
+customization. See the client manpage for the actions (the
+equivalents of <tt class="literal">select-end</tt> and
+<tt class="literal">insert-selection</tt>) to include in the translation
+table.</p> </blockquote>
+
+<blockquote><pre class="code">*VT100.Translations:    #override\
+    Button1 &lt;Btn3Down&gt;: select-end(primary,CUT_BUFFER0,CLIPBOARD)\n\
+    !Shift &lt;Btn2Up&gt;:    insert-selection(CLIPBOARD)\n\
+    ~Shift ~Ctrl ~Meta &lt;Btn2Up&gt;:  insert-selection(primary,CUT_BUFFER0)</pre></blockquote>
+
+<p>To let you store multiple text selections, the seemingly tiny
+<i class="command">xclipboard</i> actually provides multiple screens,
+each of which can be thought of as a separate buffer. Each time you
+use the pointer to make text the CLIPBOARD selection, the
+<i class="command">xclipboard</i> advances to a new screen in which it
+displays and stores the text. If you make a long selection, it might
+take up more than one screen, but the clipboard still considers it a
+single buffer. When you make a selection that extends beyond the
+bounds of the <i class="command">xclipboard</i> window (either
+horizontally, vertically, or both), <b class="emphasis-bold">scrollbars</b> (<a href="ch05_11.htm#upt3-CHP-5-SECT-11">Section 5.11</a>) will
+be activated in the window to allow you to view the entire selection.
+</p>
+
+<p>To the right of the command buttons is a tiny box that displays a
+number corresponding to the selection currently in the
+<i class="command">xclipboard</i> window. Once you have saved multiple
+selections, you can click on the client's
+<tt class="literal">Next</tt> and <tt class="literal">Prev</tt> command buttons
+to move forward and backward among these screens of text.
+</p>
+
+<p>If you've coordinated <i class="command">xterm</i> with
+<i class="command">xclipboard</i> using the guidelines outlined earlier,
+you paste the CLIPBOARD selection in an <i class="command">xterm</i>
+window by holding down the Shift key and clicking the second pointer
+button. When you paste the CLIPBOARD selection, you get the selection
+that's currently being displayed in the
+<i class="command">xclipboard</i> window. Here's where
+the client really comes in handy. Suppose you send four selections to
+<i class="command">xclipboard</i> and you want to paste #2. Just go back
+to selection #2 using the <tt class="literal">Prev</tt> command button;
+when you use the pointer command to paste the CLIPBOARD selection,
+selection #2 is pasted. In <a href="ch05_19.htm#upt3-CHP-5-FIG-4">Figure 5-4</a>,
+we've pasted selection #2 into a new file. (Notice
+that the text is too wide for the <i class="command">xclipboard</i>
+window and that a horizontal scrollbar has been provided so we can
+view the entire selection.)
+</p>
+
+<a name="upt3-CHP-5-FIG-4" /><div class="figure"><img src="figs/upt3_0504.gif" alt="Figure 5-4" width="442" /></div><h4 class="objtitle">Figure 5-4. Text you copy from an xterm appears in xclipboard</h4>
+
+<p>A selection remains available in <i class="command">xclipboard</i> until
+you <tt class="literal">Quit</tt> the program or use the
+<tt class="literal">Delete</tt> button to erase the current buffer.
+</p>
+
+<p>Use the <tt class="literal">Save</tt> command button to save the text in
+the current buffer to a file. A dialog will ask you to
+<tt class="literal">Accept</tt> or <tt class="literal">Cancel</tt> the save to a
+file with the default name <em class="emphasis">clipboard</em>. You can
+change the filename using <em class="emphasis">Text widget commands</em>
+[these are listed in the <i class="command">xedit</i>(1)
+manpage -- <em class="emphasis">JP</em>]. If you want to save multiple
+selections, you'll need to change the filename each
+time, or you'll overwrite the previous save.
+</p>
+
+<p>You can edit text you send to the <i class="command">xclipboard</i> using
+<a name="IXT-5-7493" />Text widget commands. When you edit
+a screenful of text, the <i class="command">xclipboard</i> continues to
+store the edited version until you delete it or exit the <a name="IXTR3-7521" /> <a name="IXTR3-7522" />program.<a name="IXTR3-7523" /> <a name="IXTR3-7524" /> <a name="IXTR3-7525" />
+</p>
+
+<p><em class="emphasis">--VQ and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_20.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.18. Changing Fonts Dynamically</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.20. Problems with Large Selections</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

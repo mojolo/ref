@@ -1,0 +1,452 @@
+<html><head><title>Job Control (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.2. Job Control</h2>
+
+<p>
+<a name="korn2-IDXTERM-1594" />
+
+
+Why should you care about process IDs or job numbers? Actually, you
+could probably get along fine in your Unix life without ever
+referring to process IDs (unless you use a windowing workstation -- as
+we'll see soon). Job numbers are more important, however:
+you can use them with the shell commands for <em class="emphasis">job control</em>.
+</p>
+
+
+
+<p>
+<a name="IXT-8-288024" />
+
+You already know the most obvious way to control a job:
+you can create one in the background with <tt class="literal">&amp;</tt>.
+<a name="IXT-8-288025" />
+Once a job is running in the background, you can let it run to
+completion, bring it into the <em class="emphasis">foreground</em>, or send
+it a message called a <em class="emphasis">signal</em>.
+</p>
+
+<a name="korn2-CHP-8-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">8.2.1. Foreground and Background</h3>
+
+<p>
+<a name="IXT-8-288026" />
+The built-in command <em class="emphasis">fg</em> brings a background job into the
+foreground.
+Normally this means that the job has control of your terminal
+or window and therefore is able to accept your input. In other
+words,
+the job begins to act as if you typed its command without the
+<tt class="literal">&amp;</tt>.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1598" />
+<a name="korn2-IDXTERM-1599" />
+
+<a name="IXT-8-288027" />
+<a name="IXT-8-288028" />
+
+If you have only one background job running, you can use
+<em class="emphasis">fg</em> without arguments, and the shell brings that
+job into the foreground.  But if you have several jobs running in the
+background, the shell picks the one that you put into the background
+most recently.  If you want a different job put into the foreground,
+you need to use the job's command name, preceded by a percent sign
+(<tt class="literal">%</tt>), or you can use its job number, also preceded
+by <tt class="literal">%</tt>, or its process ID without a percent sign.
+
+If you don't remember which jobs are running, you can use the
+<em class="emphasis">jobs</em> command to list them.
+</p>
+
+<p>
+A few examples should make this clearer. Let's say you created three
+background jobs as above. If you type <em class="emphasis">jobs</em>, you see
+this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+[1]   Running                  fred &amp;
+[2] - Running                  bob &amp;
+[3] + Running                  dave | george &amp;
+</pre></blockquote>
+</p>
+
+
+<p>
+<a name="IXT-8-288029" />
+
+<em class="emphasis">jobs</em> has a few interesting options.
+Besides the job status, <tt class="literal">jobs -l</tt> also
+lists process group IDs:
+</p>
+
+<p>
+<blockquote><pre class="code">
+[1]   2349      Running                  fred &amp;
+[2] - 2367      Running                  bob &amp;
+[3] + 2382      Running                  dave | george &amp;
+</pre></blockquote>
+</p>
+
+<p>
+How does all this work?  Every time you run a job, the process(es) in the
+job are put into a new <em class="emphasis">process group</em>.  Each process
+in a process group, besides its unique process ID number, also has
+a <em class="emphasis">process group ID</em>.  The process group ID is the
+same as the process ID of the process group <em class="emphasis">leader</em>,
+which is one of the processes invoked as part of the job. (The last one in
+the pipeline, in fact.)  The numbers that the shell prints are actually
+the process group IDs.  (Note that for job 3, there are two processes,
+but only one number.)
+</p>
+
+<p>
+Now, your terminal device, be it a real serial port or a pseudo-terminal such as
+you get in a windowing system or <em class="emphasis">telnet</em> session, also has
+a process group ID number.
+Processes whose process group ID matches that of the terminal "own"
+the terminal, in the sense that they are allowed to read input from it.
+In brief, job control works by setting the process group of the terminal to be
+the same as the process group of the current job.
+(There are lots more technical details, including the idea of a "session"
+introduced by POSIX, but those details aren't necessary for understanding the
+day-to-day use of job control.)
+</p>
+
+<p>
+<a name="IXTR3-330" />
+<a name="IXT-8-288030" />
+
+The <em class="emphasis">-p</em> option tells <em class="emphasis">jobs</em> to list <em class="emphasis">only</em> process group IDs:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>jobs -p</b></tt>
+2349
+2367
+2382
+</pre></blockquote>
+</p>
+
+<p>
+This could be useful with command substitution; see
+<a href="ch08_03.htm#korn2-CHP-8-SIDEBAR-1">Task 8-1</a> later in this chapter.
+<a name="IXT-8-288031" />
+
+Finally, the <em class="emphasis">-n</em> option lists only those jobs whose status has changed
+since the shell last reported it -- whether with a <em class="emphasis">jobs</em> command or
+otherwise.
+</p>
+
+<p>
+<a name="IXT-8-288032" />
+If you type <em class="emphasis">fg</em> without an argument,
+the shell puts <tt class="literal">dave | george</tt>
+in the foreground, because it was put in the background most recently.
+But if you type <tt class="literal">fg %bob</tt> (or <tt class="literal">fg %2</tt>),
+<em class="emphasis">bob</em> will go in the foreground.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1607" />
+<a name="korn2-IDXTERM-1608" />
+
+You can also refer to the job most recently put in the background
+by <tt class="literal">%+</tt>. Similarly, <tt class="literal">%-</tt> refers to the background
+job invoked <em class="emphasis">next</em>-most recently (<em class="emphasis">bob</em>
+in this case). That explains the plus and minus signs in the above:
+the plus sign shows the most recently invoked job; the minus
+sign shows the next most recently invoked job.<a href="#FOOTNOTE-113">[113]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-113" /><p> [113]
+This is analogous to <tt class="literal">~+</tt> and <tt class="literal">~-</tt> as references to the
+current and previous directory; see the footnote
+in <a href="ch07_01.htm">Chapter 7</a>. Also: <tt class="literal">%%</tt>
+is a synonym for <tt class="literal">%+</tt>.
+</p>
+</blockquote>
+
+<p>
+
+If more than one background job has the same command, then
+<tt class="literal">%</tt><em class="replaceable"><tt>command</tt></em> will disambiguate by choosing the most recently
+invoked
+job (as you'd expect). If this isn't what you want, you need to use
+the job number instead of the command name.
+
+However, if the commands
+have different <em class="emphasis">arguments</em>, you can use <tt class="literal">%?</tt><em class="replaceable"><tt>string</tt></em>
+instead of <tt class="literal">%</tt><em class="replaceable"><tt>command</tt></em>.
+<tt class="literal">%?</tt><em class="replaceable"><tt>string</tt></em> refers to the
+job whose command contains the string.
+For example, assume you
+started these background jobs:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>bob pete &amp;</b></tt>
+[1]     189
+$ <tt class="userinput"><b>bob ralph &amp;</b></tt>
+[2]     190
+$
+</pre></blockquote>
+</p>
+
+<p>
+Then you can use <tt class="literal">%?pete</tt>
+and <tt class="literal">%?ralph</tt> to refer to each of
+them, although actually <tt class="literal">%?pe</tt> and <tt class="literal">%?ra</tt>
+are sufficient to disambiguate.
+</p>
+
+<p>
+<a href="ch08_02.htm#korn2-CHP-8-TABLE-1">Table 8-1</a>
+lists all of the ways to refer to background jobs.
+We have found that, given how infrequently people use job control
+commands,
+job numbers or command names are sufficient, and the other ways
+are superfluous.
+</p>
+
+<a name="korn2-CHP-8-TABLE-1" /><h4 class="objtitle">Table 8-1. Ways to refer to background jobs</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Reference</th>
+<th>Background job</th>
+</tr>
+
+
+
+
+<tr>
+<td><em class="replaceable"><tt>N</tt></em></td>
+<td>Process ID <em class="emphasis">N</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">-</tt><em class="replaceable"><tt>N</tt></em></td>
+<td>Process group ID <em class="emphasis">N</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">%</tt><em class="replaceable"><tt>N</tt></em></td>
+<td>Job number <em class="emphasis">N</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">%</tt><em class="replaceable"><tt>string</tt></em></td>
+<td>Job whose command begins with <em class="emphasis">string</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">%?</tt><em class="replaceable"><tt>string</tt></em></td>
+<td>Job whose command contains <em class="emphasis">string</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">%+</tt>, <tt class="literal">%%</tt></td>
+<td>Most recently invoked background job</td>
+</tr>
+
+<tr>
+<td><tt class="literal">%-</tt></td>
+<td>Second most recently invoked background job</td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXTR3-331" />
+<a name="IXTR3-332" />
+<a name="IXTR3-333" />
+<a name="IXTR3-334" />
+
+</p>
+</div>
+
+
+
+
+<a name="korn2-CHP-8-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">8.2.2. Suspending a Job</h3>
+
+<p>
+<a name="korn2-IDXTERM-1613" />
+<a name="IXT-8-288033" />
+<a name="IXT-8-288034" />
+
+Just as you can put background jobs into the foreground with <em class="emphasis">fg</em>,
+you can also put a foreground job into the background.
+This involves suspending the job, so that the shell regains control
+of your terminal.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1616" />
+To suspend a job, type CTRL-Z<a href="#FOOTNOTE-114">[114]</a>
+while it is running.
+<a name="IXT-8-288036" />
+
+This is analogous to typing CTRL-C (or whatever
+your interrupt key is), except that you can resume the job
+after you have stopped it.
+When you type CTRL-Z, the shell responds with
+a<?troff .ne 10?> message like this:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-114" /><p> [114]
+<a name="IXT-8-288035" />
+
+This assumes that the CTRL-Z key is set up as your suspend key;
+just as with CTRL-C and interrupts, this is
+conventional but by no means required.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+[1] + Stopped                   <em class="replaceable"><tt>command</tt></em>
+</pre></blockquote>
+</p>
+
+<p>
+Then it gives you your prompt back.
+It also puts the suspended job at the top of the job list, as indicated
+by the <tt class="literal">+</tt> sign.
+<a name="IXTR3-335" />
+
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1620" />
+<a name="korn2-IDXTERM-1621" />
+To resume a suspended job so that it continues to run
+in the foreground, just type <em class="emphasis">fg</em>. If, for some reason,
+you put other jobs in the background after you typed CTRL-Z,
+use <em class="emphasis">fg</em>
+with a job name or number. For example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+<i class="lineannotation">fred is running ...</i>
+<tt class="userinput"><b>CTRL-Z</b></tt>
+[1] + Stopped                   fred
+$ <tt class="userinput"><b>bob &amp;</b></tt>
+[2]     bob &amp;
+$ <tt class="userinput"><b>fg %fred</b></tt>
+<i class="lineannotation">fred resumes in the foreground ...</i>
+</pre></blockquote>
+</p>
+
+<p>
+The ability to suspend jobs and resume them in the foreground
+comes in very handy when you
+only have a single connection to your system,<a href="#FOOTNOTE-115">[115]</a>
+and
+you are using a text editor like <em class="emphasis">vi</em> on a file that needs to be
+processed.
+For example, if you are editing an HTML file for your web server,
+you can do the following:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-115" /><p> [115]
+Such as when
+you're dialed in from home to your office,
+or connected to a remote system over the Internet
+via <em class="emphasis">telnet</em> or <em class="emphasis">ssh</em>.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>vi myfile.html</b></tt>
+<i class="lineannotation">Edit the file ...</i>  <tt class="userinput"><b>CTRL-Z</b></tt>
+[1] + Stopped                  vi myfile.html
+$ <tt class="userinput"><b>lynx myfile.html</b></tt>       <i class="lineannotation">Preview results with a text-only browser</i>
+<i class="lineannotation">You see that you made a mistake</i>
+$ <tt class="userinput"><b>fg</b></tt>
+<i class="lineannotation">vi comes back up in the same place in your file</i>
+</pre></blockquote>
+</p>
+
+<p>
+Programmers often use the same technique when debugging source code.
+</p>
+
+<p>
+<a name="IXTR3-336" />
+
+
+You will probably also find it useful to suspend a job and resume it
+in the background instead of the foreground.
+You may start a command in the foreground (i.e., normally) and find that
+it takes
+much longer than you expected -- for example, a <em class="emphasis">grep</em>, <em class="emphasis">sort</em>,
+or database query.
+<a name="IXT-8-288037" />
+You need the command to finish, but you would
+also like control of your terminal back so that you can do other work.
+If you type CTRL-Z followed by <em class="emphasis">bg</em>, you move the job to the
+background.<a href="#FOOTNOTE-116">[116]</a>
+<a name="IXTR3-337" />
+<a name="IXTR3-338" />
+
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-116" /><p> [116]
+
+Be warned, however, that not all commands are "well-behaved"
+when you do this. Be especially careful with commands that run over
+a network on a remote machine; you may end up "confusing" the remote
+program.
+</p>
+</blockquote>
+</div>
+
+<a name="korn2-CHP-8-SECT-2.3" /><div class="sect2">
+<h3 class="sect2">8.2.3. Disowning a Job</h3>
+
+<p>
+
+Normally, when you log out, the shell sends the HUP signal (see
+the next section) to any background jobs.  If you've started a long-running
+job in the background and want it to complete no matter what, you should
+indicate this to the shell using the <em class="emphasis">disown</em> command
+with one or more job ID numbers as arguments.  With no arguments, <em class="emphasis">all</em>
+background jobs are disowned.
+<a name="IXTR3-339" />
+<a name="IXTR3-340" />
+<a name="IXTR3-341" />
+
+</p>
+
+</div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8. Process Handling</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.3. Signals</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

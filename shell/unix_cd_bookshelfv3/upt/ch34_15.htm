@@ -1,0 +1,262 @@
+<html><head><title>Transforming Part of a Line (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.15. Transforming Part of a Line</h2>
+
+<p><a name="upt3-IDXTERM-5276" /> <a name="upt3-IDXTERM-5277" /> <a name="upt3-IDXTERM-5278" />The <b class="emphasis-bold">transform
+command, y</b> (<a href="ch34_13.htm#upt3-CHP-34-SECT-13">Section 34.13</a>), acts on the
+entire contents of the pattern space. It is something of a chore to
+do a letter-by-letter transformation of a portion of the line, but it
+is possible (though convoluted) as the following example
+demonstrates. [The real importance of this example is probably not
+the use of the <em class="emphasis">y</em> command, but the use of the
+<a name="upt3-IDXTERM-5279" />hold space to isolate and preserve part
+of the line.  -- <em class="emphasis">TOR</em>]
+</p>
+
+<p><a name="IXT-34-762" />While working on a programming guide,
+we found that the names of statements were entered inconsistently.
+They needed to be uppercase, but some were lowercase while others had
+an initial capital letter. While the task was simple -- to
+capitalize the name of the statement -- there were nearly a
+hundred statements and it seemed a tedious project to write that many
+explicit substitutions of the form:
+</p>
+
+<blockquote><pre class="code">s/find the Match statement/find the MATCH statement/g</pre></blockquote>
+
+<p>The transform command could do the lowercase-to-uppercase conversion,
+but it applies the conversion to the entire line. The hold space
+makes this task possible because we use it to store a copy of the
+input line while we isolate and convert the statement name in the
+pattern space. Look at the script first:
+</p>
+
+<blockquote><pre class="code"># capitalize statement names
+/the .* statement/{
+    h
+    s/.*the \(.*\) statement.*/\1/
+    y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/
+    G
+    s/\(.*\)\n\(.*the \).*\( statement.*\)/\2\1\3/
+}</pre></blockquote>
+
+<p>The address limits the procedure to lines that match <tt class="literal">the .*
+statement</tt>. Let's look at what each command
+does:
+</p>
+
+<dl>
+<dt><tt class="literal">h</tt></dt>
+<dd>
+The hold command copies the current input line into the hold space.
+Using the sample line <tt class="literal">find the Match statement</tt>,
+we'll show what the contents of the pattern space
+and hold space contain. After the <em class="emphasis">h</em></tt> command, the
+pattern space and hold space are identical.
+</p>
+
+<a name="ch34-3-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+<tr>
+<td>
+<p>Pattern space</p>
+</td>
+<td>
+<blockquote><pre class="code">find the Match statement</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p>Hold space</p>
+</td>
+<td>
+<blockquote><pre class="code">find the Match statement</pre></blockquote>
+</td>
+</tr>
+
+</table><p>
+</dd>
+
+
+<dt><tt class="literal">s/.*the \(.*\) statement.*/\1/</tt></dt>
+<dd>
+The substitute command extracts the name of the statement from the
+line and replaces the entire line with it.
+</p>
+
+<a name="ch34-4-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+<tr>
+<td>
+<p>Pattern space</p>
+</td>
+<td>
+<blockquote><pre class="code">Match</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p>Hold space</p>
+</td>
+<td>
+<blockquote><pre class="code">find the Match statement</pre></blockquote>
+</td>
+</tr>
+
+</table><p>
+</dd>
+
+
+<dt><tt class="literal">y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/</tt> </dt>
+<dd>
+The transform command changes each lowercase letter to an uppercase
+letter.
+</p>
+
+<a name="ch34-5-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+<tr>
+<td>
+<p>Pattern space</p>
+</td>
+<td>
+<blockquote><pre class="code">MATCH</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p>Hold space</p>
+</td>
+<td>
+<blockquote><pre class="code">find the Match statement</pre></blockquote>
+</td>
+</tr>
+
+</table><p>
+</dd>
+
+
+<dt><tt class="literal">G</tt></dt>
+<dd>
+The <a name="IXT-34-763" /><a name="IXT-34-764" />Get
+command appends the line saved in the hold space to the pattern
+space. The embedded newline from the Get command is shown as
+<tt class="literal">\n</tt>.
+</p>
+
+<a name="ch34-6-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+<tr>
+<td>
+<p>Pattern space</p>
+</td>
+<td>
+<blockquote><pre class="code">MATCH\nfind the Match statement</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p>Hold space</p>
+</td>
+<td>
+<blockquote><pre class="code">find the Match statement</pre></blockquote>
+</td>
+</tr>
+
+</table><p>
+</dd>
+
+
+<dt><tt class="literal">s/\(.*\)\n\(.*the \).*\( statement.*\)/\2\1\3/</tt></dt>
+<dd>
+The substitute command matches three different parts of the pattern
+space: (1) all characters up to the embedded newline, (2) all
+characters following the embedded newline and up to and including
+<tt class="literal">the</tt> followed by a space, and (3) all characters
+beginning with a space and followed by <tt class="literal">statement</tt>
+up to the end of the pattern space. The name of the statement as it
+appeared in the original line is matched but not saved. The
+replacement section of this command recalls the saved portions and
+reassembles them in a different order, putting the capitalized name
+of the command in between <tt class="literal">the</tt> and
+<tt class="literal">statement</tt>.
+</p>
+
+<a name="ch34-7-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+<tr>
+<td>
+<p>Pattern space</p>
+</td>
+<td>
+<blockquote><pre class="code">find the MATCH statement</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p>Hold space</p>
+</td>
+<td>
+<blockquote><pre class="code">find the Match statement</pre></blockquote>
+</td>
+</tr>
+
+</table><p>
+</dd>
+
+</dl>
+
+<p>Let's look at a test run. Here's
+our sample file:
+</p>
+
+<blockquote><pre class="code">find the Match statement
+Consult the Get statement.
+using the Read statement to retrieve data</pre></blockquote>
+
+<p>Running the script on the sample file produces:</p>
+
+<blockquote><pre class="code">find the MATCH statement
+Consult the GET statement.
+using the READ statement to retrieve data</pre></blockquote>
+
+<p>As you can see from this script, the hold space can be skillfully
+used to isolate and manipulate portions of the input <a name="IXTR3-820" />line. <a name="IXTR3-821" /> <a name="IXTR3-822" /> <a name="IXTR3-823" />
+</p>
+
+<p> <em class="emphasis">-- DD</em></tt></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_14.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_16.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.14. Hold Space: The Set-Aside Buffer</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.16. Making Edits Across Line Boundaries</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

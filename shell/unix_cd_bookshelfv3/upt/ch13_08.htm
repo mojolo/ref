@@ -1,0 +1,116 @@
+<html><head><title>GNU Context greps (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.8. GNU Context greps</h2>
+
+<p><a name="IXT-13-5888" /> <a name="IXT-13-5889" />By default, standard
+<i class="command">grep</i> utilities show only the lines of text that
+match the search pattern. Sometimes, though, you need to see the
+matching line's context: the lines before or after
+the matching line. The GNU <i class="command">grep</i>s
+(<i class="command">grep</i>, <i class="command">fgrep</i>, and
+<i class="command">egrep</i>) can do this. There are three context grep
+options:
+</p>
+
+<ul><li>
+<p>The <span class="option">-C</span><a name="IXT-13-5890" />
+option shows two lines of context around each match; you can also
+give a numeric argument, such as <tt class="literal">-C 4</tt>, to choose
+how many lines of context (here, four).
+</p>
+</li><li>
+<p>The<a name="IXT-13-5891" />
+<span class="option">-B</span> option shows context before each match. A numeric
+argument, such as <tt class="literal">-B 2</tt> for two lines of context,
+is required.
+</p>
+</li><li>
+<p>The <span class="option">-A</span><a name="IXT-13-5892" />
+option shows context after each match. A numeric argument, such as
+<tt class="literal">-A 3</tt> for three lines of context, is required.
+</p>
+</li></ul>
+<p>Each set of contiguous matching lines is separated by a line of two
+dashes (<tt class="literal">--</tt>).
+</p>
+
+<p>Let's look at an example: I'd like
+to search my system mail log for all messages sent to anyone at
+<em class="emphasis">oreilly.com</em>. But <i class="command">sendmail</i>
+doesn't put all information about a message on the
+<tt class="literal">to=</tt> log line; some info is in the
+<tt class="literal">from=</tt> line, which is usually the previous line. So
+I'll search for all
+"to" lines and add one line of
+context before each match. I'll also use the
+<span class="option">-n</span>, which numbers the output lines, to make the
+context easier to see. This option also puts marker characters after
+the line number: a line number ends with a colon (:) if this line
+contains a match, and a dash (<tt class="literal">-</tt>) marks lines
+before or after a match. Here goes:
+</p>
+
+<blockquote><pre class="code"># <tt class="userinput"><b>grep -n -B 1 'to=&lt;[^@]*@oreilly\.com&gt;' maillog</b></tt>
+7-Nov 12 18:57:42 jpeek sendmail[30148]: SAA30148: from=&lt;jpeek@jpeek.com&gt;...
+8:Nov 12 18:57:43 jpeek sendmail[30150]: SAA30148: to=&lt;al@oreilly.com&gt;...
+9-Nov 12 22:49:51 jpeek sendmail[1901]: WAA01901: from=&lt;jpeek@jpeek.com&gt;...
+10:Nov 12 22:49:51 jpeek sendmail[1901]: WAA01901: to=&lt;wfurby@oreilly.com&gt;...
+11:Nov 12 22:50:23 jpeek sendmail[2000]: WAA01901: to=&lt;wfurby@oreilly.com&gt;...
+--
+25-Nov 13 07:42:38 jpeek sendmail[9408]: HAA09408: from=&lt;jpeek@jpeek.com&gt;...
+26:Nov 13 07:42:44 jpeek sendmail[9410]: HAA09408: to=&lt;al@oreilly.com&gt;...
+27-Nov 13 08:08:36 jpeek sendmail[10004]: IAA10004: from=&lt;jpeek@jpeek.com&gt;...
+28:Nov 13 08:08:37 jpeek sendmail[10006]: IAA10004: to=&lt;wfurby@oreilly.com&gt;...
+--
+32-Nov 13 11:59:46 jpeek sendmail[14473]: LAA14473: from=&lt;jpeek@jpeek.com&gt;...
+33:Nov 13 11:59:47 jpeek sendmail[14475]: LAA14473: to=&lt;al@oreilly.com&gt;...
+34-Nov 13 15:34:17 jpeek sendmail[18272]: PAA18272: from=&lt;jpeek@jpeek.com&gt;...
+35:Nov 13 15:34:19 jpeek sendmail[18274]: PAA18272: to=&lt;al@oreilly.com&gt;...</pre></blockquote>
+
+<p>I've truncated each line for printing, but you still
+can see the matches. A few notes about what's
+happening here:
+</p>
+
+<ul><li>
+<p>Line 8 matches (so it has a colon after its line number), and line 7
+is the line of context before (so it starts with a dash).
+</p>
+</li><li>
+<p>Note that a line is never shown more than once, as you can see in
+lines 9 through 11: lines 10 and 11 both match, so they both have
+colons. But because line 10 has already been shown once,
+it's not repeated as the line
+"before" line 11.
+</p>
+</li><li>
+<p>There are no matches on line 12, so a line of two dashes is printed
+as a separator. The next match is on line 26.
+</p>
+</li></ul>
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.7. Search RCS Files with rcsgrep</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.9. A Multiline Context grep Using sed</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

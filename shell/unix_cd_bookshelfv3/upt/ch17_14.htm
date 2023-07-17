@@ -1,0 +1,157 @@
+<html><head><title>Useful Global Commands (with Pattern Matches) (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch17_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch17_15.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">17.14. Useful Global Commands (with Pattern Matches)</h2>
+
+<p><a name="upt3-IDXTERM-2497" /> <a name="upt3-IDXTERM-2498" /> <a name="upt3-IDXTERM-2499" /> <a name="upt3-IDXTERM-2500" />The best way to learn pattern matching is
+by example, so here's a short list of pattern-matching examples with
+explanations. (<a href="ch32_21.htm#upt3-CHP-32-SECT-21">Section 32.21</a> has a list of
+these patterns.) Study the syntax carefully so you understand the
+principles at work. You should then be able to adapt these examples
+to your own situation.
+</p>
+
+<ol><li>
+<p>Change all occurrences of the word <em class="emphasis">help</em> (or
+<em class="emphasis">Help</em>) to <em class="emphasis">HELP</em>:
+</p>
+<p><tt class="literal">%</tt> <a href="ch20_03.htm#upt3-CHP-20-SECT-3">Section 20.3</a></p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:%s/[Hh]elp/HELP/g</b></tt></pre></blockquote>
+<p>or:</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:%s/[Hh]elp/\U&amp;/g</b></tt></pre></blockquote>
+
+<p>The <tt class="literal">\U</tt> changes the pattern that follows to all
+uppercase. The pattern that follows is the repeated search pattern,
+which is either <em class="emphasis">help</em> or
+<em class="emphasis">Help</em>.
+</p>
+</li>
+
+<li>
+<p><a name="IXT-17-1459" />Replace one or more spaces
+following a colon (:) or a period (.) with two spaces (here a space
+is marked by a <tt class="literal"><img src="figs/squ.gif"></tt>):
+</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:%s/\([:.]\)</b></tt><img src="figs/squ.gif"><img src="figs/squ.gif">*/\1<img src="figs/squ.gif"><img src="figs/squ.gif">/g</pre></blockquote>
+
+<p>Either of the two characters within brackets can be matched. This
+character is saved into a <b class="emphasis-bold">hold buffer, using \(
+and \)</b> (<a href="ch34_11.htm#upt3-CHP-34-SECT-11">Section 34.11</a>) and restored on the
+right-hand side by the <tt class="literal">\1</tt>. Note that most
+metacharacters lose their special meanings inside brackets -- so
+the dot does not need to be escaped with a backslash
+(<tt class="literal">\</tt>).
+</p>
+</li>
+
+<li>
+<p>Delete all blank lines:</p>
+
+<p><tt class="literal">g</tt> <a href="ch20_04.htm#upt3-CHP-20-SECT-4">Section 20.4</a></p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:g/^$/d</b></tt></pre></blockquote>
+
+<p>What you are actually matching here is the beginning of the line
+(<tt class="literal">^</tt>), followed by the end of the line
+(<tt class="literal">$</tt>), with nothing in between.
+</p>
+</li>
+
+<li>
+<p>Delete all blank lines, plus any lines that contain only whitespace:</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:g/^[</b></tt><img src="figs/squ.gif"><em class="replaceable"><tt>tab</tt></em><tt class="userinput"><b>]*$/d</b></tt></pre></blockquote>
+
+<p>(In the previous line, a TAB character is shown as
+<em class="replaceable"><tt>tab</tt></em>.) A line may appear to be blank, but
+may in fact contain spaces or tabs. The previous numbered example
+will not delete such a line. This example, like the previous one,
+searches for the beginning and end of the line. But instead of having
+nothing in between, the pattern tries to find any number of spaces or
+tabs. If no spaces or tabs are matched, the line is blank. To delete
+lines that contain whitespace but that <em class="emphasis">aren't</em>
+blank, you would have to match lines with <em class="emphasis">at
+least</em> one space or tab:
+</p>
+<blockquote><pre class="code"><tt class="userinput"><b>:g/^[</b></tt><img src="figs/squ.gif"><em class="replaceable"><tt>tab</em><tt class="userinput"><b>][</b></tt><img src="figs/squ.gif"><em class="replaceable">tab</tt></em><tt class="userinput"><b>]*$/d</b></tt></pre></blockquote>
+</li>
+
+<li>
+<p>This example and the next both refer to a line in a
+<i class="command">troff</i>-formatted document like this A-level
+(top-level) heading macro call:
+</p>
+
+<blockquote><pre class="code">.Ah "Budget Projections" "for 2001-2002"</pre></blockquote>
+
+<p>To match the first quoted argument of all section header
+(<tt class="literal">.Ah</tt>) macros and replace each line with this
+argument:
+</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:%s/^\.Ah "\([^"]*\)" .*/\1/</b></tt></pre></blockquote>
+
+<p>this example macro call would be changed to simply:</p>
+
+<blockquote><pre class="code">Budget Projections</pre></blockquote>
+
+<p>The substitution assumes that the <tt class="literal">.Ah</tt> macro can
+have more than one argument surrounded by quotes. You want to match
+everything between quotes, but only up to the
+<em class="emphasis">first</em> closing quote. As <a href="ch32_18.htm#upt3-CHP-32-SECT-18">Section 32.18</a> explains, using <tt class="literal">".*"</tt> would
+be wrong because it would match all arguments on the line. What you
+do is match a series of characters that <em class="emphasis">aren't</em>
+quotes, <tt class="literal">[^"]*</tt>. The pattern
+<tt class="literal">"[^"]*"</tt> matches a quote, followed by any number of
+nonquote characters, followed by a quote. Enclose the first argument
+in <tt class="literal">\(</tt> and <tt class="literal">\)</tt> so that it can be
+replayed using <tt class="literal">\1</tt>.
+</p>
+</li><li>
+<p>Same as previous, except preserve the original lines by copying them:</p>
+
+<blockquote><pre class="code"><tt class="userinput"><b>:g/^\.Ah/t$ | s/\.Ah "\([^"]*\)" .*/\1/</b></tt></pre></blockquote>
+
+<p>In <i class="command">ex</i>, the vertical bar
+(<tt class="literal">|</tt><a name="IXT-17-1460" />) is a command separator that works
+like a <b class="emphasis-bold">semicolon</b>
+(<tt class="literal">;</tt>) (<a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a>) on a Unix
+command line. The first part, <tt class="literal">:g/^\.Ah/t$</tt>, matches
+all lines that begin with a <tt class="literal">.Ah</tt> macro, uses the
+<tt class="literal">t</tt> command to copy these lines, and places the
+copies after the last line (<tt class="literal">$</tt>) of the file. The
+second part is the same as in the previous example, except that the
+substitutions are performed on copies at the end of the file. The
+original lines are unchanged.
+</p>
+</li></ol>
+<p><em class="emphasis">--TOR and DG<a name="IXTR3-1526" /> <a name="IXTR3-1527" /> <a name="IXTR3-1528" /> <a name="IXTR3-1529" />, from <em class="emphasis">Learning the vi
+Editor</em> (O'Reilly, 1998)</em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch17_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch17_15.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">17.13. Moving Blocks of Text by Patterns</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">17.15. Counting Occurrences; Stopping Search Wraps</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

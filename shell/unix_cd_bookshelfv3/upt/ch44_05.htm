@@ -1,0 +1,109 @@
+<html><head><title>Filesystem Types and /etc/fstab (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch44_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch44_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">44.5. Filesystem Types and /etc/fstab</h2>
+
+<p><a name="IXT-44-2150" /><a name="IXT-44-2151" /><a name="IXT-44-2152" /> <a name="IXT-44-2153" />A <em class="emphasis">filesystem</em> is the
+scheme used to organize files on the disk. In the Windows world, FAT,
+FAT32, and NTFS are all filesystems. Various Unixes have their own
+filesystems with a forest of names: <em class="emphasis">ufs</em>,
+<em class="emphasis">ext2fs</em>, <em class="emphasis">vxfs</em>,
+<em class="emphasis">ffs</em>, <em class="emphasis">nfs</em>,
+<em class="emphasis">mfs</em>, <em class="emphasis">ISO9660</em> (which most
+CD-ROMs use) and special filesystems like <em class="emphasis">tmpfs</em>,
+<em class="emphasis">procfs</em>, and <em class="emphasis">devfs</em>.
+</p>
+
+<p>Filesystems like <em class="emphasis">ufs</em> (Unix File System),
+<em class="emphasis">ffs</em> (Fast File System),
+<em class="emphasis">vxfs</em> (Veritas Extended File System), and
+<em class="emphasis">ext2fs</em> (Extended File System, Version 2) are
+simply ways of organizing inodes and bytes with various strengths and
+weaknesses. <em class="emphasis">nfs</em> (Network File System) is a
+filesystem for making remote files appear to be available locally.
+<em class="emphasis">mfs</em> (Memory File System) is a filesystem for
+ramdisks, that is, file storage in memory instead of on disk.
+<em class="emphasis">tmpfs</em> (Temporary File System) is a file system
+often used for /tmp which shares filespace and swap space
+dynamically. <em class="emphasis">procfs</em> (Process File System)
+simulates a filesystem, but with process information in it instead of
+files. (<em class="emphasis">procfs</em> on Linux is different from
+<em class="emphasis">procfs</em> on the BSDs; FreeBSD has a
+<em class="emphasis">linprocfs</em> to simulate part of
+Linux's <em class="emphasis">procfs</em>.)
+<em class="emphasis">devfs</em> is similar, but for devices instead of
+processes.
+</p>
+
+<p><a name="IXT-44-2154" /> <a name="IXT-44-2155" />Standard mounts are configured using
+<em class="filename">/etc/fstab</em> (or, on some platforms,
+<em class="filename">/etc/vfstab</em>). <em class="filename">fstab</em> is just
+a list of filesystems that should be mounted, along with where they
+should get mounted, what type of filesystem each device contains, and
+any options. My FreeBSD <em class="filename">fstab</em> looks like this:
+</p>
+
+<blockquote><pre class="code"># Device                Mountpoint      FStype  Options         Dump    Pass#
+/dev/ad0s1b             none            swap    sw              0       0
+/dev/ad2s1b             none            swap    sw              0       0
+/dev/ad0s1a             /               ufs     rw              1       1
+/dev/ad2s1e             /home           ufs     rw              2       2
+/dev/ad0s1f             /usr            ufs     rw              2       2
+/dev/ad0s1e             /var            ufs     rw              2       2
+/dev/acd0c              /cdrom          cd9660  ro,noauto       0       0
+proc                    /proc           procfs  rw              0       0</pre></blockquote>
+
+<p>I have two swap partitions, <em class="filename">/dev/ad0s1b</em> and
+<em class="filename">/dev/ad2s1b</em>. My <em class="filename">/</em>,
+<em class="filename">/home</em>, <em class="filename">/usr</em>, and
+<em class="filename">/var</em> are all separate <em class="emphasis">ufs</em>
+filesystems, and I have a
+<a name="IXT-44-2156" />CD-ROM
+that can be mounted on <em class="filename">/cdrom</em> (but must be
+<b class="emphasis-bold">manually mounted</b> (<a href="ch44_06.htm#upt3-CHP-44-SECT-6">Section 44.6</a>)) and a standard <em class="emphasis">procfs</em>.
+The last two columns determine priority for backups and for being
+consistency checked by <i class="command">fsck</i>. The
+<em class="emphasis">ufs</em> filesystems are all
+<i class="command">fsck</i>ed, with <em class="filename">/</em> first; the
+rest of my filesystems are types that don't need to
+be <i class="command">fsck</i>ed.
+</p>
+
+<p>On other platforms, the options may be different, and the device
+names will certainly be different, but the basic gist of
+<em class="filename">fstab</em> will be the same.
+</p>
+
+<p>Some filesystem types support "soft
+updates," which changes slightly the way the
+filesystem writes files out to the disk and can dramatically increase
+your effective disk speed. Consider looking at the documentation for
+your platform and turning on soft updates (generally this is done via
+<i class="command">tunefs</i>).
+</p>
+
+<p> <em class="emphasis">-- DJPH</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch44_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch44_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">44.4. Disk Partitioning</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">44.6. Mounting and Unmounting Removable Filesystems</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

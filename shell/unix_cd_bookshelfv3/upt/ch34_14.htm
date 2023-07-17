@@ -1,0 +1,243 @@
+<html><head><title>Hold Space: The Set-Aside Buffer (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch34_15.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">34.14. Hold Space: The Set-Aside Buffer</h2>
+
+<p><a name="IXT-34-753" /> <a name="IXT-34-754" /><a name="IXT-34-755" /><a name="IXT-34-756" />The
+<em class="emphasis">pattern space</em> is a buffer that contains the
+current input line. There is also a set-aside buffer called the
+<em class="emphasis">hold space</em><a name="upt3-IDXTERM-5265" /> <a name="upt3-IDXTERM-5266" />. The contents of the pattern
+space can be copied to the hold space, and the contents of the hold
+space can be copied to the pattern space. A group of commands allows
+you to move data between the hold space and the pattern space. The
+hold space is used for temporary storage, and that's
+it. Individual commands can't address the hold space
+or alter its contents.
+</p>
+
+<p>The most frequent use of the hold space is to have it retain a
+duplicate of the current input line while you change the original in
+the pattern space. [It's also used as a way to do
+the "move" and
+"copy" commands that most editors
+have -- but which <i class="command">sed</i> can't do
+directly because it's designed for editing a stream
+of input text line-by-line.  <em class="emphasis">-- GU</em>] The
+commands that affect the hold space are:
+</p>
+
+<a name="ch34-2-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<td>
+<p><b class="emphasis-bold">Hold</b></p>
+</td>
+<td>
+<p><em class="emphasis">h</em></p>
+</td>
+<td>
+<p>Copy contents of pattern space to hold space, replacing previous.</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">H</em></p>
+</td>
+<td>
+<p>Append newline, then append contents of pattern space, to hold space.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><b class="emphasis-bold">Get</b></p>
+</td>
+<td>
+<p><em class="emphasis">g</em></p>
+</td>
+<td>
+<p>Copy contents of hold space to pattern space, replacing previous.</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p><em class="emphasis">G</em></p>
+</td>
+<td>
+<p>Append newline, then append contents of hold space, to pattern space.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><b class="emphasis-bold">Exchange</b></p>
+</td>
+<td>
+<p>x</p>
+</td>
+<td>
+<p>Swap contents of hold space and pattern space.</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>Each of these commands can take an address that specifies a single
+line or a range of lines. The <a name="IXT-34-757" /> <a name="IXT-34-758" />hold commands
+(<em class="emphasis">h</em>, <em class="emphasis">H</em>) move data into the
+hold space and the get commands (<em class="emphasis">g</em>,
+<em class="emphasis">G</em>) move data from the hold space back into the
+pattern space. The difference between the lowercase and uppercase
+versions of the same command is that the lowercase command overwrites
+the contents of the target buffer, while the uppercase command
+appends to the existing contents after adding a newline.
+</p>
+
+<p>The hold command replaces the contents of the hold space with the
+contents of the pattern space. The get command replaces the contents
+of the pattern space with the contents of the hold space. The Hold
+command puts a newline followed by the contents of the pattern space
+after the contents of the hold space. (The newline is appended to the
+hold space even if the hold space is empty.) The Get command puts a
+newline followed by the contents of the hold space after the contents
+of the pattern space.
+</p>
+
+<p>The <a name="IXT-34-759" /> <a name="IXT-34-760" /> <a name="IXT-34-761" />exchange command
+(<em class="emphasis">x</em>) swaps the contents of the two buffers. It
+has no side effects on either buffer.
+</p>
+
+<p><a name="upt3-IDXTERM-5272" />Here's an example to
+illustrate putting lines into the hold space and retrieving them
+later. We are going to write a script that reads a particular HTML
+file and copies all headings to the end of the file for a summary.
+The headings we want start with <tt class="literal">&lt;h1&gt;</tt> or
+<tt class="literal">&lt;h2&gt;</tt>. For example:
+</p>
+
+<blockquote><pre class="code">...
+&lt;body&gt;
+&lt;h1&gt;Introduction&lt;/h1&gt;
+The blah blah blah
+&lt;h1&gt;Background of the Project&lt;/h1&gt;
+   ...
+&lt;h2&gt;The First Year&lt;/h2&gt;
+   ...
+&lt;h2&gt;The Second Year&lt;/h2&gt;
+   ...
+&lt;/body&gt;</pre></blockquote>
+
+<p>The object is to copy those headings into the hold space as
+<i class="command">sed</i> reads them. When <i class="command">sed</i>
+reaches the end of the body (at the <tt class="literal">&lt;/body&gt;</tt>
+tag), output <tt class="literal">Summary</tt>:, then output the saved tags
+without the heading tags (<tt class="literal">&lt;h1&gt;</tt> or
+<tt class="literal">&lt;h2&gt;</tt>).
+</p>
+
+<p>Look at the script:</p>
+
+<blockquote><pre class="code">/^&lt;h[12]&gt;/H
+/^&lt;\/body&gt;/ {
+    i\
+&lt;strong&gt;Summary:&lt;/strong&gt;
+    x
+    G
+    s/&lt;\/*h[12]&gt;//g
+}</pre></blockquote>
+
+<p>Any line matching <tt class="literal">&lt;h1&gt;</tt> or
+<tt class="literal">&lt;h2&gt;</tt> is added to the hold space. (All those
+lines are also printed; that's the default in
+<i class="command">sed</i> unless lines have been deleted.<a href="#FOOTNOTE-103">[103]</a>) The last part of the script watches for the
+<tt class="literal">&lt;/body&gt;</tt> tag. When it's
+reached, <em class="emphasis">sed</em> inserts the
+<tt class="literal">Summary</tt>: heading. Then the script uses
+<tt class="literal">x</tt> to exchange the pattern space (which has the
+<tt class="literal">&lt;/body&gt;</tt> tag) with the saved headers from the
+hold space. Now the pattern space has the saved headers. Next,
+<tt class="literal">G</tt> adds the <tt class="literal">&lt;/body&gt;</tt> tag to
+the end of the headers in the pattern space. Finally, a substitute
+command strips the <tt class="literal">&lt;h1&gt;</tt>,
+<tt class="literal">&lt;/h1&gt;</tt>, <tt class="literal">&lt;h2&gt;</tt>, and
+<tt class="literal">&lt;/h2&gt;</tt> tags. At the end of the script, the
+pattern space is printed by default.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-103" /><p> [103]Note that this can lead to confusion when the same line is
+matched by several patterns and then printed, once per match!</p>
+</blockquote>
+
+<p>The sequence of <em class="emphasis">x</em> followed by
+<em class="emphasis">G</em> is a way to find a matching line -- in this
+case, <tt class="literal">&lt;/body&gt;</tt> -- and insert the contents
+of the hold space before the matched line. In other words,
+it's like an <em class="emphasis">i</em> command that
+inserts the hold space at the current line.
+</p>
+
+<p>The script could do more cleanup and formatting. For instance, it
+could make the saved headings into a list with
+<tt class="literal">&lt;ul&gt;</tt> and <tt class="literal">&lt;li&gt;</tt>. But
+this example is mostly about the hold space.
+</p>
+
+<p>Here's the result of running the script on the
+sample file:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sed -f sedscr report.html</b></tt>
+   ...
+&lt;body&gt;
+&lt;h1&gt;Introduction&lt;/h1&gt;
+The blah blah blah
+&lt;h1&gt;Background of the Project&lt;/h1&gt;
+   ...
+&lt;h2&gt;The First Year&lt;/h2&gt;
+   ...
+&lt;h2&gt;The Second Year&lt;/h2&gt;
+   ...
+&lt;strong&gt;Summary:&lt;/strong&gt;
+
+Introduction
+Background of the Project
+The First Year
+The Second Year
+&lt;/body&gt;</pre></blockquote>
+
+<p>For other scripts that use the hold space, see <a href="ch34_18.htm#upt3-CHP-34-SECT-18">Section 34.18</a>. For a fanciful analogy that makes clear how
+it <a name="IXTR3-817" />works, see <a href="ch34_17.htm#upt3-CHP-34-SECT-17">Section 34.17</a>.<a name="IXTR3-818" /> <a name="IXTR3-819" />
+</p>
+
+<p>--<em class="emphasis">DD and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch34_13.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch34_15.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">34.13. Transformations on Text</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">34.15. Transforming Part of a Line</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

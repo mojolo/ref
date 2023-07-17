@@ -1,0 +1,103 @@
+<html><head><title>test: Testing Files and Strings (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_25.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_27.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.26. test: Testing Files and Strings</h2>
+
+<p><a name="IXT-35-3771" /><a name="IXT-35-3772" /><a name="IXT-35-3773" />Unix
+has a command called <i class="command">test</i> that does a lot of
+useful tests. For instance, <i class="command">test</i> can check whether
+a file is writable before your script tries to write to it. It can
+treat the string in a shell variable as a number and do comparisons
+("Is that number less than 1000?").
+You can combine tests, too ("If the file exists
+<em class="emphasis">and</em> it's readable
+<em class="emphasis">and</em> the message number is more than
+500..."). Some versions of <i class="command">test</i>
+have more tests than others. For a complete list, read your
+shell's manual page (if your shell has <b class="emphasis-bold">test built in</b> (<a href="ch01_09.htm#upt3-CHP-1-SECT-9">Section 1.9</a>))
+or the online <i class="command">test</i>(1) manual page.
+</p>
+
+<p>The <i class="command">test</i> command returns a zero <b class="emphasis-bold">status</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>) if the
+test was true and a nonzero status otherwise, so people usually use
+<i class="command">test</i> with
+<i class="command">if</i><a name="IXT-35-3774" /> <a name="IXT-35-3775" /> <a name="IXT-35-3776" />, <i class="command">while</i>, or
+<i class="command">until</i>. Here's a way your program
+could check to see if the user has a readable file named
+<em class="filename">.signature</em> in the home directory:
+</p>
+
+<p><tt class="literal">$HOME</tt> <a href="ch35_05.htm#upt3-CHP-35-SECT-5">Section 35.5</a>, <tt class="literal">$myname</tt> <a href="ch35_28.htm#upt3-CHP-35-SECT-28">Section 35.28</a></p>
+
+<blockquote><pre class="code">if test -r $HOME/.signature
+then
+    <i class="lineannotation">...Do whatever...</i>
+else</pre></blockquote>
+
+
+
+<blockquote><pre class="code">    echo "$myname: Can't read your '.signature'.  Quitting." 1&gt;&amp;2
+    exit 1
+fi</pre></blockquote>
+
+<p><a name="IXT-35-3777" />The <i class="command">test</i>
+command also lets you test for something that
+<em class="emphasis">isn't</em> true. Add an exclamation
+point (<tt class="literal">!</tt>) before the condition
+you're testing. For example, the following test is
+true if the <em class="filename">.signature</em> file is
+<em class="emphasis">not</em> readable:
+</p>
+
+<blockquote><pre class="code">if test ! -r $HOME/.signature
+then
+    echo "$myname: Can't read your '.signature'.  Quitting." 1&gt;&amp;2
+    exit 1
+fi</pre></blockquote>
+
+<p><a name="IXT-35-3778" /><a name="IXT-35-3779" />Unix
+also has a version of <i class="command">test</i> (a link to the same
+program, actually) named <em class="replaceable"><tt>[</tt></em>. Yes,
+that's a left bracket. You can use it
+interchangeably with the <i class="command">test</i> command with one
+exception: there has to be a matching right bracket
+(<tt class="literal">]</tt>) at the end of the test. The second example
+above could be rewritten this way:
+</p>
+
+<blockquote><pre class="code">if [ ! -r $HOME/.signature ]
+then
+    echo "$myname: Can't read your '.signature'.  Quitting." 1&gt;&amp;2
+    exit 1
+fi</pre></blockquote>
+
+<p>Be sure to leave space between the brackets and other text. There are
+a couple of other common gotchas caused by empty arguments; <a href="ch37_03.htm#upt3-CHP-37-SECT-3">Section 37.3</a> and <a href="ch37_04.htm#upt3-CHP-37-SECT-4">Section 37.4</a> have
+workarounds.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_25.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_27.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.25. The Bourne Shell set Command</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.27. Picking a Name for a New Command</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

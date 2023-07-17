@@ -1,0 +1,107 @@
+<html><head><title>Terminal Setup: Testing Window Size (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.16. Terminal Setup: Testing Window Size</h2>
+
+<p><a name="IXT-3-7161" />I use
+<a name="IXT-3-7162" /><a name="IXT-3-7163" />several terminal windows of different
+sizes. I don't stretch the windows after I open
+them; instead, I set the size as I start each
+<i class="command">xterm</i><a name="IXT-3-7164" />. Here's an
+excerpt from my <b class="emphasis-bold">X setup file</b> (<a href="ch03_20.htm#upt3-CHP-3-SECT-20">Section 3.20</a>) that opens the windows:
+</p>
+
+<p><tt class="literal">-e</tt> <a href="ch05_22.htm#upt3-CHP-5-SECT-22">Section 5.22</a></p>
+
+<blockquote><pre class="code">xterm -title SETI -geometry 80x9+768+1 -e setiathome -verbose -nice 10 &amp;
+xterm -title "work xterm" -geometry 80x74+329-81 &amp;</pre></blockquote>
+
+<p>The first window has 9 rows (<tt class="literal">80x9</tt>) and the second
+has 74 rows (<tt class="literal">80x74</tt>).<a href="#FOOTNOTE-10">[10]</a> I'd like the
+<b class="emphasis-bold">less</b> (<a href="ch12_03.htm#upt3-CHP-12-SECT-3">Section 12.3</a>)
+pager to use different jump-target lines in larger windows. If the
+window has more than 24 lines, I want <i class="command">less</i> to use
+its option <span class="option">-j3</span> to show search-matches on the third
+line of the window instead of the first.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-10" /><p> [10]Both windows
+have 80 columns. This is a Unix custom that comes from
+"the old days" when terminals all
+were 80 columns wide. But it's still a common width
+today -- and a good default when you don't need a
+wider window. Some people are even sort of weird about it, especially
+for reading email.</p> </blockquote>
+
+<p>On many systems, the command <i class="command">stty</i>
+<span class="option">size</span> gives the number of rows and columns in the
+current window, like this:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>stty size</b></tt>
+74 80</pre></blockquote>
+
+<p>Your system might need the command <i class="command">stty</i>
+-<span class="option">a</span> instead -- or it could have
+<a name="IXT-3-7165" /> <a name="IXT-3-7166" /><a name="IXT-3-7167" />environment variables named
+<em class="emphasis">LINES</em> and <em class="emphasis">COLUMNS</em>.
+We'll use <i class="command">stty</i>
+<span class="option">size</span> in the following Bourne shell setup file. The
+<b class="emphasis-bold">set</b><a name="IXT-3-7168" />
+(<a href="ch35_25.htm#upt3-CHP-35-SECT-25">Section 35.25</a>) command puts the number of rows into
+the <tt class="literal">$2</tt> shell parameter. (Using
+<i class="command">set</i> this way is portable to all shells, but
+it's a clumsy way to split
+<i class="command">stty</i>'s output into words. If you
+have a newer shell with array support, it'll be
+easier.) Then a series of <b class="emphasis-bold">if</b> (<a href="ch35_13.htm#upt3-CHP-35-SECT-13">Section 35.13</a>)<b class="emphasis-bold">/then</b> (<a href="ch35_26.htm#upt3-CHP-35-SECT-26">Section 35.26</a>) tests handle different window sizes:
+</p>
+
+<blockquote><pre class="code">LESS=emqc; export LESS
+# Put number of rows into $2, configure session based on that:
+set x `stty size`
+if [ -z "$2" -o "$2" -lt 1 ]
+then echo ".profile: bogus number of rows ($2) in window!?" 1&gt;&amp;2
+elif [ "$2" -gt 24 ]
+then LESS=j3$LESS
+   ...
+fi</pre></blockquote>
+
+<p>Additionally, you may be able to run
+<i class="command">resize</i><a name="IXT-3-7169" /> <a name="IXT-3-7170" /> on
+machines with the X Window System installed; it may output something
+like this:
+</p>
+
+<blockquote><pre class="code">schampeo@fugazi:1046 $ <tt class="userinput"><b>resize</b></tt>
+COLUMNS=80;
+LINES=37;
+export COLUMNS LINES;</pre></blockquote>
+
+<p>You may then capture the output and read it for the current setting
+or simply check the COLUMNS or LINES environment variables.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.15. Terminal Setup: Searching Terminal Table</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.17. Terminal Setup: Setting and Testing Window Name</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

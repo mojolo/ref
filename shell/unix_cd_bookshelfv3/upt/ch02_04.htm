@@ -1,0 +1,150 @@
+<html><head><title>Searching Online Manual Pages (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">2.4. Searching Online Manual Pages</h2>
+
+<p><a name="IXT-2-7223" /><a name="IXT-2-7224" /><a name="IXT-2-7225" />When the other techniques in this
+chapter don't find the information you want, you can
+try searching the <b class="emphasis-bold">online manual page</b>
+(<a href="ch02_01.htm#upt3-CHP-2-SECT-1">Section 2.1</a>) files. You'll
+probably have to wade through a lot of stuff that you
+don't want to see, but this method can work when
+nothing else does. As an example, you remember that
+there's some command for
+<a name="IXT-2-7226" /><a name="IXT-2-7227" />chopping columns out of a file. You try
+<i class="command">man</i> -<span class="option">k</span> or
+<i class="command">apropos</i>, but it only mentions
+<i class="command">colrm</i> and <i class="command">pr</i>, and those
+aren't what you want. You'll
+usually be able to narrow your search to one or two <b class="emphasis-bold">manual page sections</b> (<a href="ch02_01.htm#upt3-CHP-2-SECT-1">Section 2.1</a>); here, you know that user commands are in
+section 1. So you go to the manual pages and do a case-insensitive
+search through all the files for
+"column" or
+"chop":
+</p>
+
+<a name="IXT-2-7228" /><blockquote><pre class="code">% <tt class="userinput"><b>cd /usr/man/man1</b></tt>
+% <tt class="userinput"><b>egrep -i 'column|chop' *</b></tt>
+awk.1:Add up first column, print sum and average:
+colrm.1:colrm \- remove characters from specified columns within each line
+  ...
+cut.1:.IX  cut  ""  "\fIcut\fP \(em remove columns from file"
+  ...</pre></blockquote>
+
+<p>It's <i class="command">cut</i><a name="IXT-2-7229" />! Notice that <i class="command">awk</i>
+also handles columns, but <i class="command">apropos</i>
+doesn't say so.
+</p>
+
+<p>(I cheated on that example: there were other ways to find
+<i class="command">cut</i> -- using the synonym <em class="emphasis">apropos
+field</em> instead of <em class="emphasis">apropos column</em>, for
+instance. But this method does work in tougher cases.) To search the
+manual page files, you'll need to know where
+they're stored. There are lots of possibilities. If
+your system has an <em class="filename">/etc/man.config</em> file,
+it'll probably tell you. Otherwise, the directories
+<em class="emphasis">/usr/man</em><a name="IXT-2-7230" /> <a name="IXT-2-7231" /> or
+<em class="emphasis">/usr/share/man</em> are good places to look. If the
+command is local, try
+<em class="emphasis">/usr/local/man</em><a name="IXT-2-7232" /> and maybe
+<em class="emphasis">/opt</em><a name="IXT-2-7233" /><a name="IXT-2-7234" /> (a big tree where
+<b class="emphasis-bold">find</b> (<a href="ch09_04.htm#upt3-CHP-9-SECT-4">Section 9.4</a>)
+can help). If your system has <b class="emphasis-bold">fast</b>
+<b class="emphasis-bold">find</b> <b class="emphasis-bold">or</b> <b class="emphasis-bold">locate</b>
+(<a href="ch09_18.htm#upt3-CHP-9-SECT-18">Section 9.18</a>), try searching for
+<tt class="literal">man</tt> or <tt class="literal">*/man*</tt>.
+</p>
+
+<p><a name="IXT-2-7235" /> <a name="IXT-2-7236" />Your manpage files may be <b class="emphasis-bold">compressed</b> (<a href="ch15_06.htm#upt3-CHP-15-SECT-6">Section 15.6</a>). In
+that case, use <b class="emphasis-bold">grep</b> (<a href="ch13_02.htm#upt3-CHP-13-SECT-2">Section 13.2</a>) with the <span class="option">-Z</span> option,
+<tt class="literal">grep -Z</tt>.
+</p>
+
+<p>You'll probably find subdirectories with names like
+<em class="emphasis">man1</em>, <em class="emphasis">man2</em>, . . . and/or
+<em class="emphasis">cat1</em>, <em class="emphasis">cat2</em>, . . . Directory
+names like <em class="emphasis">manN</em> will have unformatted source
+files for section <em class="emphasis">N</em>; the
+<em class="emphasis">catN</em> directories have formatted source files. Or
+you may just find files named <em class="emphasis">command.N</em>, where
+<em class="emphasis">N</em> is <em class="emphasis">1</em> for section 1,
+<em class="emphasis">2</em> for section 2, and so on.
+</p>
+
+<p><a name="IXT-2-7237" /><a name="IXT-2-7238" /><a name="IXT-2-7239" /><a name="IXT-2-7240" />There are two types of manpage files:
+unformatted (shown in <a href="ch03_22.htm#upt3-CHP-3-SECT-22">Section 3.22</a>) and
+formatted. The unformatted pages are easier to search because none of
+the words will have embedded backspace characters. The previous
+example shows how. The unformatted pages have
+<i class="command">nroff</i> commands and macros in them, though, which
+can make searching and reading tougher.
+</p>
+
+<p><a name="IXT-2-7241" />To search formatted pages,
+you'll want to strip the embedded backspace
+characters. Otherwise, <i class="command">grep</i> might miss the word
+you want because it was boldfaced or underlined -- with backspaces
+in it. In the following example, a <b class="emphasis-bold">shell
+loop</b> (<a href="ch28_09.htm#upt3-CHP-28-SECT-9">Section 28.9</a>) applies a series of
+commands to each file. First, <em class="emphasis">col -b</em> removes the
+overstriking. <i class="command">grep</i> does a search (case
+insensitive, as before). Because <i class="command">grep</i> is reading
+its standard input, it doesn't know the filename, so
+a little <i class="command">sed</i> command adds the name to the start of
+every line <i class="command">grep</i> outputs.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cd /usr/man/cat1</b></tt></pre></blockquote>
+
+<p><tt class="literal">*</tt> <a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>for file in *</b></tt>
+&gt; <tt class="userinput"><b>do col -b &lt; $file | grep -i column | sed "s/^/${file}:/"</b></tt>
+&gt; <tt class="userinput"><b>done</b></tt>
+awk.1:   Add up first column, print   sum and average:
+   ...
+cut.1:   Use cut to cut out columns from a table or fields from each
+   ...</pre></blockquote>
+
+<p>If your manpage files are compressed, replace <tt class="literal">col -b &lt;
+$file</tt> with:
+</p>
+
+<blockquote><pre class="code">zcat $file | col -b</pre></blockquote>
+
+<p>In <a name="IXT-2-7242" /><a name="IXT-2-7243" /> <a name="IXT-2-7244" />Bourne shells, you can pipe the output
+of the loop to a pager (like <b class="emphasis-bold">less</b>
+(<a href="ch12_03.htm#upt3-CHP-12-SECT-3">Section 12.3</a>)) to see the output a screenful at a
+time and quit (with <tt class="literal">q</tt>) when
+you're done. To do that, change the last line of the
+<i class="command">for</i> loop to:
+</p>
+
+<blockquote><pre class="code">done | less</pre></blockquote>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2.3. whereis: Finding Where a Command Is Located</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.5. How Unix Systems Remember Their Names</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

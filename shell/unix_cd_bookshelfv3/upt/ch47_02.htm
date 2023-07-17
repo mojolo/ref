@@ -1,0 +1,259 @@
+<html><head><title>Installing and Configuring Samba (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch47_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch47_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">47.2. Installing and Configuring Samba</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: Samba</p>
+
+<p><a name="IXT-47-1970" /><a name="IXT-47-1971" />Samba is
+<a name="IXT-47-1972" />an open source project that implements
+the <a name="IXT-47-1973" /> <a name="IXT-47-1974" />Session Message Block
+(SMB) protocol, which is the core networking language of the
+Microsoft Windows family. Of course, the dominant networking protocol
+in Unix is the <a name="IXT-47-1975" />Transmission Control
+Protocol/Internet Protocol (TCP/IP). The challenge of the Samba
+project is to map SMB traffic onto TCP/IP networks. This is no small
+feat since SMB was designed for small, nonsegmented networks. Because
+all SMB network machine names exist in one global namespace, the
+practical size of an SMB network is quite limited.
+<a name="IXT-47-1976" /><a name="IXT-47-1977" /><a name="IXT-47-1978" />Although there
+are workgroups and NT domains (dolled-up workgroups with a domain
+controller), these groups don't partition a network
+in the same way that IP subnets do. Workgroups are simply an
+organizational grouping of machine names (although NT domains can
+also exercise some access control over the resources within their
+jurisdiction).
+</p>
+
+<p>Despite these limitations, most offices these days have a very large
+installed base of Windows servers and workstations. With Samba, your
+Unix machine can participate in Windows file sharing and print
+services. In fact, Samba can replace Windows file and print servers
+in many cases. For the full reference on Samba (plus a good number of
+useful tips), pick up a copy of <em class="emphasis">Using Samba</em> from
+O'Reilly &amp; Associates.
+</p>
+
+<p>Samba consists mainly of two daemons and a host of supporting
+programs. The <i class="command">smbd</i><a name="IXT-47-1979" /><a name="IXT-47-1980" />
+daemon is responsible for making your machine's
+filesystem and printers available to a Windows network. The
+<i class="command">nmbd</i><a name="IXT-47-1981" /><a name="IXT-47-1982" />
+daemon handles the mapping of SMB machine names into the IP namespace
+and browsing other SMB resources. Some Unix systems, like
+<a name="IXT-47-1983" /><a name="IXT-47-1984" />Linux, are
+also able to mount other SMB drives onto their local filesystems
+using the <i class="command">smbmnt</i> command.
+</p>
+
+<p><a name="IXT-47-1985" />Samba is available for all popular Unix
+platforms. The project web site, <a href="http://www.samba.org">http://www.samba.org</a>, is mirrored throughout
+the world, so you should be able to find a server near you. The
+current stable release of samba will be available as a link called
+<em class="filename">samba-latest.tar.gz</em>. As of this writing, the
+latest release is 2.2.3a.
+</p>
+
+<p>After unpacking the archive file, change into the newly created
+<em class="filename">samba</em> subdirectory, become the root user, and
+type:
+</p>
+
+<blockquote><pre class="code"># ./configure &amp;&amp; make</pre></blockquote>
+
+<p>This bit of shell logic simply means, "Execute the
+program <i class="command">configure</i><a name="IXT-47-1986" /> in the current directory. It is
+important to run the configure as root, since there will be certain
+tests done that require root access. If it succeeds, run
+<i class="command">make</i><a name="IXT-47-1987" />." If the compilation
+proceeds without error, you should install the Samba components with:
+</p>
+
+<blockquote><pre class="code"># make install</pre></blockquote>
+
+<p><a name="IXT-47-1988" />Now you can configure
+Samba to share your system's directories and
+printers with your Windows neighbors.
+</p>
+
+<p><a name="IXT-47-1989" /> <a name="IXT-47-1990" /><a name="IXT-47-1991" />There is only
+one configuration script for both Samba daemons:
+<em class="filename">smb.conf</em>. The Samba build process does not
+normally create this file for you. However, there are several example
+<em class="filename">smb.conf</em> files in the
+<em class="filename">examples</em> directory of the unpacked source code.
+These can be easily modified for your system. Alternatively, you may
+wish to use the web administration tool <b class="emphasis-bold">SWAT</b> (<a name="IXT-47-1992" /><a href="ch47_04.htm#upt3-CHP-47-SECT-4">Section 47.4</a>) to
+configure your installation. It is worth understanding a bit about
+how to configure <em class="filename">smb.conf</em> by hand.
+</p>
+
+<p>Perhaps the best example configuration to start with is the file
+called <em class="filename">smb.conf.default</em>. Lines that start with a
+<a name="IXT-47-1993" />semicolon or pound sign
+(<tt class="literal">#</tt>) are comments and are ignored by the Samba
+daemons entirely. <a name="IXT-47-1994" />Blocks of related options begin with a
+line that has a label in square brackets. A special block called
+<tt class="literal">[global]</tt> precedes blocks that define individual
+shared resources. Global configuration options include what workgroup
+your machine is part of, what guest account to use for public shares,
+and which IP addresses are allowed to connect to your SMB service.
+For instance:
+</p>
+
+<blockquote><pre class="code">[global]
+   workgroup     = MYGROUP
+;  hosts allow   = 192.168.1. 192.168.2. 127.
+   guest account = pcguest
+   log file      = /usr/local/samba/var/log.%m
+   max log size  = 50
+   security      = user
+;  encrypt passwords = yes</pre></blockquote>
+
+<p>Here, all the shares that will be described later in the
+configuration file will be advertised in the
+<em class="emphasis">MYGROUP</em> workgroup. Although the next line is
+commented out, you can use the <tt class="literal">host
+allow</tt><a name="IXT-47-1995" /> <a name="IXT-47-1996" /> directive
+to permit only certain hosts or subnets access to your SMB shares. In
+this example, machines would have to be in either one of the two
+class C networks (IPs beginning with 192.168.1 and 192.168.2) or in
+the class A network (IPs beginning with 127) to even connect to your
+Samba daemons. Sometimes you will create public shares that
+won't require a authentication. For these shares,
+some real Unix account is needed. That account is specified with
+<tt class="literal">guest account</tt><a name="IXT-47-1997" /> and is usually a nonprivileged
+account, like <em class="emphasis">pcguest</em>.
+</p>
+
+<p>A good rule of thumb when customizing your
+<em class="filename">smb.conf</em><a name="IXT-47-1998" /> is to leave the defaults in place where
+you don't fully understand the directive. The
+defaults err on the side of caution. Unless you have a good reason
+for changing them, leave the <tt class="literal">log
+file</tt><a name="IXT-47-1999" /> <a name="IXT-47-2000" /> and <tt class="literal">max log
+size</tt> directives as is. The <tt class="literal">security</tt> and
+<tt class="literal">encrypt passwords</tt> directives are important and are
+talked about in more detail in <a href="ch47_06.htm#upt3-CHP-47-SECT-6">Section 47.6</a>. For now,
+keep the defaults.
+</p>
+
+<p>Sharing one of your local
+<a name="IXT-47-2001" /> <a name="IXT-47-2002" />directories with the SMB network is
+easy. For instance:
+</p>
+
+<blockquote><pre class="code">[tmp]
+   comment   = Temporary file space
+   browseable = yes
+   path      = /tmp
+   read only = no
+   public    = yes</pre></blockquote>
+
+<p>This block describes sharing the local system's
+<em class="filename">/tmp</em><a name="IXT-47-2003" /> directory with your SMB network. The
+<tt class="literal">comment</tt> option is a human-readable description of
+the share that is available to SMB browsers (like the Network
+Neighborhood application in Windows). The
+<tt class="literal">path</tt><a name="IXT-47-2004" /> directive indicates
+the local path you wish to share. The
+<tt class="literal">browseable</tt><a name="IXT-47-2005" /> option, which defaults to yes
+anyway, makes sure that this share appears in browse lists. The
+<tt class="literal">read only</tt> statement is set to no, making the share
+writable by SMB clients that are able to <b class="emphasis-bold">connect</b> (<a href="ch47_06.htm#upt3-CHP-47-SECT-6">Section 47.6</a>). When
+the <tt class="literal">public</tt><a name="IXT-47-2006" /><a name="IXT-47-2007" /> directive is set to
+yes, passwords are not required to access this resource.
+</p>
+
+<p>There are far too many configuration options to detail here. See the
+Samba documention or <em class="emphasis">Using Samba</em> for the full
+story.
+</p>
+
+<p><a name="IXT-47-2008" /><a name="IXT-47-2009" />After you have finished configuring
+the system, you are ready to run the SMB daemons. You can run these
+servers (as root) directly from the command line with the following:
+</p>
+
+<blockquote><pre class="code"># /<em class="replaceable"><tt>path</em>/<em class="replaceable">to</em>/<em class="replaceable">samba</tt></em>/bin/smbd -D;
+# /<em class="replaceable"><tt>path</em>/<em class="replaceable">to</em>/<em class="replaceable">samba</tt></em>/bin/nmbd -D;</pre></blockquote>
+
+<p>You can also have <i class="command">inetd</i><a name="IXT-47-2010" /> run them. Simply add the following
+lines to <em class="filename">/etc/services</em>:
+</p>
+
+<blockquote><pre class="code">netbios-ssn   139/tcp
+netbios-ns    137/udp</pre></blockquote>
+
+<p>Add the following lines to
+<em class="filename">/etc/inetd.conf</em><a name="IXT-47-2011" />:
+</p>
+
+<blockquote><pre class="code">netbios-snn stream tcp nowait root <em class="replaceable"><tt>/path/to/samba/</tt></em>bin/smbd smbd
+netbios-ns  dgram upd wait root <em class="replaceable"><tt>/path/to/samba/</tt></em>bin/nmbd nmbd</pre></blockquote>
+
+<p>Simply restart <i class="command">inetd</i> to begin answering SMB
+requests.
+</p>
+
+<p>To verify that your SMB services are running, use the command-line
+tool <i class="command">smbclient</i><a name="IXT-47-2012" /><a name="IXT-47-2013" /> to browse yourself.
+</p>
+
+<blockquote><pre class="code">$ smbclient -L <em class="replaceable"><tt>netbios-name</tt></em></pre></blockquote>
+
+<p>Your machine's <a name="IXT-47-2014" /><a name="IXT-47-2015" /><a name="IXT-47-2016" /><a name="IXT-47-2017" />NETBIOS
+name (that is, the name by which SMB peers are known) will be your
+<a name="IXT-47-2018" />DNS
+hostname or whatever you set the global directive <tt class="literal">netbios
+name</tt> to be. If prompted for a password, you can simply hit
+Enter for now. If your service is running, you should see your shares
+displayed in a similiar way to the following:
+</p>
+
+<blockquote><pre class="code">[jjohn@marian upt]$ smbclient -L marian
+added interface ip=192.168.1.50 bcast=192.168.1.255 nmask=255.255.255.0
+Password:
+Anonymous login successful
+Domain=[WORKGROUP] OS=[Unix] Server=[Samba 2.2.2]
+
+        Sharename      Type      Comment
+        ---------      ----      -------
+        homes          Disk      Home Directories
+        IPC$           IPC       IPC Service (Samba Server)
+        ADMIN$         Disk      IPC Service (Samba Server)
+        lp             Printer   hp
+        tmp            Disk      Temporary file space
+        Server               Comment
+        ---------            -------
+        MARIAN               Samba Server
+
+        Workgroup            Master
+        ---------            -------
+        WORKGROUP            MARIAN</pre></blockquote>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch47_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch47_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">47. Connecting to MS Windows</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">47.3. Securing Samba</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,206 @@
+<html><head><title>Using Search Patterns and Global Commands (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch17_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch17_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">17.8. Using Search Patterns and Global Commands</h2>
+
+<p><a name="IXT-17-1419" /><a name="IXT-17-1420" /> <a name="IXT-17-1421" />Besides <a name="IXT-17-1422" />using line numbers and address symbols
+(., <tt class="literal">$</tt>, <tt class="literal">%</tt>),
+<i class="command">ex</i> (including the
+<i class="command">ex</i><a name="IXT-17-1423" /> mode of <i class="command">vi</i>, of
+course) can <b class="emphasis-bold">address lines</b> (<a href="ch20_03.htm#upt3-CHP-20-SECT-3">Section 20.3</a>) using <b class="emphasis-bold">search
+patterns</b> (<a name="IXT-17-1424" /><a href="ch32_01.htm#upt3-CHP-32-SECT-1">Section 32.1</a>). For example:
+</p>
+
+<dl>
+<dt><tt class="literal">:/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/d</tt></dt>
+<dd>
+Deletes the next line containing <em class="emphasis">pattern</em></tt>.</p>
+</dd>
+
+
+<dt><tt class="literal">:/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/+d</tt></dt>
+<dd>
+Deletes the line <em class="emphasis">below</em> the next line containing
+<em class="emphasis">pattern</em>. (You could also use
+<tt class="literal">+1</tt> instead of <tt class="literal">+</tt> alone.)
+</p>
+</dd>
+
+
+<dt><tt class="literal">:/</tt><tt><em class="replaceable">pattern1</em></tt><tt class="literal">/,/</tt><tt><em class="replaceable">pattern2</em></tt><tt class="literal">/d</tt></dt>
+<dd>
+Deletes from the next line (after the current line) that contains
+<em class="emphasis">pattern1</em></tt> through the next following line that
+contains <em class="emphasis">pattern2</em></tt>.
+</p>
+</dd>
+
+
+<dt><tt class="literal">:.,/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/m23</tt></dt>
+<dd>
+Takes text from current line (.) through the next line containing
+<em class="emphasis">pattern</em> and puts it after line 23.
+</p>
+</dd>
+
+</dl>
+
+<p><a name="IXT-17-1425" />Note that patterns are
+delimited by a slash both <em class="emphasis">before</em> and
+<em class="emphasis">after</em>.
+</p>
+
+<p>If you make deletions by pattern with <i class="command">vi</i> and
+<i class="command">ex</i>, there is a difference in the way the two
+editors operate. Suppose you have in your file named
+<em class="emphasis">practice</em> the following lines:
+</p>
+
+<blockquote><pre class="code">With a screen editor you can scroll the
+page, move the cursor, <em class="replaceable"><tt>d</tt></em>elete lines, insert
+characters and more, while seeing results
+of your edits as you make them.</pre></blockquote>
+
+<a name="ch17-10-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Key-strokes</p>
+</th>
+<th>
+<p>Action</p>
+</th>
+<th>
+<p>Results</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">d/while</tt></p>
+</td>
+<td>
+<p>The <i class="command">vi</i> delete-to-<em class="emphasis">pattern</em>
+command deletes from the cursor up to the word
+<em class="emphasis">while</em> but leaves the remainder of both lines.
+</p>
+</td>
+<td>
+<blockquote><pre class="code">With a screen editor you can scroll the
+page, move the cursor, while seeing results
+of your edits as you make them.</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">:.,/while/d</tt></p>
+</td>
+<td>
+<p>The <i class="command">ex</i> command deletes the entire range of
+addressed lines; in this case both the current line and the line
+containing the pattern. All lines are deleted in their entirety.
+</p>
+</td>
+<td>
+<blockquote><pre class="code">With a screen editor you can scroll the
+of your edits as you make them.</pre></blockquote>
+</td>
+</tr>
+
+</table><p>
+
+<a name="upt3-CHP-17-SECT-8.1" /><div class="sect2">
+<h3 class="sect2">17.8.1. Global Searches</h3>
+
+<p>In <a name="IXT-17-1426" /> <a name="IXT-17-1427" /> <a name="IXT-17-1428" /><i class="command">vi</i> you use a
+<tt class="literal">/</tt> (slash) to <a name="IXT-17-1429" />search for patterns of characters in
+your files. By contrast, <i class="command">ex</i> has a
+<a name="IXT-17-1430" />global command, <tt class="literal">g</tt>,
+that lets you search for a pattern and display all lines containing
+the pattern when it finds them. The command <tt class="literal">:g!</tt>
+does the opposite of <tt class="literal">:g</tt>. Use
+<tt class="literal">:g!</tt> (or its synonym <tt class="literal">:v</tt>) to
+search for all lines that do <em class="emphasis">not</em> contain
+<em class="emphasis">pattern</em>.
+</p>
+
+<p>You can use the global command on all lines in the file, or you can
+use line addresses to limit a global search to specified lines or to
+a range of lines.
+</p>
+
+<dl>
+<dt><tt class="literal">:g/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/</tt></dt>
+<dd>
+Finds (moves to) the last occurrence of <em class="emphasis">pattern</em></tt>
+in the file.
+</p>
+</dd>
+
+
+<dt><tt class="literal">:g/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/p</tt></dt>
+<dd>
+Finds and displays all lines in the file containing
+<em class="emphasis">pattern</em>.
+</p>
+</dd>
+
+
+<dt><tt class="literal">:g!/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/nu</tt></dt>
+<dd>
+Finds and displays all lines in the file that don't contain
+<em class="emphasis">pattern</em></tt>; also displays line number for each line
+found.
+</p>
+</dd>
+
+
+<dt><tt class="literal">:60,124g/</tt><tt><em class="replaceable">pattern</em></tt><tt class="literal">/p</tt></dt>
+<dd>
+Finds and displays any lines between 60 and 124 containing
+<em class="emphasis">pattern</em>.
+</p>
+</dd>
+
+</dl>
+
+<p><tt class="literal">g</tt> can also be used for <a name="IXT-17-1431" /><a name="IXT-17-1432" />global replacements. For example, to
+search for all lines that begin with <tt class="literal">WARNING</tt>: and
+change the first word <tt class="literal">not</tt> on those lines to
+<tt class="literal">NOT</tt>:
+</p>
+
+<blockquote><pre class="code">:g/^WARNING:/s/\&lt;not\&gt;/NOT/</pre></blockquote>
+
+<p>-- <em class="emphasis">LL, from <em class="emphasis">Learning the vi Editor</em>
+(O'Reilly, 1998)</em>
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch17_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch17_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">17.7. Get Back What You Deleted with Numbered Buffers</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">17.9. Confirming Substitutions in vi</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

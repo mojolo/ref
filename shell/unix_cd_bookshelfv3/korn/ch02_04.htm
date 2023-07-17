@@ -1,0 +1,1584 @@
+<html><head><title>Vi Editing Mode (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">2.4. Vi Editing Mode</h2>
+
+<p>
+<a name="korn2-IDXTERM-388" />
+
+Like emacs-mode, vi-mode essentially creates a one-line editing window
+into the history file.
+<a name="IXT-2-287222" />
+Vi-mode is popular because <em class="emphasis">vi</em> is
+the most standard Unix editor. But the function for which <em class="emphasis">vi</em>
+was designed, writing C programs, has different editing
+requirements from those of command interpreters. As a result,
+although it is possible to do complex things in <em class="emphasis">vi</em>
+with relatively few keystrokes, the relatively simple things you
+need to do in the Korn shell sometimes take too many keystrokes.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-390" />
+<a name="IXT-2-287223" />
+Like <em class="emphasis">vi</em>, vi-mode has two modes of its own: <em class="emphasis">input</em>
+and <em class="emphasis">control</em> mode. The former is for typing commands (as in
+normal Korn shell use); the latter is for moving around the command
+line and the history file. When you are in input mode, you can
+type commands and hit ENTER to run them. In addition, you have
+minimal editing capabilities via control characters, which are summarized
+in
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-6">Table 2-6</a>.
+<a name="IXT-2-287224" />
+
+</p>
+
+<a name="korn2-CHP-2-TABLE-6" /><h4 class="objtitle">Table 2-6. Editing commands in vi input mode</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>DEL</td>
+<td>Delete previous character</td>
+</tr>
+
+<tr>
+<td>CTRL-W</td>
+<td>Erase previous word (i.e., erase until whitespace)</td>
+</tr>
+
+<tr>
+<td>CTRL-V</td>
+<td>"Quote" the next character</td>
+</tr>
+
+<tr>
+<td>ESC</td>
+<td>Enter control mode (see below)</td>
+</tr>
+
+
+</table><p>
+
+<blockquote><b>NOTE:</b> 
+
+
+<a name="IXT-2-287225" />
+At least some of these editig commands -- depending on which version
+of Unix you have -- are the same as those  provided
+by modern Unix systems in the terminal interface.
+Vi-mode uses your "erase" character as the "delete
+previous character" key; usually it is set to DEL or CTRL-H (BACKSPACE).
+CTRL-V causes the next character you type to appear in the command
+line as is; i.e., if it is an editing command (or an otherwise special
+character like CTRL-D), it is stripped of its special meaning.
+</p>
+</blockquote>
+
+<p>
+Under normal circumstances, you just stay in input mode. But if you
+want to go back and make changes to your command line, or if you
+want to recall previous commands, you need to go into control mode.
+To do this, hit ESC.
+<a name="IXTR3-90" />
+
+</p>
+
+<a name="korn2-CHP-2-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">2.4.1. Simple Control Mode Commands</h3>
+
+<p>
+<a name="korn2-IDXTERM-395" />
+<a name="IXT-2-287226" />
+
+A full range of <em class="emphasis">vi</em> editing commands are available to you in control
+mode. The simplest of these move you around the command line<a href="#FOOTNOTE-25">[25]</a>
+and are summarized in
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-7">Table 2-7</a>.
+<a name="IXT-2-287227" />
+
+Vi-mode contains two "word"
+concepts. The simplest is any sequence of non-whitespace characters;
+we'll call this a <em class="emphasis">nonblank word</em>. The other is any sequence of
+only alphanumeric characters (letters and digits) or any
+sequence of only non-alphanumeric characters; we'll
+just call this a <em class="emphasis">word</em>.<a href="#FOOTNOTE-26">[26]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-25" /><p> [25]
+As with emacs mode, since <em class="emphasis">ksh93h</em>, you may
+use ANSI-standard arrow key sequences for moving back and forth on the
+command line, and up and down within the history list.
+</p>
+</blockquote><blockquote class="footnote">
+<a name="FOOTNOTE-26" /><p> [26]
+Neither of these definitions is the same as the
+definition of a word in emacs-mode.
+
+<a name="IXT-2-287228" />
+<a name="IXT-2-287229" />
+<a name="IXT-2-287230" />
+<a name="IXT-2-287231" />
+<a name="IXT-2-287232" />
+<a name="IXT-2-287233" />
+<a name="IXT-2-287234" />
+<a name="IXT-2-287235" />
+<a name="IXT-2-287236" />
+<a name="IXT-2-287237" />
+<a name="IXT-2-287238" />
+
+
+</p>
+</blockquote>
+
+<a name="korn2-CHP-2-TABLE-7" /><h4 class="objtitle">Table 2-7. Basic vi control mode commands</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">h</tt></td>
+<td>Move left one character.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">l</tt></td>
+<td>Move right one character.</td>
+</tr>
+
+<tr>
+<td><em class="emphasis">space</em></td>
+<td>Move right one character.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">w</tt></td>
+<td>Move right one word.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">b</tt></td>
+<td>Move left one word.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">W</tt></td>
+<td>Move to beginning of next nonblank word.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">B</tt></td>
+<td>Move to beginning of preceding nonblank word.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">e</tt></td>
+<td>Move to end of current word.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">E</tt></td>
+<td>Move to end of current nonblank word.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">0</tt></td>
+<td>Move to beginning of line.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">^</tt></td>
+<td>Move to first nonblank character in line.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">$</tt></td>
+<td>Move to end of line.</td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXT-2-287239" />
+
+All of these commands except the last three can be preceded by
+a number that acts as a <em class="emphasis">repeat count</em>. The last two will be
+familiar to users of Unix utilities (such as <em class="emphasis">grep</em>) that
+use regular expressions, as well as to <em class="emphasis">vi</em> users.
+</p>
+
+<p>
+Time for a few examples. Let's say you type in this line
+and, before you hit ENTER, decide you want to change it:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk/names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+As shown, your cursor is beyond the last character of the line.
+First, type ESC to enter control mode; your cursor moves
+back one space so that it is on the <tt class="literal">s</tt>. Then if you type <tt class="literal">h</tt>, your
+cursor moves back to the <tt class="literal">e</tt>. If you type <tt class="literal">3h</tt> from
+the <tt class="literal">e</tt>,
+you end up at the <tt class="literal">n</tt>.
+</p>
+
+<p>
+Now we look at the difference between the two "word" concepts.
+Go back to the end of the line by typing <tt class="literal">$</tt>.
+If you type <tt class="literal">b</tt>, the word in question is "names", and the cursor
+ends up on the <tt class="literal">n</tt>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk/</b></tt><span class="emphasis-reverse">n</span><tt class="userinput"><b>ames</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+If you type <tt class="literal">b</tt> again, the next word is the slash (it's a "sequence"
+of non-alphanumeric characters), so the cursor ends up over it:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk</b></tt><span class="emphasis-reverse">/</span><tt class="userinput"><b>names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+However, if you typed <tt class="literal">B</tt> instead of <tt class="literal">b</tt>,
+the nonblank word
+would be the entire pathname, and the cursor ends up at
+the beginning of it -- that is, over the tilde:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; </b></tt><span class="emphasis-reverse">~</span><tt class="userinput"><b>pete/wk/names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+You would have had to type <tt class="literal">b</tt> four times -- or
+just <tt class="literal">4b</tt> -- to
+get the same effect, since there are four "words" in the
+part of the pathname to the left of <em class="emphasis">/names</em>:
+<em class="emphasis">wk</em>, slash, <em class="emphasis">pete</em>, and the leading tilde.
+</p>
+
+<p>
+At this point, <tt class="literal">w</tt> and <tt class="literal">W</tt>
+do the opposite: typing <tt class="literal">w</tt> gets you over the
+<tt class="literal">p</tt>, since the tilde is a "word," while typing
+<tt class="literal">W</tt> brings you to the end of the line. But whereas
+<tt class="literal">w</tt> and <tt class="literal">W</tt> take you to the beginning
+of the next word, <tt class="literal">e</tt> and <tt class="literal">E</tt> take you
+to the end of the current word. Thus, if you type <tt class="literal">w</tt>
+with the cursor on the tilde, you get to:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~</b></tt><span class="emphasis-reverse">p</span><tt class="userinput"><b>ete/wk/names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+Then typing <tt class="literal">e</tt> gets you to:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pet</b></tt><span class="emphasis-reverse">e</span><tt class="userinput"><b>/wk/names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+And typing an additional <tt class="literal">w</tt> gets you to:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete</b></tt><span class="emphasis-reverse">/</span><tt class="userinput"><b>wk/names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+On the other hand, <tt class="literal">E</tt> gets you to the end of the current
+nonblank word -- in this case, the end of the line.
+(While at first glance the commands may appear non-mnemonic, there is
+generally some order to the choice of command letters.
+Each command letter is usually the first letter of the English word for the operation.
+Lowercase letters work on words, while the uppercase versions work on
+nonblank words.  Getting the hang of this is undoubtedly tougher if
+English isn't your native language, but that also applies to the
+emacs-mode commands.)
+<a name="IXTR3-91" />
+</p>
+</div>
+
+<a name="korn2-CHP-2-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">2.4.2. Entering and Changing Text</h3>
+
+<p>
+<a name="korn2-IDXTERM-411" />
+<a name="IXT-2-287240" />
+
+Now that you know how to enter control mode and
+move around on the command line, you need to know how
+to get back into input mode so you can make changes and
+type in additional commands. A number of
+commands take you from control mode into input mode;
+they are listed in
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-8">Table 2-8</a>.
+All
+of them enter input mode a bit differently.
+<a name="korn2-IDXTERM-413" />
+<a name="IXT-2-287241" />
+<a name="IXT-2-287242" />
+<a name="IXT-2-287243" />
+
+</p>
+
+<a name="korn2-CHP-2-TABLE-8" /><h4 class="objtitle">Table 2-8. Commands for entering vi input mode</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">i</tt></td>
+<td>Text inserted before current character (insert)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">a</tt></td>
+<td>Text inserted after current character (append)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">I</tt></td>
+<td>Text inserted at beginning of line</td>
+</tr>
+
+<tr>
+<td><tt class="literal">A</tt></td>
+<td>Text inserted at end of line</td>
+</tr>
+
+<tr>
+<td><tt class="literal">r</tt></td>
+<td>Replace one character (doesn't enter input mode)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">R</tt></td>
+<td>Text overwrites existing text (replace)</td>
+</tr>
+
+
+</table><p>
+
+<p>
+Most likely, you will use either <tt class="literal">i</tt> or
+<tt class="literal">a</tt> consistently, and you may use <tt class="literal">R</tt>
+occasionally. <tt class="literal">I</tt> and <tt class="literal">A</tt> are
+abbreviations for <tt class="literal">0i</tt> and <tt class="literal">$a</tt>
+respectively. To illustrate the difference between <tt class="literal">i</tt>,
+<tt class="literal">a</tt>, and <tt class="literal">R</tt>, say we start out with
+our example line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk</b></tt><span class="emphasis-reverse">/</span><tt class="userinput"><b>names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+If you type <tt class="literal">i</tt> followed by <tt class="literal">end</tt>, you get:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wkend</b></tt><span class="emphasis-reverse">/</span><tt class="userinput"><b>names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+That is, the cursor always appears to be over the <tt class="literal">/</tt> before <em class="emphasis">names</em>.
+But if you type <tt class="literal">a</tt> instead of <tt class="literal">i</tt>,
+you will notice the cursor move one space to
+the right. Then if you type <tt class="literal">nick</tt>, you get:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk/nick</b></tt><span class="emphasis-reverse">n</span><tt class="userinput"><b>ames</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+That is, the cursor is always just after the last character you
+typed, until you type ESC to end your input.
+<a name="IXTR3-92" />
+Finally, if you go back to the <tt class="literal">n</tt> in <em class="emphasis">names</em>,
+type <tt class="literal">R</tt> instead, and then type <tt class="literal">task</tt>, you will see:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk/task</b></tt><span class="emphasis-reverse">s</span>
+</pre></blockquote>
+</p>
+
+<p>
+In other words, you will be <em class="emphasis">replacing</em> (hence <tt class="literal">R</tt>) instead
+of inserting text.
+</p>
+
+<p>
+Why capital <tt class="literal">R</tt> instead of lowercase <tt class="literal">r</tt>? The latter is a slightly
+different command, which replaces only one character and does not
+enter input mode. With <tt class="literal">r</tt>, the next single character overwrites the
+character under the cursor. So
+if we start with<?troff .ne 10?> the original
+command line and type <tt class="literal">r</tt> followed by a semicolon, we get:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk</b></tt><span class="emphasis-reverse">;</span><tt class="userinput"><b>names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+If you precede <tt class="literal">r</tt> with a number <em class="emphasis">N</em>,
+it allows you to replace
+the next <em class="emphasis">N</em> existing characters on the line -- but
+still not enter input mode.
+Vi-mode replaces the <em class="emphasis">N</em> characters on the line with
+<em class="emphasis">N</em> copies of the character you type after
+the <tt class="literal">r</tt>.
+Lowercase <tt class="literal">r</tt> is effective for fixing erroneous option letters,
+I/O redirection characters, punctuation, etc.
+<a name="IXTR3-93" />
+</p>
+
+</div>
+
+<a name="korn2-CHP-2-SECT-4.3" /><div class="sect2">
+<h3 class="sect2">2.4.3. Deletion Commands</h3>
+
+<p>
+<a name="korn2-IDXTERM-419" />
+<a name="korn2-IDXTERM-420" />
+<a name="korn2-IDXTERM-421" />
+
+Now that you know how to enter commands and move around the
+line, you need to know how to delete.
+The basic deletion command in vi-mode is <tt class="literal">d</tt> followed by one
+other letter. This letter determines what the unit and direction
+of deletion is, and it corresponds to a motion command, as
+listed previously in
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-7">Table 2-7</a>.
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-9">Table 2-9</a>
+shows some
+commonly used examples.
+<a name="IXT-2-287244" />
+<a name="IXT-2-287245" />
+<a name="IXT-2-287246" />
+<a name="IXT-2-287247" />
+<a name="IXT-2-287248" />
+<a name="IXT-2-287249" />
+
+</p>
+
+<a name="korn2-CHP-2-TABLE-9" /><h4 class="objtitle">Table 2-9. Some vi-mode deletion commands</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">dh</tt></td>
+<td>Delete one character backwards.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">dl</tt></td>
+<td>Delete one character forwards.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">db</tt></td>
+<td>Delete one word backwards.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">dw</tt></td>
+<td>Delete one word forwards.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">dB</tt></td>
+<td>Delete one nonblank word backwards.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">dW</tt></td>
+<td>Delete one nonblank word forwards.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">d$</tt></td>
+<td>Delete to end of line.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">d0</tt></td>
+<td>Delete to beginning of line.</td>
+</tr>
+
+
+</table><p>
+
+<p>
+These commands have a few variations and abbreviations.
+If you use a <tt class="literal">c</tt> instead of <tt class="literal">d</tt>, you enter input mode
+after it does the deletion. You can supply a numeric
+repeat count
+either before or after the <tt class="literal">d</tt> (or <tt class="literal">c</tt>).
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-10">Table 2-10</a>
+lists the available abbreviations.
+</p>
+
+<p>
+Most people tend to use <tt class="literal">D</tt> to delete to end of line,
+<tt class="literal">dd</tt> to delete an entire line, and <tt class="literal">x</tt> (as "backspace")
+to delete single characters. If you aren't a hardcore <em class="emphasis">vi</em>
+user, you may find it difficult to get some of the more
+esoteric deletion commands under your fingers.
+<a name="IXTR3-94" />
+<a name="IXT-2-287250" />
+
+
+</p>
+
+<a name="korn2-CHP-2-TABLE-10" /><h4 class="objtitle">Table 2-10. Abbreviations for vi-mode delete commands</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">D</tt></td>
+<td>Equivalent to <tt class="literal">d$</tt> (delete to end of line)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">dd</tt></td>
+<td>Equivalent to <tt class="literal">0d$</tt> (delete entire line)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">C</tt></td>
+<td>Equivalent to <tt class="literal">c$</tt> (delete to end of line, enter input mode)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">cc</tt></td>
+<td>Equivalent to <tt class="literal">0c$</tt> (delete entire line, enter input mode)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">s</tt></td>
+<td>Equivalent to <tt class="literal">xi</tt> (delete current character, enter input mode)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">S</tt></td>
+<td>Equivalent to <tt class="literal">cc</tt> (delete entire line, enter input mode)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">x</tt></td>
+<td>Equivalent to <tt class="literal">dl</tt> (delete character forwards)</td>
+</tr>
+
+<tr>
+<td><tt class="literal">X</tt></td>
+<td>Equivalent to <tt class="literal">dh</tt> (delete character backwards)</td>
+</tr>
+
+
+</table><p>
+
+<p>
+
+<a name="IXT-2-287251" />
+<a name="IXT-2-287252" />
+<a name="IXT-2-287253" />
+<a name="IXT-2-287254" />
+<a name="IXT-2-287255" />
+<a name="IXT-2-287256" />
+<a name="korn2-IDXTERM-436" />
+<a name="IXT-2-287257" />
+
+Every good editor provides "undelete" commands as well as
+delete commands, and vi-mode is no exception. Vi-mode maintains
+a <em class="emphasis">delete buffer</em> that stores all of the modifications to
+text on the current line only (note that this is different
+from the full <em class="emphasis">vi</em> editor). The command <tt class="literal">u</tt> undoes the last
+text modification command only, while <tt class="literal">U</tt> undoes all such
+commands on the current line. So if you make one change and
+want to undo it, type <tt class="literal">u</tt>; if you make lots of changes and find
+that the original is closer to what you want, you can undo everything
+by typing <tt class="literal">U</tt>. A related command is <tt class="literal">.</tt> (dot), which redoes the
+last text modification command.
+</p>
+
+<p>
+<a name="IXT-2-287258" />
+
+
+There is also a way to save text in the delete buffer without having
+deleted it in the first place: just type in a delete command but use
+<tt class="literal">y</tt> ("yank") instead of <tt class="literal">d</tt>. This
+does not modify anything, but it allows you to retrieve the yanked text
+as many times as you like later on. The command to retrieve yanked
+text is <tt class="literal">p</tt>, which inserts ("puts") the text on the
+current line to the right of the cursor.
+The uppercase version, <tt class="literal">P</tt>, puts text to the left of
+the cursor.
+The various cut and paste commands are summarized in
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-11">Table 2-11</a>.
+<a name="IXT-2-287259" />
+<a name="IXT-2-287260" />
+<a name="IXT-2-287261" />
+<a name="IXT-2-287262" />
+<a name="IXT-2-287263" />
+<a name="IXT-2-287264" />
+
+
+</p>
+
+<a name="korn2-CHP-2-TABLE-11" /><h4 class="objtitle">Table 2-11. Vi-mode cut and paste commands</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">y</tt></td>
+<td><p>
+Yank (save) text, don't actually change the line.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">p</tt></td>
+<td><p>
+Put the last yanked or deleted text into the line after the cursor.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">P</tt></td>
+<td><p>
+Put the last yanked or deleted text into the line before the cursor.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">u</tt></td>
+<td><p>
+Undo most recent change.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">U</tt></td>
+<td><p>
+Undo all changes to the line.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">.</tt> (dot)</td>
+<td><p>
+Redo last change at current cursor position.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+The <tt class="literal">d</tt> and <tt class="literal">p</tt> commands are quite
+useful together for rearranging the order of options or arguments on
+a command line. 
+As an example, most Unix C compilers accept a <em class="emphasis">-l</em> option
+that indicates the name of a library to use when linking a compiled program.
+The <em class="emphasis">-L</em> option specifies a directory in which
+the compiler should look for libraries, besides looking in the standard
+places for system libraries.
+</p>
+
+<p>
+<blockquote><pre class="code">
+cc -o myprog myprog.c -Lmylibdir -lmylib
+</pre></blockquote>
+</p>
+
+<p>
+This command looks for the library file <em class="emphasis">libmylib.a</em> in the
+directory <em class="emphasis">mylibdir</em> when compiling and linking <em class="emphasis">myprog.c</em>.
+So far so good.  The catch is that typically the <em class="emphasis">-L</em> option must appear
+on the command line <em class="emphasis">before</em> the <em class="emphasis">-l</em> option.
+Let's suppose you accidentally typed them the other way around, and therefore that the
+compilation failed.  You can use the <tt class="literal">d</tt> and <tt class="literal">p</tt>
+commands to rearrange things.  Start by recalling the line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <span class="emphasis-reverse">c</span><tt class="userinput"><b>c -o myprog myprog.c -lmylib -Lmylibdir</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+Next, move to the last option with <tt class="literal">5w</tt>.
+Then back up to the preceding space with <tt class="literal">h</tt>.
+Your command line now looks like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cc -o myprog myprog.c -lmylib</b></tt><tt class="userinput"><b>-Lmylibdir</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+Type <tt class="literal">D</tt> to delete the rest of the line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cc -o myprog myprog.c -lmyli</b></tt><span class="emphasis-reverse">b</span>
+</pre></blockquote>
+</p>
+
+<p>
+Now move back to the preceding <tt class="literal">c</tt> character with <tt class="literal">Bhh</tt>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cc -o myprog myprog.</b></tt><span class="emphasis-reverse">c</span> <tt class="userinput"><b>-lmylib</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+Finally, use <tt class="literal">p</tt> to insert the moved option:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cc -o myprog myprog.c -Lmylibdi</b></tt><span class="emphasis-reverse">r</span> <tt class="userinput"><b>-lmylib</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+Then hit ENTER and you're done.
+This looks like a lot of typing.  But, as we will soon see, there are additional commands
+that let you search for characters on the command line, making it much easier to move
+around.  And if you're an experienced <em class="emphasis">vi</em> user, you'll be right at home.
+<a name="IXTR3-95" />
+
+
+<a name="IXTR3-96" />
+<a name="IXTR3-97" />
+<a name="IXTR3-98" />
+</p>
+</div>
+
+<a name="korn2-CHP-2-SECT-4.4" /><div class="sect2">
+<h3 class="sect2">2.4.4. Moving Around in the History File</h3>
+
+<p>
+
+<a name="korn2-IDXTERM-449" />
+<a name="korn2-IDXTERM-450" />
+<a name="korn2-IDXTERM-451" />
+
+The next group of vi control mode commands we cover allows
+you to move around in and search your history file. This is
+the all-important functionality that lets you go back and fix
+an erroneous command without retyping the entire line.
+These commands are summarized in
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-12">Table 2-12</a>.
+
+</p>
+
+<a name="korn2-CHP-2-TABLE-12" /><h4 class="objtitle">Table 2-12. Vi control mode commands for searching the history file</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">k</tt> or <tt class="literal">-</tt></td>
+<td>Move backward one line.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">j</tt> or <tt class="literal">+</tt></td>
+<td>Move forward one line.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">G</tt></td>
+<td><p>
+Move to line given by repeat count, or to very
+first history line if no repeat count.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">?</tt><em class="replaceable"><tt>string</tt></em></td>
+<td>Search backward for <em class="emphasis">string</em>.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">/</tt><em class="replaceable"><tt>string</tt></em></td>
+<td>Search forward for <em class="emphasis">string</em>.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">n</tt></td>
+<td>Repeat search in same direction as previous.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">N</tt></td>
+<td>Repeat search in opposite direction of previous.</td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXT-2-287265" />
+<a name="IXT-2-287266" />
+<a name="IXT-2-287267" />
+<a name="IXT-2-287268" />
+<a name="IXT-2-287269" />
+<a name="IXT-2-287270" />
+<a name="IXT-2-287271" />
+<a name="IXT-2-287272" />
+<a name="IXT-2-287273" />
+<a name="IXT-2-287274" />
+The first three can be preceded by repeat counts
+(e.g., <tt class="literal">3k</tt> or <tt class="literal">3-</tt>
+moves back three lines in the history file).
+</p>
+
+<p>
+If you aren't familiar with <em class="emphasis">vi</em> and its cultural history, you
+may be wondering at the wisdom of choosing such seemingly
+poor mnemonics as <tt class="literal">h</tt>, <tt class="literal">j</tt>, <tt class="literal">k</tt>, and <tt class="literal">l</tt> for backward character, forward line,
+backward line, and forward character, respectively. Well, there
+actually is a rationale for the choices -- other than that they
+are all together on the standard keyboard.
+</p>
+
+<p>
+<a name="IXT-2-287275" />
+Bill Joy originally developed <em class="emphasis">vi</em> to run on Lear-Siegler ADM-3a terminals,
+which were the first popular models with addressable cursors
+(meaning that a program could send a command to an ADM-3a
+to make it move the cursor to a specified location on the screen).
+The ADM-3a's <tt class="literal">h</tt>, <tt class="literal">j</tt>, <tt class="literal">k</tt>, and <tt class="literal">l</tt> keys
+had little arrows on them, so Joy
+decided to use those keys for appropriate commands in <em class="emphasis">vi</em>.
+</p>
+
+<p>
+Another (partial) rationale for the command choices
+is that CTRL-H is the traditional backspace key, and CTRL-J denotes linefeed.
+The primary rationale for these choices, however, is that with these keys, it's
+never necessary to move your hands off the "home row" of the keyboard.
+</p>
+
+<p>
+Perhaps <tt class="literal">+</tt> and <tt class="literal">-</tt> are better mnemonics
+than <tt class="literal">j</tt> and <tt class="literal">k</tt>, but the latter
+have the advantage of being more easily accessible to touch
+typists. In either case, these commands are the most basic ones
+for moving around the history file. To see how they work,
+let's take the same examples we used when discussing emacs-mode
+earlier.
+</p>
+
+<p>
+You enter the example command (ENTER works in both input and
+control modes, as does newline or CTRL-J):
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk/names</b></tt>
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+But you get an error message saying that your
+option letter was wrong. You want to change it to <em class="emphasis">-s</em> without having
+to retype the entire command. Assuming you are in control
+mode (you may have to type ESC to put yourself in control mode), you
+type <tt class="literal">k</tt> or <tt class="literal">-</tt> to get the command back. Your cursor
+will be at the beginning of the line:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <span class="emphasis-reverse">f</span><tt class="userinput"><b>grep -l Bob &lt; ~pete/wk/names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+Type <tt class="literal">w</tt> to get to the <tt class="literal">-</tt>, then <tt class="literal">l</tt>
+or space
+to get to the <tt class="literal">l</tt>. Now you can replace
+it by typing <tt class="literal">rs</tt>; press ENTER to run the command.
+</p>
+
+<p>
+Now let's say you get another error message, and you finally decide
+to look at the manual page for the <em class="emphasis">fgrep</em> command. You remember having
+done this a while ago today, so rather than typing in the entire
+<em class="emphasis">man</em>(1) command, you search for the last one you used. To do this, type ESC to enter control mode (if you are already in control mode, this has no effect), then type <tt class="literal">/</tt> followed
+by <tt class="literal">man</tt> or <tt class="literal">ma</tt>. To be on the safe side, you can also type
+<tt class="literal">^ma</tt>; the <tt class="literal">^</tt> means match only lines
+that begin with <tt class="literal">ma</tt>.<a href="#FOOTNOTE-27">[27]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-27" /><p> [27]
+Fans of <em class="emphasis">vi</em> and search utilities like <em class="emphasis">grep</em> should note
+that caret (<tt class="literal">^</tt>) for beginning-of-line is the only context operator
+vi-mode provides for search strings.
+</p>
+</blockquote>
+
+<p>
+But typing <tt class="literal">/^ma</tt> doesn't give you what you want; instead, the shell
+gives you:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <span class="emphasis-reverse">m</span><tt class="userinput"><b>ake myprogram</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+To search for "man" again, you can type <tt class="literal">n</tt>, which does another backward
+search using the last search string. Typing <tt class="literal">/</tt> again without an
+argument and hitting ENTER accomplishes the same thing.
+<a name="IXTR3-99" />
+
+</p>
+
+<p>
+The <tt class="literal">G</tt> command retrieves the command whose number is
+the same as the numeric prefix argument you supply. <tt class="literal">G</tt> depends on the
+command numbering scheme described
+in <a href="ch03_04.htm#korn2-CHP-3-SECT-4.2.3">Section 3.4.2.3</a>,
+in <a href="ch03_01.htm">Chapter 3</a>.
+Without a prefix argument,
+it goes to command number 1. This may be useful to former C shell users
+who still want to use command numbers.
+<a name="IXTR3-100" />
+<a name="IXTR3-101" />
+<a name="IXTR3-102" />
+<a name="IXTR3-103" />
+
+
+</p>
+</div>
+
+<a name="korn2-CHP-2-SECT-4.5" /><div class="sect2">
+<h3 class="sect2">2.4.5. Character-Finding Commands</h3>
+
+<p>
+<a name="korn2-IDXTERM-468" />
+<a name="IXT-2-287276" />
+
+There are some additional motion commands in vi-mode.
+These commands allow you
+to move to the position of a particular character in the line.
+They are summarized in
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-13">Table 2-13</a>,
+in which <em class="emphasis">x</em> denotes any
+character.
+</p>
+
+<p>
+All of these commands can be preceded by a repeat count.
+
+
+
+</p>
+
+<a name="korn2-CHP-2-TABLE-13" /><h4 class="objtitle">Table 2-13. Vi-mode character-finding commands</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">f</tt><em class="replaceable"><tt>x</tt></em></td>
+<td>Move right to next occurrence of <em class="emphasis">x</em> (find).</td>
+</tr>
+
+<tr>
+<td><tt class="literal">F</tt><em class="replaceable"><tt>x</tt></em></td>
+<td>Move left to previous occurrence of <em class="emphasis">x</em> (find backwards).</td>
+</tr>
+
+<tr>
+<td><tt class="literal">t</tt><em class="replaceable"><tt>x</tt></em></td>
+<td><p>
+Move right to next occurrence of <em class="emphasis">x</em>, then back one position
+(go <em class="emphasis">to</em> the character).
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">T</tt><em class="replaceable"><tt>x</tt></em></td>
+<td><p>
+Move left to previous occurrence of <em class="emphasis">x</em>, then forward one position
+(go backwards to the character).
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">;</tt></td>
+<td>Redo last character-finding command.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">,</tt></td>
+<td>Redo last character-finding command in opposite direction.</td>
+</tr>
+
+
+<tr>
+<td><tt class="literal">%</tt></td>
+<td><p>
+Move to matching
+<tt class="literal">(</tt>,
+<tt class="literal">)</tt>,
+<tt class="literal">{</tt>,
+<tt class="literal">}</tt>,
+<tt class="literal">[</tt>,
+or
+<tt class="literal">]</tt>.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+<a name="IXT-2-287277" />
+<a name="IXT-2-287278" />
+<a name="IXT-2-287279" />
+<a name="IXT-2-287280" />
+<a name="IXT-2-287281" />
+<a name="IXT-2-287282" />
+<a name="IXT-2-287283" />
+<a name="IXT-2-287284" />
+Starting with the previous example: let's say you want to change
+<em class="emphasis">Bob</em> to <em class="emphasis">Rob</em>. Make sure that you're at the end of the line (or, in
+any case, to the right of the <tt class="literal">B</tt> in <em class="emphasis">Bob</em>);
+then, if you type <tt class="literal">FB</tt>, your
+cursor moves to the <tt class="literal">B</tt>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l </b></tt><span class="emphasis-reverse">B</span><tt class="userinput"><b>ob &lt; ~pete/wk/names</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+At this point, you could type <tt class="literal">rR</tt> to replace
+the <tt class="literal">B</tt> with <tt class="literal">R</tt>.
+But let's say you wanted to change <em class="emphasis">Bob</em> to <em class="emphasis">Blob</em>. You would
+need to move one space to the right of the <tt class="literal">B</tt>. Of course, you
+could just type <tt class="literal">l</tt>. But, given that you're somewhere to the right of
+<em class="emphasis">Bob</em>, the fastest way to move to the <tt class="literal">o</tt> would be to type
+<tt class="literal">TB</tt> instead of <tt class="literal">FB</tt> followed by <tt class="literal">l</tt>.
+</p>
+
+<p>
+As an example of how the repeat count can be used with
+character-finding commands, let's say you want to change the filename from
+<em class="emphasis">names</em> to <em class="emphasis">namfile</em>.
+In this case, assuming your cursor is still on the <tt class="literal">B</tt>, you need to get
+to the third <tt class="literal">e</tt> to the right, so you can type <tt class="literal">3te</tt>, followed by
+<tt class="literal">l</tt> to put the cursor back on the <tt class="literal">e</tt> in <em class="emphasis">names</em>.
+</p>
+
+<p>
+The character-finding commands also have associated delete commands.
+Read the command definitions in the previous table and mentally
+substitute "delete" for "move." You'll get what happens when you
+precede the given character-finding command with a <tt class="literal">d</tt>. The deletion
+includes the character given as argument.
+For example, assume that your cursor is under the <tt class="literal">n</tt> in <em class="emphasis">names</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>fgrep -l Bob &lt; ~pete/wk/</b></tt><span class="emphasis-reverse">n</span><tt class="userinput"><b>ames</b></tt>
+</pre></blockquote>
+</p>
+
+<p>
+If you want to change <em class="emphasis">names</em> to <em class="emphasis">aides</em>,
+one possibility is to type <tt class="literal">dfm</tt>.
+This means "delete right to next occurrence of m," i.e., delete "nam."
+Then you can type <tt class="literal">i</tt> (to enter input mode) and then "aid" to complete
+the change.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+A better way, though, is to use <tt class="literal">cfm</tt>.
+This means "change everything from under the cursor up to and including the next
+occurrence of m."  This deletes "nam" and enters input mode for you.
+</p>
+
+<p>
+The <tt class="literal">%</tt> command is very useful for finding the matching "pair"
+character when used with parentheses, square brackets, and curly braces.
+All of these occur frequently in matched pairs on shell command lines.
+</p>
+
+<p>
+One final command rounds out the vi control mode commands
+for getting around on the current line: you can use the pipe character
+(<tt class="literal">|</tt>) for moving to a specific column, whose number is given by
+a numeric prefix argument. Column counts start at 1;
+count only your input, not the space taken up by the prompt string.
+The default repeat count is 1, of course, which
+means that typing <tt class="literal">|</tt> by itself is equivalent to <tt class="literal">0</tt>
+(see <a href="ch02_04.htm#korn2-CHP-2-TABLE-7">Table 2-7</a>).
+<a name="IXTR3-104" />
+</p>
+
+</div>
+
+<a name="korn2-CHP-2-SECT-4.6" /><div class="sect2">
+<h3 class="sect2">2.4.6. Filename and Variable Completion and Expansion</h3>
+
+<p>
+<a name="korn2-IDXTERM-479" />
+<a name="IXT-2-287285" />
+
+Vi-mode provides one additional feature that we think
+you will use quite often: filename completion. This feature
+is not part of the real <em class="emphasis">vi</em> editor, and it was undoubtedly
+inspired by similar features in Emacs and, originally, in the TOPS-20 operating system for DEC mainframes.
+</p>
+
+<p>
+<a name="IXT-2-287286" />
+<a name="IXT-2-287287" />
+
+The rationale behind filename completion is simple: you should
+have to type only as much of a filename as is necessary to
+distinguish
+it from other filenames in the same directory. Backslash
+(<tt class="literal">\</tt>) is
+the command that tells the Korn shell to do filename completion in vi-mode.
+If you type in a word, type ESC to enter control mode,
+and then type <tt class="literal">\</tt>, one of four things happens; they are
+the same as for TAB (or ESC ESC) in emacs-mode:
+</p>
+
+<ol>
+
+<li><p>
+If there is no file whose name begins with the word, the shell
+beeps and nothing further happens.
+</p></li>
+
+<li><p>
+If there is exactly one way to complete the filename, and the file
+is a regular file, the shell types the rest of the filename,
+followed by a space in case you want to type in more command arguments.
+</p></li>
+
+<li><p>
+If there is exactly one way to complete the filename, and the file
+is a directory, the shell completes the filename, followed
+by a slash.
+</p></li>
+
+<li><p>
+If there is more than one way to complete the filename,
+the shell completes out to the longest common prefix among
+the available choices.
+</p></li>
+
+</ol>
+
+<p>
+As in emacs-mode, starting with <em class="emphasis">ksh93h</em>, you may
+use TAB instead of ESC \.  However, this only works if you use
+<em class="emphasis">set -o viraw</em> in addition to <em class="emphasis">set
+-o vi</em>.  (The <em class="emphasis">viraw</em> option is a
+bit more CPU-intensive -- although probably not noticeably -- and is required on some older Unix systems for vi-mode to work at
+all.)  Fortunately,<?troff .ne 10?> beginning with <em class="emphasis">ksh93n</em>, the
+<em class="emphasis">viraw</em> option is automatically enabled when you
+use vi-mode.
+</p>
+
+<p>
+
+<a name="IXTR3-105" />
+<a name="IXT-2-287288" />
+<a name="IXT-2-287289" />
+<a name="IXT-2-287290" />
+
+
+A related command is <tt class="literal">*</tt>, which is the same as ESC <tt class="literal">*</tt> in emacs-mode
+as described earlier in this chapter.<a href="#FOOTNOTE-28">[28]</a>
+It behaves similarly to ESC <tt class="literal">\</tt>, but
+if there is more than one completion possibility (number four in the list
+above), it lists all of them and allows you to type further.
+Thus, it resembles the <tt class="literal">*</tt> shell wildcard character.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-28" /><p> [28]
+If you count the ESC needed to get out of input mode, the vi-mode
+command is identical to emacs-mode.
+</p>
+</blockquote>
+
+<p>
+
+<a name="IXT-2-287291" />
+<a name="IXT-2-287292" />
+
+Finally,
+the command <tt class="literal">=</tt> does the same kind of filename
+expansion as the <tt class="literal">*</tt> shell wildcard, but in a different way.
+Instead of expanding the filenames onto the command line,
+it prints them in a numbered list with one filename on each line.
+Then it gives you your shell prompt back and retypes whatever was
+on your command line before you typed <tt class="literal">=</tt>.
+For example, if the files in your directory include <em class="emphasis">program.c</em>
+and <em class="emphasis">problem.c</em>,
+and you type <tt class="literal">pro</tt> followed by ESC and then <tt class="literal">=</tt>, you will see this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cc pro</b></tt>            <i class="lineannotation">ESC = typed at this point</i>
+1) problem.c
+2) program.c
+$ <tt class="userinput"><b>cc pr</b></tt><span class="emphasis-reverse">o</span>
+</pre></blockquote>
+</p>
+
+<p>
+Beginning with <em class="emphasis">ksh93m</em>, prefixing the = command
+with a count indicates selection of a particular option.  Returning to the
+previous example: after listing both <em class="emphasis">problem.c</em> and
+<em class="emphasis">program.c</em>, the command line looks like this:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cc pr</b></tt><span class="emphasis-reverse">o</span>
+</pre></blockquote>
+
+<p>
+If you want <em class="emphasis">program.c</em>, it's enough to type
+<tt class="literal">2 =</tt>, and the shell picks expansion number 2.
+The command line changes to:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cc program.c </b></tt>
+</pre></blockquote>
+
+<p>
+As in emacs-mode, you can also do command completion from vi-mode.
+The <tt class="literal">*</tt>, <tt class="literal">\</tt>,
+and <tt class="literal">=</tt> commands, when used on the first
+word of the command line, expand aliases, functions, and commands.
+Also as in emacs-mode,
+starting with <em class="emphasis">ksh93l</em>,
+these expansions work when you've opened a quoted
+string but haven't closed it yet, and for variable expansions with
+<tt class="literal">$</tt> and <tt class="literal">"$</tt>.
+</p>
+
+</div>
+
+<a name="korn2-CHP-2-SECT-4.7" /><div class="sect2">
+<h3 class="sect2">2.4.7. Miscellaneous Commands</h3>
+
+<p>
+Several miscellaneous commands round out vi-mode;
+some of them are quite esoteric. They are listed in
+<a href="ch02_04.htm#korn2-CHP-2-TABLE-14">Table 2-14</a>.
+
+
+</p>
+
+<a name="korn2-CHP-2-TABLE-14" /><h4 class="objtitle">Table 2-14. Miscellaneous vi-mode commands</h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">~</tt></td>
+<td>Invert ("twiddle") case of current character(s).</td>
+</tr>
+
+<tr>
+<td><tt class="literal">_</tt></td>
+<td><p>
+Append last word of previous command; enter input mode.
+A repeat count appends the given <em class="emphasis">n</em>th word,
+starting from the beginning of the command.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">v</tt></td>
+<td><p>
+Run the <em class="emphasis">hist</em> command on the current line
+(actually, run the command <tt class="literal">hist -e ${VISUAL:-${EDITOR:-vi}}</tt>);
+usually this means run the full <em class="emphasis">vi</em> on the current line.
+</p></td>
+</tr>
+
+<tr>
+<td>CTRL-L</td>
+<td><p>
+Start a new line and redraw the current line on it;
+good for when your screen becomes garbled.
+</p></td>
+</tr>
+
+<tr>
+<td>CTRL-V</td>
+<td>Print the version of the Korn shell.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">#</tt></td>
+<td><p>
+Prepend <tt class="literal">#</tt> (comment character) to the line and
+send it to the history file;<a href="#FOOTNOTE-29">[29]</a>
+useful for saving a command to be executed later without having to
+retype it.
+If the line already starts with a <tt class="literal">#</tt>, remove the leading
+<tt class="literal">#</tt> and any other comment characters that follow newlines in a
+multiline command.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">@</tt><em class="replaceable"><tt>x</tt></em></td>
+<td><p>
+Insert expansion of alias _<em class="emphasis">x</em> as command mode input (see text).
+</p></td>
+</tr>
+
+
+</table><p>
+<a name="FOOTNOTE-29" /><p> [29]
+The line is also "executed" by the shell. However, <tt class="literal">#</tt> is the shell's
+comment character, so the shell ignores it.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-2-287293" />
+<a name="IXT-2-287294" />
+<a name="IXT-2-287295" />
+<a name="IXT-2-287296" />
+<a name="IXT-2-287297" />
+<a name="IXT-2-287298" />
+<a name="IXT-2-287299" />
+<a name="IXT-2-287300" />
+<a name="IXT-2-287301" />
+<a name="IXT-2-287302" />
+<a name="IXT-2-287303" />
+
+<a name="IXT-2-287304" />
+<a name="IXT-2-287305" />
+The first of these can be preceded by a repeat count.
+A repeat count of <em class="emphasis">n</em> preceding the <tt class="literal">~</tt> changes the case of
+the next <em class="emphasis">n</em> characters.<a href="#FOOTNOTE-30">[30]</a>
+The cursor advances accordingly.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-30" /><p> [30]
+This, in our opinion, is a design flaw in the <em class="emphasis">vi</em> editor
+that the Korn shell authors might have corrected. Letting the user
+append a motion command to <tt class="literal">~</tt> and having it behave analogously to <tt class="literal">d</tt>
+or <tt class="literal">y</tt> would have been much more useful; that way, a word
+could be case-twiddled with only two keystrokes.
+</p>
+</blockquote>
+
+<p>
+
+A repeat count preceding _ causes the <em class="emphasis">n</em>th word in the previous
+command to be inserted in the current line; without the count,
+the last word is used. Omitting the repeat count is useful because a
+filename is usually the last thing on a Unix command line, and because
+users often run several commands
+in a row on the same file. With this feature, you can type all of the
+commands (except the first) followed by ESC _, and the shell
+inserts the filename.
+</p>
+</div>
+
+<a name="korn2-CHP-2-SECT-4.8" /><div class="sect2">
+<h3 class="sect2">2.4.8. Macro Expansion with Aliases</h3>
+
+<p>
+
+<a name="IXT-2-287306" />
+<a name="IXT-2-287307" />
+
+Just as described earlier for emacs-mode, you may use the shell's
+alias facility (described in the next chapter) to create <em class="emphasis">macros</em>,
+i.e., single-letter abbreviations for longer sequences of commands.
+If you create an alias named _<em class="emphasis">x</em>, where <em class="emphasis">x</em>
+is a letter, then when you type <tt class="literal">@</tt> <em class="emphasis">x</em>,
+vi-mode expands the alias and reads it as command-mode input.
+</p>
+
+<p>
+As before, suppose that you want a command to capitalize the first
+letter of the current word.  You could define an alias as follows:
+</p>
+
+<blockquote><pre class="code">
+alias _C='B~'
+</pre></blockquote>
+
+<p>
+Now, if you type ESC @ C, the cursor moves to the beginning of the current word (B),
+and then capitalizes the current letter (~).
+<a name="IXTR3-106" />
+
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print here is a word</b></tt>     <i class="lineannotation">Type ESC @ C</i>
+$ <tt class="userinput"><b>print here is a W</b></tt><span class="emphasis-reverse">o</span><tt class="userinput"><b>rd</b></tt>
+</pre></blockquote>
+
+
+<p>
+<a name="IXTR3-107" />
+</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2.3. Emacs Editing Mode</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.5. The hist Command</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

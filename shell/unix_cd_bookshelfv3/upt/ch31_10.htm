@@ -1,0 +1,129 @@
+<html><head><title>cd by Directory Initials (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch31_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch31_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">31.10. cd by Directory Initials</h2>
+
+<p><a name="IXT-31-4141" />Here's
+<a name="IXT-31-4142" /><a name="IXT-31-4143" /><a name="IXT-31-4144" /> <a name="IXT-31-4145" />a handy shell function called
+<em class="emphasis">c</em> for people who <i class="command">cd</i> all over
+the filesystem. (I first saw Marc Brumlik's posting
+of it on Usenet years ago, as a C shell alias. He and I have both
+made some changes to it since then.) This function is great for
+shells that don't have <b class="emphasis-bold">filename completion</b> (<a href="ch28_06.htm#upt3-CHP-28-SECT-6">Section 28.6</a>). This function works a bit like filename
+completion, but it's faster because the
+"initials" match only directories
+and you don't have to press TAB or ESC after each
+part of the pathname. Instead, you just type the initials (first
+letter or more) of each directory in the pathname. Start at the root
+directory. Put a dot (.) after each part.
+</p>
+
+<p>Here are three examples. The first one shows that
+there's no subdirectory of root whose name starts
+with <em class="filename">q</em>. The second one matches the directory
+<em class="filename">/usr/include/hsfs</em> and <i class="command">cd</i>s
+there:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>c q.</b></tt>
+c: no match for /q*/.
+$ <tt class="userinput"><b>c u.i.h.</b></tt>
+/usr/include/hsfs/.
+$</pre></blockquote>
+
+<p>In the next example, trying to change to
+<em class="filename">/usr/include/pascal</em> the abbreviations
+aren't unique the first time. The function shows me
+all the matches; the second time, I add another letter
+("a") to make the name unique:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>c u.i.p.</b></tt>
+c: too many matches for u.i.p.:
+/usr/include/pascal/. /usr/include/pixrect/. /usr/include/protocols/.
+$ <tt class="userinput"><b>c u.i.pa.</b></tt>
+/usr/include/pascal/.
+$</pre></blockquote>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: c.csh, c.sh</p>
+
+<p>The Bourne shell function is straightforward; it's
+shown below.<a href="#FOOTNOTE-98">[98]</a> The C shell
+alias needs some trickery, and there are two versions of it: one if
+you already have an alias for <i class="command">cd</i> and another if
+you don't. (The C shell <i class="command">if</i> used
+in the <em class="emphasis">c</em> alias won't work with
+a <i class="command">cd</i> alias. Although the <i class="command">csh</i>
+manual page admits it won't work,
+I'd call that another C shell bug.)
+</p><blockquote class="footnote"> <a name="FOOTNOTE-98" /><p> [98]You may need to remove the
+<tt class="literal">function</tt> keyword in older Bourne shells, but it is
+required for <i class="command">bash</i>.</p> </blockquote>
+
+<p><tt class="literal">set</tt> <a href="ch35_25.htm#upt3-CHP-35-SECT-25">Section 35.25</a>, <tt class="literal">$#</tt> <a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a></p>
+
+<blockquote><pre class="code">function c( )
+{
+   dir="$1"
+
+   # Delete dots.  Surround every letter with "/" and "*".
+   # Add a final "/." to be sure this only matches a directory:
+   dirpat="`echo $dir | sed 's/\([^.]*\)\./\/\1*/g'`/."
+
+   # In case $dirpat is empty, set dummy "x" then shift it away:
+   set x $dirpat; shift
+
+   # Do the cd if we got one match, else print error:
+   if [ "$1" = "$dirpat" ]; then
+      # pattern didn't match (shell didn't expand it)
+      echo "c: no match for $dirpat" 1&gt;&amp;2
+   elif [ $# = 1 ]; then
+      echo "$1"
+      cd "$1"
+   else
+      echo "c: too many matches for $dir:" 1&gt;&amp;2
+      ls -d "$@"
+   fi
+
+   unset dir dirpat
+}</pre></blockquote>
+
+<p>The function starts by building a wildcard pattern to match the
+directory initials. For example, if you type <tt class="literal">c
+u.i.h</tt>., <i class="command">sed</i> makes the pattern
+<tt class="literal">/u*/i*/h*/</tt>. in <tt class="literal">$dirpat</tt>. Next,
+the shell expands the wildcards onto its command-line parameters; the
+trailing dot makes sure the pattern matches only a directory. If the
+Bourne shell can't match a wildcard pattern, it
+leaves the pattern unchanged; the first <tt class="literal">if</tt> test
+spots that. If there was just one match, there will be one
+command-line parameter left, and the shell <i class="command">cd</i>s
+there. Otherwise, there were too many matches; the function shows
+them so you can make your pattern longer and more specific.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch31_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch31_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">31.9. Quick cds with Aliases</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">31.11. Finding (Anyone's) Home Directory, Quickly</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

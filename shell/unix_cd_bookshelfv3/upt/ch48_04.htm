@@ -1,0 +1,104 @@
+<html><head><title>What We Mean by Buffer Overflow (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch48_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch48_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">48.4. What We Mean by Buffer Overflow</h2>
+
+<p><a name="IXT-48-1896" /><a name="IXT-48-1897" /> <a name="IXT-48-1898" />You
+can't run any operating system without getting
+security alerts related to buffer overflow vulnerabilities. Unless
+you're into system hacking, you're
+probably not aware of what this means and why buffer overflow is the
+base cause of so many alerts.
+</p>
+
+<p><a name="IXT-48-1899" />In a procedural language, such as the
+C programming language used to create Unix, functionality is broken
+down into separate, reusable functions. These functions are then
+called whenever that functionality is needed. Data is passed between
+the application and the function through function arguments.
+</p>
+
+<p>Function arguments are pushed onto a section of memory called the
+<a name="IXT-48-1900" />stack. Additionally, the
+return point for the function -- that place in the application
+where the function is called -- is also pushed onto the stack.
+Finally, data internal to the function is also pushed onto the stack.
+</p>
+
+<p>A buffer is allocated on the stack to store function parameters. If a
+parameter exceeds the buffer size, the data overwrites the other
+stack contents, including the function return call, resulting in an
+application failure. Many functions commonly used in C, such as
+<tt class="function">scanf</tt> or <tt class="function">strcpy</tt>,
+don't ensure that the buffer meets the size of the
+data copied, and if the application developer
+doesn't perform this check herself, the application
+will most likely fail the first time the data copied exceeds the size
+of the buffer.
+</p>
+
+<p>An example of this type of problem is an application that opens and
+copies the contents of a file using one of the C functions that
+don't do buffer size checking. As long as the file
+contents are small enough, the application doesn't
+generate an error. However, if a file's contents are
+too large, the application will fail, abruptly, leaving application
+support personnel scratching their heads wondering why an application
+that worked to a certain point stopped working.
+</p>
+
+<p>An application failure is not the worst that can happen in this
+situation. Crackers with a good understanding of how the stack works
+and knowledge of assembly code can exploit this vulnerability by
+writing code to the stack beyond the function arguments and function
+return address. In addition, they can rewrite the function return
+address to point to the address of the beginning of this malicious
+code. When the function finishes, the address of the new hacked code
+is pushed to the processor rather than the return location of the
+function, and the hacked code is executed, usually with disastrous
+results.
+</p>
+
+<p>To prevent both application crashes and buffer-overflow
+vulnerabilities, <a name="IXT-48-1901" /><a name="IXT-48-1902" />boundary-checking versions
+of most C functions are used rather than the unsafe functions. The
+application developer also adds boundary checking to his or her own
+code, such as checking the size of the application file before
+processing it from our example application. Unfortunately, this
+doesn't always happen.
+</p>
+
+<p>When you read about or receive an alert about buffer-overflow
+vulnerability in a Unix utility or application,
+what's happened is that crackers -- or security
+personnel -- have discovered that the application contains code
+that isn't testing the boundaries of the data being
+processed. Usually a patch that replaces the defective code
+accompanies this alert.
+</p>
+
+<p> <em class="emphasis">-- SP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch48_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch48_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">48.3. Keeping Up with Security Alerts</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">48.5. What We Mean by DoS</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

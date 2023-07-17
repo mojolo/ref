@@ -1,0 +1,436 @@
+<html><head><title>Filename Wildcards in a Nutshell (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch33_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">33.2. Filename Wildcards in a Nutshell</h2>
+
+<p><a name="upt3-IDXTERM-5113" /> <a name="upt3-IDXTERM-5114" />This
+article summarizes the wildcards that are used for filename expansion
+(see <a href="ch33_02.htm#upt3-CHP-33-TABLE-1">Table 33-1</a>). The shells use the same basic
+wildcards, though most shells have some extensions. Unless otherwise
+noted, assume that wildcards are valid for all shells.
+</p>
+
+<a name="upt3-CHP-33-TABLE-1" /><h4 class="objtitle">Table 33-1. Filename wildcards </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Wildcard</p>
+</th>
+<th>
+<p>Shells</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">*</tt></p>
+</td>
+<td>
+<p>All</p>
+</td>
+<td>
+<p>Match zero or more characters. For example, <tt class="literal">a*</tt>
+matches the files <a name="IXT-33-3831" /><em class="emphasis">a</em>,
+<em class="emphasis">ab</em>, <em class="emphasis">abc</em>,
+<em class="emphasis">abc.d</em>, and so on. (<i class="command">zsh</i> users:
+also see <tt class="literal">x#</tt> and <tt class="literal">x##</tt>, below.)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">?</tt></p>
+</td>
+<td>
+<p>All</p>
+</td>
+<td>
+<p><a name="IXT-33-3832" />Match exactly one character. For
+example, <tt class="literal">a?</tt> matches <em class="emphasis">aa</em>,
+<em class="emphasis">ab</em>, <em class="emphasis">ac</em>, etc.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[12..a..z]</tt></p>
+</td>
+<td>
+<p>All</p>
+</td>
+<td>
+<p><a name="IXT-33-3833" />Match
+any character listed in the brackets. For example,
+<tt class="literal">a[ab]</tt> matches <em class="emphasis">aa</em> or
+<em class="emphasis">ab</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[a-z]</tt></p>
+</td>
+<td>
+<p>All</p>
+</td>
+<td>
+<p>Match all characters between a and z, in a case-sensitive manner,
+based on the characters' value in the ASCII
+character set. For example, <tt class="literal">a[0-9]</tt> matches
+<em class="emphasis">a0</em>, <em class="emphasis">a1</em>, and so on, up to
+<em class="emphasis">a9</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[!ab..z]</tt></p>
+</td>
+<td>
+<p><i class="command">bash</i>, <i class="command">ksh</i>,
+<i class="command">zsh</i>, newer <i class="command">sh</i>
+</p>
+</td>
+<td>
+<p><a name="IXT-33-3834" />Match any character that
+does <em class="emphasis">not</em> appear within the brackets. For
+example, <tt class="literal">a[!0-9]</tt> doesn't match
+<em class="emphasis">a0</em> but does match <em class="emphasis">aa</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[^ab..z]</tt><a name="IXT-33-3835" /> <a name="IXT-33-3836" />
+</p>
+</td>
+<td>
+<p><i class="command">tcsh</i>, <i class="command">zsh</i></p>
+</td>
+<td>
+<p>Match any character that does <em class="emphasis">not</em> appear within
+the brackets. For example, <tt class="literal">a[^0-9]</tt>
+doesn't match <em class="emphasis">a0</em>, but does
+match <em class="emphasis">aa</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">&lt;</tt><em class="replaceable"><tt>m-n</tt></em><tt class="literal">&gt;</tt>
+</p>
+</td>
+<td>
+<p><i class="command">zsh</i></p>
+</td>
+<td>
+<p>Any number in the range <em class="replaceable"><tt>m</tt></em> to
+<em class="replaceable"><tt>n</em>. If <em class="replaceable">m</tt></em> is
+omitted, this matches numbers less than or equal to
+<em class="replaceable"><tt>n</em>. If <em class="replaceable">n</tt></em> is
+omitted, it matches numbers greater than or equal to
+<em class="replaceable"><tt>m</tt></em>. The pattern
+<tt class="literal">&lt;-&gt;</tt><a name="IXT-33-3837" /> matches all numbers.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">{</tt><em class="replaceable"><tt>word1</em>,<em class="replaceable">word2</tt></em><tt class="literal">...}</tt>
+</p>
+</td>
+<td>
+<p><i class="command">bash</i>, <i class="command">csh</i>,
+<i class="command">pdksh</i>, <i class="command">zsh</i>
+</p>
+</td>
+<td>
+<p><a name="IXT-33-3838" />Match <em class="emphasis">word1</em>,
+<em class="emphasis">word2</em>, etc. For example,
+<tt class="literal">a_{dog,cat,horse}</tt> matches the filenames
+<em class="emphasis">a_dog</em>, <em class="emphasis">a_cat</em>, and
+<em class="emphasis">a_horse</em>. <b class="emphasis-bold">These</b>
+<b class="emphasis-bold">(</b> (<a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a>)
+actually aren't filename-matching wildcards. They
+expand to <em class="emphasis">all</em> strings you specify, including
+filenames that don't exist yet, email addresses, and
+more. (If you want to match one or more of a group of filenames that
+already exist, see also the parenthesis operators <tt class="literal">(
+)</tt> below.)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">?(</tt><a name="IXT-33-3839" /><em class="replaceable"><tt>x</em><tt class="literal">|</tt><em class="replaceable">y</em><tt class="literal">|</tt><em class="replaceable">z</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p><i class="command">ksh</i>, <i class="command">bash2</i></p>
+</td>
+<td>
+<p>Match zero or one instance of any of the specified patterns. For
+example, <tt class="literal">w?(abc)w</tt> matches <em class="emphasis">ww</em>
+or <em class="emphasis">wabcw</em>. Also, <tt class="literal">?(foo|bar)</tt>
+matches only <em class="emphasis">foo</em>, <em class="emphasis">bar</em>, and
+the empty string. In <i class="command">bash2</i>, this works only if
+you've set the <em class="emphasis">extglob</em> option
+using <i class="command">shopt</i>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">*(</tt><a name="IXT-33-3840" /><em class="replaceable"><tt>x</em><tt class="literal">|</tt><em class="replaceable">y</em><tt class="literal">|</tt><em class="replaceable">z</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p><i class="command">ksh</i>, <i class="command">bash2</i></p>
+</td>
+<td>
+<p>Match zero or more instances of any of the specified patterns. For
+example, <tt class="literal">w*(abc)w</tt> matches <em class="emphasis">ww</em>,
+<em class="emphasis">wabcw</em>, <em class="emphasis">wabcabcw</em>, etc. Also,
+<tt class="literal">*(foo|bar)</tt> matches <em class="emphasis">foo</em>,
+<em class="emphasis">bar</em>, <em class="emphasis">foobarfoo</em>, etc., as
+well as the empty string. In <i class="command">bash2</i>, this works
+only if you've set the <em class="emphasis">extglob</em>
+option using <i class="command">shopt</i>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">+(</tt><a name="IXT-33-3841" /><em class="replaceable"><tt>x</em><tt class="literal">|</tt><em class="replaceable">y</em><tt class="literal">|</tt><em class="replaceable">z</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p><i class="command">ksh</i>, <i class="command">bash2</i></p>
+</td>
+<td>
+<p>Match one or more instances of any of the specified patterns. For
+example, <tt class="literal">w+(abc)w</tt> matches
+<em class="emphasis">wabcw</em>, <em class="emphasis">wabcabcw</em>, etc. Also,
+<tt class="literal">+(foo|bar)</tt> matches <em class="emphasis">foo</em>,
+<em class="emphasis">bar</em>, <em class="emphasis">foobarfoo</em>, etc. In
+<i class="command">bash2</i>, this works only if you've
+set the <em class="emphasis">extglob</em> option using
+<i class="command">shopt</i>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">@(</tt><a name="IXT-33-3842" /><em class="replaceable"><tt>x</em><tt class="literal">|</tt><em class="replaceable">y</em><tt class="literal">|</tt><em class="replaceable">z</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p><i class="command">ksh</i>, <i class="command">bash2</i></p>
+</td>
+<td>
+<p>Match exactly one of any of the specified patterns. For example,
+<tt class="literal">@(foo|bar)</tt> matches <em class="emphasis">foo</em> or
+<em class="emphasis">bar</em>. (See also
+<tt class="literal">{word1,word2...}</tt>.) In <i class="command">bash2</i>,
+this works only if you've set the
+<em class="emphasis">extglob</em> option using <i class="command">shopt</i>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">!(</tt><a name="IXT-33-3843" /><em class="replaceable"><tt>x</em><tt class="literal">|</tt><em class="replaceable">y</em><tt class="literal">|</tt><em class="replaceable">z</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p><i class="command">ksh</i>, <i class="command">bash2</i></p>
+</td>
+<td>
+<p>Match anything that doesn't contain any of the
+specified patterns. For example, <tt class="literal">w!(abc)w</tt>
+doesn't match <em class="emphasis">wabcw</em> or
+<em class="emphasis">wabcabcw</em>, but it does match practically anything
+else that begins or ends with <em class="emphasis">w</em>. Also,
+<tt class="literal">!(foo|bar)</tt> matches all strings except
+<em class="emphasis">foo</em> and <em class="emphasis">bar</em>. In
+<i class="command">bash2</i>, this works only if you've
+set the <em class="emphasis">extglob</em> option using
+<i class="command">shopt</i>. (For other shells, see <b class="emphasis-bold">nom</b> (<a href="ch33_08.htm#upt3-CHP-33-SECT-8">Section 33.8</a>).)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">^</tt><em class="replaceable"><tt>pat</tt></em></p>
+</td>
+<td>
+<p><i class="command">tcsh</i>, <i class="command">zsh</i></p>
+</td>
+<td>
+<p><a name="IXT-33-3844" />Match any name that
+doesn't match <em class="replaceable"><tt>pat</tt></em>. In
+<i class="command">zsh</i>, this only works if you've
+set the <em class="emphasis">EXTENDED_GLOB</em> option. In
+<i class="command">tcsh</i>, the <em class="replaceable"><tt>pat</tt></em> must
+include at least one of the wildcards <tt class="literal">*</tt>,
+<tt class="literal">?</tt> and <tt class="literal">[ ]</tt>. So, to match all
+except a single name in <i class="command">tcsh</i>,
+here's a trick: put brackets around one character.
+For instance, you can match all except <em class="emphasis">abc</em> with
+<tt class="literal">^ab[c]</tt>. (For other shells, see <b class="emphasis-bold">nom</b> (<a href="ch33_08.htm#upt3-CHP-33-SECT-8">Section 33.8</a>).)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">(</tt><em class="replaceable"><tt>x</em><tt class="literal">|</tt><em class="replaceable">y</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p><i class="command">zsh</i></p>
+</td>
+<td>
+<p><a name="IXT-33-3845" />Match either
+<em class="replaceable"><tt>x</em> or <em class="replaceable">y</tt></em>. The
+vertical bar (<tt class="literal">|</tt>) must be used inside parentheses.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">**</tt></p>
+</td>
+<td>
+<p><i class="command">zsh</i></p>
+</td>
+<td>
+<p><a name="IXT-33-3846" />Search recursively.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">***</tt></p>
+</td>
+<td>
+<p><i class="command">zsh</i></p>
+</td>
+<td>
+<p><a name="IXT-33-3847" />Search recursively, following
+symbolic links to directories.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>x</tt></em><tt class="literal">#</tt></p>
+</td>
+<td>
+<p><i class="command">zsh</i></p>
+</td>
+<td>
+<p><a name="IXT-33-3848" />Matches zero or more
+occurrences of the pattern <em class="replaceable"><tt>x</tt></em> (like the
+<b class="emphasis-bold">regular expresssion</b> (<a href="ch32_02.htm#upt3-CHP-32-SECT-2">Section 32.2</a>) x*). The pattern can have parentheses
+<tt class="literal">( )</tt> around it. You must have set the
+<em class="emphasis">EXTENDED_GLOB</em> option.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>x</tt></em><tt class="literal">##</tt></p>
+</td>
+<td>
+<p><i class="command">zsh</i></p>
+</td>
+<td>
+<p>Matches one or more occurrences of the pattern
+<em class="replaceable"><tt>x</tt></em> (like the <b class="emphasis-bold">regular
+expresssion</b> (<a href="ch32_15.htm#upt3-CHP-32-SECT-15">Section 32.15</a>) x+). The
+pattern can have parentheses <tt class="literal">( )</tt> around it. You
+must have set the <em class="emphasis">EXTENDED_GLOB</em> option.
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p><a name="IXT-33-3849" />Note
+<a name="IXT-33-3850" />that wildcards <em class="emphasis">do
+not</em> match files whose names begin <a name="IXT-33-3851" />with a <a name="IXT-33-3852" />dot
+(.), like <em class="filename">.cshrc</em>. This prevents you from
+deleting (or otherwise mucking around with) these files by accident.
+The usual way to match those files is to type the dot literally. For
+example, <tt class="literal">.[a-z]*</tt> matches anything whose name
+starts with a dot and a lowercase letter. Watch out for plain
+<tt class="literal">.*</tt>, though; it matches the directory entries
+<tt class="literal">.</tt> and <tt class="literal">..</tt>. If
+you're constantly needing to match dot-files,
+though, you can set the <i class="command">bash</i> variable
+<em class="emphasis">glob_dot_filenames</em> and the
+<i class="command">zsh</i> option <em class="emphasis">GLOB_DOTS</em> to
+include dot-files' names in those
+shells' wildcard expansion.
+</p>
+
+<p>You can prevent wildcard expansion by <b class="emphasis-bold">quoting</b>
+(<a name="IXT-33-3853" /> <a name="IXT-33-3854" /><a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>,
+<a href="ch27_13.htm#upt3-CHP-27-SECT-13">Section 27.13</a>), of course. In the C shells, you can
+stop all wildcard expansion (which is also called
+<em class="emphasis">globbing</em>, by the way) without quoting if you set
+the <em class="emphasis">noglob</em> shell variable. In
+<i class="command">bash</i>, <i class="command">ksh,</i> and
+<i class="command">zsh</i>, set the
+<em class="emphasis">noglob</em><a name="IXT-33-3855" /> <a name="IXT-33-3856" /> <a name="IXT-33-3857" /> <a name="IXT-33-3858" /> option.
+</p>
+
+<p><a name="IXT-33-3859" /><a name="IXT-33-3860" />And a final note: many
+<a name="IXT-33-3861" /> <a name="IXT-33-3862" />operating systems (VAX/VMS and DOS
+included) consider a file's
+<em class="emphasis">name</em> and <em class="emphasis">extension</em> to be
+different entities; therefore, you can't use a
+single wildcard to match both. What do we mean? Consider the file
+<em class="emphasis">abc.def</em>. Under DOS or VMS, to match this
+filename you'd need the wildcard expression
+<tt class="literal">*.*</tt>. The first <tt class="literal">*</tt> matches the
+name (the part before the period), and the second matches the
+extension (the part after the period). Although Unix uses extensions,
+they aren't considered a separate part of the
+filename, so a single <tt class="literal">*</tt> will match the entire
+name.<a name="IXTR3-3898" />
+<a name="IXTR3-3899" />
+</p>
+
+<p><em class="emphasis">--JP, ML, and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch33_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">33. Wildcards</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">33.3. Who Handles Wildcards?</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,246 @@
+<html><head><title>Installing Software with Debian's Apt-Get (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch40_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch40_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">40.6. Installing Software with Debian's Apt-Get</h2>
+
+<p><a name="upt3-IDXTERM-6514" />
+<a name="upt3-IDXTERM-6515" /> <a name="upt3-IDXTERM-6516" />The <em class="emphasis">dselect</em>
+<a name="upt3-IDXTERM-6517" />program
+is useful, because it lets you browse a list of available packages,
+viewing their descriptions and dependencies, and selecting desired
+packages for installation. However, if you know the name of a package
+you want to install, <em class="emphasis">apt-get</em> is often the
+easiest way to install it. Before using <em class="emphasis">apt-get</em>,
+you must configure the <em class="emphasis">sources.list</em> file. This
+same file is used when you choose the apt access method of
+<em class="emphasis">dselect</em>. Even if you don't plan
+on using <em class="emphasis">apt-get</em>, you'll find
+the information in the following subsection useful.
+</p>
+
+<a name="upt3-CHP-40-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">40.6.1. Configuring the sources.list File</h3>
+
+<p><a name="IXT-40-2771" /> <a name="IXT-40-2772" />The <em class="emphasis">sources.list</em> file
+resides in the
+<em class="emphasis">/etc/apt</em><a name="IXT-40-2773" /> <a name="IXT-40-2774" /><a name="IXT-40-2775" />
+directory. Like most other Linux configuration files, it can be
+revised by using an ordinary text editor, such as
+<em class="emphasis">ae</em>.
+</p>
+
+<p>The file contains a series of lines, each specifying a source for
+packages. The lines are consulted serially, so it's
+usually advantageous to place lines that specify local
+sources -- such as a CD-ROM -- ahead of lines that specify
+remote sources. Doing so can save many minutes of download time.
+</p>
+
+<p>Each line has the form:</p>
+
+<blockquote><pre class="code">deb uri distribution components</pre></blockquote>
+
+<p>The <em class="filename">uri</em> is a <a name="IXT-40-2776" />universal resource
+identifier (URI) that specifies the computer on which the packages
+reside, the location of the packages, and the
+<a name="IXT-40-2777" /><a name="IXT-40-2778" />protocol used for accessing the packages.
+It has the following form:
+</p>
+
+<blockquote><pre class="code">protocol://host/path</pre></blockquote>
+
+<p>Four protocols -- sometimes called URI types -- are recognized:</p>
+
+<dl>
+<dt><i>cdrom</i></dt>
+<dd>
+A local <a name="IXT-40-2779" />CD-ROM drive
+</p>
+</dd>
+
+
+<dt><i>file</i></dt>
+<dd>
+<a name="IXT-40-2780" />A
+directory of the local filesystem
+</p>
+</dd>
+
+
+<dt><i>http</i></dt>
+<dd>
+<a name="IXT-40-2781" />A web server
+</p>
+</dd>
+
+
+<dt><i>ftp</i></dt>
+<dd>
+<a name="IXT-40-2782" />An FTP server
+</p>
+</dd>
+
+</dl>
+
+<p>The <em class="emphasis">host</em> part of the URI and the preceding pair
+of slashes (//) are used only for the http and ftp protocols. There,
+the <em class="filename">host</em> part of the URI gives the name of the
+host that contains the packages.
+</p>
+
+<p><a name="IXT-40-2783" />The <em class="emphasis">path</em> part of the
+URI always appears, with the preceding slash (/). It specifies the
+absolute path of the directory that contains the packages.
+</p>
+
+<p>Here are some examples of typical URIs:</p>
+
+<blockquote><pre class="code">cdrom:/cdrom
+cdrom:/mnt/cdrom
+file:/mnt
+file:/debian
+http://www.us.debian.org/debian
+http://non-us.debian.org/debian-non-US
+ftp://ftp.debian.org/debian
+ftp://nonus.debian.org/debian-non-US</pre></blockquote>
+
+<p>The distribution part of a
+<em class="filename">sources.list</em><a name="IXT-40-2784" /> line
+specifies the <a name="IXT-40-2785" />distribution release that contains the
+packages. Typical values include:
+</p>
+
+<dl>
+<dt><i>stable</i></dt>
+<dd>
+The latest stable release; that is, one that is commonly regarded as
+having sufficiently few serious bugs for everyday use.
+</p>
+</dd>
+
+
+<dt><i>unstable</i></dt>
+<dd>
+The latest unstable release. This release sometimes contains serious
+bugs and should not be installed by users who require high levels of
+system availability or reliability.
+</p>
+</dd>
+
+</dl>
+
+<p>The components part of a
+<em class="emphasis">sources.list</em><a name="IXT-40-2786" /> line
+specifies the parts of the distribution that will be accessed.
+Typical values include:
+</p>
+
+<dl>
+<dt><i>main</i></dt>
+<dd>
+The main set of packages.</p>
+</dd>
+
+
+<dt><i>contrib</i></dt>
+<dd>
+Packages not an integral part of the distribution, but which may be
+useful.
+</p>
+</dd>
+
+
+<dt><i>non-free</i></dt>
+<dd>
+Packages that contain software distributed under terms too
+restrictive to allow inclusion in the distribution, but which may be
+useful.
+</p>
+</dd>
+
+</dl>
+
+<p>A typical <em class="filename">sources.list</em></tt> file might contain the
+following entries:
+</p>
+
+<blockquote><pre class="code">deb file:/cdrom stable main contrib
+deb http://www.us.debian.org/debian stable main contrib non-free
+deb http://non-us.debian.org/debian-non-US stable non-US</pre></blockquote>
+
+<p>This configuration allows rapid access to the distribution packages
+contained on the local CD-ROM. It also allows convenient access via
+the network to other packages and more recent package versions stored
+on web servers.
+</p>
+
+</div>
+<a name="upt3-CHP-40-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">40.6.2. Using apt-get</h3>
+
+<p>Once you've configured sources.list, you can use
+<em class="emphasis">apt-get</em></tt> to update information on available
+packages, install a package, or upgrade installed packages.
+</p>
+
+<a name="upt3-CHP-40-SECT-6.2.1" /><div class="sect3">
+<h3 class="sect3">40.6.2.1. Updating information on available packages</h3>
+
+<p>To <a name="IXT-40-2787" />update
+information on available packages, issue the following command:
+</p>
+
+<blockquote><pre class="code">apt-get update</pre></blockquote>
+
+</div>
+
+<a name="upt3-CHP-40-SECT-6.2.2" /><div class="sect3">
+<h3 class="sect3">40.6.2.2. Installing a package</h3>
+
+<p>To install a specified package, issue the following command:</p>
+
+<blockquote><pre class="code">apt-get install <tt><em class="replaceable"><tt>package</tt></em></tt></pre></blockquote>
+
+<p>where <em class="filename">package</em></tt> specifies the name of the package
+to be installed.
+</p>
+
+</div>
+
+<a name="upt3-CHP-40-SECT-6.2.3" /><div class="sect3">
+<h3 class="sect3">40.6.2.3. Upgrading installed packages</h3>
+
+<p>To automatically <a name="IXT-40-2788" />upgrade all installed packages to
+the latest available version, issue the following command:<a name="IXTR3-2822" />
+</p>
+
+<blockquote><pre class="code">apt-get upgrade</pre></blockquote>
+
+<p>-- <em class="emphasis">SP<a name="IXTR3-2823" /> <a name="IXTR3-2824" /> <a name="IXTR3-2825" /></em></tt> 
+</p>
+
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch40_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch40_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">40.5. Using Debian's dselect</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">40.7. Interruptable gets with wget</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

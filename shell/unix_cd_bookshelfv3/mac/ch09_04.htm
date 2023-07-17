@@ -1,0 +1,136 @@
+<html><head><title>X11-based Applications and Libraries  (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.4. X11-based Applications and Libraries </h2>
+
+<p><a name="mosxgeeks-IDXTERM-580" /> <a name="mosxgeeks-IDXTERM-581" />You
+can also use <a name="IXT-9-741" />Fink to install many X11-based
+applications, such as the <a name="IXT-9-742" /> <a name="IXT-9-743" />GNU Image
+Manipulation Program (GIMP),
+<em class="filename">xfig/transfig</em><a name="IXT-9-744" />,
+<a name="IXT-9-745" />ImageMagick,
+<em class="filename">nedit</em><a name="IXT-9-746" />, and many others. Since Fink understands
+dependencies, installing some of these applications will cause Fink
+to first install several other packages. For example, since the text
+editor <em class="filename">nedit </em>depends on Motif libraries, Fink
+will first install <em class="filename">lesstif</em>. (This also gives you
+the <a name="IXT-9-747" /> <a name="IXT-9-748" />Motif window manager,
+<em class="filename">mwm</em>.) Similarly, when you install the GIMP via
+Fink, you will also install the packages for GNOME, GTK+, and
+<em class="filename">glib</em>.
+</p>
+
+<p>You can also use Fink to install libraries directly. For example:</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">fink install qt</b></pre></blockquote>
+
+<p>will install the X11-based Qt libraries. An Aqua version of Qt for
+Mac OS X is available from Trolltech (<a href="http://www.trolltech.com">http://www.trolltech.com</a>).
+</p>
+
+<a name="mosxgeeks-CHP-9-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">9.4.1. Building X11-based Applications and Libraries</h3>
+
+<p>If you cannot find binaries for X11-based applications (or if you
+prefer to build the applications yourself), most of the tools to do
+this are available. First, you need Apple's
+Developer Tools. If you installed XFree86 by hand, make sure you
+installed
+<em class="filename">XProg.tgz</em><a name="IXT-9-749" />,
+which contains development tools and header files needed for building
+X11-based applications. The XDarwin distribution includes these tools
+and header files.
+</p>
+
+<p>The process of building software usually begins with generating one
+or more <em class="filename">makefiles</em> customized to your system. For
+X11 applications, there are two popular methods for generating
+makefiles. One method is to use a <em class="filename">configure</em>
+script (see <a href="ch04_02.htm#mosxgeeks-CHP-4-SECT-2">Section 4.2</a> in <a href="ch04_01.htm">Chapter 4</a>.)
+</p>
+
+<p>The other popular method for generating makefiles involves using the
+<em class="filename">xmkmf</em><a name="IXT-9-750" /> script, which is a frontend to the
+<em class="filename">imake</em> utility. <em class="filename">xmkmf</em>
+invokes <em class="filename">imake</em>, which creates a makefile. To do
+this, <em class="filename">imake</em> looks for a template file called
+<em class="filename">Imakefile</em>.
+</p>
+
+<p>With <em class="filename">imake</em>-driven source releases, after
+downloading a source tarball, unpacking it, and changing to the
+top-level source directory, you'll find an
+<em class="filename">Imakefile</em>. After reading the
+<em class="filename">README</em> or <em class="filename">INSTALL</em> files,
+examine the <em class="filename">Imakefile</em> to see if you need to
+change anything. Then the next step is usually to issue the command:
+</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">xmkmf -a</b></pre></blockquote>
+
+<p>When invoked with the -<em class="filename">a </em>option,
+<em class="filename">xmkmf</em> reads <em class="filename">imake</em>-related
+files in <em class="filename">/usr/X11R6/lib/X11/config </em>and performs
+the following tasks recursively, beginning in the top-level directory
+and then in the subdirectories, if there are any:
+</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">make Makefiles</b> 
+% <b class="emphasis-bold">make includes</b>
+% <b class="emphasis-bold">make depend</b></pre></blockquote>
+
+<p>The next steps are usually <em class="filename">make</em>, <em class="filename">make
+test </em>(or <em class="filename">make check</em>), and
+<em class="filename">make install</em>.
+</p>
+
+<p>To illustrate this method of building software, consider the script
+in <a href="ch09_04.htm#mosxgeeks-CHP-9-EX-1">Example 9-1</a>, which downloads and builds an
+X11-based game.
+</p>
+
+<a name="mosxgeeks-CHP-9-EX-1" /><div class="example">
+<h4 class="objtitle">Example 9-1. Downloading and building an X11 game  </h4><a name="IXT-9-751" />
+<blockquote><pre class="code"># Download the source tarball
+<b class="emphasis-bold">curl -O ftp://ftp.x.org/contrib/games/xtic1.12.tar.gz</b>
+
+# Unpack the tarball
+<b class="emphasis-bold">gnutar xvfz xtic1.12.tar.gz</b>
+
+# Change to the top-level build directory 
+<b class="emphasis-bold">cd xtic1.12/</b>
+
+# Generate the Makefile
+<b class="emphasis-bold">xmkmf -a   </b>
+
+# Build everything (some X11 apps use 'make World')
+<b class="emphasis-bold">make</b>
+
+# Have fun!
+<b class="emphasis-bold">./src/xtic</b></pre></blockquote>
+</div>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9.3. Desktops and Window Managers</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.5. Making X11 Applications More Aqua-like</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

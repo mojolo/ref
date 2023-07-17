@@ -1,0 +1,292 @@
+<html><head><title>Finding Files with find (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_17.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 9. Finding Files with find</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch09_01.htm#sect1">How to Use find</a><br />
+<a href="ch09_02.htm">Delving Through a Deep Directory Tree</a><br />
+<a href="ch09_03.htm">Don't Forget -print</a><br />
+<a href="ch09_04.htm">Looking for Files with Particular Names</a><br />
+<a href="ch09_05.htm">Searching for Old Files</a><br />
+<a href="ch09_06.htm">Be an Expert on find Search Operators</a><br />
+<a href="ch09_07.htm">The Times That find Finds</a><br />
+<a href="ch09_08.htm">Exact File-Time Comparisons</a><br />
+<a href="ch09_09.htm">Running Commands on What You Find</a><br />
+<a href="ch09_10.htm">Using -exec to Create Custom Tests</a><br />
+<a href="ch09_11.htm">Custom -exec Tests Applied</a><br />
+<a href="ch09_12.htm">Finding Many Things with One Command</a><br />
+<a href="ch09_13.htm">Searching for Files by Type</a><br />
+<a href="ch09_14.htm">Searching for Files by Size</a><br />
+<a href="ch09_15.htm">Searching for Files by Permission</a><br />
+<a href="ch09_16.htm">Searching by Owner and Group</a><br />
+<a href="ch09_17.htm">Duplicating a Directory Tree</a><br />
+<a href="ch09_18.htm">Using "Fast find" Databases</a><br />
+<a href="ch09_19.htm">Wildcards with "Fast find" Database</a><br />
+<a href="ch09_20.htm">Finding Files (Much) Faster with a find Database</a><br />
+<a href="ch09_21.htm">grepping a Directory Tree</a><br />
+<a href="ch09_22.htm">lookfor: Which File Has That Word?</a><br />
+<a href="ch09_23.htm">Using Shell Arrays to Browse Directories</a><br />
+<a href="ch09_24.htm">Finding the (Hard) Links to a File</a><br />
+<a href="ch09_25.htm">Finding Files with -prune</a><br />
+<a href="ch09_26.htm">Quick finds in the Current Directory</a><br />
+<a href="ch09_27.htm">Skipping Parts of a Tree in find</a><br />
+<a href="ch09_28.htm">Keeping find from Searching Networked Filesystem</a><br /></p></div><div class="sect1"><a name="upt3-CHP-9-SECT-1" />
+<h2 class="sect1"><a name="sect1" />9.1. How to Use find</h2>
+
+<p><a name="upt3-IDXTERM-1478" />The
+<a name="IXT-9-1" />utility
+<em class="filename">find</em> is one of the most useful and important of
+the Unix utilities. It finds files that match a given set of
+parameters, ranging from the file's name to its
+modification date. In this chapter, we'll be looking
+at many of the things it can do. As an introduction,
+here's a quick summary of its features and basic
+operators:<a name="upt3-IDXTERM-1480" /> <a name="upt3-IDXTERM-1481" />
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find</b></tt> <em class="replaceable"><tt>path operators</tt></em></pre></blockquote>
+
+<p>where <em class="replaceable"><tt>path</tt></em> is one or more directories in
+which <em class="filename">find</em> will begin to search and
+<em class="filename">operators</em> (or, in more customary jargon,
+<em class="filename">options</em>) tell <em class="filename">find</em> which
+files you're interested in. The
+<em class="filename">operators</em> are as follows:
+</p>
+
+<dl>
+<dt><tt class="literal">-name</tt> <tt><em class="replaceable">filename</em></tt></dt>
+<dd>
+Find files with the given <tt><em class="replaceable"><tt>filename</tt></em></tt>. This
+is the most commonly used operator.
+<tt><em class="replaceable"><tt>filename</tt></em></tt> may include wildcards, but if it
+does, they must be quoted to prevent the shell from interpreting the
+wildcards.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-perm</tt> <tt><em class="replaceable">mode</em></tt></dt>
+<dd>
+Find files with the given access mode. You must give the access mode
+in octal.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-type</tt> <tt><em class="replaceable">c</em></tt></dt>
+<dd>
+Find the files of the given type, specified by
+<tt><em class="replaceable"><tt>c</em></tt>. <tt><em class="replaceable">c</tt></em></tt> is a
+one-letter code; for example, <tt class="literal">f</tt> for a plain file,
+<tt class="literal">b</tt> for a block special file, <tt class="literal">l</tt>
+for a symbolic link, and so forth.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-user</tt> <tt><em class="replaceable">name</em></tt></dt>
+<dd>
+Find files belonging to user <em class="replaceable"><tt>name</tt></em>.
+<em class="replaceable"><tt>name</tt></em> may also be a user ID number.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-group</tt> <tt><em class="replaceable">name</em></tt></dt>
+<dd>
+Find files belonging to group <tt><em class="replaceable"><tt>name</tt></em></tt>.
+<tt><em class="replaceable"><tt>name</tt></em></tt> may also be a group ID number.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-size</tt> <tt><em class="replaceable">n</em></tt></dt>
+<dd>
+Find files that are <em class="replaceable"><tt>n</tt></em> blocks long. A block
+usually equals 512 bytes. The notation
+<tt class="literal">+</tt><em class="replaceable"><tt>n</tt></em> says
+"find files that are over
+<em class="replaceable"><tt>n</tt></em> blocks long." The
+notation <em class="replaceable"><tt>n</tt></em><tt class="literal">c</tt> says
+"find files that are <em class="replaceable"><tt>n</tt></em>
+characters long." Can you guess what
+<tt class="literal">+</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">c</tt>
+means?
+</p>
+</dd>
+
+
+<dt><tt class="literal">-inum</tt> <tt><em class="replaceable">n</em></tt></dt>
+<dd>
+Find files with the inode number <tt><em class="replaceable"><tt>n</tt></em></tt>.</p>
+</dd>
+
+
+<dt><tt class="literal">-atime</tt> <tt><em class="replaceable">n</em></tt> </dt>
+<dd>
+Find files that were accessed <em class="replaceable"><tt>n</tt></em> days ago.
+<tt class="literal">+</tt><em class="replaceable"><tt>n</tt></em> means
+"find files that were accessed over
+<em class="replaceable"><tt>n</tt></em> days ago" (i.e., not
+accessed in the last <em class="replaceable"><tt>n</tt></em> days).
+<tt class="literal">-</tt><em class="replaceable"><tt>n</tt></em> means
+"find files that were accessed less than
+<em class="replaceable"><tt>n</tt></em> days ago" (i.e.,
+accessed in the last <em class="replaceable"><tt>n</tt></em> days).
+</p>
+</dd>
+
+
+<dt><tt class="literal">-mtime</tt> <tt><em class="replaceable">n</em></tt> </dt>
+<dd>
+Similar to<em class="filename"> -atime</em></tt>, except that it checks the
+time the file's contents were modified.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-ctime</tt> <tt><em class="replaceable">n</em></tt> </dt>
+<dd>
+Similar to <em class="filename">-atime</em>, except that it checks the
+time the inode was last changed.
+"Changed" means that the file was
+modified or that one of its attributes (for example, its owner) was
+changed.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-newer</tt> <tt><em class="replaceable">file</em></tt> </dt>
+<dd>
+Find files that have been modified more recently than
+<tt><em class="replaceable"><tt>file</tt></em></tt>.
+</p>
+</dd>
+
+</dl>
+
+<p>You might want to take some action on files that match several
+criteria. So we need some way to combine several operators:
+</p>
+
+<dl>
+<dt><i><tt><em class="replaceable"><tt>operator1</em></tt> <tt class="literal">-a</tt> <tt><em class="replaceable">operator2</tt></em></tt> </i></dt>
+<dd>
+Find files that match both <em class="replaceable"><tt>operator1</tt></em> and
+<em class="replaceable"><tt>operator2</tt></em>. The <tt class="literal">-a</tt>
+isn't strictly necessary; when two search parameters
+are provided, one after the other, <em class="filename">find</em> assumes
+you want files that match both conditions.
+</p>
+</dd>
+
+
+<dt><i><tt><em class="replaceable"><tt>operator1</em></tt> <tt class="literal">-o</tt> <tt><em class="replaceable">operator2</tt></em></tt> </i></dt>
+<dd>
+Find files that match either <tt><em class="replaceable"><tt>operator1</tt></em></tt> or
+<tt><em class="replaceable"><tt>operator2</tt></em></tt>.
+</p>
+</dd>
+
+
+<a name="IXT-9-2" /><dt><i>! <tt><em class="replaceable"><tt>operator</tt></em></tt> </i></dt>
+<dd>
+Find all files that do <em class="emphasis">not</em> match the given
+<em class="replaceable"><tt>operator</tt></em>. The <tt class="literal">!</tt>
+performs a logical NOT operation.
+</p>
+</dd>
+
+
+<a name="IXT-9-3" /><dt><i>\( <tt><em class="replaceable"><tt>expression</tt></em></tt> \) </i></dt>
+<dd>
+Logical precedence; in a complex expression, evaluate this part of
+the <tt><em class="replaceable"><tt>expression</tt></em></tt> before the rest.
+</p>
+</dd>
+
+</dl>
+
+<p>Another group of operators tells <em class="filename">find</em></tt> what
+action to take when it locates a file:
+</p>
+
+<dl>
+<dt><tt class="literal">-print</tt></dt>
+<dd>
+Print the file's name on standard output. On most
+modern <em class="filename">find</em>s, this is the default action if no
+action is given.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-ls</tt></dt>
+<dd>
+List the file's name on standard output with a
+format like <tt class="literal">ls</tt> <tt class="literal">-l</tt>. (Not on
+older versions.)
+</p>
+</dd>
+
+
+<dt><tt class="literal">-exec</tt> <tt><em class="replaceable">command</em></tt> </dt>
+<dd>
+Execute <em class="replaceable"><tt>command</tt></em>. To include the pathname
+of the file that's just been found in
+<em class="replaceable"><tt>command</tt></em>, use the special symbol
+<tt class="literal">{}</tt>. <em class="replaceable"><tt>command</tt></em> must end
+with a backslash followed by a semicolon (<tt class="literal">\;</tt>). For
+example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>find . -name "*.o" -exec rm -f {} \;</b></tt></pre></blockquote>
+
+<p>tells <em class="filename">find</em> to delete any files whose names end
+in <tt class="literal">.o</tt>.
+</p>
+</dd>
+
+
+<dt><tt class="literal">-ok</tt> <tt><em class="replaceable">command</em></tt> </dt>
+<dd>
+Same as <tt class="userinput"><b>-exec</b></tt>, except that
+<em class="filename">find</em></tt> prompts you for permission before executing
+<tt><em class="replaceable"><tt>command</tt></em></tt>. This is a useful way to test
+<em class="filename">find</em></tt> commands.
+</p>
+</dd>
+
+</dl>
+
+<p>A last word: <em class="filename">find</em></tt> is one of the tools that
+vendors frequently fiddle with, adding (or deleting) a few operators
+that they like (or dislike). The GNU version, in particular, has many
+more. The operators listed here should be valid on virtually any
+system. If you check your manual page, you may find others.<a name="IXTR3-190" /> <a name="IXTR3-191" />
+</p>
+
+<p> <em class="emphasis">-- ML</em></tt></p>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_17.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.17. Picking a Unique Filename Automatically</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.2. Delving Through a Deep Directory Tree</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

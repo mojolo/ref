@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"> <html><!--
+ Page saved with SingleFile 
+ url: http://extundelete.sourceforge.net/ 
+ saved date: Thu Jan 23 2020 01:20:33 GMT+0000 (Coordinated Universal Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>html{background-color:#2f2f2e!important}html,body{background-color:#2f2f2e}html,body{border-color:#837f79;color:#ffffff}a{color:#6ec8ff}::placeholder{color:#fffbe4}::selection{background-color:#2983ed;color:#ffffff}::-moz-selection{background-color:#2983ed;color:#ffffff}::-webkit-scrollbar{background-color:#343433;color:#fffff5}::-webkit-scrollbar-thumb{background-color:#474745}::-webkit-scrollbar-corner{background-color:#2f2f2e}*{scrollbar-color:#474745 #343433}</style>
+<meta name=description content="extundelete is an open source utility to undelete files from an ext3 or ext4 partition.">
+<meta name=keywords content="Open Source, Software, Development, Developers, Projects, Downloads, GNU General Public License (GPL), 4 - Beta, All POSIX (Linux/BSD/UNIX-like OSes), C++, Filesystems, Command-line, extundelete">
+<title>extundelete: An ext3 and ext4 file undeletion utility</title>
+<style>body{background-color:#202020;color:#DDDDDD;font-family:sans-serif}a{color:#22DD22}a:visited{color:#DD22DD}p,ul{font-size:120%;line-height:140%;margin-left:5%;margin-right:5%}h1,h2{margin:1em 0 0 2%;width:96%;line-height:normal}</style><style class="darkreader darkreader--override" media=screen>body{background-color:rgb(55,55,54);color:rgb(255,255,255)}a{color:rgb(162,255,143)}a:visited{color:rgb(255,150,255)}::placeholder{opacity:0.5!important}</style><link type=image/x-icon rel="shortcut icon" href="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></head>
+<body>
+<h1>About extundelete</h1>
+<p>
+extundelete is a utility that can recover deleted files from an ext3 or ext4 partition.
+The ext3 and ext4 file systems are the most common default file systems in Linux distributions like Mint, Mageia, or Ubuntu.
+extundelete uses information stored in the partition's journal to attempt to recover a file that has been deleted from the partition.
+There is no guarantee that any particular file will be able to be undeleted, so always try to have a good backup system in place, or at least put one in place after recovering your files!
+</p>
+<h1>Download the latest version</h1>
+<p>
+The latest version of extundelete is 0.2.4, which was released in January 2013.
+<a href="https://sourceforge.net/project/platformdownload.php?group_id=260221">Download extundelete</a> from its sourceforge project site.
+For brief descriptions of the various options the program understands, see the <a href=http://extundelete.sourceforge.net/options.html>extundelete command-line options summary</a>.
+Binary packages are available for some distibutions, but may not have the latest version, which could contain improvements to make it more likely to recover a deleted file.
+To take advantage of the latest features and bug fixes, read the notes on compiling and using the program below.
+extundelete has been recovering deleted files since April 2009, when the first version was released.
+</p>
+<h1>Why use extundelete?</h1>
+<p>
+extundelete is a complex program that makes data recovery from an ext3 or ext4 partition simple.
+Most people are able to recover their files by running one command from the terminal, as explained in the next section.
+extundelete was the first program able to restore both the contents and the file name of a deleted file on an ext4 partition.
+<a href=https://code.google.com/p/ext3grep/>ext3grep</a> was the first program to use the filesystem's journal to recover data, and much of its code is shared by extundelete, but ext3grep only worked for ext3 partitions and could take hours to start recovering files if the files were on a large partition.
+extundelete, by contrast, starts recovering files immediately after parsing the filesystem's journal, usually within a minute or two after starting the program.
+<a href=http://openfacts2.berlios.de/wikien/index.php/BerliosProject:Ext4magic>ext4magic</a> is a program to recover files that was based on extundelete, and has a slightly different set of features and limitations.
+extundelete makes heavy use of the <a href=http://e2fsprogs.sourceforge.net/>ext2fs library</a>, which allows it to automatically support many features of ext3 and ext4 file systems.
+</p>
+<h1>Documentation</h1>
+<h2>How to compile and install extundelete</h2>
+<p>
+To compile and install this program, you must first install the binary and development packages for e2fsprogs (called libext2fs-devel on Mageia, or e2fslibs-dev on Ubuntu, or e2fsprogs-devel on Fedora).
+extundelete requires libext2fs version 1.39 or newer to run, but for ext4 support, ensure you have e2fsprogs version 1.41 or newer (which may be found by running the command 'dumpe2fs' and noting the version it outputs).
+You must have g++ and GNU make to compile the program.
+You can install those with the package called build-essential on Ubuntu, or gcc-c++ and make on Fedora, or gcc-c++ and make on Mageia.
+</p>
+<p>
+To compile the program, simply enter the command
+“./configure” from the directory the tar.bz2 file was extracted to.
+The configure step ensures all the necessary programs to install and run extundelete have been installed.
+Then, run “make” from the same directory to compile the program.
+The command will generate an executable file called “extundelete” in the “src” directory.
+You can the run “make install” to install the program in the /usr/bin directory, or it could be run from the “src” directory without this step.
+</p>
+<h2>How to use extundelete</h2>
+<p>
+extundelete is designed to undelete files from an unmounted partition to a separate (mounted) partition.
+extundelete will restore any files it finds to a subdirectory of the current directory named “RECOVERED_FILES”.
+To run the program, type “extundelete --help” to see various options available to you.
+</p>
+<p>
+Typical usage to restore all deleted files from a partition looks like this:<br>
+<tt>$ extundelete /dev/sda4 --restore-all</tt>
+</p>
+<p>
+For an example of running the program, see the file “README” included with the program.
+It is normal for extundelete to appear to pause (while taking up a lot of cpu cycles) for a minute or longer; during this time, the program is reading the directory structure and looking for a recoverable file within it. To restore important files quickly, you may use the --restore-file, --restore-files, or --restore-directory <a href=http://extundelete.sourceforge.net/options.html>options</a>.
+</p>
+<p>
+If you have questions or comments about using extundelete or how to recover your lost files, or to report a success/failure of your recovery efforts with this utility, send a note to the <a href=https://lists.sourceforge.net/lists/listinfo/extundelete-users>extundelete mailing list</a>.
+</p>
+<h1>What to do if you've deleted a file (or multiple files)</h1>
+<p>
+Do not save any more data to the partition with the deleted file for any reason! Doing so may overwrite your deleted data and sabotage any recovery effort. Many background processes will periodically write to disk, so work quickly until the partition is unmounted.
+</p>
+<p>
+If you think the file may be still open by some program (for example, if it is a movie file currently being played by a movie player), and you know the filename, then first follow this procedure:<br>
+<tt>
+$ lsof|grep "/path/to/file"<br>
+progname 5559 user 22r REG 8,5 1282410 1294349 /path/to/file<br>
+</tt>
+Notice the number in the second column is 5559 and the number in the fourth column is 22. The command to restore that file is:<br>
+<tt>
+$ cp /proc/5559/fd/22 restored.file
+</tt>
+</p>
+<p>
+If <tt>lsof</tt> doesn't find your file, then immediately remount the partition read-only:<br>
+<tt>
+$ mount -o remount,ro /dev/partition</tt><br>
+or unmount the partition:<br>
+<tt> $ umount /dev/partition</tt><br>
+Typically, you would replace "partition" in the above examples by a device name like "sda4" or "hdb7".
+When either of those commands successfully completes, you can now take the next steps leisurely - you will no longer make anything worse by waiting. If you would like to make a backup of your partition, you may do so by a command such as:<br>
+<tt>$ dd bs=4M if=/dev/partition of=partition.backup</tt><br>
+</p>
+<p>
+Now is the time to run extundelete, which you may safely run on either the backup you may have made above or the raw device, as long as it is not mounted (or mounted read-only).
+See the section above for details on how to use this program.
+If extundelete was unable to recover your files, then you may try to recover your files with debugfs, a tool included with the e2fsprogs package.
+If you unmounted the partition before the file system got a chance to fully delete the files you are interested in, running debugfs may allow you to recover the files before the file system deletes them (which it may do the next time the partition is mounted).
+The 'dump' and 'rdump' commands in debugfs may be useful to you for these purposes.
+If you were unable to recover your files using extundelete or debugfs, then you may try to recover your files with ext3grep or ext4magic.
+The generation of ext3grep's stage2 cache file depends on the size and speed of your hard drive's partition, with typical speeds close to one minute for every 2 GB (30 s per GB, or 8 hours per TB).
+</p>
+<p>
+If the above options didn't recover your files, then you may try a program that searches for identifying patterns throughout the entire partition, like foremost, scalpel, or Photorec.
+ext3grep's --search options may also be used for this purpose.
+</p>
+<h1>ext3/4 filesystem details</h1>
+<p>
+This section lists resources about the extended filesystem families (ext2/3/4), which will be useful for those wanting to understand more about how the filesystem functions and how extundelete is able to undelete a file.
+Also note that the ext3grep link provides an example of advanced usage of ext3grep, which can help explain how to use extundelete to comprehensively search for an important deleted file, as both programs have many features in common.
+</p>
+<ul>
+<li>
+<a href=http://e2fsprogs.sourceforge.net/ext2.html>Information about the ext2 filesystem</a>
+</li>
+<li>
+<a href=http://e2fsprogs.sourceforge.net/>e2fsprogs: the standard utilities for ext2/3/4 filesystems</a>
+</li>
+<li>
+<a href=http://www.xs4all.nl/~carlo17/howto/undelete_ext3.html>Carlo Wood's explanation of the ext3 filesystem and ext3grep</a>
+</li>
+<li>
+<a href=http://linux.sys-con.com/node/117909/>Why recovering a deleted ext3 file is difficult</a>
+</li>
+</ul>
+<h1>How extundelete works</h1>
+<p>
+extundelete uses some concepts and code first shown to be successful by the ext3grep program.
+extundelete is able to recover the contents of an inode by searching the file system's journal for an old copy of that inode.
+It then uses that information to determine the file's location within the file system.
+Then, extundelete reads the corresponding data and copies it to a file in the recovery directory.
+</p>
+<p>
+extundelete is able to match the inode number of a file to a file name by searching the deleted entries in a directory, which are often left behind after deleting the file.
+If the deleted entry does not exist in the directory in the file system, extundelete will look for a match in older copies which are still in the journal.
+</p>
+<h2>Current abilities of extundelete</h2>
+<ul>
+<li>
+extundelete is able to undelete a file from an ext3 filesystem or an ext4 file system, as long as the ext4 filesystem has a journal.
+</li>
+<li>
+extundelete will not restore hardlinks or softlinks, but will restore the file a link points to.
+</li>
+<li>
+extundelete will not restore extended attributes.
+</li>
+<li>
+If you run in to a problem that results in the program not working properly, please send a note to the mailing list, and it will likely be fixed in the next version.
+For a complete example of how to use extundelete, see the README file.
+</li>
+</ul>
+<h1>Other extundelete links</h1>
+<ul>
+<li>
+<a href=http://sourceforge.net/projects/extundelete>extundelete SourceForge project page</a>
+</li>
+<li>
+<a href=https://lists.sourceforge.net/lists/listinfo/extundelete-users>extundelete mailing list</a> - Send a message here to report your experience with extundelete, or for any other questions or comments about extundelete.
+</li>
+<li>
+<a href=http://extundelete.sourceforge.net/options.html>extundelete command-line options summary</a>
+</li>
+</ul>

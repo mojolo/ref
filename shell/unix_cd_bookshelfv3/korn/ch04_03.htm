@@ -1,0 +1,186 @@
+<html><head><title>Compound Variables (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.3. Compound Variables</h2>
+<p>
+<a name="korn2-IDXTERM-794" />
+<a name="korn2-IDXTERM-795" />
+
+<em class="emphasis">ksh93</em> introduces a new feature, called
+<em class="emphasis">compound variables</em>.
+They are similar in nature to a Pascal or Ada <tt class="literal">record</tt>
+or a C <tt class="literal">struct</tt>, and they allow you to group related items together
+under the same name.  Here are some examples:
+</p>
+
+<p>
+<blockquote><pre class="code">
+now="May 20 2001 19:44:57"        <i class="lineannotation">Assign current date to variable now</i>
+now.hour=19                       <i class="lineannotation">Set the hour</i>
+now.minute=44                     <i class="lineannotation">Set the minute</i>
+...
+</pre></blockquote>
+</p>
+
+<p>
+Note the use of the period in the variable's name.  Here, <tt class="literal">now</tt> is called
+the <em class="emphasis">parent</em> variable, and it must exist (i.e., have a value)
+before you can assign a value to an individual component (such as <tt class="literal">hour</tt>
+or <tt class="literal">minute</tt>).
+To access a compound variable, you must enclose the variable's name in curly braces.
+If you don't, the period ends the shell's scan for the variable's name:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print ${now.hour}</b></tt>
+19
+$ <tt class="userinput"><b>print $now.hour</b></tt>
+May 20 2001 19:44:57.hour
+</pre></blockquote>
+
+<a name="korn2-CHP-4-SECT-3.1" /><div class="sect2">
+<h3 class="sect2">4.3.1. Compound Variable Assignment</h3>
+
+<p>
+Assigning to individual elements of a compound variable is tedious.
+In particular the requirement that the parent variable exist previously
+leads to an awkward programming style:
+</p>
+
+<blockquote><pre class="code">
+person="John Q. Public"
+person.firstname=John
+person.initial=Q.
+person.lastname=Public
+</pre></blockquote>
+
+<p>
+Fortunately, you can use a <em class="emphasis">compound assignment</em> to do it
+all in one fell swoop:
+</p>
+
+<blockquote><pre class="code">
+person=(firstname=John initial=Q. lastname=Public)
+</pre></blockquote>
+
+<p>
+You can retrieve the value of either the entire variable, or a component,
+using <em class="emphasis">print</em>.
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print $person</b></tt>                                <i class="lineannotation">Simple print</i>
+( lastname=Public initial=Q. firstname=John )
+$ <tt class="userinput"><b>print -r "$person"</b></tt>                           <i class="lineannotation">Print in full glory</i>
+(
+        lastname=Public
+        initial=Q.
+        firstname=John
+)
+$ <tt class="userinput"><b>print ${person.initial}</b></tt>                      <i class="lineannotation">Print just the middle initial</i>
+Q.
+</pre></blockquote>
+</p>
+
+<p>
+The second <em class="emphasis">print</em> command preserves the whitespace that the Korn
+shell provides when returning the value of a compound variable. The <em class="emphasis">-r</em>
+option to <em class="emphasis">print</em> is discussed in <a href="ch07_01.htm">Chapter 7</a>.
+</p>
+
+<blockquote><b>NOTE:</b> 
+
+The order of the components is different from what was used in the initial
+assignment.  This order depends upon how the Korn shell manages compound variables
+internally and cannot be controlled by the programmer.
+</p>
+</blockquote>
+
+<p>
+A second assignment syntax exists, similar to the first:
+</p>
+
+<p>
+<blockquote><pre class="code">
+person=(typeset firstname=John initial=Q. lastname=Public ;
+        typeset -i age=42)
+</pre></blockquote>
+</p>
+
+<p>
+By using the <em class="emphasis">typeset</em> command, you can specify that a variable
+is a number instead of a string.  Here, <tt class="literal">person.age</tt> is an
+integer variable.  The rest remain strings.  The <em class="emphasis">typeset</em>
+command and its options are presented in <a href="ch06_01.htm">Chapter 6</a>.
+(You can also use <em class="emphasis">readonly</em> to declare that a
+component variable cannot be changed.)
+</p>
+
+<p>
+Just as you may use <tt class="literal">+=</tt> to append to a regular
+variable, you can add components to a compound variable as well:
+</p>
+
+<blockquote><pre class="code">
+person+= (typeset spouse=Jane)
+</pre></blockquote>
+
+<p>
+A space is allowed after the <tt class="literal">=</tt> but not before.
+This is true for compound assignments with both <tt class="literal">=</tt>
+and <tt class="literal">+=</tt>.
+</p>
+
+<p>
+The Korn shell has additional syntaxes for compound assignment that apply
+only to array variables; they are also discussed in <a href="ch06_01.htm">Chapter 6</a>.
+</p>
+
+<p>
+Finally, we'll mention that the Korn shell has a special compound variable
+named <tt class="literal">.sh</tt>.  The various components almost all relate to features
+we haven't covered yet, except <tt class="literal">${.sh.version}</tt>, which tells
+you the version of the Korn shell that you have:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print ${.sh.version}</b></tt>
+Version M 1993-12-28 m
+</pre></blockquote>
+</p>
+
+<p>
+We will see another component of <tt class="literal">.sh</tt> later in this chapter,
+and the other components are covered as we introduce the features they relate to.
+<a name="IXTR3-171" />
+<a name="IXTR3-172" />
+
+</p>
+
+</div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.2. Shell Variables</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.4. Indirect Variable References </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

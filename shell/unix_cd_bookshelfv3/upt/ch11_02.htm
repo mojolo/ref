@@ -1,0 +1,154 @@
+<html><head><title>Comparing Three Different Versions with diff3 (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">11.2. Comparing Three Different Versions with diff3</h2>
+
+<p><a name="IXT-11-6062" />You can use the
+<i class="command">diff3</i> command to look at differences between three
+files. Here are three sample files, repeated from <a href="ch11_01.htm#upt3-CHP-11-SECT-1">Section 11.1</a>: 
+</p>
+
+<a name="ch11-3-fm2xml" /><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>test1</p>
+</th>
+<th>
+<p>test2</p>
+</th>
+<th>
+<p>test3</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>apples</p>
+</td>
+<td>
+<p>apples</p>
+</td>
+<td>
+<p>oranges</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>oranges</p>
+</td>
+<td>
+<p>oranges</p>
+</td>
+<td>
+<p>walnuts</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>walnuts</p>
+</td>
+<td>
+<p>grapes</p>
+</td>
+<td>
+<p>chestnuts</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>For each set of differences, <i class="command">diff3</i> displays a row
+of equal signs (<tt class="literal">====</tt>) followed by 1, 2, or 3,
+indicating which file is different; if no number is specified, then
+all three files differ. Then, using <b class="emphasis-bold">ed-like
+notation</b> (<a href="ch11_01.htm#upt3-CHP-11-SECT-1">Section 11.1</a>), the differences
+are described for each file:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff3 test1 test2 test3</b></tt>
+====3
+1:1c
+2:1c
+  apples
+3:0a
+====
+1:3c
+  walnuts
+2:3c
+  grapes
+3:2,3c
+  walnuts
+  chestnuts</pre></blockquote>
+
+<p>With the output of <i class="command">diff3</i>, it is easy to keep track
+of which file is which; however, the prescription given is a little
+harder to decipher. To bring these files into agreement, the first
+range of text (after <tt class="literal">====3</tt>) shows that you would
+have to add <tt class="literal">apples</tt> at the beginning of the third
+file (<tt class="literal">3:0a</tt>). The second range tells you to change
+line 3 of the second file to line 3 of the first file -- change
+lines 2 and 3 of the third file, effectively dropping the last line.
+</p>
+
+<p>The <i class="command">diff3</i> command also has a <span class="option">-e</span>
+option for creating an editing script for <i class="command">ed</i>. It
+doesn't work quite the way you might think.
+Basically, it creates a script for building the first file from the
+second and third files.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff3 -e test1 test2 test3</b></tt>
+3c
+walnuts
+chestnuts
+.
+1d
+.
+w
+q</pre></blockquote>
+
+<p>If you reverse the second and third files, a different script is
+produced:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>diff3 -e test1 test3 test2</b></tt>
+3c
+grapes
+.
+w
+q</pre></blockquote>
+
+<p>As you might guess, this is basically the same output as doing a
+<i class="command">diff</i> on the first and third files.
+</p>
+
+<p> <em class="emphasis">-- DD</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">11. Comparing Files</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11.3. Context diffs</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

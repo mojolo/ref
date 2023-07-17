@@ -1,0 +1,154 @@
+<html><head><title>What Is (or Isn't) Unique? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.20. What Is (or Isn't) Unique?</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: uniq</p>
+
+<p><a name="IXT-21-5783" /><a name="IXT-21-5784" /><a name="IXT-21-5785" /><a name="IXT-21-5786" /><a name="IXT-21-5787" /><a name="IXT-21-5788" /><a name="IXT-21-5789" /><i class="command">uniq</i> reads a file and
+compares adjacent lines (which means you'll usually
+want to sort the file first to be sure identical lines appear next to
+each other). Here's what <i class="command">uniq</i> can
+do as it watches the input lines stream by:
+</p>
+
+<ul><li>
+<p>With the <span class="option">-u</span> option, the output gets only the lines
+that occur just once (and weren't repeated).
+</p>
+</li><li>
+<p>The <span class="option">-d</span> option does the opposite: the output gets a
+<em class="emphasis">single</em> copy of each line that was repeated (no
+matter how many times it was repeated).
+</p>
+
+<p>(The GNU version also has a <span class="option">-D</span> option.
+It's like <span class="option">-d</span> except that
+<em class="emphasis">all</em> duplicate lines are output.)
+</p>
+</li><li>
+<p>The default output (with no options) is the union of
+<span class="option">-u</span> and <span class="option">-d</span>: only the first
+occurrence of a line is written to the output file; any adjacent
+copies of a line (second, third, etc.) are ignored.
+</p>
+</li><li>
+<p>The output with <span class="option">-c</span> is like the default, but each
+line is preceded by a count of how many times it occurred.
+</p>
+</li></ul>
+
+
+<a name="ch21-4-fm2xml" /><blockquote><b>WARNING:</b> 
+Be warned:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>uniq file1 file2</b></tt></pre></blockquote>
+<p>will <em class="emphasis">not</em> print the unique lines from both
+<em class="emphasis">file1</em> and <em class="emphasis">file2</em> to standard
+output. It will <em class="emphasis">replace</em> the contents of
+<em class="emphasis">file2</em> with the unique lines from
+<em class="emphasis">file1</em>!
+</p>
+</blockquote>
+
+<p>Three more options control how comparisons are done:</p>
+
+<ul><li>
+<p><tt class="literal">-</tt><em class="replaceable"><tt>n</tt></em> ignores the first
+<em class="replaceable"><tt>n</tt></em> fields of a line and all whitespace
+before each. A field is defined as a string of nonwhitespace
+characters (separated from its neighbors by whitespace).
+</p>
+</li><li>
+<p><tt class="literal">+</tt><em class="replaceable"><tt>n</tt></em> ignores the first
+<em class="replaceable"><tt>n</tt></em> characters. Fields are skipped before
+characters.
+</p>
+</li><li>
+<p><tt class="literal">-w</tt> <em class="replaceable"><tt>n</tt></em> in the GNU version
+compares no more than <em class="replaceable"><tt>n</tt></em> characters in each
+line.
+</p>
+</li><li>
+<p>GNU <i class="command">uniq</i> also has <span class="option">-i</span> to make
+comparisons case-insensitive. (Upper- and lowercase letters compare
+equal.)
+</p>
+</li></ul>
+<p><i class="command">uniq</i> is often used as a filter. See also <b class="emphasis-bold">comm</b> (<a href="ch11_08.htm#upt3-CHP-11-SECT-8">Section 11.8</a>), <b class="emphasis-bold">sort</b> (<a href="ch22_01.htm#upt3-CHP-22-SECT-1">Section 22.1</a>), and
+especially <b class="emphasis-bold">sort -u</b> (<a href="ch22_06.htm#upt3-CHP-22-SECT-6">Section 22.6</a>). 
+</p>
+
+<p>So what can you do with all of this?</p>
+
+<p>To send only one copy of each line from <em class="emphasis">list</em>
+(which is typically sorted) to output file
+<em class="filename">list.new</em>:
+</p>
+
+<blockquote><pre class="code">uniq list list.new</pre></blockquote>
+
+<p>To show which names appear more than once:</p>
+
+<blockquote><pre class="code">sort names | uniq -d</pre></blockquote>
+
+<p>To show which lines appear exactly three times, search the output of
+<i class="command">uniq</i> -<span class="option">c</span> for lines that start with
+spaces before the digit <em class="emphasis">3</em> and have a tab after.
+(This is the way GNU <i class="command">uniq</i> -<span class="option">c</span>
+makes its output lines, at least.) In the example below, the space is
+marked by <tt class="literal">&#203;&#x98;</tt>; the TAB is marked by
+<em class="replaceable"><tt>tab</tt></em>:
+</p>
+
+<p><tt class="literal">grep</tt> <a href="ch13_01.htm#upt3-CHP-13-SECT-1">Section 13.1</a></p>
+
+<blockquote><pre class="code">sort names | uniq -c | grep "^&#203;&#x98;*3<em class="replaceable"><tt>tab</tt></em>"</pre></blockquote>
+
+<p>The lines don't have to be sorted; they simply have
+to be adjacent. For example, if you have a log file where the last
+few fields are repeated, you can have <i class="command">uniq</i>
+"watch" those fields and tell you
+how many times they were repeated. Here we'll skip
+the first four fields and get a count of how many times the rest of
+each line was repeated:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat log</b></tt>
+Nov 21 17:20:19 powerd: down 2 volts
+Nov 21 17:20:27 powerd: down 2 volts
+Nov 21 17:21:15 powerd: down 2 volts
+Nov 21 17:22:48 powerd: down 2 volts
+Nov 21 18:18:02 powerd: up 3 volts
+Nov 21 19:55:03 powerd: down 2 volts
+Nov 21 19:58:41 powerd: down 2 volts
+$ <tt class="userinput"><b>uniq -4 -c log</b></tt>
+      4 Nov 21 17:20:19 powerd: down 2 volts
+      1 Nov 21 18:18:02 powerd: up 3 volts
+      2 Nov 21 19:55:03 powerd: down 2 volts</pre></blockquote>
+
+<p><em class="emphasis">--JP and DG</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_19.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_21.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.19. Joining Lines with join</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.21. Rotating Text</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

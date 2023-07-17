@@ -1,0 +1,145 @@
+<html><head><title>Comparing Two Files with comm (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">11.8. Comparing Two Files with comm</h2>
+
+<p>The <i class="command">comm</i> command can tell you what information is
+common to two lists and what information appears uniquely in one list
+or the other. For example, let's say
+you're compiling information on the favorite movies
+of critics Ebert and Roeper. The movies are listed in separate files
+(and must be <b class="emphasis-bold">sorted</b> (<a href="ch22_01.htm#upt3-CHP-22-SECT-1">Section 22.1</a>)). For the sake of illustration, assume each
+list is short:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat roeper</b></tt>
+Citizen Kane
+Halloween VI
+Ninja III
+Rambo II
+Star Trek V
+Zelig
+% <tt class="userinput"><b>cat ebert</b></tt>
+Cat People
+Citizen Kane
+My Life as a Dog
+Q
+Z
+Zelig</pre></blockquote>
+
+<p>To compare the favorite movies of your favorite critics, type:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>comm roeper ebert</b></tt>
+                  Cat People
+                                         Citizen Kane
+Halloween VI
+                  My Life as a Dog
+Ninja III
+                  Q
+Rambo II
+Star Trek V
+                  Z
+                                         Zelig</pre></blockquote>
+
+<p>Column 1 shows the movies that only Roeper likes; column 2 shows
+those that only Ebert likes; and column 3 shows the movies that they
+both like. You can suppress one or more columns of output by
+specifying that column as a command-line option. For example, to
+suppress columns 1 and 2 (displaying only the movies
+<em class="emphasis">both</em> critics like), you would type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>comm -12 roeper ebert</b></tt>
+Citizen Kane
+Zelig</pre></blockquote>
+
+<p>As another example, say you've just received a new
+software release (Release 4), and it's your job to
+figure out which library functions have been added so that they can
+be documented along with the old ones. Let's assume
+you already have a list of the Release 3 functions
+(<em class="emphasis">r3_list</em>) and a list of the Release 4 functions
+(<em class="emphasis">r4_list</em>). (If you didn't, you
+could create them by changing to the directory that has the function
+manual pages, listing the files with <i class="command">ls</i>, and
+saving each list to a file.) In the following lists,
+we've used letters of the alphabet to represent the
+functions:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat r3_list</b></tt>
+b
+c
+d
+f
+g
+h
+
+% <tt class="userinput"><b>cat r4_list</b></tt>
+a
+b
+c
+d
+e
+f</pre></blockquote>
+
+<p>You can now use the <i class="command">comm</i> command to answer several
+questions you might have:
+</p>
+
+<ul><li>
+<p>Which functions are new to Release 4? Answer:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>comm -13 r3_list r4_list    </b></tt><i class="lineannotation">Show 2nd column, which is "Release 4 only"</i>
+a
+e</pre></blockquote>
+</li><li>
+<p>Which Release 3 functions have been dropped in Release 4? Answer:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>comm -23 r3_list r4_list    </b></tt><i class="lineannotation">Show 1st column, which is "Release 3 only"</i>
+g
+h</pre></blockquote>
+</li>
+<li>
+<p>Which Release 3 functions have been retained in Release 4? Answer:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>comm -12 r3_list r4_list    </b></tt><i class="lineannotation">Show 3rd column, which is "common functions"</i>
+b
+c
+d
+f</pre></blockquote>
+</li></ul>
+
+<p>You can create partial lists by saving the previous output to three
+separate files.
+</p>
+
+<p><i class="command">comm</i> can only compare sorted files. In the
+<span class="acronym">GNU</span> version, the option <span class="option">-l</span>
+(lowercase L) means the input files are sorted using the LC_COLLATE
+collating sequence. If you have non-<span class="acronym">ASCII</span>
+characters to sort, check your manual page for details.
+</p>
+
+<p> <em class="emphasis">-- DG</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch11_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">11.7. cmp and diff</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11.9. More Friendly comm Output</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

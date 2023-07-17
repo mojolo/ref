@@ -1,0 +1,285 @@
+<html><head><title>Command-Line Editing (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 2. Command-Line  Editing</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch02_01.htm#sect1">Enabling Command-Line Editing</a><br />
+<a href="ch02_02.htm">The History File</a><br />
+<a href="ch02_03.htm">Emacs Editing Mode</a><br />
+<a href="ch02_04.htm">Vi Editing Mode</a><br />
+<a href="ch02_05.htm">The hist Command</a><br />
+<a href="ch02_06.htm">Finger Habits</a><br /></p></div><p>
+<a name="korn2-IDXTERM-262" />
+<a name="IXT-2-287131" />
+
+It's always possible to make mistakes when you type at a computer
+keyboard, but perhaps even more so when you are using a Unix shell. Unix
+shell syntax is powerful, yet terse, full of odd characters, and not
+particularly mnemonic, making it possible to construct command lines that
+are as cryptic as they are complex. The Bourne and C shells exacerbate
+this situation by giving you extremely limited ways of editing
+your command lines.
+</p><p>
+In particular,
+there is no way to recall a previous command line so that you can
+fix a mistake. For example, in <a href="ch07_01.htm">Chapter 7</a>
+we'll see complex command lines like:
+</p><p>
+<blockquote><pre class="code">
+eval cat \$srcname \| ccom \| optimize \| as \&gt; \$objname
+</pre></blockquote>
+</p><p>
+<a name="IXT-2-287132" />
+If you are an experienced Bourne shell user, undoubtedly you
+know the frustration of having to retype lines like this.
+You can use the backspace key to edit, but once you hit ENTER,
+it's gone forever!
+</p><p>
+<a name="IXT-2-287133" />
+<a name="IXT-2-287134" />
+
+The C shell provides a small improvement via its <em class="emphasis">history</em>
+mechanism, which provides a few very awkward ways of editing
+previous commands. But there are more than a few people
+who have wondered, "Why can't I edit my Unix command lines in the same
+way I can edit text with an editor?"
+</p><p>
+<a name="IXT-2-287135" />
+
+This is exactly what the Korn shell allows you to do.
+It has editing modes that allow you to edit
+command lines with editing commands similar to those of the two most popular
+Unix editors, <em class="emphasis">vi</em> and Emacs.<a href="#FOOTNOTE-18">[18]</a>
+
+It also provides a
+much-extended analogue to the C shell history mechanism called
+<em class="emphasis">hist</em> (for "history") that, among other things,
+allows you to use your favorite editor directly for editing
+your<?troff .ne 10?> command lines.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-18" /><p> [18]
+For some unknown reason, the documentation on emacs-mode has been
+removed from the <em class="emphasis">ksh</em>(1) manual pages on some Unix systems.
+This does not mean, however,
+that the mode doesn't exist or doesn't work properly.
+</p>
+</blockquote><p>
+<a name="IXT-2-287136" />
+<a name="IXT-2-287137" />
+
+In this chapter, we discuss features common to all of the Korn shell's
+command-history facilities; then we deal with each such
+facility in detail.
+If you use <em class="emphasis">vi</em> or Emacs,
+you may wish to read only the section
+on the emulation mode for the one you use.<a href="#FOOTNOTE-19">[19]</a>
+If you use neither <em class="emphasis">vi</em> or Emacs
+but are interested in learning one of the editing modes anyway,
+we suggest emacs-mode, because it is more of a natural extension
+of the minimal editing capability you get with the bare shell.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-19" /><p> [19]
+<a name="IXT-2-287138" />
+<a name="IXT-2-287139" />
+You will get the most out of these sections if you are already
+familiar with the editor(s) in question.  Good sources for
+more complete information on the editors are
+<em class="emphasis">Learning the vi Editor</em> by Linda Lamb and Arnold Robbins
+and
+<em class="emphasis">Learning GNU Emacs</em> by Debra Cameron, Bill Rosenblatt,
+and Eric Raymond.
+Both are published by O'Reilly &amp; Associates.
+</p>
+</blockquote><p>
+<a name="IXT-2-287140" />
+<a name="IXT-2-287141" />
+<a name="IXT-2-287142" />
+
+We should mention up front that both emacs- and vi-modes
+introduce the potential for clashes with control keys set up by
+the Unix terminal interface. Recall the control keys shown in
+<a href="ch01_01.htm">Chapter 1</a> in <a href="ch01_09.htm#korn2-CHP-1-TABLE-7">Table 1-7</a> and
+the sample <em class="emphasis">stty</em> command output.
+The control keys shown there override their functions in the
+editing modes.
+</p><p>
+During the rest of this chapter, we warn you when an editing
+command clashes with the default setting of a
+terminal-interface control key. But if you (or your system administrator)
+choose to customize your terminal interface, as we show in
+<a href="ch08_01.htm">Chapter 8</a>, you're on your own as far as the editing
+modes are concerned.
+</p><div class="sect1"><a name="korn2-CHP-2-SECT-1" />
+<h2 class="sect1"><a name="sect1" />2.1. Enabling Command-Line Editing</h2>
+
+<p>
+<a name="korn2-IDXTERM-275" />
+<a name="korn2-IDXTERM-276" />
+<a name="korn2-IDXTERM-277" />
+<a name="korn2-IDXTERM-278" />
+<a name="IXT-2-287143" />
+<a name="IXT-2-287144" />
+
+There are two ways of entering either editing mode.
+First, you can set your editing mode by using the environment variable
+<tt class="literal">VISUAL</tt>. The Korn shell checks to see if this variable ends with
+<tt class="literal">vi</tt>
+or <tt class="literal">macs</tt>.<a href="#FOOTNOTE-20">[20]</a>
+An excellent way to set <tt class="literal">VISUAL</tt> is to put a line like the following in your <em class="emphasis">.profile</em> or environment file:
+<a name="IXT-2-287145" />
+<a name="IXT-2-287146" />
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-20" /><p> [20]
+GNU Emacs is sometimes installed as <em class="emphasis">gmacs</em> or <em class="emphasis">gnumacs</em>.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+VISUAL=$(whence emacs)
+</pre></blockquote>
+</p>
+
+<p>
+or
+</p>
+
+<p>
+<blockquote><pre class="code">
+VISUAL=$(whence vi)
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-70" />
+<a name="IXTR3-71" />
+As you will find out in <a href="ch03_01.htm">Chapter 3</a> and <a href="ch04_01.htm">Chapter 4</a>,
+the <em class="emphasis">whence</em>
+built-in command takes the name of another command as its argument and
+writes the command's full pathname on
+the standard output; the form <tt class="literal">$(</tt><em class="replaceable"><tt>command</tt></em><tt class="literal">)</tt>
+returns the standard output generated by <em class="emphasis">command</em> as a
+string value. Thus, the line above finds out
+the full pathname of your favorite editor and stores it in the
+environment variable <tt class="literal">VISUAL</tt>. The advantage of
+this code is that it is portable to other systems, which may have
+the executables for editors stored in different directories.
+</p>
+
+<p>
+<a name="IXT-2-287147" />
+<a name="IXT-2-287148" />
+The second way of selecting an editing mode is to
+set the option explicitly with the <em class="emphasis">set -o</em> command:
+</p>
+
+<p>
+<blockquote><pre class="code">
+set -o emacs
+</pre></blockquote>
+</p>
+
+<p>
+or
+</p>
+
+<p>
+<blockquote><pre class="code">
+set -o vi
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">vi</em> users may wish to add:
+</p>
+
+<blockquote><pre class="code">
+set -o viraw
+</pre></blockquote>
+
+<p>
+along with <tt class="literal">set -o vi</tt>.  This enables TAB completion
+in recent versions of <em class="emphasis">ksh93</em>.
+The additional overhead, particularly on single-user systems, is nominal
+and, in any case, is no worse than that of emacs-mode.
+(Starting with <em class="emphasis">ksh93n</em>, the <em class="emphasis">viraw</em>
+option is automatically enabled when you use vi-mode.)
+</p>
+
+<p>
+<a name="IXTR3-72" />
+<a name="IXTR3-73" />
+</p>
+
+<p>
+<a name="IXT-2-287149" />
+<a name="IXT-2-287150" />
+<a name="IXT-2-287151" />
+You will find that the vi and emacs editing modes
+are good at emulating the basic commands of these editors,
+but not advanced features; their main purpose is to let you transfer
+"finger habits" from your favorite editor to the shell. <em class="emphasis">hist</em> is a powerful
+facility; it is mainly meant to supplant C shell history and as an
+"escape hatch" for users of editors other than <em class="emphasis">vi</em> or Emacs.
+Therefore the section on <em class="emphasis">hist</em> is recommended mostly to C shell
+users and those who don't use either standard editor.
+</p>
+
+<p>
+Before diving into the details, it's worth mentioning
+two other points that apply to both editing modes:
+</p>
+
+<ul>
+
+<li><p>
+<em class="emphasis">ksh</em>
+indicates that a line is wider than your screen
+by marking the last column of the visible line with a
+special character: <tt class="literal">&lt;</tt> indicates that there is more
+text on the left side of what you currently see, <tt class="literal">&gt;</tt>
+indicates there is more text to the right of what you see, and
+<tt class="literal">*</tt> indicates there is text on both sides of
+what is currently visible.
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>print this is a very long line that just runs on and</b></tt> &gt;
+</pre></blockquote>
+</p></li>
+
+<li><p>
+Customization of the <em class="emphasis">ksh93</em> editing modes is possible
+but requires knowledge of advanced features we haven't covered yet.
+See <a href="ch10_01.htm">Chapter 10</a> for the details.<a href="#FOOTNOTE-21">[21]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-21" /><p> [21]
+The public domain Korn shell, <em class="emphasis">bash</em>, and <em class="emphasis">zsh</em>
+have editing modes that are customizable, but in a different way from <em class="emphasis">ksh93</em>.
+See <a href="appa_01.htm">Appendix A</a>.
+</p>
+</blockquote></li>
+
+</ul>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.9. Special Characters and Quoting</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.2. The History File</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

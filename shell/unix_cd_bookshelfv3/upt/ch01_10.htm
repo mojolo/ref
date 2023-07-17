@@ -1,0 +1,173 @@
+<html><head><title>The Kernel and Daemons (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">1.10. The Kernel and Daemons</h2>
+
+<p><a name="upt3-IDXTERM-154" />
+<a name="upt3-IDXTERM-155" /> <a name="upt3-IDXTERM-156" />If you
+have arrived at Unix via Windows 2000 or some other personal computer
+operating system, you will notice some big differences. Unix was, is,
+and always will be a multiuser operating system. It is a multiuser
+operating system even when you're the only person
+using it; it is a multiuser operating system even when it is running
+on a PC with a single keyboard; and this fact has important
+ramifications for everything that you do.
+</p>
+
+<p>Why does this make a difference? Well, for one thing,
+you're never the only one using the system, even
+when you think you are. Don't bother to look under
+your desk to see if there's an extra terminal hidden
+down there. There isn't. But Unix is always doing
+things "behind your back," running
+programs of its own, whether you are aware of it or not. The most
+important of these programs, the <em class="emphasis">kernel</em>, is the
+heart of the Unix operating system itself. The kernel assigns memory
+to each of the programs that are running, partitions time fairly so
+that each program can get its job done, handles all I/O
+(input/output) operations, and so on. Another important group of
+programs, called <em class="emphasis">daemons</em>, are the
+system's
+"helpers." They run
+continuously -- or from time to time -- performing small but
+important tasks like handling mail, running network communications,
+feeding data to your printer, keeping track of the time, and so on.
+</p>
+
+<p><a name="IXT-1-1262" /><a name="IXT-1-1263" />Not only are you sharing the
+computer with the kernel and some mysterious daemons,
+you're also sharing it with yourself. You can issue
+the <b class="emphasis-bold">ps x</b><a name="IXT-1-1264" /><a name="IXT-1-1265" /> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>)
+command to get a list of all processes running on your system. For
+example:
+</p>
+
+<blockquote><pre class="code">  PID TTY    STAT  TIME COMMAND
+18034 tty2   S     0:00 -zsh
+18059 ?      S     0:01 ssh-agent
+18088 tty2   S     0:00 sh /usr/X11R6/bin/startx
+18096 tty2   S     0:00 xinit /etc/X11/xinit/xinitrc -- :0 -auth /home/jpeek/
+18101 tty2   S     0:00 /usr/bin/gnome-session
+18123 tty2   S     0:33 enlightenment -clientId default2
+18127 tty2   S     0:01 magicdev --sm-client-id=default12
+18141 tty2   S     0:03 panel --sm-client-id default8
+18145 tty2   S     0:01 gmc --sm-client-id default10
+18166 ?      S     1:20 gnomepager_applet --activate-goad-server gnomepager_a
+18172 tty2   S     0:01 gnome-terminal
+18174 tty2   S     0:00 gnome-pty-helper
+18175 pts/0  S     0:00 zsh
+18202 tty2   S     0:49 gnome-terminal
+18203 tty2   S     0:00 gnome-pty-helper
+18204 pts/1  S     0:01 zsh
+18427 pts/1  T     0:00 man zshjp
+18428 pts/1  T     0:00 sh -c /bin/gunzip -c /home/jpeek/.man/cat1/zshjp.1.gz
+18430 pts/1  T     0:03 /usr/bin/less -is
+18914 pts/1  T     0:02 vi upt3_changes.html
+ 1263 pts/1  T     0:00 vi urls.html
+ 1511 pts/1  T     0:00 less coding
+ 3363 pts/1  S     0:00 vi 1007.sgm
+ 4844 tty2   S     0:24 /usr/lib/netscape/netscape-communicator -irix-session
+ 4860 tty2   S     0:00 (dns helper)
+ 5055 pts/1  R     0:00 ps x</pre></blockquote>
+
+<p>This output tells us that the user has only three windows open. You
+may think that they're only running four or five
+programs, but the computer is actually doing a lot more. (And, to
+keep this brief, we aren't showing all the lines of
+output!) The user logged into his Linux system on <b class="emphasis-bold">virtual console</b> (<a href="ch23_12.htm#upt3-CHP-23-SECT-12">Section 23.12</a>)
+2, which shows as <tt class="literal">tty2</tt> in the
+<tt class="literal">TTY</tt> column; a lot of programs are running there,
+including the <b class="emphasis-bold">X Window System</b> (<a href="ch01_22.htm#upt3-CHP-1-SECT-22">Section 1.22</a>) (which actually runs itself as another
+user -- <em class="emphasis">root</em> -- so its process
+isn't listed here).
+<a name="IXT-1-1266" />The user is also running
+<a name="IXT-1-1267" /><a name="IXT-1-1268" />Gnome and
+Enlightenment, which keep track of the
+<a name="IXT-1-1269" /><a name="IXT-1-1270" />workstation's
+display. Two of the windows are Gnome
+<a name="IXT-1-1271" />terminals,
+which are windows that act like separate terminals; each has its own
+<em class="emphasis">tty</em>, <tt class="literal">pts/0</tt> and
+<tt class="literal">pts/1</tt>. And the list continues.
+</p>
+
+<p>If you are running a different window system (or no window system at
+all) or different utility programs, you will see something different.
+But we guarantee that you're running at least two
+programs, and quite likely many more. If you want to see everything
+that's running, including the daemons, type the
+command <tt class="literal">ps aux</tt><a name="IXT-1-1272" /> <a name="IXT-1-1273" />
+(Berkeley-style <i class="command">ps</i>) or <tt class="literal">ps -el</tt>
+(for many other flavors of <i class="command">ps</i>).
+You'll be impressed.
+</p>
+
+<p>Because there is so much going on at once, Unix requires a different
+way of thinking. The Unix kernel is a traffic cop that mediates
+different demands for time, memory, disks, and so on. Not only does
+the kernel need to run your programs, but it also needs to run the
+daemons, any programs that other users might want to start, or any
+programs that you may have scheduled to run automatically, as
+discussed in <a href="ch23_01.htm">Chapter 23</a>. When it runs a program,
+the kernel allocates a small slice of time -- up to a
+second -- and lets the program run until that slice is used up or
+until the program decides to take a rest of its own accord (this is
+called
+"<a name="IXT-1-1274" />sleeping").
+At this point, regardless of whether the program is finished, the
+kernel finds some other program to run. The Unix kernel never takes a
+vacation: it is always watching over the system.
+</p>
+
+<p>Once you understand that the kernel is a manager that schedules many
+different kinds of activity, you understand a lot about how Unix
+works. For example, if you have used any computer system previously,
+you know that it's a bad idea to turn the computer
+off while it is writing something to disk. You will probably destroy
+the disk, and you could conceivably damage the disk drive. The same
+is true for Unix -- but with an important complication. Any of the
+programs that are running can start doing something to the disk at
+any time. One of the daemons makes a point of accessing the disk
+drive every 30 seconds or so, just to stay in touch. Therefore, you
+can't just turn a Unix computer off. You might do
+all sorts of damage to the system's files -- and
+not just your own, but conceivably files belonging to many other
+users. To turn a Unix system off, you must first run a program called
+<i class="command">shutdown</i>, <a name="IXT-1-1275" /><a name="IXT-1-1276" />which kicks everyone off the system,
+makes sure that a daemon won't try to play with a
+disk drive when you aren't looking, and runs a
+program named <i class="command">sync</i> to make sure that the disks
+have the latest version of everything. Only then is it safe to pull
+the switch. When you start up a Unix system, it automatically runs a
+program called <i class="command">fsck</i><a name="IXT-1-1277" /><a name="IXT-1-1278" />, which stands for
+"filesystem check"; its job is to
+find out if you shut down the system correctly and try to fix any
+damage that might have happened if you
+didn't.<a name="IXTR3-1373" /> <a name="IXTR3-1374" /> <a name="IXTR3-1375" /> 
+</p>
+
+<p><em class="emphasis">--ML and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.9. Internal and External Commands</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.11. Filenames</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

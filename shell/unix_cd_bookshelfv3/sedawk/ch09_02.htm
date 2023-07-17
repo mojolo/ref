@@ -1,0 +1,708 @@
+<html><head><title>String Functions (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch09_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">9.2. String Functions</h2>
+
+<p>
+<a name="ch09.fun5" />
+<a name="ch09.fun6" />
+The built-in string functions are much more significant and
+interesting than the numeric functions.  Because awk is essentially
+designed as a string-processing language, a lot of its power
+derives from these functions. 
+<a href="ch09_02.htm#sedawk-ch-9-tab-2">Table 9.2</a> lists the string functions found in awk.</p>
+
+<a name="sedawk-ch-9-tab-2" /><h4 class="objtitle">Table 9.2. Awk's Built-In String Functions</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Awk Function</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><b class="emphasis-bold">gsub</b>(<em class="emphasis">r</em>,<em class="emphasis">s</em>,<em class="emphasis">t</em>)</td>
+<td><p>Globally substitutes <em class="emphasis">s</em> for each match of the regular 
+expression <em class="emphasis">r</em> in the string <em class="emphasis">t</em>.  Returns the number 
+of substitutions.  If <em class="emphasis">t</em> is not supplied, defaults to <b class="emphasis-bold">$0</b>.
+<a name="IXT-9-266090" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">index</b>(<em class="emphasis">s</em>,<em class="emphasis">t</em>)</td>
+<td><p>Returns position of substring <em class="emphasis">t</em> in string <em class="emphasis">s</em> or 
+zero if not present.  
+<a name="IXT-9-266091" />
+<a name="IXT-9-266092" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">length</b>(<em class="emphasis">s</em>)</td>
+<td><p>Returns length of string <em class="emphasis">s</em> or length of <b class="emphasis-bold">$0</b> 
+if no string is supplied.
+<a name="IXT-9-266093" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">match</b>(<em class="emphasis">s</em>,<em class="emphasis">r</em>)</td>
+<td><p>Returns either the position in <em class="emphasis">s</em> where the regular expression
+<em class="emphasis">r</em> begins, or 0 if no occurrences are found.  Sets the values
+of <b class="emphasis-bold">RSTART</b> and <b class="emphasis-bold">RLENGTH</b>.
+<a name="IXT-9-266094" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">split</b>(<em class="emphasis">s</em>,<em class="emphasis">a</em>,<em class="emphasis">sep</em>)</td>
+<td><p>Parses string <em class="emphasis">s</em> into elements of array <em class="emphasis">a</em>
+using field separator <em class="emphasis">sep</em>; returns number of elements.  
+If <em class="emphasis">sep</em> is not supplied, <b class="emphasis-bold">FS</b> is used.
+Array splitting works the same way as field splitting.
+<a name="IXT-9-266095" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">sprintf</b>("<em class="emphasis">fmt</em>",<em class="emphasis">expr</em>)</td>
+<td><p>Uses <b class="emphasis-bold">printf</b> format specification for <b class="emphasis-bold">expr</b>.
+<a name="IXT-9-266096" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">sub</b>(<em class="emphasis">r</em>,<em class="emphasis">s</em>,<em class="emphasis">t</em>)</td>
+<td><p>Substitutes <em class="emphasis">s</em> for first match of the regular expression 
+<em class="emphasis">r</em> in the string <em class="emphasis">t</em>.  Returns 1 if successful; 0 
+otherwise.  If <em class="emphasis">t</em> is not supplied, defaults to <b class="emphasis-bold">$0</b>.
+<a name="IXT-9-266097" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">substr</b>(<em class="emphasis">s</em>,<em class="emphasis">p</em>,<em class="emphasis">n</em>)</td>
+<td><p>Returns substring of string <em class="emphasis">s</em> at beginning position 
+<em class="emphasis">p</em> up to a maximum length of <em class="emphasis">n</em>.  If <em class="emphasis">n</em> is 
+not supplied, the rest of the string from <em class="emphasis">p</em> is used. 
+<a name="IXT-9-266098" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">tolower</b>(<em class="emphasis">s</em>)</td>
+<td><p>Translates all uppercase characters in string <em class="emphasis">s</em> to 
+lowercase and returns the new string.
+<a name="IXT-9-266099" />
+<a name="IXT-9-266100" /></p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">toupper</b>(<em class="emphasis">s</em>)</td>
+<td><p>Translates all lowercase characters in string <em class="emphasis">s</em> to 
+uppercase and returns the new string.
+<a name="IXT-9-266101" /></p></td>
+</tr>
+
+
+</table><p>
+
+<p>The <b class="emphasis-bold">split()</b> function was introduced in the previous chapter
+in the discussion on arrays.</p>
+
+<p>
+<a name="IXT-9-266102" />
+The <b class="emphasis-bold">sprintf()</b> function 
+uses the same format specifications as <b class="emphasis-bold">printf()</b>, which is 
+discussed in <a href="ch07_01.htm">Chapter 7, "Writing Scripts
+for awk"</a>.  It allows you to apply the format specifications
+on a string.  Instead of printing the result, <b class="emphasis-bold">sprintf()</b> returns
+a string that can be assigned to a variable.  It can do
+specialized processing of input records or fields,
+such as performing character conversions.
+For instance, the following example uses the <b class="emphasis-bold">sprintf()</b>
+function to convert a number into an ASCII character.</p>
+
+<blockquote><pre class="code">for (i = 97; i &lt;= 122; ++i) {
+	nextletter = sprintf("%c", i)
+	...
+}</pre></blockquote>
+
+<p>A loop supplies numbers from 97 to 122, which produce
+ASCII characters from <b class="emphasis-bold">a</b> to
+<b class="emphasis-bold">z</b>.</p>
+
+<p>That leaves us with three basic built-in
+string functions to discuss: <b class="emphasis-bold">index()</b>,
+<b class="emphasis-bold">substr()</b>, and <b class="emphasis-bold">length()</b>.</p>
+
+<a name="sedawk-ch-9-sect-2.1" /><div class="sect2">
+<h3 class="sect2">9.2.1. Substrings</h3>
+
+<p>
+<a name="IXT-9-266103" />
+<a name="IXT-9-266104" />
+The <b class="emphasis-bold">index()</b> and <b class="emphasis-bold">substr()</b> functions both deal with
+substrings.  
+Given a string <em class="emphasis">s</em>, 
+<b class="emphasis-bold">index</b>(<em class="emphasis">s</em>,<em class="emphasis">t</em>) returns 
+the leftmost position where string <em class="emphasis">t</em> 
+is found in <em class="emphasis">s</em>. 
+The beginning of the string is position 1 (which is different
+from the C language, where the first character in a string is at position 0).
+Look at the following example:</p>
+
+<blockquote><pre class="code">pos = index("Mississippi", "is")</pre></blockquote>
+
+<p>The value of <b class="emphasis-bold">pos</b> is 2.
+If the substring is not found, the <b class="emphasis-bold">index()</b> function returns
+0.</p>
+
+<p>
+<a name="IXT-9-266105" />
+Given a string <em class="emphasis">s</em>, 
+<b class="emphasis-bold">substr</b>(<em class="emphasis">s</em>,<em class="emphasis">p</em>) returns 
+the characters beginning at position <em class="emphasis">p</em>. 
+The following example creates a phone number 
+without an area code.</p>
+
+<blockquote><pre class="code">phone = substr("707-555-1111", 5)</pre></blockquote>
+
+<p>You can also supply a third argument which is the number of
+characters to return.  The next example returns just
+the area code:</p>
+
+<blockquote><pre class="code">area_code = substr("707-555-1111", 1, 3)</pre></blockquote>
+
+<p>The two functions can be and often are used together, as in the next
+example.  This example capitalizes the first letter of the first
+word for each input record.</p>
+
+<blockquote><pre class="code">awk '# caps - capitalize 1st letter of 1st word
+# initialize strings
+BEGIN { upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        lower = "abcdefghijklmnopqrstuvwxyz" 
+}
+
+# for each input line
+{
+# get first character of first word
+	FIRSTCHAR = substr($1, 1, 1)
+# get position of FIRSTCHAR in lowercase array; if 0, ignore
+	if (CHAR = index(lower, FIRSTCHAR)) 
+		# change $1, using position to retrieve
+		# uppercase character 
+		$1 = substr(upper, CHAR, 1) substr($1, 2)
+# print record
+	print $0
+}'</pre></blockquote>
+
+<p>This script creates two variables, <b class="emphasis-bold">upper</b> and <b class="emphasis-bold">lower</b>,
+consisting of uppercase and lowercase letters.  
+Any character that we find in <b class="emphasis-bold">lower</b> 
+can be found at the same position in <b class="emphasis-bold">upper</b>. 
+The first
+statement of the main procedure extracts a single character,
+the first one, from the first field. 
+The conditional statement tests to see if that character can
+be found in <b class="emphasis-bold">lower</b> using the <b class="emphasis-bold">index()</b> function.  If
+<b class="emphasis-bold">CHAR</b> is not 0, then <b class="emphasis-bold">CHAR</b> can be used to 
+extract the uppercase character from <b class="emphasis-bold">upper</b>.
+There are two <b class="emphasis-bold">substr()</b> function calls:  the first
+one retrieves the capitalized letter and the second call
+gets the rest of the first field, extracting
+all characters, beginning with the second character.
+The values returned by both <b class="emphasis-bold">substr()</b> functions 
+are concatenated and assigned
+to $1.  
+Making an assignment to a field
+as we do here is a new twist, but it has the added benefit 
+that the record can be output normally.  (If the assignment
+was made to a variable, you'd have to output the variable
+and then output the record's remaining fields.) 
+The <b class="emphasis-bold">print</b> statement prints the changed record.
+Let's see it in action:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>caps</b></tt>
+<tt class="userinput"><b>root user</b></tt>
+Root user
+<tt class="userinput"><b>dale</b></tt>
+Dale
+<tt class="userinput"><b>Tom</b></tt>
+Tom</pre></blockquote>
+
+<p>In a little bit, we'll see how to
+revise this program to change all
+characters in a string from lower- to uppercase or vice versa.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-9-sect-2.2" /><div class="sect2">
+<h3 class="sect2">9.2.2. String Length</h3>
+
+<p>
+<a name="IXT-9-266106" />
+<a name="IXT-9-266107" />
+<a name="IXT-9-266108" />
+When presenting the <b class="emphasis-bold">awkro</b> program in the previous chapter, we
+noted that the program was likely to
+produce lines that exceed 80 characters.  
+After all, the descriptions are quite
+long.  We can find out how many characters are in a string
+using the built-in function <b class="emphasis-bold">length()</b>.  
+For instance, to evaluate the length of the current input
+record, we specify <b class="emphasis-bold">length($0)</b>.
+(As it happens, if <b class="emphasis-bold">length()</b> is called without
+an argument, it returns the length of $0.)</p>
+
+<p>The <b class="emphasis-bold">length()</b> function is often used to find
+the length of the current input record, in order to determine
+if we need to break the line.</p>
+
+<p>One way to handle the line break, perhaps
+more efficiently, is to use the <b class="emphasis-bold">length()</b> function
+to get the length of each field.  By accumulating those lengths,
+we could specify a line break when a new field causes the total to exceed 
+a certain number.</p>
+
+<p><a href="ch13_01.htm">Chapter 13, "A Miscellany of Scripts"</a>,
+contains a script that uses the <b class="emphasis-bold">length()</b>
+function to break lines greater than 80 columns wide.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-9-sect-2.3" /><div class="sect2">
+<h3 class="sect2">9.2.3. Substitution Functions</h3>
+
+<p>
+<a name="ch09.sub1" />
+<a name="ch09.sub2" />
+<a name="ch09.sub3" />
+<a name="ch09.sub4" />
+Awk provides two substitution functions: <b class="emphasis-bold">sub()</b> and
+<b class="emphasis-bold">gsub()</b>.  The difference between them is that <b class="emphasis-bold">gsub()</b>
+performs its substitution globally on the input string whereas
+<b class="emphasis-bold">sub()</b> makes only the first possible substitution.
+This makes <b class="emphasis-bold">gsub()</b> equivalent to the sed substitution
+command with the <b class="emphasis-bold">g</b> (global) flag.</p>
+
+<p>Both functions take at least two arguments.  The first is a
+regular expression (surrounded by slashes) that matches
+a pattern and the second argument is a string that replaces what 
+the pattern matches. 
+The regular expression
+can be supplied by a variable, in which case the slashes
+are omitted.  An optional
+third argument specifies the string that is the target of
+the substitution.  If there is no third
+argument, the substitution is made for the current
+input record ($0).</p>
+
+<p>The substitution functions change the specified string directly.
+You might expect, given the way functions work, that the function returns
+the new string created when the substitution is made.
+The substitution functions actually return 
+the <em class="emphasis">number</em> of substitutions made.  <b class="emphasis-bold">sub()</b>
+will always return 1 if successful; both return 0 if not
+successful.  Thus, you can test the result to see if a substitution
+was made.</p>
+
+<p>For example, the following example uses <b class="emphasis-bold">gsub()</b>
+to replace all occurrences
+of "UNIX" with "POSIX".</p>
+
+<blockquote><pre class="code">if (gsub(/UNIX/, "POSIX"))
+	print</pre></blockquote>
+
+<p>The conditional statement tests the return
+value of <b class="emphasis-bold">gsub()</b> such that the current input line is printed
+only if a change is made.</p>
+
+<p>As with sed, if an "&amp;" appears in the substitution string, it will
+be replaced by the string matched by the regular expression.
+Use "\&amp;" to output an ampersand.
+(Remember that to get a literal "\" into a string, you have
+to type two of them.)
+Also, note that awk does not "remember" the previous regular
+expression, as does sed, so you cannot use the syntax
+"//" to refer to the last regular expression.</p>
+
+<p>The following example surrounds any occurrence of "UNIX" with 
+the <b class="emphasis-bold">troff</b> font-change escape sequences.</p>
+
+<blockquote><pre class="code">gsub(/UNIX/, "\\fB&amp;\\fR")</pre></blockquote>
+
+<p>If the input is "the UNIX operating system", the
+output is "the \fBUNIX\fR operating system".</p>
+
+<p>In <a href="ch04_01.htm">Chapter 4, "Writing sed Scripts"</a>, we presented the 
+following sed script named <b class="emphasis-bold">do.outline</b>:</p>
+
+<blockquote><pre class="code">sed -n '
+s/"//g
+s/^\.Se /Chapter /p
+s/^\.Ah /&#x95;A. /p
+s/^\.Bh /&#x95;&#x95;B.  /p' $*</pre></blockquote>
+
+<p>Now here's that script rewritten using the substitution
+functions:</p>
+
+<blockquote><pre class="code">awk '
+{
+gsub(/"/, "")
+if (sub(/^\.Se /, "Chapter ")) print
+if (sub(/^\.Ah /, "\tA. ")) print
+if (sub(/^\.Bh /, "\t\tB.  ")) print
+}' $*</pre></blockquote>
+
+<p>The two scripts are exactly equivalent, printing out
+only those lines that are changed.
+For the first edition of this book, Dale
+compared the run-time of both scripts and, as he expected,
+the awk script was slower. 
+For the second edition, new timings showed that performance
+varies by implementation, and in fact, all tested versions
+of new awk were faster than sed!
+This is nice, since
+we have the capabilities in awk to make
+the script do more things.  For instance, instead of
+using letters of the alphabet, we could number the headings. 
+Here's the revised awk script:</p>
+
+<blockquote><pre class="code">awk '# do.outline -- number headings in chapter.
+{
+gsub(/"/, "")
+}
+/^\.Se/ {
+	sub(/^\.Se /, "Chapter ") 
+	ch = $2
+	ah = 0
+	bh = 0
+	print
+	next
+}
+/^\.Ah/ {
+	sub(/^\.Ah /, "\t " ch "." ++ah " ") 
+	bh = 0
+	print
+	next
+}
+/^\.Bh/ {
+	sub(/^\.Bh /, "\t\t " ch "."  ah "." ++bh " ")
+	print
+}' $*</pre></blockquote>
+
+<p>In this version, we break out each heading into its own
+pattern-matching rule.  This is not necessary but seems
+more efficient since we know that once a rule is applied,
+we don't need to look at the others.
+Note the use of the <b class="emphasis-bold">next</b> statement to bypass further
+examination of a line that has already been identified.</p>
+
+<p>The chapter number 
+is read as the first argument to the ".Se" macro
+and is thus the second field on that line. 
+The numbering scheme is done by incrementing a variable
+each time the substitution is made.  
+The action associated with the chapter-level heading
+initializes the section-heading counters to zero.
+The action associated with the top-level heading ".Ah"
+zeroes the second-level heading counter.
+Obviously, you can create as many levels of heading
+as you need.
+Note how we can specify a concatenation of 
+strings and variables as a single
+argument to the <b class="emphasis-bold">sub()</b> function.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>do.outline ch02</b></tt>
+Chapter 2 Understanding Basic Operations
+         2.1 Awk, by Sed and Grep, out of Ed 
+         2.2 Command-line Syntax
+                 2.2.1 Scripting
+                 2.2.2 Sample Mailing List
+         2.3 Using Sed
+                 2.3.1 Specifying Simple Instructions
+                 2.3.2 Script Files
+         2.4 Using Awk
+         2.5 Using Sed and Awk Together</pre></blockquote>
+
+<p>If you wanted the option of choosing either numbers or letters, you
+could maintain both programs and construct a shell wrapper that uses 
+some flag to determine which program should be invoked.</p>
+
+<a name="IXT-9-266109" />
+<a name="IXT-9-266110" />
+<a name="IXT-9-266111" />
+<a name="IXT-9-266112" />
+</div>
+
+
+
+
+<a name="sedawk-ch-9-sect-2.4" /><div class="sect2">
+<h3 class="sect2">9.2.4. Converting Case</h3>
+
+<p>
+<a name="IXT-9-266113" />
+<a name="IXT-9-266114" />
+<a name="IXT-9-266115" />
+<a name="IXT-9-266116" />
+<a name="IXT-9-266117" />
+POSIX awk provides two functions for converting the case of characters
+within a string.  The functions are <b class="emphasis-bold">tolower()</b> and <b class="emphasis-bold">toupper()</b>.
+Each takes a single string argument, and returns a copy of that string,
+with all the characters of one case converted to the other (upper to
+lower and lower to upper, respectively).
+Their use is straightforward:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat test</b></tt>
+Hello, World!
+Good-bye CRUEL world!
+1, 2, 3, and away we GO!
+$ <tt class="userinput"><b>awk '{ printf("&lt;%s&gt;, &lt;%s&gt;\n", tolower($0), toupper($0)) }' test</b></tt>
+&lt;hello, world!&gt;, &lt;HELLO, WORLD!&gt;
+&lt;good-bye cruel world!&gt;, &lt;GOOD-BYE CRUEL WORLD!&gt;
+&lt;1, 2, 3, and away we go!&gt;, &lt;1, 2, 3, AND AWAY WE GO!&gt;</pre></blockquote>
+
+<p>Note that nonalphabetic characters are left unchanged.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-9-sect-2.5" /><div class="sect2">
+<h3 class="sect2">9.2.5. The match() Function</h3>
+
+<p>
+<a name="ch09.match1" />
+<a name="ch09.match2" />
+<a name="ch09.match3" />
+The <b class="emphasis-bold">match()</b> function 
+allows you to determine if a regular expression matches a specified
+string.  
+It takes two arguments, the string and the regular
+expression.  (This function is confusing because the regular
+expression is in the second position, whereas
+it is in the first position for the substitution functions.)</p>
+
+<p>The <b class="emphasis-bold">match()</b> function returns the starting position
+of the substring that was matched by the regular expression.
+You might consider it a close relation to the <b class="emphasis-bold">index()</b>
+function. 
+In the following example, the regular expression matches  
+any sequence of capital letters in the string "the
+UNIX operating system".</p>
+
+<blockquote><pre class="code">match("the UNIX operating system", /[A-Z]+/)</pre></blockquote>
+
+<p>The value returned by this function is 5, the character position
+of "U," the first capital letter in the string.</p>
+
+<p>The <b class="emphasis-bold">match()</b> function also sets two system variables:
+<b class="emphasis-bold">RSTART</b> and <b class="emphasis-bold">RLENGTH</b>. 
+<b class="emphasis-bold">RSTART</b> contains the same value returned by the function,
+the starting position of the substring.  <b class="emphasis-bold">RLENGTH</b> 
+contains the length of the string in characters (not the ending
+position of the substring).
+When the pattern does not match, <b class="emphasis-bold">RSTART</b> is set to 0
+and <b class="emphasis-bold">RLENGTH</b> is set to -1.
+In the previous example, <b class="emphasis-bold">RSTART</b> is equal to 5
+and <b class="emphasis-bold">RLENGTH</b> is equal to 4.  (Adding them together gives
+you the position of the first character after the match.)</p>
+
+<p>Let's look at a rather simple example 
+that prints out 
+a string matched by a specified regular expression, demonstrating the
+"extent of the match," as discussed in <a href="ch03_01.htm">Chapter 3, "Understanding Regular Expression Syntax"</a>.
+The following shell script takes 
+two command-line arguments:  the regular expression, which should
+be specified in quotes, and the name of the file to search.</p>
+
+<blockquote><pre class="code">awk '# match -- print string that matches line
+# for lines match pattern 
+match($0, pattern) {
+	# extract string matching pattern using
+	# starting position and length of string in $0 
+	# print string
+	print substr($0, RSTART, RLENGTH)
+}' pattern="$1" $2</pre></blockquote>
+
+<p>The first command-line parameter is passed as the value
+of <b class="emphasis-bold">pattern</b>. 
+Note that $1 is surrounded by quotes, necessary to 
+protect any spaces that might appear in the regular expression.
+The <b class="emphasis-bold">match()</b> function appears in a conditional expression
+that controls execution of the only procedure in this awk
+script. 
+The <b class="emphasis-bold">match()</b> function returns 0 if the pattern 
+is not found, and a non-zero value (<b class="emphasis-bold">RSTART</b>) if it is found,
+allowing the return value to be used as a condition.
+If the current record matches the pattern, then
+the string is extracted from $0, using
+the values of <b class="emphasis-bold">RSTART</b> and <b class="emphasis-bold">RLENGTH</b> in the <b class="emphasis-bold">substr()</b>
+function to specify the starting position of the substring to be
+extracted and its length.  The substring
+is printed.  This procedure only matches the first occurrence in $0.</p>
+
+<p>Here's a trial run, given a regular expression that matches
+"emp" and any number of characters up to a blank space:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>match "emp[^ ]*" personnel.txt</b></tt>
+employees
+employee
+employee.
+employment,
+employer
+employment
+employee's
+employee</pre></blockquote>
+
+<p>The <b class="emphasis-bold">match</b> script could be a useful tool in
+improving your understanding of regular expressions.</p>
+
+<p>The next script uses the <b class="emphasis-bold">match()</b> function to locate
+any sequence of uppercase letters so that they can be converted
+to lowercase.  Compare it to the <b class="emphasis-bold">caps</b> program shown
+earlier in the chapter.</p>
+
+<blockquote><pre class="code">awk '# lower - change upper case to lower case 
+# initialize strings
+BEGIN { upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        lower = "abcdefghijklmnopqrstuvwxyz" 
+}
+
+# for each input line
+{
+# see if there is a match for all caps 
+	 while (match($0, /[A-Z]+/))  
+		# get each cap letter
+		for (x = RSTART; x &lt; RSTART+RLENGTH; ++x) { 
+			CAP = substr($0, x, 1)
+			CHAR = index(upper, CAP)
+			# substitute lowercase for upper 
+			gsub(CAP, substr(lower, CHAR, 1))
+		}
+		
+# print record
+       print $0
+}' $*</pre></blockquote>
+
+<p>In this script, the <b class="emphasis-bold">match()</b> function appears in
+a conditional expression that determines whether
+a <b class="emphasis-bold">while</b> loop will be executed.
+By placing this function in a loop, we apply the body
+of the loop as many times as the pattern occurs 
+in the current input record.</p>
+
+<p>The regular expression matches any sequence of uppercase letters in
+$0.  If a match is made,
+a <b class="emphasis-bold">for</b> loop does the lookup of each character in the
+substring that was matched, similar to what we did in
+the <b class="emphasis-bold">caps</b> sample program, shown earlier in this chapter.  
+What's different here is how we use the system variables
+<b class="emphasis-bold">RSTART</b> and <b class="emphasis-bold">RLENGTH</b>.
+<b class="emphasis-bold">RSTART</b> initializes the counter variable <b class="emphasis-bold">x</b>.  It
+is used in the <b class="emphasis-bold">substr()</b> function to extract one character
+at a time from $0, beginning with the first character that
+matched the pattern.  By
+adding <b class="emphasis-bold">RLENGTH</b> to <b class="emphasis-bold">RSTART</b>, we get
+the position of the first character after the ones that matched the pattern.
+That is why the loop uses "&lt;" instead of "&lt;=".
+At the end, we use <b class="emphasis-bold">gsub()</b> to replace the uppercase letter
+with the corresponding lowercase letter.<a href="#FOOTNOTE-58">[58]</a>
+Notice that we use <b class="emphasis-bold">gsub()</b> instead of <b class="emphasis-bold">sub()</b>
+because it offers us the advantage of making several substitutions
+if there are multiple instances of the same letter
+on the line.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-58" /><p> [58]You may be wondering, "why not just use
+<b class="emphasis-bold">tolower()</b>?" Good question.
+Some early versions of <b class="emphasis-bold">nawk</b>,
+including the one on SunOS 4.1.x systems, don't have
+<b class="emphasis-bold">tolower()</b> and
+<b class="emphasis-bold">toupper()</b>; thus it's useful
+to know how to do it yourself.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat test</b></tt>
+Every NOW and then, a WORD I type appears in CAPS.
+$ <tt class="userinput"><b>lower test</b></tt>
+every now and then, a word i type appears in caps.</pre></blockquote>
+
+<p>Note that you could change the regular expression to avoid
+matching individual capital letters by matching
+a sequence of two or more uppercase characters, by using:  "/[A-Z][A-Z]+/."  
+This would also require revising the way the lowercase
+conversion was made using <b class="emphasis-bold">gsub()</b>, since it matches
+a single character on the line.</p>
+
+<p>In our discussion of the sed substitution command, you saw
+how to save and recall a portion of a string matched by
+a pattern, using \( and \) to surround
+the pattern to be saved and \<em class="emphasis">n</em> to recall the saved string
+in the replacement pattern.  Unfortunately, awk's standard substitution
+functions offer no equivalent syntax.  The <b class="emphasis-bold">match()</b> function can
+solve many such problems, though.</p>
+
+<p>For instance, if you match a string using the <b class="emphasis-bold">match()</b> function,
+you can single out characters or a substring at the head
+or tail of the string.  
+Given the values of <b class="emphasis-bold">RSTART</b> and <b class="emphasis-bold">RLENGTH</b>,  
+you can use the <b class="emphasis-bold">substr()</b> function to extract the characters.
+In the following example, we replace the second of
+two colons with a semicolon.  We can't use <b class="emphasis-bold">gsub()</b> to make the replacement
+because "/:/" matches the first colon and "/:[^:]*:/" matches the
+whole string of characters. 
+We can use <b class="emphasis-bold">match()</b> to match the string of characters
+and to extract the last character of the string.</p>
+
+<blockquote><pre class="code"># replace 2nd colon with semicolon using match, substr
+if (match($1, /:[^:]*:/)) {
+	before = substr($1, 1, (RSTART + RLENGTH - 2))
+	after = substr($1, (RSTART + RLENGTH))
+	$1 = before ";" after
+}</pre></blockquote>
+
+<p>The <b class="emphasis-bold">match()</b> function is placed within a conditional statement
+that tests that a match was found.   
+If there is a match, we use the <b class="emphasis-bold">substr()</b> function to extract
+the substring before the second colon as well as the substring 
+after it.  Then we concatenate <b class="emphasis-bold">before</b>, the literal ";", and
+<b class="emphasis-bold">after</b>, assigning it to $1.</p>
+
+<p>You can see examples of the <b class="emphasis-bold">match()</b> function in use
+in <a href="ch12_01.htm">Chapter 12, "Full-Featured Applications"</a>.</p>
+
+<a name="IXT-9-266118" />
+<a name="IXT-9-266119" />
+<a name="IXT-9-266120" />
+</div>
+
+
+
+
+<a name="IXT-9-266121" />
+<a name="IXT-9-266122" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch09_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch09_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">9. Functions</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">9.3. Writing Your Own Functions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

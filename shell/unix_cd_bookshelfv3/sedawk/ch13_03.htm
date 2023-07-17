@@ -1,0 +1,102 @@
+<html><head><title>combine--Extract Multipart uuencoded Binaries (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.3. combine--Extract Multipart uuencoded Binaries</h2>
+
+<p><em class="emphasis">Contributed by Rahul Dhesi</em></p>
+
+<p>
+<a name="ch13.comb" />
+Of all the scripts I have ever written, the one I am most proud
+of is the "combine" script.</p>
+
+<p>While I was moderating <em class="emphasis">comp.binaries.ibm.pc</em>, I wanted to provide
+users a simple way of extracting multipart uuencoded binaries.
+I added <b class="emphasis-bold">BEGIN</b> and <b class="emphasis-bold">END</b> headers to each part to enclose the uuencoded
+part and provided users with the following script:</p>
+
+<blockquote><pre class="code">cat $* | sed '/^END/,/^BEGIN/d' | uudecode</pre></blockquote>
+
+<p>This script will accept a list of filenames (in order) provided as
+command-line arguments.  It will also accept concatenated articles as
+standard input.</p>
+
+<p>This script invokes <b class="emphasis-bold">cat</b> in a very useful way that is well known to
+expert shell script users but not enough used by most others.  This
+allows the user the choice of either providing command-line arguments
+or standard input.</p>
+
+<p>The script invokes sed to strip out superfluous headers and trailers,
+except for headers in the first input file and trailers in the last
+input file.  The final result is that the uuencoded part of the
+multiple input files is extracted and uudecoded.  Each input file
+(see postings in <em class="emphasis">comp.binaries.ibm.pc</em>) has the following form:</p>
+
+<blockquote><pre class="code">headers
+BEGIN
+<em class="replaceable"><tt>uuencoded text</tt></em>
+END</pre></blockquote>
+
+<p>I have lots of other shell stuff, but the above is simplest and has
+proved useful to several thousand <em class="filename">comp.binaries.ibm.pc</em> readers.</p>
+
+
+<a name="sedawk-ch-13-sect-0.0.0.3" /><div class="sect2">
+<h3 class="sect2">13.3.1. Program Notes for combine</h3>
+
+<p>This one is pretty obvious but accomplishes a lot.  
+For those who might not understand the use of this command, here is the
+explanation.  A Usenet newsgroup such as comp.binaries.ibm.pc
+distributes public-domain programs and such.  Binaries, the object
+code created by the compiler, cannot be distributed as news
+articles unless they are 
+"encoded."  A program named <b class="emphasis-bold">uuencode</b>
+converts the binary to an ASCII representation that can be easily
+distributed.
+Furthermore, there are limits on the size of  
+news articles and large binaries are broken up into a series of
+articles (1 of 3, 2 of 3, 3 of 3, for example).
+Dhesi would break up the encoded binary into manageable chunks, and
+then add the <b class="emphasis-bold">BEGIN</b> and <b class="emphasis-bold">END</b> lines to delimit the text that
+contained encoded binary.</p>
+
+<p>A reader of these articles might save each article in a file. 
+Dhesi's script automates the process of combining
+these articles and removing extraneous information such as the
+article header as well as the extra <b class="emphasis-bold">BEGIN</b> and <b class="emphasis-bold">END</b> headers.  His
+script removes lines 
+from the first <b class="emphasis-bold">END</b> up to and including the next <b class="emphasis-bold">BEGIN</b> pattern.
+It combines all the separate encoded parcels and directs
+them to <b class="emphasis-bold">uudecode</b>, which converts the ASCII representation to binary.</p>
+
+<p>One has to appreciate the amount of manual editing work avoided 
+by a simple one-line script.</p>
+</div>
+
+
+
+
+<a name="IXT-13-266389" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13.2. phonebill--Track Phone Usage</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.4. mailavg--Check Size of Mailboxes</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

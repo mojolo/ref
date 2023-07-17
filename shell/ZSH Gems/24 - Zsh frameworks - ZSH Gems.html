@@ -1,0 +1,476 @@
+﻿<!DOCTYPE html><html style="display: block;"><head>
+    <base href="https://www.refining-linux.org/archives/59-ZSH-Gem-24-ZSH-frameworks.html">
+<title>Refining Linux: ZSH Gem #24: ZSH frameworks</title>
+<style>
+html {
+  margin: 0;
+  padding: 0;
+}
+body {
+  color: #111111;
+  background-color: #f6f6f6;
+  font-family: sans-serif;
+  font-size: 1.3em;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0 auto;
+  padding: 40px 10px 80px;
+  text-orientation: upright;
+  transition:
+    color 200ms cubic-bezier(0.4, 0, 1, 1),
+    background-color 200ms cubic-bezier(0.4, 0, 1, 1);
+}
+body.vertical {
+  margin: 40px auto 0;
+  padding: 40px 60px 0;
+}
+.entry-content * {
+  max-width: 100%;
+  white-space: normal;
+  line-height: inherit;
+  vertical-align: baseline;
+  background: transparent;
+}
+.entry-content p {
+  margin: 1.5em 0;
+}
+body.vertical .entry-content p {
+  margin: 0 1.5em;
+}
+h1 {
+  font-size: 1.8em;
+  line-height: 1.35;
+}
+h1, h2, h3, h4, h5, h6, b {
+  font-weight: 700;
+}
+hr {
+  border-style: solid;
+  border-width: 0 0 0.5px 0.5px;
+}
+.entry-content img {
+  max-width: 100%;
+  height: auto;
+}
+body.vertical .entry-content img {
+  max-height: 100%;
+  width: auto;
+}
+.entry-content code {
+  font-weight: 500;
+}
+.entry-content pre {
+  font-weight: 300;
+  background-color: rgba(128, 128, 128, 0.05);
+  border: 1px solid rgba(128, 128, 128, 0.1);
+  white-space: pre-wrap;
+  padding: 0.5em;
+  margin: 1.5em 0;
+}
+.entry-content code, .entry-content pre {
+  text-align: left;
+  max-width: 100%;
+  writing-mode: horizontal-tb;
+  overflow: auto;
+}
+.entry-content *:not(pre) > code, .entry-content pre {
+  font-size: 0.85em;
+}
+body.vertical .entry-content pre {
+  margin: 0 1.5em;
+  max-width: 80%;
+  max-height: 100%;
+}
+iframe, textarea, input {
+  display: none;
+}
+</style>
+
+    <link rel="icon" href="data:image/x-icon;base64,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">
+    <script id="savepage-contentloaders" type="application/javascript">
+      "use strict"
+      savepage_ContentLoaders();
+      function savepage_ContentLoaders()
+      {
+        var resourceMimeType = new Array();
+        var resourceBase64Data = new Array();
+        var resourceBlobUrl = new Array();
+        window.addEventListener("DOMContentLoaded",
+        function(event)
+        {
+          savepage_ShadowLoader(5);
+          savepage_ResourceLoader(5);
+          document.getElementById('savepage-contentloaders').remove();
+        },false);
+        function savepage_ShadowLoader(c){createShadowDOMs(0,document.documentElement);function createShadowDOMs(a,b){var i;if(b.localName=="iframe"||b.localName=="frame"){if(a<c){try{if(b.contentDocument.documentElement!=null){createShadowDOMs(a+1,b.contentDocument.documentElement)}}catch(e){}}}else{if(b.children.length>=1&&b.children[0].localName=="template"&&b.children[0].hasAttribute("data-savepage-shadowroot")){b.attachShadow({mode:"open"}).appendChild(b.children[0].content);b.removeChild(b.children[0]);for(i=0;i<b.shadowRoot.children.length;i++)if(b.shadowRoot.children[i]!=null)createShadowDOMs(a,b.shadowRoot.children[i])}for(i=0;i<b.children.length;i++)if(b.children[i]!=null)createShadowDOMs(a,b.children[i])}}}
+        function savepage_ResourceLoader(f){createBlobURLs();replaceReferences(0,document.documentElement);function createBlobURLs(){var i,j,binaryString,blobData;var a=new Array();for(i=0;i<resourceMimeType.length;i++){if(typeof resourceMimeType[i]!="undefined"){binaryString=atob(resourceBase64Data[i]);resourceBase64Data[i]="";a.length=0;for(j=0;j<binaryString.length;j++){a[j]=binaryString.charCodeAt(j)}blobData=new Blob([new Uint8Array(a)],{type:resourceMimeType[i]});resourceMimeType[i]="";resourceBlobUrl[i]=window.URL.createObjectURL(blobData)}}}function replaceReferences(a,b){var i,regex1,regex2,csstext,blobData;regex1=/url\(\s*((?:"[^"]+")|(?:'[^']+')|(?:[^\s)]+))\s*\)/gi;regex2=/data:[^;]*;resource=(\d+);base64,/i;if(b.hasAttribute("style")){csstext=b.style.cssText;b.style.cssText=csstext.replace(regex1,replaceCSSRef)}if(b.localName=="style"){csstext=b.textContent;b.textContent=csstext.replace(regex1,replaceCSSRef)}else if(b.localName=="link"&&(b.rel.toLowerCase()=="icon"||b.rel.toLowerCase()=="shortcut icon")){if(b.href!="")b.href=b.href.replace(regex2,replaceRef)}else if(b.localName=="body"){if(b.background!="")b.background=b.background.replace(regex2,replaceRef)}else if(b.localName=="img"){if(b.src!="")b.src=b.src.replace(regex2,replaceRef)}else if(b.localName=="input"&&b.type.toLowerCase()=="image"){if(b.src!="")b.src=b.src.replace(regex2,replaceRef)}else if(b.localName=="audio"){if(b.src!=""){b.src=b.src.replace(regex2,replaceRef);b.load()}}else if(b.localName=="video"){if(b.src!=""){b.src=b.src.replace(regex2,replaceRef);b.load()}if(b.poster!="")b.poster=b.poster.replace(regex2,replaceRef)}else if(b.localName=="source"){if(b.src!=""){b.src=b.src.replace(regex2,replaceRef);b.parentElement.load()}}else if(b.localName=="track"){if(b.src!="")b.src=b.src.replace(regex2,replaceRef)}else if(b.localName=="object"){if(b.data!="")b.data=b.data.replace(regex2,replaceRef)}else if(b.localName=="embed"){if(b.src!="")b.src=b.src.replace(regex2,replaceRef)}if(b.localName=="iframe"||b.localName=="frame"){if(a<f){if(b.hasAttribute("data-savepage-sameorigin")){blobData=new Blob([decodeURIComponent(b.src.substr(29))],{type:"text/html;charset=utf-8"});b.onload=function(){try{if(b.contentDocument.documentElement!=null){replaceReferences(a+1,b.contentDocument.documentElement)}}catch(e){}};b.src=window.URL.createObjectURL(blobData)}}}else{if(b.shadowRoot!=null){for(i=0;i<b.shadowRoot.children.length;i++)if(b.shadowRoot.children[i]!=null)replaceReferences(a,b.shadowRoot.children[i])}for(i=0;i<b.children.length;i++)if(b.children[i]!=null)replaceReferences(a,b.children[i])}}function replaceCSSRef(a,b,c,d){var e=new Array();e=b.match(/data:[^;]*;resource=(\d+);base64,/i);if(e!=null)return"url("+resourceBlobUrl[+e[1]]+")";else return a}function replaceRef(a,b,c,d){return resourceBlobUrl[+b]}}
+      }
+    </script>
+    <meta name="savepage-url" content="https://www.refining-linux.org/archives/59-ZSH-Gem-24-ZSH-frameworks.html">
+    <meta name="savepage-title" content="Refining Linux: ZSH Gem #24: ZSH frameworks">
+    <meta name="savepage-date" content="Wed Jun 26 2019 21:42:30 GMT-0700 (Pacific Daylight Time)">
+    <meta name="savepage-state" content="Standard Items; Used resource loader; Retained cross-origin frames; Removed unsaved URLs; Max frame depth = 5; Max resource size = 50MB; Max resource time = 10s;">
+    <meta name="savepage-version" content="15.0">
+    <meta name="savepage-comments" content="">
+    <meta name="savepage-resourceloader" content=""></head><body class="horizontal" style="background-color: rgb(246, 246, 246); color: rgb(17, 17, 17); font-family: sans-serif; font-size: 1.3em; line-height: 1.3; writing-mode: unset; max-width: 1100px; height: unset;">
+<h1>Refining Linux: ZSH Gem #24: ZSH frameworks</h1>
+<hr>
+<article class="entry-content"><div class="page" id="readability-page-1">&lt;--
+        Load Modernizr and jQuery
+    --&gt;
+    
+
+
+    
+    <section id="Page">
+        
+            
+        
+        <header role="banner" id="Header">
+            <div id="PaintingTux">
+                
+                <a href="https://www.refining-linux.org/" style="color: rgb(0, 0, 238);">
+                    <img alt="Tux is painting the wall" width="335" height="229" data-savepage-src="https://www.refining-linux.org/templates/reflinux-2012/img/design/tux_painting-fs8.png" src="data:image/png;base64,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">
+                </a>
+            </div>
+            <nav id="MainNavigation">
+                
+            </nav>
+        </header>
+        
+        
+        <div id="MainWrapper">
+            <section role="main" id="Content">
+                <div id="InnerContentWrapper">
+                    <div>
+                        <div id="ArticlesWrapper">
+                                                            
+
+
+            <article>
+            <header>
+                
+                
+            </header>
+            
+            
+                                                
+
+<p>I have shown you many things about ZSH throughout this series, but there is much more you can do with it than I could cover here. And of course there is also much more to configure, many more options I couldn't tell you about, many more tips and tricks, tweaks and optimizations.</p>
+
+<p>Generally, it's a long way to go before you have your shell set up as you like. Especially ZSH needs a lot of configuration before it becomes very user-friendly. You can do all this configuration by hand or you can use a framework for that. Yes, there are frameworks for ZSH (and for Bash as well, in case you didn't know) and as a completion of this Advent series I'll show you two of them.</p>
+
+<h2>oh-my-zsh</h2>
+
+<p>Probably the most advanced and mighty ZSH framework is <a href="https://github.com/robbyrussell/oh-my-zsh" style="color: rgb(0, 0, 238);"><em>oh-my-zsh</em></a>. oh-my-zsh provides lots of extra features, special plugins with additional functions and completion definitions for certain command line tools and many, many themes for modifying the appearance of your shell, particularly the prompt.</p>
+
+<p>To use oh-my-zsh, download it to a directory of your choice (e.g. <code>~/.oh-my-zsh</code>) and load it from within your <code>.zshrc</code>:</p>
+
+<pre><code><span># Path to your oh-my-zsh installation (the framework won't work without this setting)</span>
+ZSH=<span>$HOME</span>/.oh-my-zsh
+
+<span># Load oh-my-zsh</span>
+source <span>$ZSH</span>/oh-my-zsh.sh
+</code></pre>
+
+<p>That's basically it. You've successfully loaded the framework. But until now it doesn't do much except changing the default prompt to something a bit more meaningful and configuring some basic stuff such as enabling <code>ls</code> colors. But you can customize the framework. For example to disable <code>ls</code> colors again, write the following in your <code>.zshrc</code> before the line where the framework is loaded:</p>
+
+<pre><code><span>DISABLE_LS_COLORS=<span><span>"true"</span></span></span></code></pre>
+
+<p>To set another theme modify the parameter <code>$ZSH_THEME</code>:</p>
+
+<pre><code><span>ZSH_THEME=<span><span>"candy"</span></span></span></code></pre>
+
+<p>Now when you re-source your current shell instance you have the <code>candy</code> theme activated. For a full list of available themes have a look at the <code>themes</code> folder inside your oh-my-zsh folder. An even better overview can be found in the <a href="https://github.com/robbyrussell/oh-my-zsh/wiki/Themes" style="color: rgb(0, 0, 238);">oh-my-zsh wiki</a> on GitHub.</p>
+
+<p>Next let's come to the plugins. By default, no plugins are loaded, but that can be changed. Similar to ZSH's <code>$fpath</code> array, oh-my-zsh has a special <code>$plugins</code> array which contains all the names of all the plugins to load when initializing the framework. For instance:</p>
+
+<pre><code><span>plugins=<span>(git github perl svn)</span></span></code></pre>
+
+<p>for loading the plugins <code>git</code>, <code>github</code>, <code>perl</code> and <code>svn</code> which will provide extra functions and completion features for the corresponding applications. For instance, the <code>git</code> plugins adds many advanced completion features for working with Git repositories and the shell function <code>current_branch</code> as a shorthand for displaying the branch you're currently working on without any additional meta data or formatting stuff.</p>
+
+<p>oh-my-zsh is pretty mighty and you can have a lot of fun with it. Just be aware, that even though ZSH provides an <a href="https://www.refining-linux.org/archives/46/ZSH-Gem-12-Autoloading-functions/" style="color: rgb(0, 0, 238);">autoloading mechanism</a> for functions, loading too many plugins can slow down your shell. It can be very annoying when you always have to wait 10 seconds after opening a new shell instance.</p>
+
+<p>If you're not quite sure how to start with oh-my-zsh, have a look at the example <code>.zshrc</code> in the <code>templates</code> folder.</p>
+
+<h2>zshuery</h2>
+
+<p><a href="https://github.com/myfreeweb/zshuery" style="color: rgb(0, 0, 238);"><em>zshuery</em></a> is another framework for ZSH which is much smaller. It's more something like a micro-framework. The name is derived from <em>jQuery</em> and the idea behind it is to provide a simple and flexible yet fast framework. zshuery doesn't have lots of plugins. It's just one single file which provides some extra functionality and does the basic ZSH configuration for you. That's it. Compared to oh-my-zsh, zshuery is a stub but that's why I like this framework and prefer it over the more powerful oh-my-zsh. It's just what it wants to be: a simple framework which makes working on the shell easier without blowing you away with feature you probably never need. With some extra configuration in my <code>.zshrc</code> this framework is exactly what I need.</p>
+
+<p>But first things first. Loading zshuery is pretty much straightforward. Just download the framework to an arbitrary folder and reference it in your <code>.zshrc</code>:</p>
+
+<pre><code><span># Load zshuery</span>
+source <span>${HOME}</span>/.zshuery/zshuery.sh</code></pre>
+
+<p>That loads the framework. Now to let zshuery set some default options, aliases and autocorrection for you, call the following functions:</p>
+
+<pre><code>load_defaults
+load_aliases
+load_correction</code></pre>
+
+<p>I told you that zshuery doesn't come with plugins and that is true. However, it provides an easy way to load additional completion functions from the <a href="https://github.com/zsh-users/zsh-completions" style="color: rgb(0, 0, 238);"><code>zsh-completions</code></a> Git repository. These are autocompletion functions which might not yet be in the official ZSH release. To include them, clone the repository (preferably to a directory somwhere inside your zshuery folder) and call the following zshuery function:</p>
+
+<pre><code>load_completion <span>${HOME}</span>/.zshuery/completion</code></pre>
+
+<p>(provided the path to your copy of the <code>zsh-completion</code> repository is <code>~/.zshuery/completion</code>)</p>
+
+<h2>And finally my Christmas gift for you…</h2>
+
+<p>zshuery is a great framework for pimping your Z Shell without overloading it. And because it's my favorite ZSH framework and because Christmas is just around the corner, I give you a commented version of my <code>.zshrc</code> in which I use this framework with some slight modifications:</p>
+
+<pre><code><span># Load zshuery</span>
+source <span>${HOME}</span><span>/.zshuery/zshuery</span>.sh
+load_defaults
+load_aliases
+load_correction
+
+<span># Colorize ls output</span>
+alias ls=<span>"ls --color=auto"</span>
+
+<span># Redefine ls colors and load completion definitions</span>
+export LS_COLORS=<span>"no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:bd=40;33;01:cd=40;33;01:or=01;05;37;41:mi=01;05;37;41:ex=01;32:<span>*.</span>cmd=01;32:<span>*.</span>exe=01;32:<span>*.</span>com=01;32:<span>*.</span>btm=01;32:<span>*.</span>bat=01;32:<span>*.</span>sh=01;32:<span>*.</span>csh=01;32:<span>*.</span>tar=01;31:<span>*.</span>tgz=01;31:<span>*.</span>arj=01;31:<span>*.</span>taz=01;31:<span>*.</span>lzh=01;31:<span>*.</span>zip=01;31:<span>*.</span>z=01;31:<span>*.</span>Z=01;31:<span>*.</span>gz=01;31:<span>*.</span>bz2=01;31:<span>*.</span>bz=01;31:<span>*.</span>tz=01;31:<span>*.</span>rpm=01;31:<span>*.</span>cpio=01;31:<span>*.</span>jpg=01;35:<span>*.</span>gif=01;35:<span>*.</span>bmp=01;35:<span>*.</span>xbm=01;35:<span>*.</span>xpm=01;35:<span>*.</span>png=01;35:<span>*.</span>tif=01;35:"</span>
+load_completion <span>${HOME}</span><span>/.zshuery/completion</span>
+
+<span># Modify key bindings to make certain keys such as DEL, HOME, END, PAGE UP and PAGE DOWN work</span>
+<span>eval</span> <span>"<span>$(</span>sed -n 's/^/bindkey /; s/: / /p' /etc/inputrc)"</span> &gt; <span>/dev/null</span>
+bindkey <span>"\e[5~"</span> beginning-of-history    <span># Page Up</span>
+bindkey <span>"\e[6~"</span> end-of-history          <span># Page Down</span>
+
+<span># Colorize STDERR (enable if needed, might cause issues with password prompts or escape sequences)</span>
+<span>#exec 2&gt;&gt;(while read line; do; print '\e[91m'${(q)line}'\e[0m' &gt; /dev/tty; print -n $'\0'; done)</span>
+
+<span># Enable menu select</span>
+zstyle <span>':completion:*'</span> menu <span>select</span>
+
+<span># Enable tree view for kill completion</span>
+zstyle <span>':completion:*:*:kill:*:processes'</span> command <span>'ps --forest -e -o pid,user,tty,cmd'</span>
+
+<span># Modify zshuery correction prompt</span>
+SPROMPT=<span>"Correct <span>$fg</span>[red]<span>%R</span><span>$reset_color</span> to <span>$fg</span>[green]<span>%r</span>?<span>$reset_color</span> (Yes, No, Abort, Edit) "</span>
+
+<span># Load fancy prompt (works on Gentoo Linux only)</span>
+autoload <span>-U</span> promptinit
+promptinit
+prompt gentoo
+
+<span># Non-Gentoo users might configure their prompt manually.</span>
+<span># The default Gentoo prompt from above would look like this:</span>
+<span>#PROMPT="%B%{$fg[green]%}%n@%m%k%{$reset_color%} %B%{$fg[blue]%}%1~ %# %b%f%k%{$reset_color%}"</span>
+
+<span># Set options</span>
+setopt complete_in_word
+setopt path_dirs
+
+<span># Load modules</span>
+zmodload zsh<span>/regex
+zmodload zsh/pcre</span>
+
+<span># Update terminal CWD once and then on every CWD change</span>
+update_terminal_cwd
+function chpwd() {
+        update_terminal_cwd
+}
+
+<span># Extend $PATH</span>
+PATH=<span>"<span>${HOME}</span>/.local/bin:<span>${HOME}</span>/.local/opt/bin:<span>${PATH}</span>"</span></code></pre>
+
+<p>Use it for whatever purpose you want. Modify it, extended it, republish it, whatever comes to your mind. You can also use it together with oh-my-zsh or no framework at all if you like that better. Just alter the lines where the framework is loaded or used.</p>
+
+
+
+                                        
+                            
+                
+                                    <section id="TrackbacksPane">
+                        <h2>Trackbacks</h2>
+                                                    <div>No Trackbacks for this entry.</div>
+                                                
+                    </section>
+                    
+                    
+                    <section id="CommentsPane">
+                        <header>
+                            <h2>Comments</h2>
+                            
+                            
+                        </header>
+                        
+                        
+    
+    <section id="Comments">
+                                    
+                
+                                                
+                                
+                <article id="c462">
+                    <div>
+                        <header>
+                                                        <img width="48" height="48" title="Tob" alt="Tob" data-savepage-src="https://www.refining-linux.org/index.php?/plugin/fetchAvatar_d41d8cd98f00b204e9800998ecf8427e__2addcf6882062ba9d9312ccc373424c3Tob_462" src="data:image/png;base64,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">
+                                                        
+                        </header>
+                        <p>Thank you very much for this interesting blog series on zsh! Now that it’s complete it can serve as a nice feature-by-feature tutorial for zsh, and will be sure to convert lots of users of &lt;stroke&gt;inferior&lt;/stroke&gt; other shells (It has worked for me :-)</p>
+
+<p>Best wishes,
+Tob</p>
+
+                                                    
+                                                
+                                            </div>
+                                                
+                
+                                                
+                                
+                <article id="c463">
+                    <div>
+                        <header>
+                            <a rel="nofollow" href="https://www.refining-linux.org/" style="color: rgb(0, 0, 238);">                            <img width="48" height="48" title="Janek Bevendorff" alt="Janek Bevendorff" data-savepage-src="https://www.refining-linux.org/index.php?/plugin/fetchAvatar_9adaed3a3b6acda62ab75d3a0fae5894https%3A%2F%2Fwww.refining-linux.org%2F_175e509e2b7e3ed6a1c25fe0eac69704_015514f6aaccb0ca0d70ef1725d972d5Janek+Bevendorff_463" src="data:image/png;base64,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">
+                            </a>                            
+                        </header>
+                        <p>I hope so. :-)</p>
+
+<p>Happy Holidays!
+Janek</p>
+
+                                                    
+                                                
+                                            </div>
+                                                
+                
+                                                
+                                    </article></article>                                
+                <article id="c475">
+                    <div>
+                        <header>
+                            <a rel="nofollow" href="http://ku1ik.com/" style="color: rgb(0, 0, 238);">                            <img width="48" height="48" title="Marcin Kulik" alt="Marcin Kulik" data-savepage-src="https://www.refining-linux.org/index.php?/plugin/fetchAvatar_4cb7584a0a1aca5bf834bca9a78eccbfhttp%3A%2F%2Fku1ik.com%2F_804c8e31d4c10ae32a2a1f2daefa0c91_80ad86bceb305a11cb9869d8b77b8abaMarcin+Kulik_475" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAOLklEQVRo3p2aW2wU5fvHP3Pa2fOpu922lLbQUmmBqiBFmigmJBq4MJDojQmJXkk8Jd5wwY3/BG+8wEujcqMmXCgRTTTxgkSOkUgi1AIplCItPbDbbndLt93j7Mzvgsz7n10WKLzJpO/Ozs68z/t8n+f5Pt+pZJqmxSqGJElibllP/olpmhiGQTqd5v79+1QqFRKJBKFQCIBqtYosy1QqFXFPy7IwDEP83jRNca1hGJimiWVZ4jvLslBZ5VjNou0Hnz17lu+++45z584xNTUlFhIOh3njjTc4fPgwXV1dNRtjL0qWZarVas39ABRFwTRNcb0kSQ8+N/KAfZFlWY+d20bZ83/++YcjR47w22+/PdZgTdN4++23+fzzz4lEIjWLde6w0zDDMKhWq8JT9rkaA5wweZI3nMYAnDhxggMHDlAul1frVLq6ujhx4gTd3d1i5+0F2ouvVqvCCPuzfc6yrMYeeNrx448/8sknn1CtVikUCpRKJbGDTxpDQ0OcPHkSl8tVg3nn7tsLtzesUqk8bMBqYeOcm6bJ0aNHOX36NB988AHBYJD5+XnOnDnDhQsXGB0dpVQqIUkSiqKIAK0f77zzDkePHkXTNIGE+mCu3337kKzVRmeDgD5+/Di//vorx44dIxKJCMMqlQojIyN8//33+Hw+QqEQlUqF4eFhrl27RiqVolwuU61WBeT27t3LN998g9vtFl6QJOmhBdvYt+PgmSE0OTnJ4cOH+eKLL2hvb294zcrKCgBzc3NMT0+TTCaZn58nmUwyOztLKpXiypUrzM7OAnDkyBEOHjxYEw+ASLXOGKlUKg/SqJ1BnhZCP//8M++99x7t7e2PvMbtdpPL5ahUKmiaRjQaJRKJEI/H8Xg8aJpGqVRibm4OwzD48ssveeutt4jH4zXpVZblmhRqzy3LQq7PPquZp1Ip5ubmePXVVx/rpWKxKGIgGAwSCARwuVyUy2VM00TXdRKJhKgJ2WyW48ePAyDLMpIkifhxpmv7ewDZdsnTHKdPn+bll1/G5XLVVNH6ue1yTdPEUS6XsSyLarWKruv4fD7a29vFvf766y+xePuvvXinMba35foLnjQHuHv3Lhs3bmx4jbMomaaJqqq4XC4URUGSJAqFAuVyWXyuVqsoiiKC999//6VSqYj7OY2xD9sIWZafDULT09PE4/HHwqdSqaAoCl6vF13XUVVVpF7bC4ZhkMvlAIQBi4uLlEolsUBntXcORVGQZRn1abOoHZzBYBDTNFleXsbv9z/0ABsiLpcLXddRFIXl5WUKhQJLS0tYlkWpVBKLtSEkSRK6rovAtf82SuOmaT7wwNNAyDRN1q9fj6Zp5HI5ZmZmOHPmDNevX6dYLIoHaJomFmWPUqkkWOXi4iLVahVVVdE0TbBU+3fOjOZco2VZAlaqqj5go08DIVmWSSQSwu3d3d34/X6uX7/O/Pw8L774IsFgEEVRBLXIZDIiXS4vL5NOp5mbm6spWLFYDFVVhYcikYhIAvYm2gbYHhF0+mlgJEkS4XBYPPzOnTtcvXqV+fl5gsEgPp+PgYEBTNNkZmaGe/fuMTk5yX///cf4+Dj5fB6Xy0WpVKJYLKIoioCl3+9ncXGR69evMzQ0JODjzHB2QNsQUp+WQgO0tbUBMDs7y59//kmlUuHChQuoqkoqlaKtrQ1FURgfH+fy5csMDw8zNTVFLpcjkUjgdruJRCKCFthGmKaJoigkk0kRwE74OnffRoPaCGdPmq9ZswZJkvD7/XR1dREKhfj222+JRCJs2rSJubk5+vv7mZ+f59SpU4yPj2MYBr29vYyMjGAYBm63m97eXiKRiOBPhmGwefNmOjo6Hlq4E0Y16fVZCpnf78eyLBKJBC+88AIul4uBgQG2b9/O0NAQ/f396LrO8vIyU1NThEIhBgcHGRwcxLIsmpubkSRJUAhVVUVdkCSJ/v7+mmpbP2yuZBjGs3Mhe55IJEin0+zduxefz0dvby+6rgs4tLS0oOs6W7duRZZlDhw4wOzsLFNTU/h8PoLBIOVyGU3TWLduHfF4HL/fL/iO87Bjwvmd+iyFrL497O/vJxwOo6qqIHd2umtqaqrZXdM0BX2wa0mlUsHr9dLb28v69etrMk79c+3YsHtk9RnagYeafJfLRWdnZ42HCoUCU1NTAHg8HiKRCN3d3QQCAQzDYGxsjLGxMZFO7drR19f3EKeqN6iG1D0tF2rkFWdqsz+n02lSqRSVSoVqtUowGCQej4tdz+fzFIvFGoHAsiy2bdtWE6j1z7U9axugOnNso91tNK9XJRpdo2ka4XCYGzduCH3I7sAKhQLFYlH0trIs09zczKFDh4SBzsXb3MfZ0AiYNtrhJx3OmzjP2VXVJnMul4tIJIKqqly7do2JiQmWlpZYXl4Wu2+zy87OTgKBgLhHPf+pN0r0A4+SSR43d8LFeV5RFGZmZrh//z6ZTIbFxUVM08TtdpNOpxkZGRG0wuZBNtl77rnnUBRFBKcTJvVyjnMD5UaNyLPMnVV6YmKCy5cvk8lkME2TpaUlZFkml8tx48YNAHRdR9M0dF1H13Wef/75mlpTr0DUP8+Gk+rE8mrErUaqnPO8JEls3LiR2dlZ8XdxcRFVVSmVSliWRS6Xw+PxiPTa09MjyJuT9Tr7X6fMWIOGRgup32HneXvxNn9xqgT2AjVNIx6P09/fT09PD36/n3w+z8jICPl8Hl3XKRQK6LqO2+1m9+7dNRvgfKYzeOsbeuD/ydzTZCF75PN5fD4flUqF27dvs7CwIPA+OjpKJpPhypUrpNNpVFWlo6MDt9uN2+2mVCqh6zqTk5P8/fffrFmzBl3XheZjB3ijpsaJgsfqQo36XGe2OnXqFIODg3i9XhHEKysrZLNZxsbGyGazjI6OkkwmWV5exufz0dXVha7rZDIZstks9+7dY2xsjB07djA0NEQgECAajdLV1UU0Gq2R6p1igd1Pr0qdtn+YyWTw+Xzouo4kSUxPT3Py5Ek++ugjqtUq+XyexcVFJicnuXz5MslkUnjK1oZisRiGYbCyssK5c+eIxWLEYjHOnz/Pvn37iMfjgkd1dHTg9XqRZZlwOExzczNer1d0bKZponz22Wf/txrqsLS0hMvlwuPxiHPBYJCvvvqKnp4eXC4XLpeLarWKpml0dHQQCoUoFouoqoplWcIQ0zQZHR3l0qVLbNq0iUAgQD6fp1wu09raKmBjFzvDMDAMg2KxSLlcZmVlBV3XH/2Co1EmWllZQdM0ARf7mu7ubr7++mu2bNnCvn37SCQStLS0UKlUcLvd3L17l6WlJZLJJNPT04TDYWRZZnh4GNM0CYfDNDU1sXbtWu7duydEYFmW8Xg8+Hw+wuGwkGZcLheGYTAzM0MoFKo1oD6l1he4fD7/EEPcv38/7777LhcvXiSbzfLaa6+RSCTI5XLcunWLZDLJ1atXGRsbY2JigpdeeonFxUXu378vsK6qKsFgkGQyiWVZ6LpOIBAgEong8XiEkbZaUSgUME2T5ubmWgMex21UVWVxcfGhdLtlyxZaWlool8ucOHGCK1eusG3bNiqVCtlsllQqxc2bN7l586bQQk3TpFgssnv3bvr6+sjlcqTTaeLxOKVSiZaWFnw+H36/H5/PJwI7EAigaRqGYXDp0qVaA2xN3qlJOkc9dJxj//79/PDDD7z22mv88ssvjIyM4PP5WFlZoVqtkkqlkGWZgYEBotEoCwsLRKNRtm7dKoyKRCI0NzcD0NraSqlUIhQKEQ6HiUQi+P1+PB4PsiyjaRqqqj5Q5mwtx/ki7VE8p1EltCyL119/ncnJSYLBIIcPH2ZlZYWrV6+ysLBAMpkkGo3y5ptv0tfXh2EYZDIZdu7cyfbt27l06RLnz5+ntbWVRCKBpmn09vYK6MTjcWKxGB6PpwbiHo/nQRAXi0Xcbrf4wq6wjSpwvcRhj9bWVgYHB/npp584dOgQx44d4+7du+RyORYWFgQ7XVhYIJvN0t/fz549e8jlchQKBQKBALdu3aK3t5dCocC6desE3YhGo7hcroc8H4vFWF5eRi6Xy0JMfdyhqqp4YVH/ncvl4v3332dmZobff/+dhYUFEXjxeFwEo10LPvzwQ1555RVu3LhBKBQiFAphWRbZbJaBgQEhmNnX1zc2kiSRSCTIZrPImUzmIf7RiForiiIE2noPLS0t0dnZyaeffsrFixe5fPky+XweRVGIx+O0tbURj8cJhUIcPHiQrVu3cvbsWbxer4BKe3s7GzdupKurC1mWicViNRK983l2piqXy6jlcllIG4/jP/ZOJ5NJ0VFls1ksy2LDhg0EAgE+/vhjdu3aJZhlJpOhUCjg8XhQVZW2tjb27t2Lx+Phjz/+IBgMUq1W8Xg8tLS0sGHDBhHIkiTR3NxMoVAQL//quZjX633QUmYyGdasWdPQC07+XSqVUFWVSCSCruusXbu2RjoH2LVrF+Pj4wwPDzMxMSFay1AoxJ49e3C5XIyMjIjW0ePx0NnZSU9PD4lEouZekUiEdDpNMBhsmP2i0Siq2+0mk8nQ1tbGozQiW2WIxWI0NTU9VopUFIXe3l46Ozu5efMmZ8+exe12s3PnTqamprh9+za5XE4Y0NTUxObNm4lGow2ptM176gutJEkPfjMzM2PduXOHHTt2iDcfjf7/wa5+gUDgqSWYW7ducfv2barVKmvXrsXv95NKpYjFYiQSCQKBwCMbKZsLOTmYc6i2TGens0dJeR6Pp6ZjWu3I5/PCwz09PXg8HorFIj6fT0iMTxLOnK+c6pmDagewbUAjCNkqgPN1/2rlR0VR6OvrQ5ZlvF4vhUKBfD5PJBJ5qHF/FFScLzzqO8j/AQbTqo+PkuM0AAAAAElFTkSuQmCC">
+                            </a>                            
+                        </header>
+                        <p>I see "Colorize STDERR" trick in your .zshrc. This method is simple but breaks in too many cases. You may try stderred ("https://github.com/sickill/stderred":https://github.com/sickill/stderred). I’m using it on daily basis for ~2 months now and everything works flawlessly.</p>
+
+<p>And big kudos for whole series, it was pleasure to read and I learned few tricks. Thanks!</p>
+
+                                                    
+                                                
+                                            </div>
+                                                
+                
+                                                
+                                
+                <article id="c476">
+                    <div>
+                        <header>
+                            <a rel="nofollow" href="https://www.refining-linux.org/" style="color: rgb(0, 0, 238);">                            <img width="48" height="48" title="Janek Bevendorff" alt="Janek Bevendorff" data-savepage-src="https://www.refining-linux.org/index.php?/plugin/fetchAvatar_9adaed3a3b6acda62ab75d3a0fae5894https%3A%2F%2Fwww.refining-linux.org%2F_175e509e2b7e3ed6a1c25fe0eac69704_015514f6aaccb0ca0d70ef1725d972d5Janek+Bevendorff_476" src="data:image/png;base64,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">
+                            </a>                            
+                        </header>
+                        <p>Thanks for the link. Personally, I don’t use colorized STDERR (for the reason mentioned by you) and therefore I commented it out. But for some people it might indeed be interesting.</p>
+
+                                                    
+                                                
+                                            </div>
+                                                
+                
+                                                
+                                    </article></article>                                
+                <article id="c483">
+                    <div>
+                        <header>
+                            <a rel="nofollow" href="http://www.cs.utah.edu/~eeide/" style="color: rgb(0, 0, 238);">                            <img width="48" height="48" title="Eric Eide" alt="Eric Eide" data-savepage-src="https://www.refining-linux.org/index.php?/plugin/fetchAvatar_cfa9354611fb5310d15e1a07f18cc0b6http%3A%2F%2Fwww.cs.utah.edu%2F%7Eeeide%2F_9a1516b957377d548e1abc6a47d17e5e_6b1b2097c8317e716a47b249047fc545Eric+Eide_483" src="data:image/jpeg;base64,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">
+                            </a>                            
+                        </header>
+                        <p>Thank you very much for an informative and entertaining Advent calendar series!  Although I am an old dog, I definitely learned a few new tricks.</p>
+
+                                                    
+                                                
+                                            </div>
+                                                
+                
+                                                
+                                    </article>                                
+                <article id="c659">
+                    <div>
+                        <header>
+                            <a rel="nofollow" href="http://orip.org/" style="color: rgb(0, 0, 238);">                            <img width="48" height="48" title="orip" alt="orip" data-savepage-src="https://www.refining-linux.org/index.php?/plugin/fetchAvatar_df04054185403908d9b0f5faea825bdfhttp%3A%2F%2Forip.org__1d41e89d79f3b3f4667c175dd27bd1fdorip_659" src="data:image/png;base64,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">
+                            </a>                            
+                        </header>
+                        <p>Good stuff! I recommend trying Sorin Ionescu’s fork of oh-my-zsh instead of Robby Russel’s. There are a great many issues fixed and it’s much more zsh-y. https://github.com/sorin-ionescu/oh-my-zsh</p>
+
+                                                    
+                                                
+                                            </div>
+                                                
+                
+                                                
+                                    </article>                                
+                <article id="c720">
+                    <div>
+                        <header>
+                                                        <img width="48" height="48" title="David" alt="David" data-savepage-src="https://www.refining-linux.org/index.php?/plugin/fetchAvatar_d41d8cd98f00b204e9800998ecf8427e_db810ab19af3fffd7e282acb292c0846_464e07afc9e46359fb480839150595c5David_720" src="data:image/png;base64,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">
+                                                        
+                        </header>
+                        <p>h2. <em>%{color:green}Thanks!%</em></p>
+
+<p>I’m just starting the move from <em>bash</em> to <em>zsh</em>.  This helps a great deal.  I’ll keep checking back for <em>Hints</em> and tidbits.
+ — David</p>
+
+                                                    
+                                                
+                                            </div>
+                            </article>    </section>
+    
+
+
+                        
+                                                    <section id="CommentInputForm">
+                                <h3>Write a comment:</h3>
+                                                                                                
+                                
+
+                                
+                                
+                            </section>
+                                            </section>
+                    
+                                        
+        </article>
+    
+    
+    
+    
+
+
+
+                                                    </div>
+                        
+                        
+                    </div>
+                </div>
+            </section>
+            
+        </div>
+        
+        
+        <ul id="PageMetaLinks">
+            <li><a href="https://www.refining-linux.org/about/" style="color: rgb(0, 0, 238);">About</a> –
+            </li><li><a href="https://www.refining-linux.org/contact/" style="color: rgb(0, 0, 238);">Legal Info / Impressum</a> –
+            </li><li><a href="https://www.refining-linux.org/privacy/" style="color: rgb(0, 0, 238);">Privacy</a>
+        </li></ul>
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+
+
+</div></article>
+</body></html>

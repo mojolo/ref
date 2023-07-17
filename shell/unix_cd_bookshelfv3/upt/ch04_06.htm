@@ -1,0 +1,188 @@
+<html><head><title>Faster Prompt Setting with Built-ins (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.6. Faster Prompt Setting with Built-ins</h2>
+
+<p><a name="IXT-4-6742" /><a name="IXT-4-6743" /><a name="IXT-4-6744" />To
+<a name="IXT-4-6745" />set your prompt, you execute a
+command (on most shells, that command sets a shell variable). Before
+setting the prompt, you may run other commands to get information for
+it: the current directory name, for example. A shell can run two
+kinds of commands: <b class="emphasis-bold">built-in and
+external</b> (<a href="ch01_09.htm#upt3-CHP-1-SECT-9">Section 1.9</a>). Built-in commands
+usually run faster than external commands. On a slow computer, the
+difference may be important -- waiting a few seconds for your
+prompt to reset can get irritating (though the computer would have to
+be quite slow nowadays for it to matter that much). Creative use of
+your shell's built-in commands might pay off there,
+and they are still quite useful for those trying to squeeze the most
+performance out of their system. Let's look at some
+examples:
+</p>
+
+<ul><li>
+<p><a name="IXT-4-6746" /><a name="IXT-4-6747" /><a href="ch04_03.htm#upt3-CHP-4-SECT-3">Section 4.3</a> has examples of some shells'
+special characters, such as <tt class="literal">%D</tt> to give the current
+date. Check your shell's manual page; if it has
+these features, using them won't slow you down the
+way an external command in <b class="emphasis-bold">backquotes</b> (<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>),
+like <tt class="literal">'date'</tt>, might.
+</p>
+</li><li>
+<p><a name="IXT-4-6748" />If
+you're putting your current directory in your
+prompt, you may only want the tail of the pathname (the name past the
+last slash). How can you edit a pathname? You might think of using
+<b class="emphasis-bold">basename</b> (<a href="ch36_13.htm#upt3-CHP-36-SECT-13">Section 36.13</a>) or <b class="emphasis-bold">sed</b>
+(<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) with the current directory from
+<tt class="literal">$cwd</tt> -- as in the first command in the
+following code listing, and probably in an alias like <b class="emphasis-bold">setprompt</b> (<a href="ch04_07.htm#upt3-CHP-4-SECT-7">Section 4.7</a>) to
+make sure the prompt is updated whenever you change directories. The
+faster way is with the second command, using the C
+shell's built-in
+"tail" operator,
+<tt class="literal">:t</tt>:
+</p>
+<blockquote><pre class="code">set prompt="`basename $cwd`% "</pre></blockquote>
+
+<p><tt class="literal">{}</tt> <a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+
+<blockquote><pre class="code">set prompt="${cwd:t}% "</pre></blockquote>
+
+<p>If your current directory is
+<em class="emphasis">/usr/users/hanna/projects</em>, either of those
+prompts would look like "<tt class="literal">projects%</tt>
+" (with a space after the percent sign).
+</p>
+
+<p><a name="IXT-4-6749" />The C shell has several of these
+built-in <b class="emphasis-bold">string operators</b>
+(<a name="IXT-4-6750" /><a name="IXT-4-6751" /><a href="ch28_05.htm#upt3-CHP-28-SECT-5">Section 28.5</a>) like <tt class="literal">:t</tt>; the Korn Shell,
+<i class="command">zsh</i>, and <i class="command">bash</i> have
+more-powerful <b class="emphasis-bold">string operators</b>
+(<a href="ch28_05.htm#upt3-CHP-28-SECT-5">Section 28.5</a>).
+</p>
+</li><li>
+<p>If your prompt gets complex, you can use a <b class="emphasis-bold">shell function</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>)
+to access other built-in commands and edit the prompt. This can be
+faster than using an external shell or Perl script because functions
+run within the shell instead of in an external process.
+Here's an example from my
+<em class="filename">.zshrc</em><a name="IXT-4-6752" /> file:
+</p>
+
+<p><tt class="literal">${+}</tt> <a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a>, <tt class="literal">$(...)</tt> <a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a></p>
+
+<blockquote><pre class="code"># Change "script" prompt automatically so I remember I'm in one.
+alias script='SCRIPT=yes /usr/bin/script'
+
+#
+# Functions:
+#
+setprompt( ) {
+    case "${TTY##*/}" in
+    tty[1-9]) xpi=':tty%l' ;;  # Virtual console
+    *) xpi= ;;
+    esac
+
+    PS1="
+$USER@%m$xpi $(dirs)
+%* \$(folder -list)
+${SCRIPT+SCRIPT-}%!%# "
+}</pre></blockquote>
+
+<p><a name="IXT-4-6753" />Before the
+function, I set an alias that temporarily sets an environment
+variable named <em class="emphasis">SCRIPT</em> while the <b class="emphasis-bold">script</b> (<a href="ch37_07.htm#upt3-CHP-37-SECT-7">Section 37.7</a>) program
+is running. The <i class="command">setprompt</i> function, running in the
+child shell under <i class="command">script</i>, sees that this
+environment variable has been set and adds the string
+<tt class="literal">SCRIPT-</tt> before the prompt. This reminds me that
+I'm logging to a script file. (If this is hard to
+visualize, <a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a> and <a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a> have some background.)
+</p>
+
+<p><a name="IXT-4-6754" />The
+<i class="command">setprompt</i> function itself has two parts. The first
+is a <b class="emphasis-bold">case</b><a name="IXT-4-6755" /> <b class="emphasis-bold">statement</b> (<a href="ch35_11.htm#upt3-CHP-35-SECT-11">Section 35.11</a>) that
+tests <em class="emphasis">$TTY</em>, the name of the <b class="emphasis-bold">tty</b> (<a href="ch02_07.htm#upt3-CHP-2-SECT-7">Section 2.7</a>)
+I'm currently using. If the name ends in
+<em class="emphasis">tty1</em>, <em class="emphasis">tty2</em>, etc.,
+it's one of my <b class="emphasis-bold">Linux virtual
+consoles</b> (<a href="ch23_12.htm#upt3-CHP-23-SECT-12">Section 23.12</a>). In that case, I
+want to add the console name (<em class="emphasis">tty1</em>, etc.) to my
+prompt -- so I store the name in the <em class="emphasis">xpi</em>
+(e<em class="emphasis">x</em>tra <em class="emphasis">p</em>rompt
+<em class="emphasis">i</em>nfo) shell variable. This
+variable's value -- if it's been
+set -- is expanded when the prompt is printed. The second part
+sets the prompt variable <em class="emphasis">PS1</em>. The whole prompt
+looks like this:
+</p>
+<blockquote><pre class="code">jpeek@kludge:tty1 ~/pt/art
+15:38:30 inbox pt
+501%</pre></blockquote>
+
+<p>The first line shows my username, hostname, the virtual console name
+(if any), and the current directory (in this example, there was
+nothing else on the <b class="emphasis-bold">directory stack</b>
+(<a href="ch31_07.htm#upt3-CHP-31-SECT-7">Section 31.7</a>)). The second line has the
+time -- and my email folder stack, from the MH <em class="emphasis">folder
+-list</em> command, which is the only nonbuilt-in command used
+in the prompt. And here's a subtle point
+that's worth perusing. The whole
+<a name="IXT-4-6756" />prompt string is inside <b class="emphasis-bold">double quotes</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>)
+so that variable and command substitution will happen whenever
+<i class="command">setprompt</i> is run. But, the way my prompt is set,
+the MH folder stack may change between the times that
+<i class="command">setprompt</i> resets the prompt. So I escape the
+<tt class="literal">$</tt> in <tt class="literal">\$(folder -list)</tt>. This
+stores the command substitution without executing
+<i class="command">folder</i>! So, when <em class="emphasis">every</em> prompt
+is about to be printed, the shell will evaulate the prompt string and
+expand the <tt class="literal">$(...)</tt> operators into the current
+folder stack. The third line sets the end of the prompt string: the
+<i class="command">zsh</i> prompt substitution at <tt class="literal">%m</tt>,
+<tt class="literal">%*</tt>, <tt class="literal">%!</tt> and
+<tt class="literal">%#</tt>.
+</p>
+
+<p>On a slow machine, I'd try hard to find a way to
+eliminate the external <em class="emphasis">folder -list</em> command. But
+my Linux box is fast enough so that I don't notice
+any delay before a prompt. To make this work, I needed a good
+understanding of what's evaluated when.
+It's this sort of subtlety that makes prompt setting
+a challenge -- and a pleasure, too, when you get it working just
+right.
+</p>
+</li></ul>
+<p>As another example, <a href="ch04_14.htm#upt3-CHP-4-SECT-14">Section 4.14</a> shows more
+about using <i class="command">dirs</i> in a shell prompt.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.5. C-Shell Prompt Causes Problems in vi, rsh, etc.</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.7. Multiline Shell Prompts</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

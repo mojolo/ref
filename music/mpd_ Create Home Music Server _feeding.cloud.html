@@ -1,0 +1,212 @@
+<!DOCTYPE html> <html xmlns=http://www.w3.org/1999/xhtml style><!--
+ Page saved with SingleFile 
+ url: https://feeding.cloud.geek.nz/posts/home-music-server-with-mpd/ 
+ saved date: Fri Jan 01 2021 12:14:56 GMT-0800 (Pacific Standard Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>:root{--darkreader-neutral-background: #131516;--darkreader-neutral-text: #d8d4cf;--darkreader-selection-background: #004daa;--darkreader-selection-text: #e8e6e3}html{background-color:#181a1b!important}html,body{background-color:#181a1b}html,body{border-color:#736b5e;color:#e8e6e3}a{color:#3391ff}::placeholder{color:#b2aba1}::-webkit-scrollbar{background-color:#202324;color:#aba499}::-webkit-scrollbar-thumb{background-color:#454a4d}::-webkit-scrollbar-corner{background-color:#181a1b}*{scrollbar-color:#202324 #454a4d}::selection{background-color:#004daa!important;color:#e8e6e3!important}::-moz-selection{background-color:#004daa!important;color:#e8e6e3!important}</style>
+<title>Creating a home music server using mpd</title>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<meta name=darkreader content=44d117dc27bb5ca3e6abc2128978dd38><style class="darkreader darkreader--override" media=screen>::placeholder{opacity:0.5!important}</style>
+<style>article,footer,nav,section{display:block}header.header{margin:0;line-height:1em;display:block}.actions ul{margin:0;height:1em;list-style-type:none}.actions li{display:inline}.pageheader .actions ul{border-bottom:1px solid #000}.pagefooter{clear:both}.tags{margin-top:1em}pre{overflow:auto}.pagedate,.pagelicense{font-style:italic;display:block;margin-top:1em}@media (max-width:600px){.page{display:-webkit-box;display:-webkit-flexbox;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:tb;-webkit-flex-direction:column;-webkit-flex-flow:column;-ms-flex-direction:column;flex-direction:column}#footer{-webkit-box-ordinal-group:1;-webkit-order:1;-ms-box-ordinal-group:1;-ms-flex-order:1;order:1}}a{text-decoration:none}a:hover{text-decoration:underline}code,pre{background:#eee}body{margin:0;padding:0;font-family:sans-serif;background:white}.pageheader{margin:0;position:relative;overflow:hidden;background:#eee;border-color:#999;border-style:none none solid none;border-width:1px}.pageheader .header{float:left;font-size:120%}header.header{font-weight:normal}.title{display:block;margin-top:.2em;font:140% sans-serif}.pageheader .actions{position:absolute;bottom:0;right:2em;width:100%;text-align:right;padding:2px}#pageinfo{border-color:#999}h1{font:120% sans-serif}h2{font:bold 100% sans-serif}.pageheader .actions ul{border-style:none}.actions ul{padding:0}.actions ul li a{text-decoration:none}.pageheader .actions ul li{border-color:#999;border-style:solid solid none solid;border-width:1px}@media (max-width:600px){#content,#comments,#footer{margin:0.5em}.pageheader .actions ul li{padding:.1em .2em 0 .2em;font-size:0.8em}}</style><style class="darkreader darkreader--sync" media=screen>.pageheader .actions ul{border-bottom-color:rgb(140,130,115)}#pageinfo{border-top-color:rgb(140,130,115)}a{text-decoration-color:currentcolor;color:rgb(110,194,255)}a:hover{text-decoration-color:currentcolor}code,pre{background-color:rgb(34,36,38);background-image:none}body{color:rgb(232,230,227);background-color:rgb(24,26,27);background-image:none}.pageheader{background-color:rgb(34,36,38);background-image:none;border-color:rgb(77,83,86)}#pageinfo{border-color:rgb(77,83,86)}.actions ul li a{text-decoration-color:currentcolor}.pageheader .actions ul li{background-color:rgb(24,26,27);background-image:none;border-color:rgb(77,83,86)}</style>
+<style>body{background-color:#277459;color:#FFF;line-height:1.2;text-rendering:optimizeLegibility}.page{max-width:60em;margin-right:19em;border-bottom:2em solid #335577;background:#EEEED9;color:#333}.page a{color:#5187bd}.pageheader{border:none;padding:2em;background-color:#335577;color:#FFF}.pageheader a{color:#A4D2FF}.pageheader .header{padding-top:1em}.pageheader .parentlinks{display:block;margin-right:12em}.pageheader .parentlinks a::after{content:' '}.pageheader .title{margin-bottom:0.2em;font-weight:bold}.pageheader .actions>ul>li{margin:0;padding:0;background:transparent;border:none}.pageheader .actions>ul>li>a{display:block;float:right;padding:0 0 0.4em 1em}#pagebody{padding:2em}#pagebody code,#pagebody pre{background-color:#ddddbe;font-size:1.05em}#pagebody pre{padding:0.5em}#content{margin:0;padding:0;max-width:60em}#content :first-child{margin-top:0}#comments{margin:2em 0 0 0;padding:0;border-top:1px solid #277459}.addcomment{margin-top:2em}#footer{margin:0}.pagefooter{border:none;background:#EEEED9;color:#333}.pagefooter a{color:#5187bd}#pageinfo{margin:0;border:none;padding:2em;border-top:1px solid #277459}#pageinfo :first-child{margin-top:0}@media all and (max-width:79em){.pageheader{margin-right:-19em}}@media all and (max-width:60em){.page{margin-right:0}.pageheader{margin-right:0}.page{display:flex;flex-direction:column}}@media all and (max-width:40em){.pageheader,#pagebody,#pageinfo{padding-left:1em;padding-right:1em}.pageheader .header,.pageheader .actions{position:static;top:0;float:none}.pageheader .header{padding-top:0}.pageheader .parentlinks{margin-right:0}.pageheader .actions{position:relative;right:0;bottom:auto;top:1em}}@media (max-width:600px){#content,#footer{margin:0}.pageheader .actions ul li{font-size:1em}}</style><style class="darkreader darkreader--sync" media=screen>body{background-color:rgb(31,93,71);color:rgb(232,230,227)}.page{border-bottom-color:rgb(61,102,143);background-color:rgb(58,58,26);background-image:none;color:rgb(200,195,188)}.page a{color:rgb(96,151,195)}.pageheader{border-color:currentcolor;background-color:rgb(41,68,95);color:rgb(232,230,227)}.pageheader a{color:rgb(140,204,255)}.pageheader .actions>ul>li{background-color:transparent;background-image:none;border-color:currentcolor}#pagebody code,#pagebody pre{background-color:rgb(72,72,38)}#comments{border-top-color:rgb(52,156,120)}.pagefooter{border-color:currentcolor;background-color:rgb(58,58,26);background-image:none;color:rgb(200,195,188)}.pagefooter a{color:rgb(96,151,195)}#pageinfo{border-color:rgb(52,156,120) currentcolor currentcolor}</style>
+<link rel=alternate type=application/x-wiki title="Edit this page" href="https://feeding.cloud.geek.nz/ikiwiki.cgi?do=edit&amp;page=posts%2Fhome-music-server-with-mpd">
+<link rel=vcs-git href=ssh://b-feedingthecloud@feedingthecloud.branchable.com/ title="wiki git repository">
+<link rel=vcs-git href=git://feedingthecloud.branchable.com/ title="wiki git repository">
+<meta name=date content=2017-01-29T22:20:00.000-08:00>
+<link rel=license href=#pagelicense>
+<meta name=flattr:id content=4j6y0v>
+<link rel=icon href="data:image/vnd.microsoft.icon;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQEAYAAABPYyMiAAAABmJLR0T///////8JWPfcAAAACXBIWXMAAABIAAAASABGyWs+AAAAdElEQVRIx+WVQQ7AIAgEofHh/NweODRpEBYVk6Zz8aBhVolK9B9EiHp/RuU6J7Zp1YKIRIA10QigBVmxCBEzOt/8hYj4LcwFZrugVWC0s9mgCtiCFbFP0IL5o403oDBWYL8YCFArdgLsvnbfoealizjwGfncHaA7E+P+yGQAAAAASUVORK5CYII=" type=image/x-icon><style>.sf-hidden{display:none!important}</style><link rel=canonical href=https://feeding.cloud.geek.nz/posts/home-music-server-with-mpd/></head>
+<body>
+<article class=page>
+<section class=pageheader>
+<header class=header>
+<span>
+<span class=parentlinks>
+<a href=https://feeding.cloud.geek.nz/>Feeding the Cloud</a>/ 
+<a href=https://feeding.cloud.geek.nz/posts/>posts</a>/ 
+</span>
+<span class=title>
+Creating a home music server using mpd
+</span>
+</span>
+</header>
+<nav class=actions>
+<ul>
+<li><a href="https://feeding.cloud.geek.nz/ikiwiki.cgi?do=edit&amp;page=posts%2Fhome-music-server-with-mpd" rel=nofollow class=sf-hidden>Edit</a></li>
+<li><a href=https://feeding.cloud.geek.nz/recentchanges/>RecentChanges</a></li>
+<li><a rel=nofollow href="https://feeding.cloud.geek.nz/ikiwiki.cgi?do=prefs">Preferences</a></li>
+<li><a rel=nofollow href="https://feeding.cloud.geek.nz/ikiwiki.cgi?do=comment&amp;page=posts%2Fhome-music-server-with-mpd" class=sf-hidden>Comment</a></li>
+</ul>
+</nav>
+</section>
+<div id=pagebody>
+<section id=content role=main>
+<p>I recently setup a music server on my home server using the <a href=https://www.musicpd.org/>Music Player
+Daemon</a>, a cross-platform <a href=https://www.gnu.org/philosophy/free-sw.html>free
+software</a> project which has
+been around for a long time.</p>
+<h1 id=Basic_setup>Basic setup</h1>
+<p>Start by installing the server and the client package:</p>
+<pre><code>apt install mpd mpc
+</code></pre>
+<p>then open <code>/etc/mpd.conf</code> and set these:</p>
+<pre><code>music_directory    "/path/to/music/"
+bind_to_address    "0.0.0.0"
+bind_to_address    "/run/mpd/socket"
+password           "Password1"
+
+audio_output {
+   type       "alsa"
+   name       "My ALSA Device"
+   device     "hw:CARD=DAC,DEV=0"
+   mixer_type "software"
+}
+</code></pre>
+<p>Note that you can find the right sound device on your machine using the <code>aplay -L</code> command.</p>
+<p>Since this is a headless system setup, it may be necessary to <a href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=959693">disable the user service</a>:</p>
+<pre><code>rm /etc/xdg/autostart/mpd.desktop
+systemctl --global disable mpd.service
+</code></pre>
+<p>in order to prevent systemd from launching the mpd service whenever a user
+logs in, leading to error messages like:</p>
+<pre><code>systemd[324808]: mpd.socket: Failed to create listening socket ([::]:6600): Address already in use
+systemd[324808]: mpd.socket: Failed to listen on sockets: Address already in use
+systemd[324808]: mpd.socket: Failed with result 'resources'.
+systemd[324808]: Failed to listen on mpd.socket.
+mpd[324823]: exception: failed to open log file "/var/log/mpd/mpd.log" (config line 39): Permission denied
+systemd[324808]: mpd.service: Main process exited, code=exited, status=1/FAILURE
+systemd[324808]: mpd.service: Failed with result 'exit-code'.
+systemd[324808]: Failed to start Music Player Daemon.
+</code></pre>
+<p>Once all of that is in place, restart the mpd daemon:</p>
+<pre><code>systemctl restart mpd.service
+</code></pre>
+<p>and create an index of your music files:</p>
+<pre><code>MPD_HOST=Password1@/run/mpd/socket mpc update
+</code></pre>
+<p>while watching the logs to notice any files that the mpd user doesn't have
+access to:</p>
+<pre><code>tail -f /var/log/mpd/mpd.log
+</code></pre>
+<h1 id=Enhancements>Enhancements</h1>
+<p>I also added the following in <code>/etc/logcheck/ignore.server.d/local-mpd</code> to
+silence unnecessary log messages in
+<a href=https://packages.debian.org/stable/logcheck>logcheck</a> emails:</p>
+<pre><code>^\w{3} [ :0-9]{11} [._[:alnum:]-]+ systemd\[1\]: Started Music Player Daemon.$
+^\w{3} [ :0-9]{11} [._[:alnum:]-]+ systemd\[1\]: Stopped Music Player Daemon.$
+^\w{3} [ :0-9]{11} [._[:alnum:]-]+ systemd\[1\]: Stopping Music Player Daemon...$
+</code></pre>
+<p>and created a cronjob in <code>/etc/cron.d/mpd-francois</code> to update the database
+daily and stop the music automatically in the evening:</p>
+<pre><code># Refresh DB once an hour
+5 * * * *  mpd  test -r /run/mpd/socket &amp;&amp; MPD_HOST=Password1@/run/mpd/socket /usr/bin/mpc --quiet update
+# Think of the neighbours
+0 22 * * 0-4  mpd  test -r /run/mpd/socket &amp;&amp; MPD_HOST=Password1@/run/mpd/socket /usr/local/bin/mpc-fade
+0 23 * * 5-6  mpd  test -r /run/mpd/socket &amp;&amp; MPD_HOST=Password1@/run/mpd/socket /usr/local/bin/mpc-fade
+</code></pre>
+<p>My <a href=https://github.com/fmarier/user-scripts/blob/master/mpc-fade><code>mpc-fade</code> script</a>,
+heavily inspired by <a href=http://guillaumeplayground.net/mpd-mpc-fade-in-out-script/>Guillaume's</a>,
+gradually brings the volume down instead of stopping the music abrutly.</p>
+<h2 id=Album_covers>Album covers</h2>
+<p>In order to supply album cover art to clients which support grabbing covers
+from a local web server I have installed
+<a href=https://httpd.apache.org/>Apache</a>:</p>
+<pre><code>apt install apache2
+</code></pre>
+<p>and configured it to serve the covers by putting the following in the
+default vhost section of <code>/etc/apache2/sites-available/000-default.conf</code>:</p>
+<pre><code>Alias /music /path/to/music
+
+&lt;Directory /path/to/music&gt;
+    Options -MultiViews -Indexes
+    AllowOverride None
+    Order allow,deny
+    allow from all
+&lt;/Directory&gt;
+</code></pre>
+<p>Finally, I enabled the new vhost and restarted Apache:</p>
+<pre><code>a2ensite 000-default
+systemctl restart apache2.service
+</code></pre>
+<h1 id=Clients>Clients</h1>
+<p>To let anybody on the local network connect, I opened <strong>ports 80 and 6600</strong>
+on the firewall (<code>/etc/network/iptables.up.rules</code> since I'm using Debian's
+<code>iptables-apply</code>):</p>
+<pre><code>-A INPUT -s 192.168.1.0/24 -p tcp --dport 80 -j ACCEPT
+-A INPUT -s 192.168.1.0/24 -p tcp --dport 6600 -j ACCEPT
+</code></pre>
+<p>Then I looked at <a href=http://mpd.wikia.com/wiki/Clients>the long list of clients</a> on the mpd wiki.</p>
+<h2 id=Desktop>Desktop</h2>
+<p>The official website <a href=https://www.musicpd.org/clients/>suggests two
+clients</a> which are available in Debian and
+Ubuntu:</p>
+<ul>
+<li><a href=http://ario-player.sourceforge.net/>Ario</a> (<code>apt install ario</code>)</li>
+<li><a href=http://gmpclient.org/>GNOME Music Player Client</a> (<code>apt install gmpc gmpc-plugins</code>)</li>
+</ul>
+<p>Both of them work well, but haven't had a release since 2011, even though
+there is some activity
+in <a href=https://sourceforge.net/p/ario-player/code/HEAD/tree/>2013</a>
+and <a href=http://repo.or.cz/w/gmpc.git>2015</a> in their respective source control
+repositories.</p>
+<p>Ario has a simpler user interface but gmpc has cover art download
+working out of the box, which is why I might stick with it.</p>
+<p>In both cases, it is possible to <a href=https://feeding.cloud.geek.nz/posts/things-that-work-well-with-tor/>configure a polipo
+proxy</a>
+so that any external resources are fetched via
+<a href=https://www.torproject.org/>Tor</a>.</p>
+<h2 id=Android>Android</h2>
+<p>On Android, I got these two to work:</p>
+<ul>
+<li><a href="https://f-droid.org/repository/browse/?fdfilter=malp&amp;fdid=org.gateshipone.malp">M.A.L.P.</a> (requires Android 5 or later)</li>
+<li><a href="https://f-droid.org/repository/browse/?fdfilter=mpdroid&amp;fdid=com.namelessdev.mpdroid">MPDroid</a></li>
+</ul>
+<p>I picked M.A.L.P. since it includes a nice widget for the homescreen. In the
+profile settings, I enabled <em>Prefer <a href=https://github.com/gateship-one/malp/wiki/FAQ#application-usage>HTTP cover
+files</a></em> and
+used this URL:</p>
+<pre><code>http://192.168.1.2/%d
+</code></pre>
+<h2 id=iOS>iOS</h2>
+<p>On iOS, these are the most promising clients I found:</p>
+<ul>
+<li><a href=https://github.com/Nyx0uf/MPDRemote>MPDRemote</a> (free software, sold on the <a href="https://itunes.apple.com/us/app/mpdremote/id1202933180?ls=1&amp;mt=8">AppStore</a>)</li>
+<li><a href=http://kineticfactory.com/MPDluxe/>MPDluxe</a> (proprietary, sold on the <a href="https://itunes.apple.com/app/mpdluxe/id991758069?mt=8">AppStore</a>)</li>
+</ul>
+<p>since <a href=http://www.katoemba.net/makesnosenseatall/mpod/>MPoD</a> and
+<a href=http://www.katoemba.net/makesnosenseatall/mpad/>MPaD</a> don't appear to be
+available on the AppStore anymore.</p>
+<p>Of these, MPDRemote appears to be the better one. It also supports album art
+if you configure the profile with the following cover URL:</p>
+<pre><code>http://192.168.1.2/
+</code></pre>
+</section>
+<section id=comments role=complementary>
+<div class=addcomment>
+<a rel=nofollow href="https://feeding.cloud.geek.nz/ikiwiki.cgi?do=comment&amp;page=posts%2Fhome-music-server-with-mpd">Add a comment</a>
+</div>
+</section>
+</div>
+<footer id=footer class=pagefooter role=contentinfo>
+<nav id=pageinfo>
+<nav class=tags>
+Tags:
+<a href=https://feeding.cloud.geek.nz/tags/android/ rel=tag>android</a>
+<a href=https://feeding.cloud.geek.nz/tags/debian/ rel=tag>debian</a>
+<a href=https://feeding.cloud.geek.nz/tags/ios/ rel=tag>ios</a>
+<a href=https://feeding.cloud.geek.nz/tags/mpd/ rel=tag>mpd</a>
+<a href=https://feeding.cloud.geek.nz/tags/nzoss/ rel=tag>nzoss</a>
+<a href=https://feeding.cloud.geek.nz/tags/systemd/ rel=tag>systemd</a>
+<a href=https://feeding.cloud.geek.nz/tags/tor/ rel=tag>tor</a>
+<a href=https://feeding.cloud.geek.nz/tags/ubuntu/ rel=tag>ubuntu</a>
+</nav>
+<div class=pagelicense>
+<a name=pagelicense></a>
+License: <a href=http://creativecommons.org/licenses/by-sa/4.0/>Creative Commons Attribution-ShareAlike 4.0 International License</a>
+</div>
+<div class=pagedate>
+Last edited <time datetime=2020-09-06T18:50:22Z>11:50, 06 September 2020</time>
+</div>
+</nav>
+</footer>
+</article>
+<div style="background:initial!important;border:initial!important;border-radius:initial!important;border-spacing:initial!important;border-collapse:initial!important;direction:ltr!important;flex-direction:initial!important;font-weight:initial!important;height:initial!important;letter-spacing:initial!important;min-width:initial!important;max-width:initial!important;min-height:initial!important;max-height:initial!important;margin:auto!important;outline:initial!important;padding:initial!important;position:absolute;table-layout:initial!important;text-align:initial!important;text-shadow:initial!important;width:initial!important;word-break:initial!important;word-spacing:initial!important;overflow-wrap:initial!important;box-sizing:initial!important;display:none!important;color:inherit!important;font-size:13px!important;font-family:X-LocaleSpecific,sans-serif,Tahoma,Helvetica!important;line-height:13px!important;vertical-align:top!important;white-space:inherit!important;left:518px;top:35px;--darkreader-inline-bgcolor: initial;--darkreader-inline-bgimage: initial;--darkreader-inline-border-top: initial;--darkreader-inline-border-right: initial;--darkreader-inline-border-bottom: initial;--darkreader-inline-border-left: initial;--darkreader-inline-outline: initial;--darkreader-inline-color: inherit;opacity:0.4" id=s3gt_translate_tooltip_mini class=s3gt_translate_tooltip_mini_box is_bottom=true is_mini=true data-darkreader-inline-bgcolor data-darkreader-inline-bgimage data-darkreader-inline-border-top data-darkreader-inline-border-right data-darkreader-inline-border-bottom data-darkreader-inline-border-left data-darkreader-inline-outline data-darkreader-inline-color></div>

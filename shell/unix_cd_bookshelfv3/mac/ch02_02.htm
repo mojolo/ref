@@ -1,0 +1,290 @@
+<html><head><title>Adding Startup Items (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">2.2. Adding Startup Items</h2>
+
+<p><a name="mosxgeeks-IDXTERM-144" />
+<a name="mosxgeeks-IDXTERM-145" />To automatically start
+applications, you have two choices: start them when a user logs in,
+or start them when the system boots up. On most Unix systems, startup
+applications either reside in the
+<em class="filename">/etc/rc.local</em><a name="IXT-2-333" /> script or the
+<em class="filename">/etc/init.d</em><a name="IXT-2-334" /> directory. Under Mac OS 9, you could
+add a startup item by putting its alias in <em class="filename">System
+Folder:Startup Items</em>. Mac OS X has a different approach,
+described in the following sections.
+</p>
+
+<a name="mosxgeeks-CHP-2-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">2.2.1. Login Preferences</h3>
+
+<p>To start an application each time you <a name="IXT-2-335" />log <a name="IXT-2-336" />in, use the Login Items panel of System
+Preferences. This is good for user applications, such as
+<a name="IXT-2-337" />Stickies or an
+<a name="IXT-2-338" />instant messenger program. For
+system daemons, you should set up a directory in
+<em class="filename">/Library/StartupItems</em>, as described in the next
+section.
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-2-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">2.2.2. Startup Items</h3>
+
+<p>If you compile and install a <a name="IXT-2-339" />daemon, you'll probably
+want it to start at boot time. For example, MySQL will build out of
+the box on Mac OS X (you can download it from <a href="http://www.mysql.com">http://www.mysql.com</a>).
+</p>
+
+<p>A startup item is controlled by three things: a folder (such as
+<em class="filename">/Library/StartupItems/MyItem</em>), a shell script
+with the same name as the directory (such as
+<em class="filename">MyItem</em>), and a property list named
+<em class="filename">StartupParameters.plist</em>. The shell script and
+the property list must appear at the top level of the startup
+item's folder. You can also create a
+<em class="filename">Resources</em> directory to hold localized resources,
+but this is not mandatory.
+</p>
+
+<p>To set up the <a name="IXT-2-340" />MySQL startup item, create the directory
+<em class="filename">/Library/StartupItems/MySQL</em>. Then, create two
+files in that directory, the startup script
+<em class="filename">MySQL</em> and the property list
+<em class="filename">StartupParameters.plist</em>. The
+<em class="filename">MySQL</em> file should be an executable since it is a
+shell script. After you set up these two files as directed in the
+following sections, MySQL will be launched at each boot.
+</p>
+
+<a name="mosxgeeks-CHP-2-SECT-2.2.1" /><div class="sect3">
+<h3 class="sect3">2.2.2.1. The startup script</h3>
+
+<p>The <a name="IXT-2-341" />startup script should be a shell
+script with <tt class="literal">StartService( )</tt>, <tt class="literal">StopService(
+)</tt>, and <tt class="literal">RestartService( )</tt> functions. The
+contents of <em class="filename">/Library/StartupItems/MySQL/MySQL</em>
+are shown in <a href="ch02_02.htm#mosxgeeks-CHP-2-EX-3">Example 2-3</a>. The function call at the
+bottom of the script invokes the <tt class="literal">RunService( )</tt>
+function from <em class="filename">rc.common</em>, which in turn invokes
+<tt class="literal">StartService( )</tt>, <tt class="literal">StopService(
+)</tt>, or <tt class="literal">RestartService( )</tt>, depending on
+whether the script was invoked with an argument of
+<em class="filename">start</em>, <em class="filename">stop</em>, or
+<em class="filename">restart</em>.
+</p>
+
+<a name="mosxgeeks-CHP-2-EX-3" /><div class="example">
+<h4 class="objtitle">Example 2-3. A MySQL startup script  </h4><a name="IXT-2-342" />
+<blockquote><pre class="code">#!/bin/sh
+
+# Source common setup, including hostconfig.
+#
+. /etc/rc.common
+
+StartService( )
+{
+    # Don't start unless MySQL is enabled in /etc/hostconfig
+    if [ "${MYSQL:=-NO-}" = "-YES-" ]; then
+        ConsoleMessage "Starting MySQL"
+        /usr/local/mysql/bin/safe_mysqld --user=mysql &amp;
+    fi
+}
+
+StopService( )
+{
+    ConsoleMessage "Stopping MySQL"
+    /usr/local/mysql/bin/mysqladmin shutdown
+}
+
+RestartService( )
+{
+    # Don't restart unless MySQL is enabled in /etc/hostconfig
+    if [ "${MYSQL:=-NO-}" = "-YES-" ]; then
+        ConsoleMessage "Restarting MySQL"
+        StopService
+        StartService
+    else
+        StopService
+    fi
+}
+
+RunService "$1"</pre></blockquote>
+</div>
+
+
+
+<a name="ch02-14-fm2xml" /><blockquote><b>TIP:</b> 
+If you are using MySQL version 4 (in beta as of this writing),
+replace <em class="filename">/usr/local/mysql/bin/safe_mysqld</em> with
+<em class="filename">/usr/local/mysql/bin/mysqld_safe</em>.
+</p>
+</blockquote>
+
+<p>Because it consults the settings of the <tt class="literal">$MYSQL</tt>
+environment variable, the startup script won't do
+anything unless you've enabled MySQL in the
+<em class="filename">/etc/hostconfig</em> file. To do this, add the
+following line to <em class="filename">/etc/hostconfig</em>:
+</p>
+
+<blockquote><pre class="code">MYSQL=-YES-</pre></blockquote>
+
+<p>Mac OS X does not recognize any special connections between
+<em class="filename">hostconfig</em> entries and startup scripts. Instead,
+the startup script sources the <em class="filename">/etc/rc.common</em>
+file, which in turn sources <em class="filename">hostconfig</em>. The
+directives in <em class="filename">hostconfig</em> are merely environment
+variables, and the startup script checks the value of the variables
+that control its behavior (in this case, <tt class="literal">$MYSQL</tt>).
+</p>
+
+<p>You can manually start, stop, and restart MySQL by invoking this
+script from the command line:
+</p>
+
+<blockquote><pre class="code">/Library/StartupItems/MySQL/MySQL start
+/Library/StartupItems/MySQL/MySQL restart
+/Library/StartupItems/MySQL/MySQL stop</pre></blockquote>
+
+</div>
+
+<a name="mosxgeeks-CHP-2-SECT-2.2.2" /><div class="sect3">
+<h3 class="sect3">2.2.2.2. The property list</h3>
+
+<p>The <a name="IXT-2-343" /> <a name="IXT-2-344" /> <a name="IXT-2-345" />property list can be in XML or NeXT
+format, and the list contains attributes that describe the item and
+determine its place in the startup sequence. The NeXT format uses
+NeXTSTEP-style property lists, as shown in <a href="ch02_02.htm#mosxgeeks-CHP-2-EX-4">Example 2-4</a>. 
+</p>
+
+<a name="mosxgeeks-CHP-2-EX-4" /><div class="example">
+<h4 class="objtitle">Example 2-4. The MySQL startup parameters as a NeXT property list  </h4>
+<blockquote><pre class="code">{
+  Description     = "MySQL";
+  Provides        = ("MySQL");
+  Requires        = ("Network");
+  OrderPreference = "Late";
+}</pre></blockquote>
+</div>
+
+<p>Over time, Apple will probably phase out legacy formats such as
+<a name="IXT-2-346" />NeXT
+property lists, so it is best if you use <a name="IXT-2-347" />XML property lists. The XML
+format adheres to the <em class="filename">PropertyList.dtd</em> Document
+Type Definition (DTD). You can use your favorite text editor or the
+<em class="filename">Property List Editor</em>
+(<em class="filename">/Developer/Applications)</em> to create your own
+property list. <a href="ch02_02.htm#mosxgeeks-CHP-2-EX-5">Example 2-5</a> shows the property list
+in XML.
+</p>
+
+<a name="mosxgeeks-CHP-2-EX-5" /><div class="example">
+<h4 class="objtitle">Example 2-5. The MySQL startup parameters as an XML property list  </h4>
+<blockquote><pre class="code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist 
+  SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd"&gt;
+&lt;plist version="0.9"&gt;
+&lt;dict&gt;
+    &lt;key&gt;Description&lt;/key&gt;
+    &lt;string&gt;MySQL&lt;/string&gt;
+    &lt;key&gt;Provides&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;MySQL&lt;/string&gt;
+    &lt;/array&gt;
+    &lt;key&gt;Requires&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;Network&lt;/string&gt;
+    &lt;/array&gt;
+    &lt;key&gt;OrderPreference&lt;/key&gt;
+    &lt;string&gt;Late&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;</pre></blockquote>
+</div>
+
+<p>The following list describes the various <a name="IXT-2-348" />keys you can use in a startup parameters
+property list.
+</p>
+
+<dl>
+<dt><tt class="literal">Description</tt></dt>
+<dd>
+This is a phrase that describes the item.</p>
+</dd>
+
+
+
+<dt><tt class="literal">Provides</tt></dt>
+<dd>
+This is an array of services that the item provides (for example,
+Apache provides <em class="filename">Web Server</em>). These services
+should be globally unique. In the event that
+<em class="filename">SystemStarter</em> finds two items that provide the
+same service, it will start the first one it finds.
+</p>
+</dd>
+
+
+
+<dt><tt class="literal">Requires</tt></dt>
+<dd>
+This is an array of services that the item depends on. It should
+correspond to another item's
+<tt class="literal">Provides</tt> attribute. If a required service cannot
+be started, the system won't start the item.
+</p>
+</dd>
+
+
+
+<dt><i> <tt class="literal">Uses</tt></i></dt>
+<dd>
+This is similar to <tt class="literal">Requires</tt>, but it is a weaker
+association. If <em class="filename">SystemStarter</em> can find a
+matching service, it will start it. If it can't, the
+dependent item will still start.
+</p>
+</dd>
+
+
+
+<dt><tt class="literal">OrderPreference</tt></dt>
+<dd>
+The <tt class="literal">Requires</tt> and <tt class="literal">Uses</tt>
+attributes imply a particular order, in that dependent items will be
+started after the services they depend on. You can specify
+<tt class="literal">First</tt>, <tt class="literal">Early</tt>,
+<tt class="literal">None</tt> (the default), <tt class="literal">Late</tt>, or
+<tt class="literal">Last</tt> here. <em class="filename">SystemStarter</em></tt> will
+do its best to satisfy this preference, but dependency orders
+prevail.<a name="IXTR3-354" /> <a name="IXTR3-355" /> 
+</p>
+</dd>
+
+</dl>
+
+</div>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2. Startup</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.3. Scheduling Tasks</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

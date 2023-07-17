@@ -1,0 +1,170 @@
+<html><head><title>Introduction to Printing on Unix (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch45_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch45_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">45.2. Introduction to Printing on Unix</h2>
+
+<p>Unix used a print spooler to allow many users to share a single
+printer long before Windows came along. A user can make a printing
+request at any time, even if the printer is currently busy. Requests
+are queued and processed in order as the printer becomes available.
+</p>
+
+<p>Unix permits multiple printers to be connected to the same system. If
+there is more than one printer, one printer is set up as the default
+printer, and print jobs are sent there if no printer is specified.
+</p>
+
+<a name="upt3-CHP-45-SECT-2.1" /><div class="sect2">
+<h3 class="sect2">45.2.1. lpr-Style Printing Commands</h3>
+
+<p><a name="IXT-45-1753" />Many
+<a name="IXT-45-1754" /> <a name="IXT-45-1755" /> <a name="IXT-45-1756" />systems use the
+<i class="command">lpr</i> command to
+<a name="IXT-45-1757" />queue a print job. When you use
+<i class="command">lpr</i>, it spools the file for printing.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lpr notes</b></tt></pre></blockquote>
+
+<p>The <i class="command">lpq</i> command tells you the status of your print
+jobs by showing you the print queue for a given printer.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lpq</b></tt>
+lp is ready and printing
+Rank   Owner      Job  Files                Total Size
+active fred       876  notes                7122 bytes
+1st    alice      877  standard input       28372 bytes
+2nd    john       878  afile bfile ...      985733 bytes</pre></blockquote>
+
+<p>The word <tt class="literal">active</tt> in the <tt class="literal">Rank</tt>
+column shows the job that's currently printing. If
+your job does not appear at all on the listing, it means your job has
+finished printing or has been completely written into the
+printer's input buffer (or perhaps that you
+accidentally printed it to a different queue). If a job is not
+<em class="emphasis">active</em>, it's still in the
+queue.
+</p>
+
+<p><a name="IXT-45-1758" />You can remove
+a job with the <i class="command">lprm</i> command. (Run
+<i class="command">lpq</i> first to get the job number.)
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lprm 877</b></tt>
+dfA877<em class="replaceable"><tt>host</tt></em> dequeued
+cfA877<em class="replaceable"><tt>host</tt></em> dequeued</pre></blockquote>
+
+<p><a name="IXT-45-1759" />The
+command <b class="emphasis-bold">lpc status</b> (<a href="ch45_03.htm#upt3-CHP-45-SECT-3">Section 45.3</a>) can be used to determine which printers are
+connected to your system and their names. If there is more than one
+printer, you can then use the <span class="option">-P</span> option with
+<i class="command">lpr</i>, <i class="command">lpq</i> and
+<i class="command">lprm</i> to specify a printer destination other than
+the default. For instance, if a laser printer is configured as
+<em class="emphasis">laserp</em>, you can enter:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lpr -Plaserp myfile</b></tt></pre></blockquote>
+
+<p>If you'll be using a certain printer often, put its
+name in the <b class="emphasis-bold">PRINTER environment
+variable</b> (<a href="ch45_04.htm#upt3-CHP-45-SECT-4">Section 45.4</a>).
+</p>
+
+<p>If you're using an older system that has only
+<i class="command">lp</i> (see below), or if you'd like
+a fancier <i class="command">lpr</i> that supports all sorts of handy
+features, take a peek at <em class="emphasis">LPRng</em> (available at
+<a href="http://www.lprng.com">http://www.lprng.com</a>). It
+supports everything standard <i class="command">lpr</i> does and more,
+including a GUI for detailed configuration.
+</p>
+
+</div>
+<a name="upt3-CHP-45-SECT-2.2" /><div class="sect2">
+<h3 class="sect2">45.2.2. lp-Style Printing Commands</h3>
+
+<p><a name="IXT-45-1760" /><a name="IXT-45-1761" /> <a name="IXT-45-1762" /><a name="IXT-45-1763" /><a name="IXT-45-1764" />The
+System V-style print system, which Solaris uses by default, has the
+<i class="command">lp</i> command to queue a print job. (Solaris also
+optionally includes <i class="command">lpr</i>-style printing commands,
+if you install the BSD compatibility package.) When you use
+<i class="command">lp</i>, it spools the file for printing and returns
+the request id of your print job. The request id can later be used to
+cancel the print job, if you decide to do so.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lp notes</b></tt>
+request-id is lp-2354 (1 file)</pre></blockquote>
+
+<p>The <i class="command">lpstat</i> command can be used to check on the
+status of your print jobs. Like <i class="command">lpq</i>, it will tell
+whether your job is in the queue or fully sent to the printer. Unlike
+<i class="command">lpq</i>, it shows you only your own jobs by default:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lpstat</b></tt>
+lp-2354          14519 fred     on lp</pre></blockquote>
+
+<p>The message <tt class="literal">on lp</tt> indicates that the job is
+currently printing. If your job does not appear at all on the
+listing, it means your job has either finished printing or has been
+completely written into the printer's input buffer
+(or you accidentally printed it to a different queue). If the job is
+listed, but the <tt class="literal">on lp</tt> message does not appear, the
+job is still in the queue. You can see the status of all jobs in the
+queue with the <span class="option">-u</span> option. You can cancel a job with
+the <i class="command">cancel</i> command.
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lpstat -u</b></tt>
+lp-2354          14519 fred     on lp
+lp-2355          21321 alice
+lp-2356           9065 john
+$ <tt class="userinput"><b>cancel lp-2356</b></tt>
+lp-2356: cancelled</pre></blockquote>
+
+<p><a name="IXT-45-1765" />The <i class="command">lpstat</i> command can be
+used to determine what printers are connected to your system and
+their names. If there is more than one printer, you can then use the
+<span class="option">-d</span> option with <i class="command">lp</i> to specify a
+printer destination other than the default. For instance, if a laser
+printer is configured as <em class="emphasis">laserp</em>, then you can
+enter:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>lp -dlaserp myfile</b></tt></pre></blockquote>
+
+<p>If you'll be using a certain printer often, put its
+name in the <b class="emphasis-bold">LPDEST environment
+variable</b> (<a href="ch45_04.htm#upt3-CHP-45-SECT-4">Section 45.4</a>).
+</p>
+
+<p>-- <em class="emphasis">DD, TOR, and JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch45_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch45_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">45. Printing</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">45.3. Printer Control with lpc</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

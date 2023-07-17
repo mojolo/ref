@@ -1,0 +1,429 @@
+<html><head><title>The ps Command (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch24_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">24.5. The ps Command</h2>
+
+<p><a name="IXT-24-5227" /><a name="IXT-24-5228" />The <i class="command">ps</i>
+command varies from system to system. (The <i class="command">ps</i> on
+one Red Hat Linux system reads a <em class="emphasis">PS_PERSONALITY</em>
+environment variable with 21 possible settings!) This article
+describes several different versions. Yours is probably different in
+some ways, so check your <i class="command">ps</i> manual page for
+details.
+</p>
+
+<p><a name="IXT-24-5229" />The <i class="command">ps</i> command
+produces a report summarizing execution statistics for current
+processes. The bare <i class="command">ps</i> command lists the process
+ID, the terminal from which the command was started, how much CPU
+time it has used, and the command itself. The output looks something
+like this (it differs by system):
+</p>
+
+<blockquote><pre class="code">  PID TT STAT  TIME COMMAND
+ 1803 p5 IW    0:00 -csh (csh)
+ 1883 p5 IW    0:04 vi outline
+ 1811 p6 IW    0:01 -csh (csh)
+ 5353 p6 TW    0:01 vi 4890</pre></blockquote>
+
+<p>By default, <i class="command">ps</i> lists only your own processes.
+There are many times, though, when it's desirable to
+have a more complete listing with a lot of data about all of the
+processes currently running on the system. The options required to do
+this differ between BSD Unix and System V. Under
+<a name="IXT-24-5230" /> <a name="IXT-24-5231" />BSD
+Unix, the command is <i class="command">ps -aux</i>, which produces a
+table of all processes, arranged in order of decreasing
+<a name="IXT-24-5232" />CPU usage at the moment when the
+<i class="command">ps</i> command was executed. [The <span class="option">-a</span>
+option gives processes belonging to all users, <span class="option">-u</span>
+gives a more detailed listing, and <span class="option">-x</span> includes
+processes that no longer have a <b class="emphasis-bold">controlling
+terminal</b> (<a href="ch24_06.htm#upt3-CHP-24-SECT-6">Section 24.6</a>).
+ <em class="emphasis">-- TOR</em>] It is often useful to pipe this
+output to <b class="emphasis-bold">head</b> (<a href="ch12_12.htm#upt3-CHP-12-SECT-12">Section 12.12</a>), which will display the most active
+processes:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ps -aux | head -5</b></tt>
+USER       PID %CPU %MEM   SZ  RSS TTY STAT  TIME COMMAND
+martin   12923 74.2 22.5  223  376 p5  R     2:12 f77 -o foo foo.F
+chavez   16725 10.9 50.8 1146 1826 p6  R N  56:04 g94 HgO.dat
+ng       17026  3.5  1.2  354  240 co  I     0:19 vi benzene.txt
+gull      7997  0.2  0.3  142   46 p3  S     0:04 csh</pre></blockquote>
+
+<p>The meanings of the fields in this output (as well as others
+displayed by the <span class="option">-l</span> option to <i class="command">ps</i>)
+are given in <a href="ch24_05.htm#upt3-CHP-24-TABLE-1">Table 24-1</a>.
+</p>
+
+<p>The first line of this output shows that user
+<em class="emphasis">martin</em> is running a FORTRAN compilation
+(<tt class="literal">f77</tt>). This process has <b class="emphasis-bold">PID</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>) 12923 and
+is currently either running or runnable. User
+<em class="emphasis">chavez</em>'s process (PID 16725),
+executing the program <i class="command">g94</i>, is also running or
+runnable, though at a lowered priority. From this display,
+it's obvious who is using most system resources at
+this instant: <em class="emphasis">martin</em> and
+<em class="emphasis">chavez</em> have about 85% of the CPU and 73% of the
+memory between them. However, although it does display total CPU
+time, <i class="command">ps</i> does not average the
+<tt class="literal">%CPU</tt> or <tt class="literal">%MEM</tt> values over time
+in any way. <a name="IXT-24-5233" />
+</p>
+
+<a name="upt3-CHP-24-TABLE-1" /><h4 class="objtitle">Table 24-1. ps command output fields </h4>
+<table border="1" cellpadding="3">
+<tr>
+<th>
+<p>Column<a href="#FOOTNOTE-72">[72]</a>
+</p>
+</th>
+<th>
+<p>Contents</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>USER (BSD)</p>
+</td>
+<td>
+<p>Username of process owner</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UID (System V)</p>
+</td>
+<td>
+<p><b class="emphasis-bold">User ID</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>) of process owner
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>PID</p>
+</td>
+<td>
+<p>Process ID</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>%CPU</p>
+</td>
+<td>
+<p>Estimated fraction of CPU consumed (BSD)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>%MEM</p>
+</td>
+<td>
+<p>Estimated fraction of system memory consumed (BSD)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>SZ</p>
+</td>
+<td>
+<p>Virtual memory used in K (BSD) or pages (System V)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>RSS</p>
+</td>
+<td>
+<p>Real memory used (in same units as SZ)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>TT, TTY</p>
+</td>
+<td>
+<p>Terminal port associated with process</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>STAT (BSD), S (System V)</p>
+</td>
+<td>
+<p>Current process state; one (or more under BSD) of:</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>R: Running or runnable</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>S: Sleeping</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>I: Idle (BSD); intermediate state (System V)</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>T: <b class="emphasis-bold">Stopped</b> (<a href="ch23_01.htm#upt3-CHP-23-SECT-1">Section 23.1</a>) 
+</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>Z: <b class="emphasis-bold">Zombie process</b> (<a href="ch24_19.htm#upt3-CHP-24-SECT-19">Section 24.19</a>) 
+</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>D (BSD): Disk wait</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>P (BSD): Page wait</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>X (System V): Growing,waiting for memory</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>K (AIX): Available kernel process</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>W (BSD): Swapped out</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>N (BSD): <b class="emphasis-bold">Niced</b> (<a href="ch26_05.htm#upt3-CHP-26-SECT-5">Section 26.5</a>, <a href="ch26_07.htm#upt3-CHP-26-SECT-7">Section 26.7</a>), execution
+priority lowered
+</p>
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+<p>&gt; (BSD): Execution priority <b class="emphasis-bold">artificially
+raised</b> (<a href="ch26_07.htm#upt3-CHP-26-SECT-7">Section 26.7</a>)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>TIME</p>
+</td>
+<td>
+<p>Total CPU time used</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>COMMAND</p>
+</td>
+<td>
+<p>Command line being executed (may be truncated)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>STIME (System V)</p>
+</td>
+<td>
+<p>Time or date process started</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>C (System V), CP (BSD)</p>
+</td>
+<td>
+<p>Short term CPU-use factor; used by scheduler for computing execution
+priority (PRI below)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>F</p>
+</td>
+<td>
+<p>Flags associated with process (see <i class="command">ps</i> manual page)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>PPID</p>
+</td>
+<td>
+<p>Parent's PID</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>PRI</p>
+</td>
+<td>
+<p>Actual execution priority (recomputed dynamically)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>NI</p>
+</td>
+<td>
+<p>Process <b class="emphasis-bold">nice number</b> (<a href="ch26_05.htm#upt3-CHP-26-SECT-5">Section 26.5</a>) 
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>WCHAN</p>
+</td>
+<td>
+<p>Event process is waiting for</p>
+</td>
+</tr>
+</table>
+<a name="FOOTNOTE-72">[72]</a> Some vendors add other fields, such as the
+ processor number for multiprocessors and additional or different
+process states (as in the AIX K field). These codes may differ from
+vendor to vendor: for example, the 0 code under Stardent Unix means a
+process that is actually running (and R means runnable), while 0
+under AIX means a nonexistent process.</p> </blockquote>
+
+<p><a name="IXT-24-5234" /> <a name="IXT-24-5235" />A vaguely similar listing is produced
+by the System V <em class="emphasis">ps -ef</em> command:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ps -ef</b></tt>
+   UID   PID  PPID   C    STIME     TTY  TIME CMD
+  root     0     0   0 09:36:35       ?  0:00 sched
+  root     1     0   0 09:36:35       ?  0:02 /etc/init
+  ...
+  gull  7997     1  10 09:49:32   ttyp3  0:04 csh
+martin 12923 11324   9 10:19:49   ttyp5 56:12 f77 -o foo foo.F
+chavez 16725 16652  15 17:02:43   ttyp6 10:04 g94 HgO.dat
+    ng 17026 17012  14 17:23:12 console  0:19 vi benzene.txt</pre></blockquote>
+
+<p><a name="IXT-24-5236" />The columns hold the username, process ID,
+parent's PID (the PID of the process that created
+it), the current scheduler value, the time the process started, its
+associated terminal, its accumulated CPU time, and the command it is
+running. Note that the ordering is by PID, not resource usage.
+</p>
+
+<p><a name="IXT-24-5237" /><a name="IXT-24-5238" />AIX's version of the
+<i class="command">ps</i> command supports both BSD and System V options.
+The BSD options are not preceded by a hyphen (which is a legal syntax
+variation), and the System V options are. Thus, under AIX,
+<tt class="literal">ps -au</tt> is not the same as <tt class="literal">ps
+au</tt>. The command is the System V version, however, even if
+its output is displayed with the BSD column headings. Thus,
+<em class="emphasis">ps aux</em> output is displayed in
+<tt class="literal">PID</tt> rather than <tt class="literal">%CPU</tt> order.
+</p>
+
+<p><a name="IXT-24-5239" /><a name="IXT-24-5240" /><i class="command">ps</i> is also useful in
+pipes; a common use is:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ps -aux | grep chavez</b></tt></pre></blockquote>
+
+<p>to see what user <em class="emphasis">chavez</em> has currently running.
+Under System V, use <tt class="literal">ps -u chavez</tt>.
+</p>
+
+<p>Another way to view the process information is with the
+<i class="command">top</i><a name="IXT-24-5241" /> command. Unlike <i class="command">ps</i>,
+<i class="command">top</i> is an interactive screen program that updates
+its information every few seconds. It's a good way
+to get a quick pulse of your system. Not only is process information
+displayed, but memory statistics and the system
+<i class="command">uptime</i> are also shown. You can find the full range
+of available interactive commands by typing <tt class="literal">h</tt> once
+<i class="command">top</i> has started. You can sort processes in a
+variety of ways including CPU and memory usage, as well as by user.
+You can even kill processes from within <i class="command">top</i>.
+</p>
+
+<p>--<em class="emphasis">AF, from <em class="emphasis">Essential System
+Administration</em> (O'Reilly, 2002), and
+JJ</em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch24_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch24_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">24.4. Subshells</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">24.6. The Controlling Terminal</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

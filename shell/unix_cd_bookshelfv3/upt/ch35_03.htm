@@ -1,0 +1,199 @@
+<html><head><title>What Environment Variables Are Good For (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.3. What Environment Variables Are Good For</h2>
+
+<p><a name="upt3-IDXTERM-5391" /> <a name="upt3-IDXTERM-5392" /><a name="IXT-35-3487" />Many Unix utilities, including the shell,
+need information about you and what you're doing in
+order to do a reasonable job.
+</p>
+
+<p>What kinds of information? Well, to start with, a lot of programs
+(particularly editors) need to know what kind of terminal
+you're using. The shell needs to know where any
+commands you want to use are likely to be found. Lots of Unix
+programs (like mail programs) include a command to start an editor as
+a subprocess; they like to know your favorite editor. And so on.
+</p>
+
+<p>Of course, one could always write programs that made you put all this
+information on the command line. For example, you might have to type
+commands like:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>mail -editor vi -term aardvark48 -favoritecolor blue_no_red</b></tt></pre></blockquote>
+
+<p>But your favorite editor probably doesn't change
+every day. (Nor will your favorite color.) The terminal you use may
+change frequently, but it certainly won't change
+from the time you log in until the time you log out. And you
+certainly wouldn't want to type something like this
+whenever you want to send mail.
+</p>
+
+<p><a name="IXT-35-3488" />Rather
+than forcing you to type this information with every command, Unix
+uses <em class="emphasis">environment variables</em> to store information
+you'd rather not worry about. For example, the
+<b class="emphasis-bold">TERM</b>
+(<a name="IXT-35-3489" /><a href="ch05_02.htm#upt3-CHP-5-SECT-2">Section 5.2</a>)
+environment variable tells programs what kind of terminal
+you're using. Any programs that care about your
+terminal type know (or ought to know) that they can read this
+variable, find out your terminal type, and act accordingly.
+</p>
+
+<p>Similarly, the directories that store the commands you want to
+execute are listed in the <b class="emphasis-bold">PATH</b>
+(<a href="ch35_06.htm#upt3-CHP-35-SECT-6">Section 35.6</a>) <a name="IXT-35-3490" />variable. When you type a command,
+your shell looks through each directory in your
+<em class="emphasis">PATH</em> variable to find that command. Presumably,
+Unix wouldn't need a <em class="emphasis">PATH</em>
+variable if all commands were located in the same directory, but
+you'll soon be writing your own commands (if you
+aren't already), and storing them in your own
+<b class="emphasis-bold">"private"
+command directories</b> (<a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a>), and
+you'll need to tell the shell <b class="emphasis-bold">how to find them</b> (<a href="ch27_06.htm#upt3-CHP-27-SECT-6">Section 27.6</a>). 
+</p>
+
+<p>Environment variables are managed by your shell.
+<a name="IXT-35-3491" /> <a name="IXT-35-3492" />The difference between environment
+variables and regular <b class="emphasis-bold">shell
+variables</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>) is that a shell
+variable is local to a particular instance of the shell (such as a
+shell script), while environment variables are
+"inherited" by any program you
+start, including <b class="emphasis-bold">another shell</b>
+(<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>). That is, the new process gets its own
+copy of these variables, which it can read, modify, and pass on in
+turn to its own children. In fact, every Unix process (not just the
+shell) passes its environment variables to its
+<a name="IXT-35-3493" />child processes.
+</p>
+
+<p>You can set environment variables with a command like this:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>setenv </b></tt><em class="replaceable"><tt>NAME value </tt></em>        <i class="lineannotation">C-type shells</i>
+$ <em class="replaceable"><tt>NAME=value</em><tt class="userinput"><b>; export </b></tt><em class="replaceable">NAME   </tt></em><i class="lineannotation">all Bourne-type shells</i>
+$ <tt class="userinput"><b>export </b></tt><em class="replaceable"><tt>NAME=value</tt></em>         <i class="lineannotation">newer Bourne-type shells</i></pre></blockquote>
+
+<p>There's nothing particularly special about the
+<em class="emphasis">NAME</em>; you can create environment variables with
+any names you want. Of course, these don't
+necessarily do anything for you; variables like
+<em class="emphasis">PATH</em> and <em class="emphasis">TERM</em> are important
+because lots of programs have <b class="emphasis-bold">"agreed"</b>
+(<a href="ch35_05.htm#upt3-CHP-35-SECT-5">Section 35.5</a>) that these names are important. But if
+you want to create an environment variable that holds the name of
+your lover, that's your business:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>setenv LOVER Judy</b></tt></pre></blockquote>
+
+<p>If you're so inclined, you could write a program
+called <em class="emphasis">valentine</em> that reads the
+<em class="emphasis">LOVER</em> environment variable and generates an
+appropriate message. If you like short-term relationships or tend to
+forget names, this might even be convenient!
+</p>
+
+<p><a name="IXT-35-3494" /> <a name="IXT-35-3495" />By
+convention, the names of environment variables use all uppercase
+letters. There's nothing to enforce this
+convention -- if you're making your own names,
+you can use any capitalization you please. But
+there's no advantage to violating the convention,
+either. The environment variables used by standard Unix programs all
+have uppercase names. Making shell variable names lowercase so
+it's easy to tell the difference is helpful.
+</p>
+
+<p><a name="IXT-35-3496" />If you want
+the <a name="IXT-35-3497" />C shell to forget that an
+environment variable ever existed, use the command <em class="emphasis">unsetenv
+NAME</em>. The
+<em class="emphasis">tcsh</em><a name="IXT-35-3498" />
+understands <b class="emphasis-bold">filename wildcard</b> (<a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a>)-type expressions -- for instance,
+<tt class="literal">unsetenv VAR*</tt> would unset all environment
+variables whose names start with <em class="emphasis">VAR</em>. Most
+Bourne-type shells, but not all, have a similar command,
+<em class="emphasis">unset NAME</em>, but it doesn't
+understand wildcards like the <i class="command">tcsh</i> version. The
+<i class="command">bash</i><a name="IXT-35-3499" /> version accepts multiple names as
+arguments, however, and can also unset functions with the
+<span class="option">-f</span> option.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: printenv, env</p>
+
+<p><a name="IXT-35-3500" />If you want
+to list all of your environment variables, use
+<i class="command">printenv</i> or <a name="IXT-35-3501" /><i class="command">env</i>. The
+<i class="command">printenv</i> command also lets you ask about a
+particular variable. Here's a typical report:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>printenv EDITOR</b></tt>
+EDITOR=/usr/local/bin/emacs
+% <tt class="userinput"><b>printenv</b></tt>
+HOME=/home/los/mikel
+SHELL=/bin/csh
+TERM=sun
+USER=mikel
+PATH=/usr/local/bin:/usr/ucb:/bin:/usr/bin:.:/home/los/mikel/bin
+LOGNAME=mikel
+PWD=/home/los/mikel/power/articles
+PRINTER=ps
+EDITOR=/usr/local/bin/emacs</pre></blockquote>
+
+<p><a name="IXT-35-3502" /><a name="IXT-35-3503" /><a name="IXT-35-3504" />The <i class="command">set</i> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>) command provides a similar listing of shell
+variables and functions (in newer Bourne-like shells such as
+<i class="command">bash</i>).
+</p>
+
+<p><a name="IXT-35-3505" />You can also use the
+<i class="command">echo</i> command to show the value of a particular
+variable by preceding the variable name with a <a name="IXT-35-3506" />dollar sign (which tells the shell
+to substitute the value of the variable):
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo $TERM</b></tt>
+xterm</pre></blockquote>
+
+<p>Or -- and this is particularly useful when you want a shell or
+environment variable's value interpolated into a
+line -- you can surround the variable name with curly
+brackets:<a name="IXT-35-3507" />
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo ${TERM}</b></tt>
+vt100
+% <tt class="userinput"><b>echo ${TERM}-like</b></tt>
+vt100-like</pre></blockquote>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.2. Everyone Should Learn Some Shell Programming</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.4. Parent-Child Relationships</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

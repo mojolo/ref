@@ -1,0 +1,199 @@
+<html><head><title>Understanding Regular Expression Syntax (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 3. Understanding Regular Expression Syntax</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch03_01.htm#sect1">That's an Expression</a><br />
+<a href="ch03_02.htm">A Line-Up of Characters</a><br />
+<a href="ch03_03.htm">I Never Metacharacter I Didn't Like</a><br /></p></div><p>When a young child is struggling to understand the meaning of an idiomatic
+expression, such as "Someone let the cat out of the bag," you might
+help by explaining that it's an <em class="emphasis">expression</em>, and
+doesn't literally mean what it says.
+<a name="ch03.reg" /></p><p>An expression, even in computer terminology, is not something
+to be interpreted literally.  It is something that needs to be
+evaluated.  An expression describes a result.</p><p>In this chapter, we are going to look at regular expression syntax.
+A regular expression describes a pattern or a particular
+sequence of characters, although
+it does not necessarily specify a single exact sequence.</p><p>While regular expressions are a basic part of UNIX, not everyone
+has a complete understanding of the syntax. 
+In fact, it can be quite confusing to look
+at an expression such as:</p><blockquote><pre class="code">^<img src="figs/squ.gif" alt="Figure " /><img src="figs/squ.gif" alt="Figure " />*.*</pre></blockquote><p>
+<a name="IXT-3-265430" />
+<a name="IXT-3-265431" />
+which uses <em class="emphasis">metacharacters</em> or special symbols
+to match a line with one or more leading spaces.
+(A square box, <img src="figs/squ.gif" alt="Figure " />, is used to make spaces visible in our examples.)</p><p>If you use any UNIX text editor on a routine basis, you are probably
+somewhat familiar with regular expression syntax.
+<b class="emphasis-bold">grep</b>, sed, and awk all use regular expressions.
+However, not all of the metacharacters used in regular expression
+syntax are available for all three programs.
+The basic set of metacharacters was introduced with the
+<b class="emphasis-bold">ed</b> line editor, and made available in
+<b class="emphasis-bold">grep</b>.  Sed uses the same set of metacharacters.
+<a name="IXT-3-265432" />
+Later a program named <b class="emphasis-bold">egrep</b> was introduced that
+offered an <em class="emphasis">extended</em> set of metacharacters.  Awk
+uses essentially the same set of metacharacters as
+<b class="emphasis-bold">egrep</b>.</p><p>To understand regular expression syntax, you have to learn
+the functions performed by various metacharacters.  But you also
+have to see many examples of them working in various combinations. 
+That is our approach in this chapter, to introduce each metacharacter
+and provide a lot of examples, that for the most part
+use <b class="emphasis-bold">grep</b>, and its cousin, <b class="emphasis-bold">egrep</b>, to demonstrate practical
+applications.</p><p>If you already understand regular expression syntax, feel free
+to skip this chapter.
+A complete listing of regular expression metacharacters can be found
+in <a href="ch03_02.htm#sedawk-ch-3-tab-1">Table 3.1</a>, as well as in <a href="appa_01.htm">Appendix A, "Quick Reference for sed"</a>, and <a href="appb_01.htm">Appendix B, "Quick Reference
+for awk"</a>. 
+For those who are interested,
+O'Reilly's <em class="emphasis">Mastering Regular Expressions</em>, by
+Jeffrey E. F. Friedl, provides exhaustive coverage of regular expression
+construction and use.</p><a name="IXT-3-265591" /><a name="IXT-3-265592" /><a name="IXT-3-265593" /><div class="sect1"><a name="sedawk-ch-3-sect-1" />
+<h2 class="sect1"><a name="sect1" />3.1. That's an Expression</h2>
+
+<p>
+<a name="ch03.exp" />
+You are probably familiar with the kinds of expressions 
+that a calculator interprets.
+Look at the following arithmetic expression:</p>
+
+<blockquote><pre class="code">2 + 4</pre></blockquote>
+
+<p>"Two plus four" consists of several constants or 
+literal values and an operator.  A calculator program must
+recognize, for instance, that "2" is a numeric constant and
+that the plus sign represents an operator, not to 
+be interpreted as the "+" character.</p>
+
+<p>An expression tells the computer how to produce a result.  Although it
+is the result of "two plus four" that we really want, 
+we don't simply tell the computer to return a six. 
+We instruct the computer to evaluate the expression and 
+return a value.</p>
+
+<p>An expression can be more complicated than "2 + 4"; in fact, it
+might consist of multiple simple expressions, such as
+the following:</p>
+
+<blockquote><pre class="code">2 + 3 * 4</pre></blockquote>
+
+<p>
+<a name="IXT-3-265433" />
+<a name="IXT-3-265434" />
+A calculator normally evaluates an expression from left to right.
+However, certain operators have precedence over others: that is, they
+will be performed first.  Thus, the above expression will evaluate to
+14 and not 20 because multiplication takes precedence over addition.
+Precedence can be overridden by placing the simple expression in
+parentheses.  Thus, "(2 + 3) * 4" or "the sum of two plus three times
+four" will evaluate to 20.  The parentheses are symbols that instruct
+the calculator to change the order in which the expression is
+evaluated.</p>
+
+<p>A regular expression, by contrast, describes a pattern or sequence of
+characters.  
+<a name="IXT-3-265435" />
+Concatenation is the basic operation implied in every regular
+expression.  That is, a pattern matches adjacent characters.
+Look at the following regular expression:</p>
+
+<blockquote><pre class="code">ABE</pre></blockquote>
+
+<p>Each literal character is a regular expression that
+matches only that single character.
+This expression describes an "A followed by a B then followed by an E"
+or simply "the string ABE".
+<a name="IXT-3-265436" />
+The term "string" means each character concatenated to the one 
+preceding it. 
+That a regular expression describes a <em class="emphasis">sequence</em> of characters
+can't be emphasized enough.  (Novice users are inclined to think
+in higher-level units such as words, and not individual characters.) 
+<a name="IXT-3-265437" />
+Regular expressions are case-sensitive; "A" does not match "a".<a href="#FOOTNOTE-11">[11]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-11" /><p> [11]Some other
+programs that use regular expressions offer the option of having them be
+case-insensitive, but sed and awk do not.</p>
+
+</blockquote>
+
+<p>Programs such as <b class="emphasis-bold">grep</b> that accept regular expressions  
+must first evaluate
+the syntax of the regular expression to produce a pattern. 
+They then read the input line-by-line trying to match the pattern.
+An input line is a string, and
+to see if a string matches the pattern, a program compares the first character in
+the string to the first character of the pattern.
+If there is a match, it compares the second character in
+the string to the second character of the pattern.
+Whenever it fails to make
+a match, it goes back and tries again, beginning one character later in
+the string.
+<a href="ch03_01.htm#sedawk-ch-3-fig-1">Figure 3.1</a> illustrates this process, trying to match the pattern "abe"
+on an input line.</p>
+
+<p>
+<a name="IXT-3-265438" />
+<a name="IXT-3-265439" />
+<a name="IXT-3-265440" />
+<a name="IXT-3-265441" />
+A regular expression is not limited to literal characters.  There is, for
+instance, a metacharacter--the dot (.)--that can be used as a 
+"wildcard" to match any single character.
+You can think of this wildcard as analogous to a blank tile
+in Scrabble where it means any letter.
+Thus, we can specify the regular expression "A.E" and it will
+match "ACE," "ABE", and "ALE".  It will match any character
+in the position following "A".</p>
+
+<p>
+<a name="IXT-3-265442" />
+<a name="IXT-3-265443" />
+<a name="IXT-3-265444" />
+The metacharacter <tt class="literal">*</tt>, the asterisk, is used to match zero or more
+occurrences of the <em class="emphasis">preceding</em> regular expression,
+which typically is a single character.  You may be familiar with <tt class="literal">*</tt> as a <em class="emphasis">shell</em> metacharacter, where it means "zero or
+more characters."  But that meaning is very different from <tt class="literal">*</tt> in a
+regular expression.  By itself, the asterisk metacharacter does not
+match anything; it modifies what goes before it.  The regular
+expression <tt class="literal">.*</tt> matches any number of characters, whereas in the
+shell, <tt class="literal">*</tt> has that meaning.  (For instance, in the shell, <b class="emphasis-bold">ls <tt class="literal">*</tt></b> will list all the files in the current directory.)  The
+regular expression "A.<tt class="literal">*</tt>E" matches any string that matches "A.E" but it
+will also match any number of characters between "A" and "E":
+"AIRPLANE," "A FINE," "AFFABLE," or "A LONG WAY HOME," for example.
+Note that "any number of characters" can even be zero!</p>
+
+<p>If you understand the difference between "." and "*" in regular
+expressions, you already know about the two basic types of
+metacharacters: those that can be evaluated to a single character, and
+those that modify how preceding characters are evaluated.</p>
+
+<p>It should also be apparent that
+by use of metacharacters you can expand or limit the possible matches. 
+You have more control over what's matched and what's not.</p>
+
+<a name="sedawk-ch-3-fig-1" /><div class="figure"><img src="figs/sed_0301.gif" alt="Figure 3.1" width="503" /></div><h4 class="objtitle">Figure 3.1. Interpreting a regular expression</h4>
+<a name="IXT-3-265445" />
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2.5. Using sed and awk Together</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.2. A Line-Up of Characters</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

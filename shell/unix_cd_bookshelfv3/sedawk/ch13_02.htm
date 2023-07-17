@@ -1,0 +1,196 @@
+<html><head><title>phonebill--Track Phone Usage (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">13.2. phonebill--Track Phone Usage</h2>
+
+<p><em class="emphasis">Contributed by Nick Holloway</em></p>
+
+<p>
+<a name="ch13.phone" />
+The problem is to calculate the cost of phone calls made.  In the United
+Kingdom, charges are made for the number of "units" used during the duration of
+the call (no free local calls).  The length of time a "unit" lasts
+depends on the charge band (linked to distance) and the charge rate
+(linked to time of day).  You get charged a whole unit as soon as the
+time period begins.</p>
+
+<p>The input to the program is four fields.  The first field is the date
+(not used).  The second field is "band/rate" and is used to look up the
+length a unit will last.  The third field is the length of the call.
+This can either be "ss," "mm:ss," or "hh:mm:ss".  The fourth field is
+the name of the caller.  We keep a stopwatch (old cheap digital), a book,
+and a pen.  Come bill time this is fed through my awk script.  This only
+deals with the cost of the calls, not the standing charge.</p>
+
+<p>The aim of the program was to enable the minimum amount of information
+to be entered by the callers, and the program could be used to collect together the
+call costs for each user in one report.  It is also written so that if
+British Telecom changes its costs, these can be done easily in the top
+of the source (this has been done once already).  If more charge bands
+or rates are added, the table can be simply expanded (wonders of
+associative arrays).  There are no real sanity checks done on the input
+data. 
+The usage is:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">phonebill </b>[ <em class="replaceable"><tt>file ...</tt></em> ]</pre></blockquote><p>Here is a (short) sample of input and output.</p>
+
+<p><b class="emphasis-bold">Input</b>:</p>
+
+<blockquote><pre class="code">29/05   b/p      5:35   Nick
+29/05   L/c   1:00:00   Dale
+01/06   L/c     30:50   Nick</pre></blockquote>
+
+<p><b class="emphasis-bold">Output</b>:</p>
+
+<blockquote><pre class="code">Summary for Dale:
+	29/05   L/c  1:00:00  11 units
+Total: 11 units @ 5.06 pence per unit = $0.56
+Summary for Nick:
+	29/05   b/p     5:35  19 units
+	01/06   L/c    30:50   6 units
+Total: 25 units @ 5.06 pence per unit = $1.26</pre></blockquote>
+
+<p>The listing for <b class="emphasis-bold">phonebill</b> follows:</p>
+
+<blockquote><pre class="code">#!/bin/awk -f
+#------------------------------------------------------------------
+#   Awk script to take in phone usage - and calculate cost for each
+#   person
+#------------------------------------------------------------------
+#   Author: N.Holloway (alfie@cs.warwick.ac.uk)
+#   Date  : 27 January 1989
+#   Place : University of Warwick
+#------------------------------------------------------------------
+#   Entries are made in the form
+#	Date   Type/Rate   Length  Name
+#
+#   Format:
+#	Date		: "dd/mm"		- one word
+#	Type/Rate	: "bb/rr"  (e.g. L/c)
+#	Length		: "hh:mm:ss", "mm:ss", "ss"
+#	Name		: "Fred"		- one word (unique)
+#------------------------------------------------------------------
+#   Charge information kept in array 'c', indexed by "type/rate",
+#   and the cost of a unit is kept in the variable 'pence_per_unit'
+#   The info is stored in two arrays, both indexed by the name. The
+#   first 'summary' has the lines that hold input data, and number 
+#   of units, and 'units' has the cumulative total number of units
+#   used by name.
+#------------------------------------------------------------------
+
+BEGIN \
+    {	
+	# --- Cost per unit
+	pence_per_unit  = 4.40		# cost is 4.4 pence per unit
+	pence_per_unit *= 1.15		# VAT is 15%
+
+	# --- Table of seconds per unit for different bands/rates
+	#     [ not applicable have 0 entered as value ]
+	c ["L/c"] = 330 ;  c ["L/s"] = 85.0;  c ["L/p"] = 60.0;
+	c ["a/c"] =  96 ;  c ["a/s"] = 34.3;  c ["a/p"] = 25.7;
+	c ["b1/c"]= 60.0;  c ["b1/s"]= 30.0;  c ["b1/p"]= 22.5;
+	c ["b/c"] = 45.0;  c ["b/s"] = 24.0;  c ["b/p"] = 18.0;
+	c ["m/c"] = 12.0;  c ["m/s"] = 8.00;  c ["m/p"] = 8.00;
+	c ["A/c"] = 9.00;  c ["A/s"] = 7.20;  c ["A/p"] = 0   ;
+	c ["A2/c"]= 7.60;  c ["A2/s"]= 6.20;  c ["A2/p"]= 0   ;
+	c ["B/c"] = 6.65;  c ["B/s"] = 5.45;  c ["B/p"] = 0   ;
+	c ["C/c"] = 5.15;  c ["C/s"] = 4.35;  c ["C/p"] = 3.95;
+	c ["D/c"] = 3.55;  c ["D/s"] = 2.90;  c ["D/p"] = 0   ;
+	c ["E/c"] = 3.80;  c ["E/s"] = 3.05;  c ["E/p"] = 0   ;
+	c ["F/c"] = 2.65;  c ["F/s"] = 2.25;  c ["F/p"] = 0   ;
+	c ["G/c"] = 2.15;  c ["G/s"] = 2.15;  c ["G/p"] = 2.15;
+    }
+
+    {
+	spu = c [ $2 ]				# look up charge band
+	if ( spu == "" || spu == 0 ) {
+	    summary [ $4 ] = summary [ $4 ] "\n\t" \
+			    sprintf ( "%4s  %4s  %7s   ? units",\
+	                          $1, $2, $3 ) \
+			    " - Bad/Unknown Chargeband"
+	} else {
+	    n = split ( $3, t, ":" )  # calculate length in seconds
+	    seconds = 0
+	    for ( i = 1; i &lt;= n; i++ )
+		seconds = seconds*60 + t[i]
+	    u = seconds / spu   # calculate number of seconds
+	    if ( int( u ) == u )   # round up to next whole unit
+		u = int( u )
+	    else
+		u = int( u ) + 1
+	    units [ $4 ] += u   # store info to output at end
+	    summary [ $4 ] = summary [ $4 ] "\n\t" \
+			    sprintf ( "%4s  %4s  %7s %3d units",\
+	                         $1, $2, $3, u )
+	}
+    }
+
+END \
+    {
+	for ( i in units ) {		# for each person
+	    printf ( "Summary for %s:", i ) # newline at start
+                                            # of summary
+	    print summary [ i ]			# print summary details
+	    # calc cost
+	    total = int ( units[i] * pence_per_unit + 0.5 )
+	    printf ( \
+		"Total: %d units @ %.2f pence per unit = $%d.%02d\n\n", \
+			    units [i], pence_per_unit, total/100, \
+                                               total%100 )
+	}
+    }</pre></blockquote>
+
+<a name="sedawk-ch-13-sect-0.0.0.2" /><div class="sect2">
+<h3 class="sect2">13.2.1. Program Notes for phonebill</h3>
+
+<p>This program is another example of generating a report that consolidates information
+from a simple record structure.</p>
+
+<p>This program also follows the three-part structure.  The <b class="emphasis-bold">BEGIN</b>
+procedure defines variables that are used throughout the program.
+This makes it easy to change the program, as phone companies
+are known to "upwardly revise" their rates.  One of the variables
+is a large array named <b class="emphasis-bold">c</b> in which each element is the number
+of seconds per unit, using the band over the rate as the index
+to the array.</p>
+
+<p>The main procedure reads each line of the user log.  It uses
+the second field, which identifies the band/rate, to get a value
+from the array <b class="emphasis-bold">c</b>.  It checks that a positive value was returned
+and then processes that value by the time specified in $3.  The
+number of units for that call is then stored in an array named <b class="emphasis-bold">units</b>,
+indexed by the name of the caller ($4). 
+This value accumulates for each caller.</p>
+
+<p>Finally, the <b class="emphasis-bold">END</b> routine prints out the values in
+the <b class="emphasis-bold">units</b> array, producing the report
+of units used per caller and the total cost of the calls.</p>
+</div>
+
+
+
+
+<a name="IXT-13-266388" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch13_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">13. A Miscellany of Scripts</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13.3. combine--Extract Multipart uuencoded Binaries</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

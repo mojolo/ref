@@ -1,0 +1,548 @@
+<html><head><title>Arrays (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">6.4. Arrays</h2>
+
+<p>
+
+<a name="korn2-IDXTERM-1319" />
+
+
+So far we have seen three types of variables: character strings, integers,
+and floating-point numbers.
+The fourth type of variable that the Korn shell supports
+is an <em class="emphasis">array</em>.
+As you may know, an array is like a list of things; you can refer
+to specific elements in an array with <em class="emphasis">indices</em>, so
+that <tt class="literal">a[i]</tt> refers to the <em class="emphasis">i</em>th element of array <tt class="literal">a</tt>.
+The Korn shell provides two kinds of arrays: indexed arrays, and associative arrays.
+</p>
+
+<a name="korn2-CHP-6-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">6.4.1. Indexed Arrays</h3>
+
+<p>
+<a name="korn2-IDXTERM-1320" />
+<a name="korn2-IDXTERM-1321" />
+
+The Korn shell provides an indexed array facility that, while useful, is
+much more limited
+than analogous features in conventional programming
+languages. In particular, indexed arrays can be only one-dimensional
+(i.e., no arrays of arrays), and they are limited to 4096
+elements.<a href="#FOOTNOTE-86">[86]</a>
+Indices start at 0.  This implies that the maximum index value is 4095.
+Furthermore, they may be any arithmetic expression: <em class="emphasis">ksh</em> automatically
+evaluates the expression to yield the actual index.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-86" /><p> [86]
+4096 is a minimum value in <em class="emphasis">ksh93</em>.
+Recent releases allow up to 64K elements.
+</p>
+</blockquote>
+
+<p>
+There are three ways to assign values to elements of an array.
+The first is the most intuitive: you can use the standard
+shell variable assignment syntax with the array index in brackets
+(<tt class="literal">[]</tt>).
+For example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+nicknames[2]=bob
+nicknames[3]=ed
+</pre></blockquote>
+</p>
+
+<p>
+These assignments put the values <tt class="literal">bob</tt> and <tt class="literal">ed</tt> into the elements of the array
+<tt class="literal">nicknames</tt>
+with indices 2 and 3, respectively. As with regular shell variables,
+values assigned to array elements are treated as character strings
+unless the assignment is preceded by <em class="emphasis">let</em>,
+or the array was declared to be numeric with one of the <em class="emphasis">typeset</em>
+options <em class="emphasis">-i</em>, <em class="emphasis">-ui</em>,
+<em class="emphasis">-E</em>, or <em class="emphasis">-F</em>.
+(Strictly speaking, the value assigned with <em class="emphasis">let</em> is
+still a string; it's just that with <em class="emphasis">let</em>,
+the shell evaluates the
+arithmetic expression being assigned to produce that string.)
+</p>
+
+<p>
+The second way to assign values to an array is with a variant of
+the <em class="emphasis">set</em> statement, which we saw in <a href="ch03_01.htm">Chapter 3</a>. The
+statement:
+</p>
+
+<p>
+<blockquote><pre class="code">
+set -A <em class="replaceable"><tt>aname val1 val2 val3</tt></em> ...
+</pre></blockquote>
+</p>
+
+<p>
+creates the array <em class="emphasis">aname</em> (if it doesn't already exist) and
+assigns
+<em class="emphasis">val1</em> to <tt class="literal">aname[0]</tt>,
+<em class="emphasis">val2</em> to <tt class="literal">aname[1]</tt>, etc.
+As you would guess, this is more convenient for loading up an array
+with an initial set of values.
+<a name="IXT-6-287818" />
+<a name="IXT-6-287819" />
+</p>
+
+<p>
+The third (recommended) way is to use the compound assignment form:
+</p>
+
+<blockquote><pre class="code">
+<em class="replaceable"><tt>aname</em>=(<em class="replaceable">val1 val2 val3</tt></em>)
+</pre></blockquote>
+
+<p>
+Starting with <em class="emphasis">ksh93j</em>, you may use the <tt class="literal">+=</tt>
+operator to add values to an array:
+</p>
+
+<blockquote><pre class="code">
+<em class="replaceable"><tt>aname</em>+=(<em class="replaceable">val4 val5 val6</tt></em>)
+</pre></blockquote>
+
+<p>
+<a name="IXT-6-287820" />
+To extract a value from an array, use the syntax
+<tt class="literal">${</tt><em class="replaceable"><tt>aname</em><tt class="literal">[</tt><em class="replaceable">i</tt></em><tt class="literal">]}</tt>.
+For example, <tt class="literal">${nicknames[2]}</tt> has the value "bob".
+The index <em class="emphasis">i</em> can be an arithmetic expression -- see above.
+<a name="IXT-6-287821" />
+<a name="IXT-6-287822" />
+<a name="IXT-6-287823" />
+<a name="IXT-6-287824" />
+
+If you use <tt class="literal">*</tt> or <tt class="literal">@</tt> in place
+of the index, the value will be all elements, separated by spaces.
+Omitting the index (<tt class="literal">$nicknames</tt>) is the same as specifying index 0
+(<tt class="literal">${nicknames[0]}</tt>).
+</p>
+
+<p>
+Now we come to the somewhat unusual aspect of Korn shell arrays.
+Assume that the only values assigned to <tt class="literal">nicknames</tt> are the two we saw
+above. If you type <tt class="literal">print "${nicknames[*]}"</tt>, you will see the output:
+</p>
+
+<p>
+<blockquote><pre class="code">
+bob ed
+</pre></blockquote>
+</p>
+
+<p>
+In other words, <tt class="literal">nicknames[0]</tt> and <tt class="literal">nicknames[1]</tt> don't exist.
+Furthermore, if you were to type:
+</p>
+
+<p>
+<blockquote><pre class="code">
+nicknames[9]=pete
+nicknames[31]=ralph
+</pre></blockquote>
+</p>
+
+<p>
+and then type <tt class="literal">print "${nicknames[*]}"</tt>,
+the output would look like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+bob ed pete ralph
+</pre></blockquote>
+</p>
+
+<p>
+This is why we said "the elements of <tt class="literal">nicknames</tt> with indices 2 and 3" earlier,
+instead of "the 2nd and 3rd elements of <tt class="literal">nicknames</tt>".  Any array elements with
+unassigned values just don't exist; if you try to access their values,
+you get null strings.
+</p>
+
+<p>
+<a name="IXT-6-287825" />
+<a name="IXT-6-287826" />
+<a name="IXT-6-287827" />
+
+You can preserve whatever whitespace
+you put in your array elements by using
+<tt class="literal">"${</tt><em class="replaceable"><tt>aname</tt></em><tt class="literal">[@]}"</tt>
+(with the double quotes) instead of
+<tt class="literal">${</tt><em class="replaceable"><tt>aname</tt></em><tt class="literal">[*]}</tt>, just as you can with
+<tt class="literal">"$@"</tt> instead of
+<tt class="literal">$*</tt> or <tt class="literal">"$*"</tt>.
+</p>
+
+<p>
+<a name="IXT-6-287828" />
+<a name="IXT-6-287829" />
+<a name="IXT-6-287830" />
+
+The shell provides an operator that tells you how many elements an
+array has defined:
+<tt class="literal">${#</tt><em class="replaceable"><tt>aname</tt></em><tt class="literal">[*]}</tt>.
+Thus <tt class="literal">${#nicknames[*]}</tt>
+has the value 4.  Note that you need the
+<tt class="literal">[*]</tt> because the name
+of the array alone is interpreted as the 0th element. This means, for
+example, that <tt class="literal">${#nicknames}</tt> equals the length of <tt class="literal">nicknames[0]</tt> (see
+<a href="ch04_01.htm">Chapter 4</a>).
+Since <tt class="literal">nicknames[0]</tt> doesn't exist, the value of
+<tt class="literal">${#nicknames}</tt> is 0, the length of the null string.
+</p>
+
+<p>
+If you think of an array as a mapping from integers to values
+(i.e., put in a number, get out a value), you can see why
+arrays are "number-dominated" data structures.
+Because shell programming tasks are much more often oriented
+towards character strings and text than towards numbers,
+the shell's indexed array facility isn't as broadly useful
+as it might first appear.
+</p>
+
+<p>
+<a name="IXT-6-287831" />
+<a name="IXT-6-287832" />
+<a name="IXT-6-287833" />
+
+Nevertheless, we can find useful things to do with indexed arrays.
+Here is a cleaner solution to <a href="ch05_03.htm#korn2-CHP-5-SIDEBAR-5">Task 5-4</a>, in which a user can select his or her terminal type (<tt class="literal">TERM</tt>
+environment variable) at login time.
+
+Recall that the "user-friendly"
+version of this code used <tt class="literal">select</tt> and a <tt class="literal">case</tt> statement:
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+print 'Select your terminal type:'
+PS3='terminal? '
+select term in \
+    'Givalt GL35a' \
+    'Tsoris T-2000' \
+    'Shande 531' \
+    'Vey VT99'
+do
+    case $REPLY in
+        1 ) TERM=gl35a ;;
+        2 ) TERM=t2000 ;;
+        3 ) TERM=s531 ;;
+        4 ) TERM=vt99 ;;
+        * ) print "invalid." ;;
+    esac
+    if [[ -n $term ]]; then
+        print "TERM is $TERM"
+        export TERM
+        break
+    fi
+done
+</pre></blockquote>
+</p>
+
+<p>
+
+<a name="IXT-6-287834" />
+
+We can eliminate the entire <tt class="literal">case</tt> construct
+by taking advantage of the fact that the <tt class="literal">select</tt> construct stores
+the user's numeric choice in the variable <tt class="literal">REPLY</tt>.
+We just need a line of code that stores all
+of the possibilities for <tt class="literal">TERM</tt> in an array, in an order that
+corresponds to the items in the <tt class="literal">select</tt> menu. Then we can use
+<tt class="literal">$REPLY</tt><?troff .ne 10?> to index the array. The resulting code is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+set -A termnames gl35a t2000 s531 vt99
+print 'Select your terminal type:'
+PS3='terminal? '
+select term in \
+    'Givalt GL35a' \
+    'Tsoris T-2000' \
+    'Shande 531' \
+    'Vey VT99'
+do
+    if [[ -n $term ]]; then
+        TERM=${termnames[REPLY-1]}
+        print "TERM is $TERM"
+        export TERM
+        break
+    fi
+done
+</pre></blockquote>
+</p>
+
+<p>
+This code sets up the array <tt class="literal">termnames</tt>
+so that <tt class="literal">${termnames[0]}</tt> is ``gl35a'', <tt class="literal">${termnames[1]}</tt> is
+"t2000", etc. The line <tt class="literal">TERM=${termnames[REPLY-1]}</tt> essentially
+replaces the entire <tt class="literal">case</tt> construct by using <tt class="literal">REPLY</tt> to
+index the array.
+</p>
+
+<p>
+Notice that the shell knows to interpret the text in
+an array index as an arithmetic expression, as if it were enclosed in
+<tt class="literal">((</tt> and <tt class="literal">))</tt>, which in turn means
+that the variable need not be
+preceded by a dollar sign (<tt class="literal">$</tt>).
+We have to subtract 1 from the value of <tt class="literal">REPLY</tt> because
+array indices start at 0, while <tt class="literal">select</tt> menu item numbers start
+at 1.
+</p>
+
+<p>
+Think about how you might use arrays to maintain the directory stack for
+<em class="emphasis">pushd</em> and <em class="emphasis">popd</em>.  The arithmetic <tt class="literal">for</tt>
+loop might come in handy too.
+<a name="IXTR3-282" />
+<a name="IXTR3-283" />
+<a name="IXTR3-284" />
+<a name="IXTR3-285" />
+<a name="IXTR3-286" />
+<a name="IXTR3-287" />
+
+</p>
+</div>
+
+<a name="korn2-CHP-6-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">6.4.2. Associative Arrays</h3>
+
+<p>
+<a name="IXT-6-287835" />
+<a name="IXT-6-287836" />
+
+As mentioned in the previous section, shell programming tasks are usually
+string- or text-oriented, instead of number-oriented.
+<em class="emphasis">ksh93</em> introduced <em class="emphasis">associative arrays</em>
+into the shell to improve the shell's programmability.
+Associative arrays are a mainstay of programming in languages
+such as <em class="emphasis">awk</em>, <em class="emphasis">perl</em>,
+and <em class="emphasis">python</em>.
+</p>
+
+<p>
+An associative array is an array indexed by string values.
+It provides an <em class="emphasis">association</em> between the string index
+and the value of the array at that index, making programming certain
+kinds of tasks work much more naturally.  You tell the shell that an
+array is associative by using <em class="emphasis">typeset -A</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+typeset -A person
+person[firstname]="frank"
+person[lastname]="jones"
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+We can rewrite our terminal example from the previous section using associative arrays:
+</p>
+
+<p>
+<blockquote><pre class="code">
+typeset -A termnames                  <i class="lineannotation">termnames is associative</i>
+termnames=([Givalt GL35a]=gl35a       <i class="lineannotation">Fill in the values</i>
+           [Tsoris T-2000]=t2000
+           [Shande 531]=s531
+           [Vey VT99]=vt99)
+print 'Select your terminal type:'
+PS3='terminal? '
+select term in "${!termnames[@]}"     <i class="lineannotation">Present menu of array indices</i>
+do
+    if [[ -n $term ]]; then
+        TERM=${termnames[$term]}      <i class="lineannotation">Use string to index array</i>
+        print "TERM is $TERM"
+        break
+    fi
+done
+</pre></blockquote>
+</p>
+
+<p>
+Note that the square brackets in the compound assignment act like double quotes;
+while it's OK to quote the string indices, it's not necessary.
+Also note the <tt class="literal">"${!termnames[@]}"</tt> construct.
+It's a bit of a mouthful, but it gives us all the array indices as
+separate quoted strings that preserve any embedded whitespace, just like
+<tt class="literal">"$@"</tt>. (See the next section.)
+</p>
+
+<p>
+Starting with <em class="emphasis">ksh93j</em>,
+as for regular arrays,
+you may use the <tt class="literal">+=</tt>
+operator to add values to an associative array:
+</p>
+
+<blockquote><pre class="code">
+termnames+= ([Boosha B-27]=boo27 [Cherpah C-42]=chc42)
+</pre></blockquote>
+
+<p>
+As a side note, if you apply <tt class="literal">typeset -A</tt> to a previously
+existing nonarray variable,
+that variable's current value will be placed in index 0.
+The reason is that the shell treats
+<tt class="literal">$x</tt> as equivalent to <tt class="literal">${x[0]}</tt>,
+so that if you do:
+
+<blockquote><pre class="code">
+x=fred
+typeset -A x
+print $x
+</pre></blockquote></p>
+
+<p>you will still get <tt class="literal">fred</tt>.
+<a name="IXTR3-288" />
+</p>
+
+</div>
+
+<a name="korn2-CHP-6-SECT-4.3" /><div class="sect2">
+<h3 class="sect2">6.4.3. Array Name Operators</h3>
+
+<p>
+In <a href="ch04_01.htm">Chapter 4</a> we saw that the shell provides a large number
+of ways to access and manipulate the values of shell variables.
+In particular, we saw operators that work with shell variable <em class="emphasis">names</em>.
+Several additional operators apply to arrays.
+They are described in <a href="ch06_04.htm#korn2-CHP-6-TABLE-5">Table 6-5</a>.
+</p>
+
+<a name="korn2-CHP-6-TABLE-5" /><h4 class="objtitle">Table 6-5. Array name-related operators</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Operator</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+
+<tr>
+<td><tt class="literal">${!</tt><em class="replaceable"><tt>array</em><tt class="literal">[</tt><em class="replaceable">subscript</tt></em><tt class="literal">]}</tt></td>
+<td><p>
+Return the actual subscript used to index the array.
+Subscripts can come from arithmetic expressions or from the values of shell variables.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${!</tt><em class="replaceable"><tt>array</tt></em><tt class="literal">[*]}</tt></td>
+<td><p>
+List of all subscripts in the <em class="emphasis">array</em> associative array.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">${!</tt><em class="replaceable"><tt>array</tt></em><tt class="literal">[@]}</tt></td>
+<td><p>
+List of all subscripts in the <em class="emphasis">array</em> associative array, but expands
+to separate words when used inside double quotes.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+You can think of
+the <tt class="literal">${!</tt>...<tt class="literal">}</tt> construct to produce
+the actual array as being conceptually similar to its use with nameref
+variables.  There, it indicates the actual variable that a nameref refers to.
+With arrays, it yields the actual subscript used to access a particular
+element.  This is valuable because subscripts can be generated dynamically,
+e.g., as arithmetic expressions, or via the various string operations
+available in the shell.  Here is a simple example:
+</p>
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>set -A letters a b c d e f g h i j k l m n o p q r s t u v w x y z</b></tt>
+$ <tt class="userinput"><b>print ${letters[20+2+1]}</b></tt>
+x
+$ <tt class="userinput"><b>print ${!letters[20+2+1]}</b></tt>
+23
+</pre></blockquote>
+
+<p>
+To loop over all elements of an indexed array, you could easily
+use an arithmetic <tt class="literal">for</tt> loop that went from
+0 to, for example, <tt class="literal">${#letters[*]}</tt> (the
+number of elements in <tt class="literal">letters</tt>).
+Associative arrays are different: there are no lower or upper
+bounds on the indices of the array, since they're all strings.
+The latter two operators in
+<a href="ch06_04.htm#korn2-CHP-6-TABLE-5">Table 6-5</a>
+make it easy to loop through an associative array:
+</p>
+
+<blockquote><pre class="code">
+typeset -A bob                             <i class="lineannotation">Create associative array</i>
+...                                        <i class="lineannotation">Fill it in</i>
+for index in "${!bob[@]}"; do              <i class="lineannotation">For all bob's subscripts</i>
+    print "bob[$index] is ${bob[$index]}"  <i class="lineannotation">Print each element</i>
+    ...
+done
+</pre></blockquote>
+
+<p>
+Analogous to the difference between <tt class="literal">$*</tt>
+and <tt class="literal">"$@"</tt>, it is best to use the <tt class="literal">@</tt>
+version of the operator, inside double quotes, to preserve the original
+string values.
+(We used
+<tt class="literal">"${!</tt><em class="replaceable"><tt>var</tt></em><tt class="literal">[@]}"</tt>
+with <tt class="literal">select</tt> in the last example in
+the earlier section on associative arrays.)
+<a name="IXTR3-289" />
+
+</p>
+
+</div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch06_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.3. Arithmetic for</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">6.5. typeset</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,763 @@
+<html><head><title>trap (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.4. trap</h2>
+
+<p>
+<a name="korn2-IDXTERM-1694" />
+<a name="korn2-IDXTERM-1695" />
+
+We've been discussing how signals affect the casual user;
+now let's talk a bit about how shell programmers can use them.
+We won't go into too much depth about this, because it's really
+the domain of systems programmers.
+</p>
+
+<p>
+We mentioned earlier that programs in general can be set up to "trap"
+specific signals and process them in their own way.
+
+The <em class="emphasis">trap</em>
+built-in command lets you do this from within a shell script.
+<em class="emphasis">trap</em> is most important for "bullet-proofing" large shell programs
+so that they react appropriately to abnormal events -- just as programs
+in any language should guard against invalid input. It's also
+important for certain systems programming tasks, as we'll see in the
+next chapter.
+</p>
+
+<p>
+<a name="IXT-8-288081" />
+<a name="IXT-8-288082" />
+The syntax of <em class="emphasis">trap</em> is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+trap <em class="replaceable"><tt>cmd sig1 sig2 ...</tt></em>
+</pre></blockquote>
+</p>
+
+<p>
+That is, when any of <em class="emphasis">sig1</em>, <em class="emphasis">sig2</em>, etc., are received,
+run <em class="emphasis">cmd</em>, then resume execution.
+After <em class="emphasis">cmd</em> finishes, the script
+resumes execution just after the command that was interrupted.<a href="#FOOTNOTE-121">[121]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-121" /><p> [121]
+This is what <em class="emphasis">usually</em> happens. Sometimes the command
+currently running aborts (<em class="emphasis">sleep</em> acts like this, as we'll
+see soon); other times it finishes running. Further details are beyond
+the scope of this book.
+</p>
+</blockquote>
+
+<p>
+Of course, <em class="emphasis">cmd</em> can be a script or
+function. The <em class="emphasis">sig</em>s can be specified by name or by number. You can also invoke <em class="emphasis">trap</em> without arguments, in which case
+the shell prints a list of any traps that have been set, using
+symbolic names for the signals.
+If you use <tt class="literal">trap -p</tt>, the shell prints the trap settings in
+a way that can be saved and reread later by a different invocation of the shell.
+</p>
+<a name="IXT-8-288083" />
+
+<a name="IXT-8-288084" />
+
+<p>
+The shell scans the text of <em class="emphasis">cmd</em> twice.
+The first time is while it is preparing to run the <em class="emphasis">trap</em> command;
+all the substitutions as outlined in <a href="ch07_01.htm">Chapter 7</a> are performed
+before executing the <em class="emphasis">trap</em> command.
+The second time is when the shell actually executes the trap.
+For this reason, it is best to use single quotes around the <em class="emphasis">cmd</em>
+in the text of the shell program.
+When the shell executes the trap's command, <tt class="literal">$?</tt> is always
+the exit status of the last command
+run before the trap started.  This is important for diagnostics.
+</p>
+
+<p>
+Here's a simple example that shows how <em class="emphasis">trap</em> works.
+Suppose we have a shell script called <em class="emphasis">loop</em> with this code:
+<a name="IXT-8-288085" />
+</p>
+
+<p>
+<blockquote><pre class="code">
+while true; do
+    sleep 60
+done
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-8-288086" />
+<a name="IXT-8-288087" />
+
+This just pauses for 60 seconds (the <em class="emphasis">sleep</em>(1) command)
+and repeats indefinitely. <em class="emphasis">true</em> is a "do-nothing" command whose exit
+status is always 0.  For efficiency, it is built-in to the shell.
+(The <em class="emphasis">false</em> command is a similar "do-nothing"
+command whose exit status is always 1. It is also built-in to the shell.)
+As it happens, <em class="emphasis">sleep</em> is also built-in to the shell.
+Try typing in this script. Invoke it,
+let it run for a little while, then type CTRL-C
+(assuming that is your interrupt key). It should stop,
+and you should get your shell prompt back.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+
+Now insert the following line at the beginning of the script:
+</p>
+
+<p>
+<blockquote><pre class="code">
+trap 'print "You hit control-C!"' INT
+</pre></blockquote>
+</p>
+
+<p>
+Invoke the script again. Now hit CTRL-C. The odds are overwhelming
+that you are interrupting the <em class="emphasis">sleep</em> command (as opposed to
+<em class="emphasis">true</em>). You should see the message
+"You hit control-C!", and the script will not stop running;
+instead, the <em class="emphasis">sleep</em> command will abort, and
+it will loop around and start another <em class="emphasis">sleep</em>.
+Hit CTRL-\ to get it to stop.
+<a name="IXT-8-288088" />
+Type <tt class="literal">rm core</tt> to get rid of the resulting core dump file.
+</p>
+
+<p>
+
+<a name="IXT-8-288089" />
+<a name="IXT-8-288090" />
+
+Next, run the script in the background by typing <tt class="literal">loop &amp;</tt>.
+Type <tt class="literal">kill %loop</tt> (i.e., send it the TERM signal);
+the script will terminate. Add TERM
+to the <em class="emphasis">trap</em> command, so that it looks like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+trap 'print "You hit control-C!"' INT TERM
+</pre></blockquote>
+</p>
+
+<p>
+Now repeat the process: run it in the background and
+type <tt class="literal">kill %loop</tt>.
+As before, you will see the message and the process will keep
+running. Type <tt class="literal">kill -KILL %loop</tt> to stop it.
+</p>
+
+<p>
+Notice that the message isn't really appropriate when you use
+<em class="emphasis">kill</em>. We'll change the script so it prints a better message in
+the <em class="emphasis">kill</em> case:
+</p>
+
+<p>
+<blockquote><pre class="code">
+trap 'print "You hit control-C!"' INT
+trap 'print "You tried to kill me!"' TERM
+
+while true; do
+    sleep 60
+done
+</pre></blockquote>
+</p>
+
+<p>
+Now try it both ways: in the foreground with CTRL-C and in the background
+with <em class="emphasis">kill</em>. You'll see different messages.
+<a name="IXTR3-357" />
+
+</p>
+
+<a name="korn2-CHP-8-SECT-4.1" /><div class="sect2">
+<h3 class="sect2">8.4.1. Traps and Functions</h3>
+
+<p>
+<a name="korn2-IDXTERM-1707" />
+The relationship between traps and shell functions is straightforward,
+but it has certain nuances that are worth discussing. The most
+important thing to understand is that Korn shell functions
+(those created using the <tt class="literal">function</tt> keyword;
+see <a href="ch04_01.htm">Chapter 4</a>) have their own
+local traps; these aren't known outside of the function.
+Old-style POSIX functions (those created using the
+<em class="replaceable"><tt>name</tt></em><tt class="literal">()</tt> syntax)
+<em class="emphasis">share</em> traps with the parent script.
+</p>
+
+<p>
+Let's start with <tt class="literal">function</tt>-style functions,
+where traps are local.
+In particular,
+the surrounding script doesn't know about them. Consider this code:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function settrap {
+    trap 'print "You hit control-C!"' INT
+}
+
+settrap
+while true; do
+    sleep 60
+done
+</pre></blockquote>
+</p>
+
+<p>
+If you invoke this script and hit your interrupt key, it
+just exits.
+<a name="IXT-8-288091" />
+
+The trap on INT in the function is known only inside
+that function. On the other hand:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function loop {
+    trap 'print "How dare you!"' INT
+    while true; do
+        sleep 60
+    done
+}
+
+trap 'print "You hit control-C!"' INT
+loop
+</pre></blockquote>
+</p>
+
+<p>
+When you run this script and hit your interrupt key, it
+prints "How dare you!"  But how about this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function loop {
+    while true; do
+        sleep 60
+    done
+}
+
+trap 'print "You hit control-C!"' INT
+loop
+print 'exiting ...'
+</pre></blockquote>
+</p>
+
+<p>
+This time the looping code is within a function, and the trap
+is set in the surrounding script. If you hit your interrupt key,
+it prints the message and then prints "exiting..."
+It does not repeat the loop as above.
+</p>
+
+<p>
+Why? Remember that when the signal comes in,
+the shell aborts the current command, which in this case is a call
+to a function. The entire function aborts, and execution
+resumes at the next statement after the function call.
+</p>
+
+<p>
+The advantage of traps that are local to functions is that they
+allow you to control a function's behavior separately from the
+surrounding code.
+</p>
+
+<p>
+
+Yet you may want to define global traps inside functions.
+There is a rather kludgy way to do this; it depends on a feature
+that we introduce in <a href="ch09_01.htm">Chapter 9</a>, which we call a "fake signal."
+Here is a way to set <em class="emphasis">trapcode</em>
+as a global trap for signal <em class="emphasis">SIG</em> inside a function:
+</p>
+
+<p>
+<blockquote><pre class="code">
+trap "trap <em class="replaceable"><tt>trapcode SIG</tt></em>" EXIT
+</pre></blockquote>
+</p>
+
+<p>
+This sets up the command <tt class="literal">trap</tt> <em class="replaceable"><tt>trapcode SIG</tt></em> to run
+right after the function exits, at which time the surrounding
+shell script is in scope (i.e., is "in charge"). When that command
+runs, <em class="emphasis">trapcode</em> is set up to handle the <em class="emphasis">SIG</em> signal.
+</p>
+
+<p>
+For example, you may want to reset the trap on the signal you just
+received, like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function trap_handler {
+    trap "trap second_handler INT" EXIT
+    print 'Interrupt: one more to abort.'
+}
+
+function second_handler {
+    print 'Aborted.'
+    exit
+}
+
+trap trap_handler INT
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-8-288092" />
+This code acts like the Unix <em class="emphasis">mail</em>
+utility: when you are typing in a message, you must press your
+interrupt key twice to abort the process.
+</p>
+
+<p>
+There is a less kludgy way to this, taking advantage of the fact
+that POSIX-style functions <em class="emphasis">share</em> traps with
+the parent script:
+</p>
+
+<blockquote><pre class="code">
+# POSIX style function, trap is global
+trap_handler () {
+    trap second_handler INT
+    print 'Interrupt: one more to abort.'
+}
+
+function second_handler {
+    print 'Aborted.'
+    exit
+}
+
+trap trap_handler INT
+
+while true ; do
+    sleep 60
+done
+</pre></blockquote>
+
+<p>
+If you type this in and run it, you get the same results as in the
+previous example, without the extra trickery of using the fake EXIT signal.
+<a name="IXTR3-358" />
+<a name="IXTR3-359" />
+</p>
+
+
+<p>
+Speaking of <em class="emphasis">mail</em>, in
+<a href="ch08_04.htm#korn2-CHP-8-SIDEBAR-2">Task 8-2</a>
+we'll show a more practical example of traps.
+</p>
+
+<a name="korn2-CHP-8-SIDEBAR-2" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 8-2</h4>
+
+<p>
+<a name="IXT-8-288093" />
+
+As part of an electronic mail system, write the shell code that
+lets a user compose a message.
+</p>
+
+</td></tr></table><p></blockquote>
+
+<?troff .Nd 10?>
+
+<p>
+<a name="IXT-8-288094" />
+
+The basic idea is to use <em class="emphasis">cat</em> to create the message in a temporary
+file and then hand the file's name off to a program
+that actually sends the message to its destination.
+The code to create the file is very simple:
+</p>
+
+<p>
+<blockquote><pre class="code">
+msgfile=/tmp/msg$$
+cat &gt; $msgfile
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-8-288095" />
+Since <em class="emphasis">cat</em> without an argument reads from the standard
+input, this just waits for the user to type a message and
+end it with the end-of-file character CTRL-D.
+</p>
+</div>
+
+<a name="korn2-CHP-8-SECT-4.2" /><div class="sect2">
+<h3 class="sect2">8.4.2. Process ID Variables and Temporary Files</h3>
+
+<p>
+<a name="IXT-8-288096" />
+<a name="IXT-8-288097" />
+<a name="IXT-8-288098" />
+
+
+The only thing new about this is <tt class="literal">$$</tt> in the filename expression.
+This is a special shell variable whose value is the process ID
+of the current shell.
+</p>
+
+<p>
+To see how <tt class="literal">$$</tt> works,
+type <tt class="literal">ps</tt> and note the process ID of your shell process (<em class="emphasis">ksh</em>).
+Then type <tt class="literal">print "$$"</tt>;
+the shell responds with that
+same number. Now type <tt class="literal">ksh</tt> to
+start a shell subprocess, and when you get a prompt, repeat the process.
+You should see a different number, probably slightly higher than
+the last one.
+</p>
+
+<p>
+<a name="IXT-8-288099" />
+<a name="IXT-8-288100" />
+
+You can examine the parent-child relationship in more detail by
+using the <tt class="literal">PPID</tt> (parent process ID) variable.
+<em class="emphasis">ksh</em> sets this to the process ID of the parent process.
+Each time you start a new instance of <em class="emphasis">ksh</em>, if you
+type <tt class="literal">print $PPID</tt> you should see a number that is the
+same as the <tt class="literal">$$</tt> of the earlier shell.
+</p>
+
+<p>
+
+<a name="IXT-8-288101" />
+<a name="IXT-8-288102" />
+<a name="IXT-8-288103" />
+
+A related built-in shell variable is <tt class="literal">!</tt> (i.e., its value is
+<tt class="literal">$!</tt>), which contains the process ID of the most recently
+invoked background job. To see how this works, invoke any job
+in the background and note the process ID printed by the shell
+next to <tt class="literal">[1]</tt>. Then type
+<tt class="literal">print "$!"</tt>; you should see the same number.
+</p>
+
+<p>
+<a name="IXT-8-288104" />
+<a name="IXT-8-288105" />
+
+<a name="korn2-IDXTERM-1725" />
+To return to our mail example:
+since all processes on the system must
+have unique process IDs, <tt class="literal">$$</tt> is excellent for constructing names
+of temporary files. We saw an example of this in <a href="ch07_01.htm">Chapter 7</a>,
+when discussing command-line evaluation steps, and there are also
+examples in <a href="ch09_01.htm">Chapter 9</a>.<a href="#FOOTNOTE-122">[122]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-122" /><p> [122]
+In practice, temporary filenames based just on <tt class="literal">$$</tt>
+can lead to insecure systems.  If you have the <em class="emphasis">mktemp</em>(1)
+program on your system, you should use it in your applications to generate
+unique names for your temporary files.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-8-288106" />
+The directory <em class="emphasis">/tmp</em> is conventionally used for temporary files.
+Files in this directory are usually erased whenever the
+computer is rebooted.
+</p>
+
+<p>
+<a name="IXT-8-288107" />
+<a name="IXT-8-288108" />
+<a name="IXT-8-288109" />
+
+Nevertheless, a program should clean up such files before it exits,
+to avoid taking up unnecessary disk space. We could do this in
+our code very easily by adding the line
+<tt class="literal">rm $msgfile</tt> after the code that actually sends the message.
+But what if the program receives a signal during execution?
+For example, what if a user changes his or her mind about sending
+the message and hits CTRL-C to stop the process? We would need to
+clean up before exiting. We'll emulate the actual Unix <em class="emphasis">mail</em>
+system by saving the message being written in a file called
+<em class="emphasis">dead.letter</em> in the current directory.
+
+We can do this by using <em class="emphasis">trap</em> with
+a command string that includes an <em class="emphasis">exit</em> command:
+</p>
+
+<p>
+<blockquote><pre class="code">
+trap 'mv $msgfile dead.letter; exit' INT TERM
+msgfile=/tmp/msg$$
+cat &gt; $msgfile
+# send the contents of $msgfile to the specified mail address ...
+rm $msgfile
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-8-288110" />
+<a name="IXT-8-288111" />
+
+When the script receives an INT or TERM signal, it saves
+the temp file and then exits. Note that the command string
+isn't evaluated until it needs to be run, so <tt class="literal">$msgfile</tt>
+will contain the correct value; that's why we surround the string
+in single quotes.
+</p>
+
+<p>
+<a name="IXT-8-288112" />
+But what if the script receives a signal before <tt class="literal">msgfile</tt> is
+created -- unlikely though that may be? Then <em class="emphasis">mv</em> will try to
+rename a file that doesn't exist. To fix this, we need to
+test for the existence of the
+file <tt class="literal">$msgfile</tt> before trying to save it. The code for this is
+a bit unwieldy to put in a single command string, so we'll use a
+function instead:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function cleanup {
+    if [[ -e $msgfile ]]; then
+        mv $msgfile dead.letter
+    fi
+    exit
+}
+
+trap cleanup INT TERM
+
+msgfile=/tmp/msg$$
+cat &gt; $msgfile
+# send the contents of $msgfile to the specified mail address ...
+rm $msgfile
+</pre></blockquote>
+<a name="IXTR3-360" />
+</p>
+</div>
+
+<a name="korn2-CHP-8-SECT-4.3" /><div class="sect2">
+<h3 class="sect2">8.4.3. Ignoring Signals</h3>
+
+<p>
+<a name="korn2-IDXTERM-1734" />
+<a name="korn2-IDXTERM-1735" />
+<a name="korn2-IDXTERM-1736" />
+Sometimes a signal comes in that you don't want to do anything about.
+If you give the null string (<tt class="literal">""</tt>
+or <tt class="literal">''</tt>) as the command argument to
+<em class="emphasis">trap</em>, the shell effectively ignores that signal.
+
+<a name="IXT-8-288113" />
+<a name="IXT-8-288114" />
+
+The classic
+example of a signal you may want to ignore is HUP (hangup),
+the signal all of your background processes receive when
+you log out.
+(If your line actually drops, Unix sends the HUP signal to the
+shell.  The shell forwards the signal to all your background
+processes, or sends it on its own initiative if you logout normally.)
+</p>
+
+<p>
+HUP has the usual default behavior: it kills the process that
+receives it.
+But there are bound to be times when you don't want a background job
+to terminate when you log out. For example, you may start a long
+compile or text formatting job; you want to log out and come back later
+when you expect the job to be finished. Under normal circumstances,
+your background job terminates when you log out. But if you
+run it in a shell environment where the HUP signal is ignored, the
+job finishes.
+</p>
+
+<p>
+To do this, you could write a simple function that looks like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function ignorehup {
+    trap "" HUP
+    eval "$@"
+}
+</pre></blockquote>
+</p>
+
+<p>
+We write this as a function instead of a script for reasons
+that will become clearer when we look in detail at subshells
+at the end of this chapter.
+<a name="IXTR3-361" />
+<a name="IXTR3-362" />
+<a name="IXTR3-363" />
+
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1742" />
+Actually, there is a Unix command called <em class="emphasis">nohup</em>
+that does precisely this.
+The <em class="emphasis">start</em> function
+from the last chapter could include <em class="emphasis">nohup</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function start {
+    eval nohup "$@" &gt; logfile 2&gt;&amp;1 &amp;
+}
+</pre></blockquote>
+</p>
+
+<p>
+This prevents HUP from terminating your command and saves its
+standard and error output in a file. Actually, the following is just as
+good:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function start {
+    nohup "$@" &gt; logfile 2&gt;&amp;1 &amp;
+}
+</pre></blockquote>
+</p>
+
+<p>
+If you understand why <em class="emphasis">eval</em> is essentially redundant when you use
+<em class="emphasis">nohup</em> in this case,
+then you have a firm grasp on the material in <a href="ch07_01.htm">Chapter 7</a>.
+<a name="IXTR3-364" />
+<a name="IXTR3-365" />
+</p>
+</div>
+
+<a name="korn2-CHP-8-SECT-4.4" /><div class="sect2">
+<h3 class="sect2">8.4.4. Resetting Traps</h3>
+
+<p>
+<a name="korn2-IDXTERM-1745" />
+<a name="korn2-IDXTERM-1746" />
+<a name="IXT-8-288115" />
+<a name="IXT-8-288116" />
+
+Another "special case" of the <em class="emphasis">trap</em> command occurs when you give
+a dash (<tt class="literal">-</tt>) as the command argument. This resets the action taken when
+the signal is received to the default, which usually is
+termination of the process.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1749" />
+As an example of this, let's return to <a href="ch08_04.htm#korn2-CHP-8-SIDEBAR-2">Task 8-2</a>, our mail program.
+After the
+user has finished sending the message, the temporary file is erased.
+At that point, since there is no longer any need to "clean up," we
+can reset the signal trap to its default state. The code
+for this, apart from function definitions, is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+trap cleanup INT TERM
+
+msgfile=/tmp/msg$$
+cat &gt; $msgfile
+# send the contents of $msgfile to the specified mail address ...
+rm $msgfile
+
+trap - INT TERM
+</pre></blockquote>
+</p>
+
+<p>
+The last line of this code resets the handlers for the INT and TERM
+signals.
+<a name="IXTR3-366" />
+<a name="IXTR3-367" />
+
+</p>
+
+<p>
+At this point you may be thinking that one could get seriously
+carried away with signal handling in a shell script.
+It is true that industrial strength programs devote considerable
+amounts of code to dealing with signals. But these programs are almost
+always large enough so that the signal-handling code is a tiny fraction
+of the whole thing. For example, you can bet that the real Unix
+<em class="emphasis">mail</em> system is pretty darn bullet-proof.
+</p>
+
+<p>
+However, you will probably never write a shell script that
+is complex enough, and that needs to be robust enough, to merit lots
+of signal handling. You may write a prototype for a program
+as large as <em class="emphasis">mail</em> in shell code, but prototypes by definition
+do not need to be bullet-proofed.
+<a name="IXTR3-368" />
+
+</p>
+
+<p>
+Therefore, you shouldn't worry about
+putting signal-handling code in every 20-line shell script you write.
+Our advice is to determine if there are any situations in which a signal
+could cause your program to do something seriously bad and add
+code to deal with those contingencies. What is "seriously bad"?
+Well, with respect to the above examples, we'd say that the case
+where HUP causes your job to terminate on logout <em class="emphasis">is</em> seriously bad,
+while the temporary file situation in our mail program is not.
+</p>
+
+<p>
+The Korn shell has several new options to <em class="emphasis">trap</em> (with respect
+to the same command in most Bourne shells) that make it useful
+as an aid for debugging shell scripts. We cover them in
+<a href="ch09_01.htm">Chapter 9</a>.
+<a name="IXTR3-369" />
+</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.3. Signals</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.5. Coroutines</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

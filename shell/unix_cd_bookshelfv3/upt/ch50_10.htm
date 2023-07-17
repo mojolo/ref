@@ -1,0 +1,155 @@
+<html><head><title>A Directory That People Can Access but Can't List (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch50_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch50_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">50.10. A Directory That People Can Access but Can't List</h2>
+
+<p><a name="IXT-50-1090" /><a name="IXT-50-1091" /> <a name="IXT-50-1092" />Do you need to let someone use a file
+of yours, but you don't want everyone on the system
+to be able to snoop around in the directory? You can give execute
+permission, but not read permission, to a
+<a name="IXT-50-1093" />directory. Then, if a
+file in the directory is accessible, a person can use the file by
+typing the exact filename. <i class="command">ls</i> will say the
+directory is "unreadable."
+Wildcards won't work.
+</p>
+
+<p>Here's an example. Let's say that
+your home directory has <tt class="literal">rwxr-xr-x</tt> permissions
+(everyone can access and list files in it). Your username is
+<em class="emphasis">hanna</em>. You have a subdirectory named
+<em class="emphasis">project</em>; you set its permissions so that
+everyone else on the system has execute-only permission.
+</p>
+<p><tt class="literal">-d</tt> <a href="ch08_05.htm#upt3-CHP-8-SECT-5">Section 8.5</a></p>
+
+<blockquote><pre class="code">hanna% <tt class="userinput"><b>pwd</b></tt>
+/home/hanna
+hanna% <tt class="userinput"><b>chmod 711 project</b></tt>
+hanna% <tt class="userinput"><b>ls -ld project project/myplan</b></tt>
+drwx--x--x  2    hanna     512  Jul 26 12:14 project
+-rw-r--r--  1    hanna    9284  Jul 27 17:34 project/myplan</pre></blockquote>
+
+<p>Now you tell the other user, <em class="emphasis">toria</em>, the exact
+name of your file, <em class="emphasis">myplan</em>. Like everyone else on
+the system, she can access your <em class="emphasis">project</em>
+directory. She can't list it because she
+doesn't have read permission. Because she knows the
+exact filename, she can read the file because the file is readable
+(anyone else could read the file, too, if they knew its exact name):
+</p>
+
+<blockquote><pre class="code">toria% <tt class="userinput"><b>cd /home/hanna/project</b></tt>
+toria% <tt class="userinput"><b>pwd</b></tt>
+pwd: can't read .
+toria% <tt class="userinput"><b>ls</b></tt>
+ls: . unreadable
+toria% <tt class="userinput"><b>more myplan</b></tt>
+   <i class="lineannotation">...File appears...</i>
+toria% <tt class="userinput"><b>ln myplan /home/toria/project.hanna/plan</b></tt></pre></blockquote>
+
+<p>(We're using the
+"real" <i class="command">pwd</i>
+command that reads the filesystem to find your current directory.
+That's why it complains <tt class="literal">can't</tt>
+<tt class="literal">read</tt> <tt class="literal">.</tt>. If
+you're using the shell's shortcut
+<i class="command">pwd</i>, you probably won't get the
+error shown above. <a href="ch31_04.htm#upt3-CHP-31-SECT-4">Section 31.4</a> has details.)
+</p>
+
+<p>In the example above, <em class="emphasis">toria</em> made a <b class="emphasis-bold">hard link</b> (<a href="ch10_05.htm#upt3-CHP-10-SECT-5">Section 10.5</a>) to
+the <em class="emphasis">myplan</em> file, with a different name, in her
+own <em class="emphasis">project.hanna</em> directory. (She could have
+copied, printed, or used any other command that reads the file.) Now,
+if you (<em class="emphasis">hanna</em>) want to, you can deny
+everyone's permission to your
+<em class="emphasis">project</em> directory. <em class="emphasis">toria</em>
+still has her link to the file, though. She can read it any time she
+wants to, follow the changes you make to it, and so on:
+</p>
+
+<blockquote><pre class="code">toria% <tt class="userinput"><b>cd</b></tt>
+toria% <tt class="userinput"><b>ls -ld project.hanna project.hanna/plan</b></tt>
+drwx------  2    toria     512  Jul 27 16:43 project.hanna
+-rw-r--r--  2    hanna    9284  Jul 27 17:34 project.hanna/plan
+toria% <tt class="userinput"><b>more project.hanna/plan</b></tt>
+   <i class="lineannotation">...File appears...</i></pre></blockquote>
+
+<p><em class="emphasis">toria</em> has protected her
+<em class="emphasis">project.hanna</em> directory so that other users
+can't find her link to
+<em class="emphasis">hanna</em>'s file.
+</p>
+
+<a name="ch50-3-fm2xml" /><blockquote><b>NOTE:</b> 
+If <em class="emphasis">hanna</em> denies permission to her directory,
+<em class="emphasis">toria</em> can still read the file through her hard
+link. If <em class="emphasis">toria</em> had made a symbolic link, though,
+she wouldn't be able to access the file any more.
+That's because <b class="emphasis-bold">a hard link
+keeps the file's i-number</b> (<a href="ch10_02.htm#upt3-CHP-10-SECT-2">Section 10.2</a>) but a symbolic link doesn't.
+</p>
+</blockquote>
+
+<p><a name="IXT-50-1094" />You
+<a name="IXT-50-1095" />might
+also want to give other users permission to list and access the files
+in a directory, but not make the directory open to all users. One way
+to do this is to put a fully accessible directory with an unusual
+name inside an unreadable directory. Users who know the exact name of
+the fully accessible directory can <i class="command">cd</i> to it; other
+users can't find it without its name:
+</p>
+
+<blockquote><pre class="code">hanna% <tt class="userinput"><b>chmod 711 project</b></tt>
+hanna% <tt class="userinput"><b>chmod 777 project/pLaN</b></tt>
+hanna% <tt class="userinput"><b>ls -ld project project/pLaN</b></tt>
+drwx--x--x  3    hanna     512  Jul 27 17:36 project
+drwxrwxrwx  2    hanna     512  Jul 27 17:37 project/pLaN</pre></blockquote>
+
+<p>Users who type <tt class="literal">cd /home/hanna/project/pLaN</tt> can
+list the directory's contents with
+<i class="command">ls</i>. With the permissions you've
+set, other users can also create, delete, and rename files inside the
+<em class="emphasis">pLaN</em> directory -- though you could have used
+more restrictive permissions like <tt class="literal">drwxr-xr-x</tt>
+instead.
+</p>
+
+<p>This setup can still be a little confusing. For instance, as <a href="ch31_04.htm#upt3-CHP-31-SECT-4">Section 31.4</a> explains, the <i class="command">pwd</i>
+command won't work for users in the
+<em class="emphasis">pLaN</em> directory because <i class="command">pwd</i>
+can't read the <em class="emphasis">project</em>
+directory. Variables like <b class="emphasis-bold">$cwd and
+$PWD</b> (<a href="ch35_05.htm#upt3-CHP-35-SECT-5">Section 35.5</a>) will probably have the
+absolute pathname. If another user gets lost in a restricted
+directory like this, the best thing to do is <i class="command">cd</i> to
+the home directory and start again.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch50_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch50_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">50.9. A Loophole: Modifying Files Without Write Access</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">50.11. Juggling Permissions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,161 @@
+<html><head><title>Making Pathnames (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">1.16. Making Pathnames</h2>
+
+<p>Pathnames locate a file (or directory, or any other object) in the
+Unix filesystem. As you read this article, refer to <a href="ch01_16.htm#upt3-CHP-1-FIG-4">Figure 1-4</a>. It's a diagram of a (very)
+small part of a Unix filesystem.<a name="IXT-1-1328" /><a name="IXT-1-1329" />
+</p>
+
+<a name="upt3-CHP-1-FIG-4" /><div class="figure"><img src="figs/upt3_0104.gif" alt="Figure 1-4" width="436" /></div><h4 class="objtitle">Figure 1-4. Part of a Unix filesystem tree</h4>
+
+<p>Whenever you are using Unix, you have a <em class="emphasis">current
+directory</em>. By default, Unix looks for any mentioned files
+or directories within the current directory. That is, if you
+don't give an <b class="emphasis-bold">absolute
+pathname</b> (<a href="ch01_14.htm#upt3-CHP-1-SECT-14">Section 1.14</a>) (starting from the
+root, <em class="emphasis">/</em> ), Unix tries to look up files
+<em class="emphasis">relative</em> to the current directory. When you
+first log in, your current directory is your <b class="emphasis-bold">home directory</b> (<a href="ch01_15.htm#upt3-CHP-1-SECT-15">Section 1.15</a>),
+which the system administrator will assign to you. It typically has a
+name like <em class="emphasis">/u/mike</em> or
+<em class="emphasis">/home/mike</em>. You can change your current
+directory by giving the <i class="command">cd</i> command, followed by
+the name of a new directory (for example, <tt class="literal">cd
+/usr/bin</tt>). You can find out your current directory by
+giving the <i class="command">pwd</i> ("print working
+directory") command.
+</p>
+
+<p>If your current directory is <em class="emphasis">/home/mike</em> and you
+give the command <tt class="literal">cat textfile</tt>, you are asking Unix
+to locate the file <em class="emphasis">textfile</em> within the directory
+<em class="emphasis">/home/mike</em>. This is equivalent to the absolute
+path <em class="emphasis">/home/mike/textfile</em>. If you give the
+command <tt class="literal">cat notes/textfile</tt>, you are asking Unix to
+locate the file <em class="emphasis">textfile</em> within the directory
+<em class="emphasis">notes</em>, within the current directory
+<em class="emphasis">/home/mike</em>.
+</p>
+
+<p><a name="IXT-1-1330" />A
+number of abbreviations help you to form relative pathnames more
+conveniently. You can use the abbreviation . (dot) to refer to the
+current working directory. You can use <tt class="literal">..</tt> (dot
+dot) to refer to the parent of the current working directory. For
+example, if your current directory is
+<em class="emphasis">/home/mike</em>, <em class="emphasis">./textfile</em> is
+the same as <em class="emphasis">textfile</em>, which is the same as
+<em class="emphasis">/home/mike/textfile</em>. The relative path
+<em class="emphasis">../gina/textfile</em> is the same as
+<em class="emphasis">/home/gina/textfile</em>; <tt class="literal">..</tt> moves
+up one level from <em class="emphasis">/home/mike</em> (to
+<em class="emphasis">/home</em>) and then searches for the directory
+<em class="emphasis">gina</em> and the file <em class="emphasis">textfile</em>.
+</p>
+
+<p><a name="IXT-1-1331" />You can use
+either the abbreviation <tt class="literal">~</tt> (tilde) or the
+environment variables <tt class="literal">$HOME</tt> or
+<tt class="literal">$LOGDIR</tt>, to refer to your home directory. In most
+shells, <tt class="literal">~</tt><em class="replaceable"><tt>name</tt></em> refers to
+the home directory of the user <em class="emphasis">name</em>. See <a href="ch31_11.htm#upt3-CHP-31-SECT-11">Section 31.11</a>.
+</p>
+
+<p>Here's a summary of the rules that Unix uses to
+interpret paths:
+</p>
+
+<dl>
+<dt><i><em class="emphasis">If the pathname begins with</em></tt> <tt class="literal">/</tt></i></dt>
+<dd>
+<a name="IXT-1-1332" />It is an absolute path, starting
+from the root.
+</p>
+</dd>
+
+
+<dt><i><em class="emphasis">If the pathname begins with</em></tt> <tt class="literal">~</tt> <em class="emphasis">or with</em></tt> <tt class="literal">~</tt><tt><em class="replaceable"><tt>name</tt></em></tt></i></dt>
+<dd>
+Most shells turn it into an absolute pathname starting at your home
+directory (<tt class="literal">~</tt>) or at the home directory of the user
+<em class="emphasis">name</em>
+(<tt class="literal">~</tt><em class="replaceable"><tt>name</tt></em>).
+</p>
+</dd>
+
+
+<dt><i><em class="emphasis">If the pathname does not begin with a</em></tt> <tt class="literal">/</tt></i></dt>
+<dd>
+The pathname is relative to the current directory. Two relative
+special cases use entries that are in every Unix directory:
+</p>
+
+<ol>
+<li>
+<p><a name="IXT-1-1333" /><a name="IXT-1-1334" /><a name="IXT-1-1335" />If the pathname begins with
+<tt class="literal">./</tt>, the path is relative to the current directory,
+e.g., <em class="emphasis">./textfile</em></tt>, though this can also execute
+the file if it is given executable file permissions.
+</p>
+</li><li>
+<p>If the pathname begins with <tt class="literal">../</tt>, the path is
+relative to the parent of the current directory. For example, if your
+current directory is <em class="emphasis">/home/mike/work</em></tt>, then
+<em class="emphasis">../src</em></tt> means
+<em class="emphasis">/home/mike/src</em></tt>.
+</p>
+</li></ol>
+</dd>
+
+</dl>
+
+<p><a href="ch10_02.htm#upt3-CHP-10-SECT-2">Section 10.2</a> explains where
+<tt class="literal">.</tt> and <tt class="literal">..</tt> come from.
+</p>
+
+<a name="ch01-3-fm2xml" /><blockquote><b>NOTE:</b> 
+The <tt class="literal">.</tt> and <tt class="literal">..</tt> may appear at any
+point within a path. They mean "the current
+directory at this point in the path" and
+"the parent of the current directory at this point
+in the path." You commonly see paths starting with
+<tt class="literal">../../</tt> (or more) to refer to the grandparent or
+great-grandparent of the current directory. However, they can appear
+at other places in a pathname as well. For example,
+<em class="emphasis">/usr/ucb/./bin</em></tt> is the same as
+<em class="emphasis">/usr/ucb/bin</em></tt>, and
+<em class="emphasis">/usr/ucb/bin/../lib</em></tt> is the same as
+<em class="emphasis">/usr/ucb/lib</em></tt>. Placing <tt class="literal">.</tt> or
+<tt class="literal">..</tt> in the middle of a path may be helpful in
+building paths within shell scripts, but I have never seen them used
+in any other useful way.
+</p>
+</blockquote>
+
+<p><em class="emphasis">--ML and JP</em></tt></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.15. Your Home Directory</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.17. File Access Permissions</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,371 @@
+<html><head><title>Spare Details of the masterindex Program (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch13_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.3. Spare Details of the masterindex Program</h2>
+
+<p>This section presents a few interesting details of the
+<b class="emphasis-bold">masterindex</b> program that might otherwise escape
+attention.  The purpose of this section is to extract some interesting
+program fragments and show how they solve a particular problem.</p>
+
+<a name="sedawk-ch-12-sect-3.1" /><div class="sect2">
+<h3 class="sect2">12.3.1. How to Hide a Special Character</h3>
+
+<p>
+<a name="IXT-12-266380" />
+<a name="IXT-12-266381" />
+<a name="IXT-12-266382" />
+<a name="IXT-12-266383" />
+<a name="IXT-12-266384" />
+Our first fragment is from the <b class="emphasis-bold">input.idx</b> script,
+whose job it is to standardize the index entries before they are
+sorted.  This program takes as its input a record consisting of two
+tab-separated fields: the index entry and its page number.  A colon is
+used as part of the syntax for indicating the parts of an index entry.</p>
+
+<p>Because the program uses a colon as a special character, we must
+provide a way to pass a literal colon through the program.  To do
+this, we allow the indexer to specify two consecutive colons in the
+input.  However, we can't simply convert the sequence to a literal
+colon because the rest of the program modules called by
+<b class="emphasis-bold">masterindex</b> read three colon-separated fields.  The
+solution is to convert the colon to its octal value using the
+<b class="emphasis-bold">gsub()</b> function.</p>
+
+<blockquote><pre class="code">#&lt; from input.idx
+# convert literal colon to octal value
+$1 ~ /::/ {
+        # substitute octal value for "::"
+        gsub(/::/, "\\72", $1)</pre></blockquote>
+
+<p>"\\72" represents the octal value of a colon.  (You can find
+this value by scanning a table of hexadecimal and octal equivalents in
+the file <em class="filename">/usr/pub/ascii</em>.)  In the last program
+module, we use <b class="emphasis-bold">gsub()</b> to convert the octal
+value back to a colon.  Here's the code from
+<b class="emphasis-bold">format.idx</b>.</p>
+
+<blockquote><pre class="code">#&lt; from format.idx
+# convert octal colon to "literal" colon
+# make sub for each field, not $0, so that fields are not parsed
+        gsub(/\\72/, ":", $1)
+        gsub(/\\72/, ":", $2)
+        gsub(/\\72/, ":", $3)</pre></blockquote>
+
+<p>The first thing you notice is that we make this substitution
+for each of the three fields separately, instead of having
+one substitution command that operates on $0.  The reason for
+this is that the input fields are colon-separated.  When
+awk scans an input line, it breaks the line into fields.  If you 
+change the contents of $0 at any point in the script, awk will 
+reevaluate the value of $0 and parse the line into fields again.
+Thus, if you have three fields prior to making the substitution,
+and the substitution makes one change, adding a colon to $0,
+then awk will recognize four fields.  By doing the substitution
+for each field, we avoid having the line parsed again into
+fields.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-3.2" /><div class="sect2">
+<h3 class="sect2">12.3.2. Rotating Two Parts</h3>
+
+<p>Above we talked about the colon syntax for separating the primary and
+secondary keys.  With some kinds of entries, it makes sense to
+classify the item under its secondary key as well.  For instance, we
+might have a group of program statements or user commands, such as
+"sed command."  The indexer might create two entries: one for "sed
+command" and one for "command: sed."  To make coding this kind of
+entry easier, we implemented a coding convention that uses a tilde (~)
+character to mark the two parts of this entry so that the first and
+second part can be swapped to create the second entry automatically.<a href="#FOOTNOTE-89">[89]</a>
+
+Thus, coding the following index entry</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-89" /><p> [89]The idea of rotating index entries was derived from <em class="emphasis">The AWK
+Programming Language</em>.  There, however, an entry is
+automatically rotated where a blank is found; the tilde is used to
+prevent a rotation by "filling in" the space.  Rather than have
+rotation be the default action, we use a different coding convention,
+where the tilde indicates where the rotation should occur.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">.XX "sed~command"</pre></blockquote>
+
+<p>produces two entries:</p>
+
+<blockquote><pre class="code">sed command	 43
+command: sed	 43</pre></blockquote>
+
+<p>Here's the code that rotates entries.</p>
+
+<blockquote><pre class="code">#&lt; from input.idx 
+# Match entries that need rotating that contain a single tilde
+$1 ~ /~/ &amp;&amp; $1 !~ /~~/ { 
+	# split first field into array named subfield 
+	n = split($1, subfield, "~")
+	if (n == 2) {
+	# print entry without "~" and then rotated
+		printf("%s %s::%s\n", subfield[1], subfield[2], $2)
+		printf("%s:%s:%s\n", subfield[2], subfield[1], $2)
+	}
+        next
+}</pre></blockquote>
+
+<p>The pattern-matching rule matches any entry containing a tilde but not
+two consecutive tildes, which indicate a literal tilde.  The procedure
+uses the <b class="emphasis-bold">split()</b> function to break the
+first field into two "subfields."  This gives us two substrings, one
+before and one after the tilde.  The original entry is output and then
+the rotated entry is output, both using the <b class="emphasis-bold">printf</b>
+statement.</p>
+
+<p>Because the tilde is used as a special character, we use two
+consecutive tildes to represent a literal tilde in the input.  The
+following code occurs in the program after the code that swaps the two
+parts of an entry.</p>
+
+<blockquote><pre class="code">#&lt; from input.idx 
+# Match entries that contain two tildes 
+$1 ~ /~~/ { 
+	# replace ~~ with ~	
+	gsub(/~~/, "~", $1)
+}</pre></blockquote>
+
+<p>Unlike the colon, which retains a special meaning throughout the
+<b class="emphasis-bold">masterindex</b> program, the tilde has no significance
+after this module so we can simply output a literal tilde.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-3.3" /><div class="sect2">
+<h3 class="sect2">12.3.3. Finding a Replacement</h3>
+
+<p>The next fragment also comes from <b class="emphasis-bold">input.idx</b>.  The
+problem was to look for two colons separated by text and change the
+second colon to a semicolon.  If the input line contains</p>
+
+<blockquote><pre class="code">class: class initialize: (see also methods)</pre></blockquote>
+
+<p>then the result is:</p>
+
+<blockquote><pre class="code">class: class initialize; (see also methods)</pre></blockquote>
+
+<p>The problem is fairly simple to formulate--we want to change the
+second colon, not the first one.  It is pretty easy to solve in sed
+because of the ability to select and recall a portion of what is
+matched in the replacement section (using \(...\) to
+surround the portion to match and \1 to recall the first portion).
+Lacking the same ability in awk, you have to be more clever.  Here's
+one possible solution:</p>
+
+<blockquote><pre class="code">#&lt; from input.idx
+#  replace 2nd colon with semicolon
+if (sub(/:.*:/, "&amp;;", $1)) 
+         sub(/:;/, ";", $1)</pre></blockquote>
+
+<p>The first substitution matches the entire span between two colons.  It
+makes a replacement with what is matched (&amp;) followed by a
+semicolon.  This substitution occurs within a conditional expression
+that evaluates the return value of the
+<b class="emphasis-bold">sub()</b> function.  Remember, this function
+returns 1 if a substitution is made--it does not return the
+resulting string. In other words, if we make the first substitution,
+then we make the second one.  The second substitution replaces ":;"
+with ";".  Because we can't make the replacement directly, we do it
+indirectly by making the context in which the second colon appears
+distinct.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-3.4" /><div class="sect2">
+<h3 class="sect2">12.3.4. A Function for Reporting Errors</h3>
+
+<p>
+<a name="IXT-12-266385" />
+<a name="IXT-12-266386" />
+The purpose of the <b class="emphasis-bold">input.idx</b> program is to allow
+variations (or less kindly, inconsistencies) in the coding of index
+entries.  By reducing these variations to one basic form, the other
+programs are made easier to write.</p>
+
+<p>The other side is that if the <b class="emphasis-bold">input.idx</b> program
+cannot accept an entry, it must report it to the user and drop the
+entry so that it does not affect the other programs.  The
+<b class="emphasis-bold">input.idx</b> program has a function used for error
+reporting called <b class="emphasis-bold">printerr()</b>, as shown
+below:</p>
+
+<blockquote><pre class="code">function printerr (message) {
+	# print message, record number and record
+	printf("ERROR:%s (%d) %s\n", message, NR, $0) &gt; "/dev/tty"
+}</pre></blockquote>
+
+<p>This function makes it easier to report errors in a standard manner.
+It takes as an argument a <b class="emphasis-bold">message</b>, which is usually
+a string that describes the error.  It outputs this message along with
+the record number and the record itself.  The output is directed to
+the user's terminal "/dev/tty."  This is a good practice since the
+standard output of the program might be, as it is in this case,
+directed to a pipe or to a file.  We could also send the error message
+to standard error, like so:</p>
+
+<blockquote><pre class="code">print "ERROR:" message " (" NR ") "  $0 | "cat 1&gt;&amp;2"</pre></blockquote>
+
+<p>This opens a pipe to <b class="emphasis-bold">cat</b>, with
+<b class="emphasis-bold">cat</b>'s standard output redirected to the standard
+error.  If you are using gawk, mawk, or the Bell Labs awk, you could
+instead say:</p>
+
+<blockquote><pre class="code">printf("ERROR:%s (%d) %s\n", message, NR, $0) &gt; "/dev/stderr"</pre></blockquote>
+
+<p>In the program, the <b class="emphasis-bold">printerr()</b>
+function is called as follows:</p>
+
+<blockquote><pre class="code">printerr("No page number")</pre></blockquote>
+
+<p>When this error occurs, the user sees the following error message:</p>
+
+<blockquote><pre class="code">ERROR:No page number (612) geometry management:set_values_almost</pre></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-3.5" /><div class="sect2">
+<h3 class="sect2">12.3.5. Handling See Also Entries</h3>
+
+<p>One type of index entry is a "see also."  Like a "see" reference, it
+refers the reader to another entry.  However, a "see also" entry may
+have a page number as well.  In other words, this entry contains
+information of its own but refers the reader elsewhere for additional
+information.  Here are a few sample entries.</p>
+
+<blockquote><pre class="code">error procedure	34
+error procedure (see also XtAppSetErrorMsgHandler)	35
+error procedure (see also XtAppErrorMsg)</pre></blockquote>
+
+<p>The first entry in this sample has a page number while the last one
+does not.  When the <b class="emphasis-bold">input.idx</b> program finds a "see
+also" entry, it checks to see if a page number ($2) is supplied.  If
+there is one, it outputs two records, the first of which is the entry
+without the page number and the second of which is an entry and page
+number without the "see also" reference.</p>
+
+<blockquote><pre class="code">#&lt; input.idx
+# if no page number
+        if ($2 == "") {
+                print $0 ":"
+                next
+        }
+        else {
+        # output two entries:
+        # print See Also entry w/out page number
+                print $1 ":"
+        # remove See Also
+                sub(/ *~zz\(see also.*$/, "", $1)
+                sub(/;/, "", $1)
+        # print as normal entry
+                if ( $1 ~ /:/ )
+                        print $1 ":" $2
+                else
+                        print $1 "::" $2
+                next
+        }</pre></blockquote>
+
+<p>The next problem to be solved was how to get the entries sorted in the
+proper order.  The <b class="emphasis-bold">sort</b> program, using the options
+we gave it, sorted the secondary keys for "see also" entries together
+under "s." (The <span class="option">-d</span> option causes the parenthesis to
+be ignored.)  To change the order of the sort, we alter the sort key
+by adding the sequence "~zz" to the front of it.</p>
+
+<blockquote><pre class="code">#&lt; input.idx
+# add "~zz" for sort at end
+        sub(/\([Ss]ee [Aa]lso/, "~zz(see also", $1)</pre></blockquote>
+
+<p>The tilde is not interpreted by the sort but it helps us identify the
+string later when we remove it.  Adding "~zz" assures us of sorting to
+the end of the list of secondary or tertiary keys.</p>
+
+<p>The <b class="emphasis-bold">pagenums.idx</b> script removes the sort string
+from "see also" entries.  However, as we described earlier, we look
+for a series of "see also" entries for the same key and create a list.
+Therefore, we also remove that which is the same for all entries, and
+put the reference itself in an array:</p>
+
+<blockquote><pre class="code">#&lt; pagenums.idx
+# remove secondary key along with "~zz"
+      sub(/^.*~zz\([Ss]ee +[Aa]lso */, "", SECONDARY)
+      sub(/\) */, "", SECONDARY)
+
+# assign to next element of seeAlsoList
+      seeAlsoList[++eachSeeAlso] = SECONDARY "; "</pre></blockquote>
+
+<p>There is a function that outputs the list of "see also" entries,
+separating each of them by a semicolon.  Thus, the output of the "see
+also" entry by <b class="emphasis-bold">pagenums.idx</b> looks like:</p>
+
+<blockquote><pre class="code">error procedure:(see also XtAppErrorMsg; XtAppSetErrorHandler.)</pre></blockquote>
+</div>
+
+
+
+
+<a name="sedawk-ch-12-sect-3.6" /><div class="sect2">
+<h3 class="sect2">12.3.6. Alternative Ways to Sort</h3>
+
+<p>In this program, we chose not to support <b class="emphasis-bold">troff</b> font
+and point size requests in index entries.  If you'd like to support
+special escape sequences, one way to do so is shown in <em class="citetitle">The
+AWK Programming Language</em>.  For each record, take the first
+field and prepend it to the record as the sort key.  Now that there is
+a duplicate of the first field, remove the escape sequences from the
+sort key.  Once the entries are sorted, you can remove the sort key.
+This process prevents the escape sequences from disturbing the sort.</p>
+
+<p>Yet another way is to do something similar to what we did for "see also"
+entries.  Because special characters are ignored in the sort, we could
+use the <b class="emphasis-bold">input.idx</b> program to convert a
+<b class="emphasis-bold">troff</b> font change sequence such as "\fB" to
+"~~~" and "\fI" to
+"~~~~," or any convenient
+escape sequence.  This would get the sequence through the
+<b class="emphasis-bold">sort</b> program without disturbing the sort.  (This
+technique was used by Steve Talbott in his original indexing script.)</p>
+
+<p>The only additional problem that needs to be recognized in both cases
+is that two entries for the same term, one with font information and
+one without, will be treated as different entries when one is compared
+to the other.</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch13_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.2. Generating a Formatted Index</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">13. A Miscellany of Scripts</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

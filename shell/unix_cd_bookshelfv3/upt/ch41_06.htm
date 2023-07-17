@@ -1,0 +1,185 @@
+<html><head><title>Perl Boot Camp, Part 3: Branching and Looping (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch41_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">41.6. Perl Boot Camp, Part 3: Branching and Looping</h2>
+
+<p><a name="upt3-IDXTERM-6779" /> <a name="upt3-IDXTERM-6780" />To do any
+interesting stuff with data, Perl needs to be able to branch and
+loop. Perl supports the C-like
+<tt class="literal">if</tt><a name="IXT-41-2636" />-<tt class="literal">then</tt>-<tt class="literal">else</tt>
+construct, as the following shows:
+</p>
+
+<blockquote><pre class="code">if ( $password eq 'secret' ) {
+  print "Come on in\n";
+} else {
+  print "Incorrect password\n";
+}</pre></blockquote>
+
+<p>You can also invert simple tests that only have one statement in the
+<tt class="literal">then</tt> block.
+</p>
+
+<blockquote><pre class="code">print "Don't I know you?\n" if $user eq 'joe';</pre></blockquote>
+
+<p>You can invert the logic of <tt class="literal">if</tt> by using
+<tt class="literal">unless</tt><a name="IXT-41-2637" />:
+</p>
+
+<blockquote><pre class="code">print "Please supply command line arguments\n" unless @ARGV;</pre></blockquote>
+
+<p>The <tt class="literal">print</tt> happens only if <tt class="literal">@ARGV</tt>
+is empty.
+</p>
+
+<p><a name="IXT-41-2638" /><a name="IXT-41-2639" />Sometimes you need to
+iterate through each element of a list. This can be done with the
+<tt class="literal">foreach</tt> loop:
+</p>
+
+<blockquote><pre class="code">foreach my $thing (@my_room) {
+  print "dusting $thing\n";
+  dust($thing);
+}</pre></blockquote>
+
+<p>A synonym for <tt class="literal">foreach</tt> is
+<tt class="literal">for</tt><a name="IXT-41-2640" />. Bourne shell hackers (or those who
+don't like typing) may feel more comfortable using
+<tt class="literal">for</tt> rather than then <tt class="literal">foreach</tt>.
+</p>
+
+<p>Each time through the loop, <tt class="literal">$thing</tt> is aliased to
+the next element in <tt class="literal">@my_room</tt>. Any change to
+<tt class="literal">$thing</tt> will change that element in the array, so
+be careful. If you don't supply a scalar variable
+like <tt class="literal">$thing</tt>, Perl will set
+<tt class="literal">$_</tt><a name="IXT-41-2641" /> for you each time through the loop. The
+previous example could also be written:
+</p>
+
+<blockquote><pre class="code">foreach (@my_room) {
+  print "dusting $_\n";
+  dust($_);
+}</pre></blockquote>
+
+<p>Sometimes you need to continue looping while an event is happening,
+like reading input from standard input:
+</p>
+
+<blockquote><pre class="code">while ( my $line = &lt;STDIN&gt; ) {
+  print "I got: $line";
+}</pre></blockquote>
+
+<p><a name="IXT-41-2642" />Each
+line of input a user provides is stored in <tt class="literal">$line</tt>,
+including the newline at the end. When the user hits the end-of-file
+control key (CTRL-D), the loop exits. Like the
+<tt class="literal">foreach</tt> loop, you can leave off the scalar
+variable while reading from a filehandle,<a href="#FOOTNOTE-124">[124]</a> and <tt class="literal">$_</tt>
+will be set to the next line of input each time through the loop.
+</p><blockquote class="footnote"> <a name="FOOTNOTE-124" /><p> [124]STDIN is
+normally assumed here.</p> </blockquote>
+
+<blockquote><pre class="code">while (&lt;&gt;) {
+  print "I got: $_";
+}</pre></blockquote>
+
+<p><a name="IXT-41-2643" /> <a name="IXT-41-2644" /><a name="IXT-41-2645" />Sometimes you need to interrupt
+the execute flow of your loop. Perl gives you three operators to do
+that (see <a href="ch41_06.htm#upt3-CHP-41-TABLE-7">Table 41-7</a>).
+</p>
+
+<a name="upt3-CHP-41-TABLE-7" /><h4 class="objtitle">Table 41-7. Loop flow-control operators </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Operator</p>
+</th>
+<th>
+<p>Example</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">next</tt><a name="IXT-41-2646" />
+</p>
+</td>
+<td>
+<blockquote><pre class="code">while(&lt;&gt;){
+  next if $_ ne "continue\n";
+}</pre></blockquote>
+</td>
+<td>
+<p>Jump to the top of the loop and iterate normally</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">last</tt><a name="IXT-41-2647" />
+</p>
+</td>
+<td>
+<blockquote><pre class="code">while(&lt;&gt;){
+  last if $_ eq "quit\n"
+}</pre></blockquote>
+</td>
+<td>
+<p>Jump out of the loop to the next line of the program</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">redo</tt><a name="IXT-41-2648" />
+</p>
+</td>
+<td>
+<blockquote><pre class="code">for $url (@urls){
+  unless( $content = get($url) ){
+    print "couldn't fetch page - retrying\n";
+    redo;
+  }
+}</pre></blockquote>
+</td>
+<td>
+<p>Jump to the top of the loop, but don't evaluate the
+loop condition
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p> <em class="emphasis">-- JJ<a name="IXTR3-2694" /> <a name="IXTR3-2695" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch41_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">41.5. Perl Boot Camp, Part 2: Variables and Data Types</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">41.7. Perl Boot Camp, Part 4: Pattern Matching</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

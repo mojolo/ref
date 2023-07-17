@@ -1,0 +1,211 @@
+<html><head><title>Multitasking (Learning the Unix Operating System, 5th Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Jerry Peek, John Strang and Grace Todino-Gonguet" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00261-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Unix Operating System, 5th Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the Unix Operating System" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 7. Multitasking</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch07_01.htm#sect1">Running a Command in the Background</a><br />
+<a href="ch07_02.htm">Checking on a Process</a><br />
+<a href="ch07_03.htm">Cancelling a Process</a><br /></p></div><p>
+Unix can do many jobs at once, dividing the processor's time between
+the tasks so quickly that it looks as if everything is running at the
+same time.
+This is called <em class="emphasis">multitasking</em>.
+</p><p>
+<a name="IXT-7-280012" />
+With a window system, you can have many applications running 
+at the same time, with many windows open.
+But most Unix systems also let you run more than one program
+inside the <em class="emphasis">same terminal</em>.
+This is called <em class="emphasis">job control</em>.<a name="lunix5-IDXTERM-777" />
+It gives some of the benefits of window systems to users who don't have
+windows.
+But, even if you're using a window system, you may want to use job
+control to do several things inside the same terminal window.
+For instance, you may prefer to do most of your work from one
+terminal window, instead of covering your desktop with multiple
+windows.
+</p><p>
+
+<a name="IXT-7-280013" />
+
+
+Why else would you want job control?
+Suppose you're running a program that will take a long time to
+process.
+On a single-task operating system such as MS-DOS, you would enter the command and
+wait for the system prompt to return, telling you that you
+could enter a new command.
+In Unix, however, you can enter new commands in the
+"foreground" while one or more programs are still
+running in the "background."
+<a name="lunix5-IDXTERM-779" />
+<a name="lunix5-IDXTERM-780" />
+<a name="lunix5-IDXTERM-781" />
+<a name="lunix5-IDXTERM-782" />
+</p><a name="lunix5-IDXTERM-783" /><p>
+When you enter a command as a background process, the shell prompt
+reappears immediately so that you can enter a new command.
+The original program will still run in the background, but you
+can use the system to do other things during that time.
+Depending on your system and your shell, you may even be able to log
+off and let the background process run to completion.
+</p><div class="sect1"><a name="lunix5-CHP-7-SECT-1" />
+<h2 class="sect1"><a name="sect1" />7.1. Running a Command in the Background</h2>
+
+<p>
+Running a program as a background process is most often done to
+free a terminal when you know the program will take a long time to
+run.
+It's used whenever you want to launch a new window program from an
+existing terminal window--so that you can keep working in the
+existing terminal, as well as in the new window.
+</p>
+
+<p>
+<a name="IXT-7-280014" />
+<a name="IXT-7-280015" />
+To run a program in the background, add the "&amp;" character at the end
+of the command line before you press the <span class="keycap">RETURN</span> key.
+The shell then assigns and displays a process ID number for the
+program:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>sort bigfile &gt; bigfile.sort &amp;</b></tt>
+[1] 29890
+$
+</pre></blockquote>
+</p>
+
+<p>
+(Sorting is a good example because it can take a while to sort huge files,
+so users often do it in the background.)
+</p>
+
+<p>
+<a name="IXT-7-280016" />
+<a name="IXT-7-280017" />
+The process ID (PID) for this program is 29890.
+The PID is useful when you want to check the status of a background
+process, or if you need to, cancel it.
+You don't need to remember the PID, because there are Unix commands
+(explained in later sections of this chapter) to check
+on the processes you have running.
+Some shells write a status line to your screen when the
+background process finishes.
+</p>
+
+<p>
+<a name="IXT-7-280018" />
+Here's another example.
+If you're using a terminal window, and you'd like to open another
+terminal window, you can probably click a button or choose a menu item
+to do that.
+But, if you occasionally want to specify command-line options for that
+new window, it's much easier to type the options on a command line in
+an existing window.
+(Most menus and buttons don't give you the flexibility to
+choose options each time you open a new window.)
+For instance, by default, an <b class="emphasis-bold">xterm</b> window
+saves 64 lines of your previous work in its "scrollback buffer."
+If you'll be doing a lot of work that you'll want to review with
+the scrollbar, you might want to open a new window with a 2000-line
+scrollback buffer.
+You could enter the following command in an existing
+<b class="emphasis-bold">xterm</b> window:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>xterm -sl 2000 &amp;</b></tt>
+[1] 19283
+</pre></blockquote>
+</p>
+
+<p>
+A new <b class="emphasis-bold">xterm</b> window should pop open--where
+you'll be able to scroll almost forever.
+</p>
+
+<p>
+<a name="IXT-7-280019" />
+<a name="IXT-7-280020" />
+In the C shell, you can put an entire sequence of commands
+separated by semicolons (<tt class="literal">;</tt>) into the background
+by putting an ampersand at the end of the entire command line.
+In other shells, enclose the command sequence in parentheses
+before adding the ampersand.
+For instance, you might want to sort a file,
+then print it after
+<b class="emphasis-bold">sort</b> finishes.
+The syntax that works on all shells is:
+</p>
+
+
+<p>(<em class="emphasis">command1; command2</em>) &amp;
+</p>
+
+
+<p>
+<a name="IXT-7-280021" />
+<a name="IXT-7-280022" />
+<a name="IXT-7-280023" />
+The examples above work on all shells.
+On many systems, the shells have the feature we mentioned earlier called
+<em class="emphasis">job control</em>.
+You can use the <em class="emphasis">suspend character</em> (usually
+<span class="keycap">CTRL-Z</span>) to suspend a program running in the foreground.
+The program pauses and you get a new shell prompt.
+You can then do anything else you like, including putting the suspended
+<a name="IXT-7-280024" />
+<a name="IXT-7-280025" />
+program into the background using the
+<b class="emphasis-bold">bg</b> command.
+The <b class="emphasis-bold">fg</b> command brings a
+suspended or background process to the foreground.
+</p>
+
+<p>
+<a name="IXT-7-280026" />
+For example, you might start <b class="emphasis-bold">sort</b>
+running on a big file, and, after a minute, want to send email.
+Stop <b class="emphasis-bold">sort</b>, then put it in the
+background.
+The shell prints a message, then another shell prompt.
+Send mail while <b class="emphasis-bold">sort</b> runs.
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>sort hugefile1 hugefile2 &gt; sorted</b></tt>
+	<i class="lineannotation">&gt;time goes by&lt;</i>
+<span class="keycap">CTRL-Z</span> Stopped
+$ <tt class="userinput"><b>bg</b></tt>
+[1]    sort hugefile1 hugefile2 &gt; sorted &amp;
+$ <tt class="userinput"><b>mail eduardo@nacional.cl</b></tt>
+	<em class="emphasis">...</em>
+</pre></blockquote>
+</p>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch06_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">6.7. Interactive Chat</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.2. Checking on a Process</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

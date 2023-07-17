@@ -1,0 +1,315 @@
+<html><head><title>select (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.4. select</h2>
+
+<p>
+<a name="korn2-IDXTERM-1172" />
+
+Almost all of the flow-control constructs we have seen so far are also
+available in the Bourne shell, and the C shell has equivalents with
+different syntax. Our next construct, <tt class="literal">select</tt>, is unique to the Korn shell;
+moreover, it has no analogue in conventional programming languages.
+</p>
+
+<p>
+<tt class="literal">select</tt> allows you to generate simple menus easily.
+<a name="IXT-5-287721" />
+It has concise syntax, but it does quite a lot of work.
+The syntax is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+select <em class="replaceable"><tt>name</em> [in <em class="replaceable">list</tt></em>]
+do
+    <em class="replaceable"><tt>statements that can use</tt></em> $name ...
+done
+</pre></blockquote>
+</p>
+
+<p>
+This is the same syntax as the regular <tt class="literal">for</tt> loop except for
+the keyword <tt class="literal">select</tt>.
+
+<a name="IXT-5-287722" />
+<a name="IXT-5-287723" />
+
+And like <tt class="literal">for</tt>, you can omit
+<tt class="literal">in</tt> <em class="replaceable"><tt>list</tt></em>, and
+it will default to <tt class="literal">"$@"</tt>, i.e.,
+the list of quoted command-line arguments.
+</p>
+
+<p>
+Here is what <tt class="literal">select</tt> does:
+</p>
+
+<ul>
+
+<li><p>
+Generates a menu of each item in <em class="emphasis">list</em>, formatted with
+numbers for each choice
+</p></li>
+
+<li><p>
+Prompts the user for a number (with the value of <tt class="literal">PS3</tt>)
+</p></li>
+
+<li><p>
+<a name="IXT-5-287724" />
+Stores the selected choice in the variable <em class="emphasis">name</em>
+and the selected number in the built-in variable <tt class="literal">REPLY</tt>
+</p></li>
+
+<li><p>
+Executes the statements in the body
+</p></li>
+
+<li><p>
+Repeats the process forever (but see below for how to exit)
+</p></li>
+
+</ul>
+
+<p>
+Once again, an example should help make this process clearer.
+Assume you need to write the code for <a href="ch05_03.htm#korn2-CHP-5-SIDEBAR-5">Task 5-4</a>, but your life
+is not as simple. You don't have terminals hardwired to your computer;
+instead, your users communicate through a terminal server,
+or they log in remotely, via <em class="emphasis">telnet</em> or <em class="emphasis">ssh</em>.
+This means, among other things, that the tty number does <em class="emphasis">not</em>
+determine the type of terminal.
+</p>
+
+<p>
+Therefore, you have no choice but to prompt the user for his or
+her terminal type at login time.
+<a name="IXT-5-287725" />
+To do this, you can put the following
+code in <em class="emphasis">/etc/profile</em> (assume you have the same choice of
+terminal types):
+<a name="korn2-IDXTERM-1178" />
+<a name="IXT-5-287726" />
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+PS3='terminal? '
+select term in gl35a t2000 s531 vt99; do
+    if [[ -n $term ]]; then
+        TERM=$term
+        print TERM is $TERM
+        export TERM
+        break
+    else
+        print 'invalid.'
+    fi
+done
+</pre></blockquote>
+</p>
+
+<p>
+When you run this code, you see this menu:
+</p>
+
+<p>
+<blockquote><pre class="code">
+1) gl35a
+2) t2000
+3) s531
+4) vt99
+terminal?
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+<a name="IXT-5-287727" />
+
+The built-in shell variable <tt class="literal">PS3</tt> contains the prompt string
+that <tt class="literal">select</tt> uses; its default value is the not particularly
+useful "<tt class="literal">#? </tt>".
+So the first line of the above code sets it to
+a more relevant value.<a href="#FOOTNOTE-79">[79]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-79" /><p> [79]
+As for <tt class="literal">PS1</tt>, <em class="emphasis">ksh</em> does parameter,
+command, and arithmetic substitution on the value before printing it.
+</p>
+</blockquote>
+
+<p>
+The <tt class="literal">select</tt> statement constructs
+the menu from the list of choices. If the user enters a valid
+number (from 1 to 4), the variable <tt class="literal">term</tt> is set to
+the corresponding value; otherwise it is null. (If the user
+just presses ENTER, the shell prints the menu again.)
+</p>
+
+<p>
+The code in the loop body checks if <tt class="literal">term</tt>
+is non-null. If so, it assigns <tt class="literal">$term</tt> to the environment
+variable <tt class="literal">TERM</tt>,
+exports <tt class="literal">TERM</tt>, and prints a confirmation message; then
+the <em class="emphasis">break</em> statement exits the <tt class="literal">select</tt> loop.
+If <tt class="literal">term</tt>
+is null, the code prints an error message and repeats the prompt
+(but not the menu).
+</p>
+
+<p>
+<a name="IXT-5-287728" />
+<a name="IXT-5-287729" />
+
+<a name="IXT-5-287730" />
+<a name="IXT-5-287731" />
+<a name="IXT-5-287732" />
+
+The <em class="emphasis">break</em> statement is the usual way of exiting a <tt class="literal">select</tt>
+loop. Actually (like its analogue in C),
+it can be used to exit any surrounding control structure we've
+seen so far (except <tt class="literal">case</tt>, where the double-semicolons
+act like <em class="emphasis">break</em>) as well as the <tt class="literal">while</tt> and
+<tt class="literal">until</tt> we will see soon. We haven't introduced <em class="emphasis">break</em> until now
+because some people consider it to be bad coding style to use it to
+exit a loop. However, it is necessary for exiting
+<tt class="literal">select</tt> when the user makes a valid choice.
+
+
+(A user can also type CTRL-D -- for end-of-input -- to get
+out of a <tt class="literal">select</tt> loop. This gives the user a uniform way
+of exiting, but it doesn't help the shell programmer much.)
+</p>
+
+<p>
+<a name="IXT-5-287733" />
+Let's refine our solution by making the menu more user-friendly,
+so that the user doesn't have to know the <em class="emphasis">terminfo</em> name of
+his or her terminal. We do this by using quoted character
+strings as menu items and then using <tt class="literal">case</tt> to determine the
+terminfo name:
+</p>
+
+<p>
+<blockquote><pre class="code">
+print 'Select your terminal type:'
+PS3='terminal? '
+select term in \
+    'Givalt GL35a' \
+    'Tsoris T-2000' \
+    'Shande 531' \
+    'Vey VT99'
+do
+    case $REPLY in
+        1 ) TERM=gl35a ;;
+        2 ) TERM=t2000 ;;
+        3 ) TERM=s531 ;;
+        4 ) TERM=vt99 ;;
+        * ) print 'invalid.' ;;
+    esac
+    if [[ -n $term ]]; then
+        print TERM is $TERM
+        export TERM
+        break
+    fi
+done
+</pre></blockquote>
+</p>
+
+<p>
+This code looks a bit more like a menu routine in a
+conventional program, though <tt class="literal">select</tt> still provides the shortcut
+of converting the menu choices into numbers.
+We list each of the menu choices on its own
+line for reasons of readability, but once again we need continuation
+characters to keep the shell from complaining about syntax.
+</p>
+
+<p>
+Here is what the user sees when this code is run:
+</p>
+
+<p>
+<blockquote><pre class="code">
+Select your terminal type:
+1) Givalt GL35a
+2) Tsoris T-2000
+3) Shande 531
+4) Vey VT99
+terminal?
+</pre></blockquote>
+</p>
+
+<p>
+This is a bit more informative than the previous code's output.
+</p>
+
+<p>
+<a name="IXT-5-287734" />
+When the body of the <tt class="literal">select</tt> loop is entered,
+<tt class="literal">$term</tt> equals one of the four strings (or is null
+if the user made an invalid choice), while the built-in variable
+<tt class="literal">REPLY</tt> contains the number the user selected. We
+need a <tt class="literal">case</tt> statement to assign the correct value to
+<tt class="literal">TERM</tt>; we use the value of <tt class="literal">REPLY</tt>
+as the <tt class="literal">case</tt> selector.
+</p>
+
+<p>
+Once the <tt class="literal">case</tt> statement is finished, the
+<tt class="literal">if</tt> checks to see if a valid choice was made, as in the
+previous solution.  If the choice was valid, <tt class="literal">TERM</tt>
+has already been assigned, so the code just prints a confirmation message,
+exports <tt class="literal">TERM</tt>, and exits the <tt class="literal">select</tt>
+loop. If it wasn't valid, the <tt class="literal">select</tt> loop repeats
+the prompt and goes through the process again.
+</p>
+
+<p>
+Within a <tt class="literal">select</tt> loop, if <tt class="literal">REPLY</tt> is set
+to the null string, the shell reprints the menu.  
+This happens, as mentioned, when the user hits ENTER.
+But you may also explicitly set <tt class="literal">REPLY</tt> to the
+null string to force the shell to reprint the menu.
+</p>
+
+<p>
+<a name="IXT-5-287735" />
+
+
+The variable <tt class="literal">TMOUT</tt> (time out) can affect the <tt class="literal">select</tt> statement.
+Before the <tt class="literal">select</tt> loop,
+set it to some number of seconds <em class="emphasis">N</em>, and if nothing is entered within
+that amount of time, the <tt class="literal">select</tt> will exit.
+As will be explained later, <tt class="literal">TMOUT</tt> also affects the
+<em class="emphasis">read</em> command and the shell's interactive prompting mechanism.
+<a name="IXTR3-254" />
+<a name="IXTR3-255" />
+<a name="IXTR3-256" />
+</p>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.3. case</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.5. while and until</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

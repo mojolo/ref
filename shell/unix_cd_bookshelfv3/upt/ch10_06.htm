@@ -1,0 +1,138 @@
+<html><head><title>Stale Symbolic Links (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch10_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.6. Stale Symbolic Links</h2>
+
+<p><b class="emphasis-bold">Symbolic links</b>
+(<a name="IXT-10-6377" /><a name="IXT-10-6378" /> <a name="IXT-10-6379" /><a name="IXT-10-6380" /><a href="ch10_05.htm#upt3-CHP-10-SECT-5">Section 10.5</a>) have one problem. Like good bread, they
+become "stale" fairly easily. What
+does that mean?
+</p>
+
+<p>Consider the following commands:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ln -s foo bar</b></tt>
+% <tt class="userinput"><b>rm foo</b></tt></pre></blockquote>
+
+<p>What happens if you run these two commands? Remember that the link
+<em class="filename">bar</em> is a pointer: it doesn't
+have any real data of its own. Its data is the name of the file
+<em class="filename">foo</em>. After deleting <em class="filename">foo</em>,
+the link <em class="filename">bar</em> still exists, but it points to a
+nonexistent file. Commands that refer to bar will get a confusing
+error message:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat bar</b></tt>
+cat: bar: No such file or directory</pre></blockquote>
+
+<p>This will drive you crazy if you're not careful. The
+<em class="filename">ls</em> command will show you that
+<em class="filename">bar</em> still exists. You won't
+understand what's going on until you realize that
+<em class="filename">bar</em> is only a pointer to a file that no longer
+exists.
+</p>
+
+<p>The commands <em class="filename">ls -Ll </em>or <em class="filename">ls -LF
+</em>will show an unconnected symbolic link. The
+<em class="filename">-L</em> option means "list the file
+that this link points to instead of the link
+itself." If the link points nowhere, <em class="filename">ls
+-L</em> will still list the link.
+</p>
+
+<p>There are many innocuous ways of creating <a name="IXT-10-6381" />invalid symbolic links. For
+example, you could simply <em class="filename">mv</em> the data file
+<em class="filename">foo</em>. Or you could move <em class="filename">foo</em>,
+<em class="filename">bar</em>, or both to some other part of the
+filesystem where the pointer wouldn't be valid
+anymore.
+</p>
+
+<p>One way to avoid problems with invalid links is to use
+<a name="IXT-10-6382" /><b class="emphasis-bold">relative pathnames</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>) when appropriate. For instance, using
+relative pathnames will let you move entire directory trees around
+without invalidating links (provided that both the file and the link
+are in the same tree). Here's an example: assume
+that you have the file
+<em class="filename">/home/mars/john/project/datastash/input123.txt</em>.
+Assume that you want to link this file to
+<em class="filename">/home/mars/john/test/input.txt</em>. You create a
+link by giving the command<a name="IXT-10-6383" />:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cd /home/mars/john/test</b></tt>
+% <tt class="userinput"><b>ln -s ../project/datastash/input123.txt input.txt</b></tt></pre></blockquote>
+
+<p>At some later date, you hand the project over to
+<em class="emphasis">mary</em>, who <b class="emphasis-bold">copies</b>
+<a href="ch09_13.htm#upt3-CHP-9-SECT-13">Section 10.13</a>) the
+entire <em class="filename">project</em> and <em class="filename">test</em>
+data trees into her home directory. The link between
+<em class="filename">input.txt</em> and the real file,
+<em class="filename">input123.txt</em>, will still be valid. Although both
+files' names have changed, the relationship between
+the two (i.e., the relative path from one directory to the other) is
+still the same. Alternatively, assume that you are assigned to a
+different computer named <em class="filename">jupiter</em> and that you
+copy your entire home directory when you move. Again, the link
+remains valid: the relative path from your <em class="filename">test</em>
+directory to your <em class="filename">datastash</em> directory
+hasn't changed, even though the absolute paths of
+both directories are different.
+</p>
+
+<p>On the other hand, there is certainly room for
+<a name="IXT-10-6384" /><b class="emphasis-bold">absolute
+pathnames</b> (<a href="ch30_02.htm#upt3-CHP-30-SECT-2">Section 31.2</a>).
+They're useful if you're more
+likely to move the link than the original file. Assume that you are
+creating a link from your working directory to a file in a master
+directory (let's say
+<em class="filename">/corp/masterdata/input345.txt</em>). It is much more
+likely that you will rearrange your working directory than that
+someone will move the master set of files. In this case, you would
+link as follows:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ln -s /corp/masterdata/input345.txt input.txt</b></tt></pre></blockquote>
+
+<p>Now you can move the link <em class="filename">input.txt</em> anywhere in
+the filesystem: it will still be valid, provided that
+<em class="filename">input345.txt</em> never moves.
+</p>
+
+<p>Note that <a name="IXT-10-6385" />hard
+links never have this problem. With a hard link, there is no
+difference at all between the link and the original -- in fact,
+it's unfair to call one file the link and the other
+the original, since both are just links to the same inode. You
+can't even tell which one came first.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch10_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.5. Creating and Removing Links</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">10.7. Linking Directories</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

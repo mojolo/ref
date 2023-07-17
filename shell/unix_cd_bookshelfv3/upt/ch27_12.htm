@@ -1,0 +1,406 @@
+<html><head><title>Bourne Shell Quoting (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch27_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">27.12. Bourne Shell Quoting</h2>
+
+<p><a name="upt3-IDXTERM-4031" />
+<a name="upt3-IDXTERM-4032" /> <a name="upt3-IDXTERM-4033" />I can't understand why
+some people see Bourne shell quoting as a scary, mysterious set of
+many rules. Quoting on Bourne-type shells is simple. (C shell quoting
+is slightly more complicated. See <a href="ch27_13.htm#upt3-CHP-27-SECT-13">Section 27.13</a>.) 
+</p>
+
+<p><a name="IXT-27-4881" /> <a name="IXT-27-4882" /><a name="IXT-27-4883" />The overall
+idea is this: <em class="emphasis">quoting turns off (disables) the special
+meaning of characters</em>. There are three quoting characters:
+single quote (<tt class="literal">'</tt>), double quote
+(<tt class="literal">"</tt>), and backslash (<tt class="literal">\</tt>). Note
+that a backquote (<tt class="literal">`</tt>) is <em class="emphasis">not</em> a
+quoting character -- it does <b class="emphasis-bold">command
+substitution</b> (<a name="IXT-27-4884" /><a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>).
+</p>
+
+<a name="upt3-CHP-27-SECT-12.1" /><div class="sect2">
+<h3 class="sect2">27.12.1. Special Characters</h3>
+
+<p><a name="IXT-27-4885" />Listed
+<a name="IXT-27-4886" /><a name="IXT-27-4887" />below are the characters that are
+special to the Bourne shell. You've probably already
+used some of them. Quoting these characters turns off their special
+meaning. (Yes, the last three characters are quoting characters. You
+can quote quoting characters; more on that later.)
+</p>
+
+<blockquote><pre class="code"># &amp; * ? [ ] ( ) = | ^ ; &lt; &gt; ` $ " ' \</pre></blockquote>
+
+<p><a name="IXT-27-4888" />Space,
+<a name="IXT-27-4889" /><a name="IXT-27-4890" />tab, and newline also have special
+meaning as argument separators. A <a name="IXT-27-4891" />slash (<tt class="literal">/</tt>) has special
+meaning to Unix itself, but not to the shell, so quoting
+doesn't change the meaning of slashes.
+</p>
+
+<p>Newer shells have a few other special characters. For instance,
+<i class="command">bash</i> has <tt class="literal">!</tt><a name="IXT-27-4892" /> for <b class="emphasis-bold">history
+substitution</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>).
+It's similar to <b class="emphasis-bold">the C shell
+!</b> (<a href="ch27_13.htm#upt3-CHP-27-SECT-13">Section 27.13</a>) except that, in
+<i class="command">bash</i>, <tt class="literal">!</tt> loses its special
+meaning inside single quotes. To find particular differences in your
+Bourne-type shell, see the quoting section of its manual page. In
+general, though, the rules below apply to all Bourne-type shells.
+</p>
+
+</div>
+<a name="upt3-CHP-27-SECT-12.2" /><div class="sect2">
+<h3 class="sect2">27.12.2. How Quoting Works</h3>
+
+<p><a href="ch27_12.htm#upt3-CHP-27-TABLE-1">Table 27-1</a> <a name="upt3-IDXTERM-4046" /> <a name="upt3-IDXTERM-4047" />summarizes the rules; you might want to
+look back at it while you read the examples.
+</p>
+
+<a name="upt3-CHP-27-TABLE-1" /><h4 class="objtitle">Table 27-1. Bourne shell quoting characters </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Quoting character</p>
+</th>
+<th>
+<p>Explanation</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>'<em class="replaceable"><tt>xxx</tt></em>'</p>
+</td>
+<td>
+<p>Disable all special characters in <em class="replaceable"><tt>xxx</tt></em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>"<em class="replaceable"><tt>xxx</tt></em>"</p>
+</td>
+<td>
+<p>Disable all special characters in <em class="replaceable"><tt>xxx</tt></em>
+except <tt class="literal">$</tt>, <tt class="literal">'</tt>, and
+<tt class="literal">\</tt>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>\<em class="replaceable"><tt>x</tt></em></p>
+</td>
+<td>
+<p>Disable the special meaning of character
+<em class="replaceable"><tt>x</tt></em>. At end of line, a <tt class="literal">\</tt>
+removes the newline character (continues line).
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>To understand which characters will be quoted, imagine this: the
+Bourne shell reads what you type at a prompt, or the lines in a shell
+script, character by character from first to last.
+(It's actually more complicated than that, but not
+for the purposes of quoting.)
+</p>
+
+<p>When the shell reads one of the three quoting characters, it does the
+following:
+</p>
+
+<ul><li>
+<p>Strips away that quoting character</p>
+</li><li>
+<p>Turns off (disables) the special meaning of some or all other
+character(s) until the end of the quoted section, by the rules in
+<a href="ch27_12.htm#upt3-CHP-27-TABLE-1">Table 27-1</a>
+</p>
+</li></ul>
+<p>You also need to know how many characters will be quoted. The next
+few sections have examples to demonstrate those rules. Try typing the
+examples at a Bourne shell prompt, if you'd like.
+(Don't use C shell; <b class="emphasis-bold">it's different</b> (<a href="ch27_13.htm#upt3-CHP-27-SECT-13">Section 27.13</a>).) If you need to start a Bourne-type shell,
+type <i class="command">sh</i>; type <i class="command">exit</i> when
+you're done.
+</p>
+
+<ul><li>
+<p><a name="IXT-27-4893" />A <b class="emphasis-bold">backslash</b> (<tt class="literal">\</tt>) turns off the
+special meaning (if any) of the next character. For example,
+<tt class="literal">\*</tt> is a literal asterisk, not a <b class="emphasis-bold">filename wildcard</b> (<a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a>). So, the first <b class="emphasis-bold">expr</b> (<a href="ch36_21.htm#upt3-CHP-36-SECT-21">Section 36.21</a>) command
+gets the three arguments <tt class="literal">79 * 45</tt> and multiplies
+those two numbers:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>expr 79 \* 45</b></tt>
+3555
+$ <tt class="userinput"><b>expr 79 * 45</b></tt>
+expr: syntax error</pre></blockquote>
+
+<p>In the second example, without the backslash, the shell expanded
+<tt class="literal">*</tt> into a list of filenames -- which confused
+<i class="command">expr</i>. (If you want to see what I mean, repeat
+those two examples using <b class="emphasis-bold">echo</b> (<a href="ch27_05.htm#upt3-CHP-27-SECT-5">Section 27.5</a>) instead of <i class="command">expr</i>.)
+</p>
+</li>
+
+<li>
+<p><a name="IXT-27-4894" /><a name="IXT-27-4895" /><a name="IXT-27-4896" />A <b class="emphasis-bold">single quote</b> (<tt class="literal">'</tt>) turns off
+the special meaning of all characters until the next single quote is
+found. So, in the command line below, the words between the two
+single quotes are quoted. The quotes themselves are removed by the
+shell. Although this mess is probably not what you want,
+it's a good demonstration of what quoting does:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo Hey!       What's next?  Mike's #1 friend has $$.</b></tt>
+Hey! Whats next?  Mikes</pre></blockquote>
+
+<p>Let's take a close look at what happened. Spaces
+outside the quotes are treated as argument separators; the shell
+ignores the multiple spaces. <i class="command">echo</i> prints a single
+space between each argument it gets. Spaces inside the quotes are
+passed on to <i class="command">echo</i> literally. The question mark
+(<tt class="literal">?</tt>) is quoted; it's given to
+<i class="command">echo</i> as is, not used as a wildcard.
+</p>
+
+<p>So, <i class="command">echo</i> printed its first argument
+<tt class="literal">Hey!</tt> and a single space. The second argument to
+<i class="command">echo</i> is <tt class="literal">Whats next? Mikes</tt>;
+it's all a single argument because the single quotes
+surrounded the spaces (notice that <i class="command">echo</i> prints the
+two spaces after the question mark: <tt class="literal">?</tt> ). The next
+argument, <tt class="literal">#1</tt>, starts with a hash mark, which is a
+<b class="emphasis-bold">comment character</b> (<a href="ch35_01.htm#upt3-CHP-35-SECT-1">Section 35.1</a>). That means the shell will ignore the rest of
+the string; it isn't passed to
+<i class="command">echo</i>.
+</p>
+
+<p>(<i class="command">zsh</i> users: The
+<tt class="literal">#</tt><a name="IXT-27-4897" /> isn't treated as a
+comment character at a shell prompt unless you've
+run <tt class="literal">setopt interactive_comments</tt> first.)
+</p>
+</li>
+
+<li>
+<p><a name="IXT-27-4898" /> <a name="IXT-27-4899" /><b class="emphasis-bold">Double quotes</b> (") work almost like single
+quotes. The difference is that double quoting allows the characters
+<tt class="literal">$</tt><a name="IXT-27-4900" /> <a name="IXT-27-4901" /> (dollar sign), <tt class="literal">'</tt>
+(backquote), and <tt class="literal">\</tt> (backslash) to keep their
+special meanings. That lets you do <b class="emphasis-bold">variable
+substitution</b> (<a name="IXT-27-4902" /><a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>, <a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>) and <b class="emphasis-bold">command
+substitution</b> (<a name="IXT-27-4903" /><a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>) inside
+double quotes -- and also stop that substitution where you need
+to.
+</p>
+
+<p>For now, let's repeat the example above. This time,
+put double quotes around the single quotes (actually, around the
+whole string):
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo "Hey!       What's next?  Mike's #1 friend has $$."</b></tt>
+Hey!       What's next?  Mike's #1 friend has 18437.</pre></blockquote>
+
+<p>The opening double quote isn't matched until the end
+of the string. So, all the spaces between the double quotes lose
+their special meaning, and the shell passes the whole string to
+<i class="command">echo</i> as one argument. The single quotes also lose
+their special meaning because double quotes turn off the special
+meaning of single quotes! Thus, the single quotes
+aren't stripped off as they were in the previous
+example; <i class="command">echo</i> prints them.
+</p>
+
+<p>What else lost its special meaning? The hash mark
+(<tt class="literal">#</tt>) did; notice that the rest of the string was
+passed to <i class="command">echo</i> this time because it
+wasn't "commented
+out." But the dollar sign (<tt class="literal">$</tt>)
+didn't lose its meaning; the <tt class="literal">$$</tt>
+was expanded into the shell's <b class="emphasis-bold">process ID number</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>) (in this shell, <tt class="literal">18437</tt>).
+</p>
+
+</li></ul>
+<p>In the previous example, what would happen if you put the
+<tt class="literal">$</tt> inside the single quotes? (Single quotes turn
+off the meaning of <tt class="literal">$</tt>, remember.) Would the shell
+still expand <tt class="literal">$$</tt> to its value? Yes, it would: the
+single quotes have lost their special meaning, so they
+don't affect any characters between them:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo "What's next?  How many $$ did Mike's friend bring?"</b></tt>
+What's next?  How many 18437 did Mike's friend bring?</pre></blockquote>
+
+<p>How can you make both the <tt class="literal">$$</tt> and the single quotes
+print literally? The easiest way is with a backslash, which still
+works inside double quotes:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo "What's next?  How many \$\$ did Mike's friend bring?"</b></tt>
+What's next?  How many $$ did Mike's friend bring?</pre></blockquote>
+
+<p>Here's another way to solve the problem. A careful
+look at this will show a lot about shell quoting:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>echo "What's next?  How many "'$$'" did Mike's friend bring?"</b></tt>
+What's next?  How many $$ did Mike's friend bring?</pre></blockquote>
+
+<p>To read that example, remember that a double quote quotes characters
+until the next double quote is found. The same is true for single
+quotes. So, the string <tt class="literal">What's next? How many</tt> 
+(including the space at the end) is inside a pair of double quotes.
+The <tt class="literal">$$</tt> is inside a pair of single quotes. The rest
+of the line is inside another pair of double quotes. Both of the
+double-quoted strings contain a single quote; the double quotes turn
+off its special meaning and the single quote is printed literally.
+</p>
+
+</div>
+<a name="upt3-CHP-27-SECT-12.3" /><div class="sect2">
+<h3 class="sect2">27.12.3. Single Quotes Inside Single Quotes?</h3>
+
+<p>You can't put single quotes inside single quotes. A
+single quote turns off <em class="emphasis">all</em> special meaning until
+the next single quote. Use double quotes and backslashes.<a name="IXTR3-4960" /> <a name="IXTR3-4961" />
+</p>
+
+</div>
+<a name="upt3-CHP-27-SECT-12.4" /><div class="sect2">
+<h3 class="sect2">27.12.4. Multiline Quoting</h3>
+
+<p>Once <a name="upt3-IDXTERM-4061" /> <a name="upt3-IDXTERM-4062" />
+<a name="upt3-IDXTERM-4063" />you type a single quote or double quote,
+everything is quoted. The quoting can stretch across many lines. (The
+C shell doesn't work this way.)
+</p>
+
+<p>For example, in the short script shown in <a href="ch27_12.htm#upt3-CHP-27-FIG-1">Figure 27-1</a>, you might think that the
+<tt class="literal">$1</tt> is inside quotes, but it
+isn't.
+</p>
+
+<a name="upt3-CHP-27-FIG-1" /><div class="figure"><img src="figs/upt3_2701.gif" alt="Figure 27-1" width="256" /></div><h4 class="objtitle">Figure 27-1. Matching quotes</h4>
+
+<p>Actually, all argument text <em class="emphasis">except</em>
+<tt class="literal">$1</tt> is in quotes. The gray shaded area shows the
+quoted parts. So <tt class="literal">$1</tt> is expanded by the Bourne
+shell, not by <i class="command">awk</i>.
+</p>
+
+<p>Here's another example. Let's store
+a <b class="emphasis-bold">shell variable</b>
+(<a name="IXT-27-4904" /><a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>) with a multiline message, the kind that might
+be used in a shell program. A shell variable must be stored as a
+single argument; any argument separators (spaces, etc.) must be
+quoted. Inside double quotes, <tt class="literal">$</tt> and
+<tt class="literal">'</tt> are interpreted (<em class="emphasis">before</em> the
+variable is stored, by the way). The opening double quote
+isn't closed by the end of the first line; the
+Bourne shell <a name="IXT-27-4905" /><a name="IXT-27-4906" />prints <b class="emphasis-bold">secondary prompts</b> (<a href="ch28_12.htm#upt3-CHP-28-SECT-12">Section 28.12</a>) (<tt class="literal">&gt;</tt>) until all quotes
+are closed:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>greeting="Hi, $USER.</b></tt>
+<tt class="userinput"><b>&gt; The date and time now</b></tt>
+<tt class="userinput"><b>&gt; are:  `date`."</b></tt>
+$ <tt class="userinput"><b>echo "$greeting"</b></tt>
+Hi, jerry.
+The date and time now
+are:  Fri Sep  1 13:48:12 EDT 2000.
+$ <tt class="userinput"><b>echo $greeting</b></tt>
+Hi, jerry. The date and time now are: Fri Sep 1 13:48:12 EDT 2000.
+$</pre></blockquote>
+
+<p>The first <i class="command">echo</i> command line uses double quotes, so
+the shell variable is expanded, but the shell
+doesn't use the spaces and newlines in the variable
+as argument separators. (Look at the extra spaces after the word
+<tt class="literal">are</tt>:.) The second <i class="command">echo</i>
+doesn't use double quotes. The spaces and newlines
+are treated as argument separators; the shell passes 14 arguments to
+<i class="command">echo</i>, which prints them with single spaces
+between.
+</p>
+
+<p><a name="IXT-27-4907" />A backslash has a quirk you should know
+about. If you use it outside quotes, at the end of a line (just
+before the newline), the newline will be
+<em class="emphasis">deleted</em>. Inside single quotes, though, a
+backslash at the end of a line is copied as is. Here are examples.
+I've numbered the prompts (<tt class="literal">1$</tt>,
+<tt class="literal">2$</tt>, and so on):
+</p>
+
+<blockquote><pre class="code">1$ <tt class="userinput"><b>echo "a long long long long long long</b></tt>
+&gt; <tt class="userinput"><b>line or two"</b></tt>
+a long long long long long long
+line or two
+2$ <tt class="userinput"><b>echo a long long long long long long\</b></tt>
+&gt; <tt class="userinput"><b>line</b></tt>
+a long long long long long longline
+3$ <tt class="userinput"><b>echo a long long long long long long \</b></tt>
+&gt; <tt class="userinput"><b>line</b></tt>
+a long long long long long long line
+4$ <tt class="userinput"><b>echo "a long long long long long long\</b></tt>
+&gt; <tt class="userinput"><b>line"</b></tt>
+a long long long long long longline
+5$ <tt class="userinput"><b>echo 'a long long long long long long\</b></tt>
+&gt; <tt class="userinput"><b>line'</b></tt>
+a long long long long long long\
+line</pre></blockquote>
+
+<p>You've seen an example like example 1 before. The
+newline is in quotes, so it isn't an argument
+separator; <i class="command">echo</i> prints it with the rest of the
+(single, two-line) argument. In example 2, the backslash before the
+newline tells the shell to delete the newline; the words
+<tt class="literal">long</tt> and <tt class="literal">line</tt> are passed to
+<i class="command">echo</i> as one argument. Example 3 is usually what
+you want when you're typing long lists of
+command-line arguments: Type a space (an argument separator) before
+the backslash and newline. In example 4, the backslash inside the
+double quotes is ignored (compare to example 1). Inside single
+quotes, as in example 5, the backslash has no special meaning;
+it's passed on to <a name="IXTR3-4962" /> <a name="IXTR3-4963" /> <a name="IXTR3-4964" /><i class="command">echo</i>.<a name="IXTR3-4965" /> <a name="IXTR3-4966" /> <a name="IXTR3-4967" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_11.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch27_13.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">27.11. Is It "2&gt;&amp;1 file" or "&gt; file 2&gt;&amp;1"? Why?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">27.13. Differences Between Bourne and C Shell Quoting</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

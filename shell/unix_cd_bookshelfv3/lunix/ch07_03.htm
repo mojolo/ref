@@ -1,0 +1,151 @@
+<html><head><title>Cancelling a Process (Learning the Unix Operating System, 5th Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Jerry Peek, John Strang and Grace Todino-Gonguet" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00261-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Unix Operating System, 5th Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning Unix" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.3. Cancelling a Process</h2>
+
+<p>
+<a name="IXT-7-280033" />
+<a name="IXT-7-280034" />
+<a name="IXT-7-280035" />
+<a name="IXT-7-280036" />
+You may decide that you shouldn't have put a
+process in the background.
+Or you decide that the process is taking too long to execute.
+You can cancel a background process if you know its process ID.
+</p>
+
+
+
+<a name="lunix5-CHP-7-SECT-3.1" /><div class="sect2">
+<h3 class="sect2">7.3.1. kill</h3>
+
+<p>
+<a name="IXT-7-280037" />
+The <b class="emphasis-bold">kill</b> command aborts a process.
+The command's format is:
+</p>
+
+
+<p><b class="emphasis-bold">kill</b> <em class="emphasis">PID(s)</em></p>
+
+
+<p>
+<b class="emphasis-bold">kill</b> terminates the designated
+process IDs (shown under the PID heading in
+the <b class="emphasis-bold">ps</b> listing).
+If you do not know the process ID, do a <b class="emphasis-bold">ps</b>
+first to display the status of your processes.
+</p>
+
+<p>
+In the following example, the "<b class="emphasis-bold">sleep</b> 
+<em class="emphasis">n</em>" command simply causes a process to "go to
+sleep" for <em class="emphasis">n</em> number of seconds.
+We enter two commands, <b class="emphasis-bold">sleep</b> and
+<b class="emphasis-bold">who</b>,
+on the same line, as a background process.
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>(sleep 60; who)&amp;</b></tt>
+[1] 21087
+$ <tt class="userinput"><b>ps</b></tt>
+ PID    TTY   TIME  COMMAND
+20055    4    0:10  sh
+21087    4    0:01  sh
+21088    4    0:00  sleep
+21089    4    0:02  ps
+$ <tt class="userinput"><b>kill 21088</b></tt>
+[1]+  Terminated              sleep 60
+$ tom     tty2   Aug 30  11:27
+grace   tty4   Aug 30  12:24
+tim     tty5   Aug 30  07:52
+dale    tty7   Aug 30  14:34
+</pre></blockquote>
+</p>
+
+<p>
+We decided that 60 seconds was too long to wait for the
+output of <b class="emphasis-bold">who</b>.
+The <b class="emphasis-bold">ps</b> listing showed that
+<b class="emphasis-bold">sleep</b> had the process ID number
+21088, so we used
+this PID to kill the <b class="emphasis-bold">sleep</b> process.
+You should see a message like "terminated" or "killed"; if you don't,
+use another <b class="emphasis-bold">ps</b> command to be sure the
+process has been killed.
+</p>
+
+<p>
+The <b class="emphasis-bold">who</b> program is executed
+immediately, since it is no longer waiting on
+<b class="emphasis-bold">sleep</b>; it lists the users logged
+into the system.
+</p>
+</div>
+
+
+
+
+<a name="lunix5-CHP-7-SECT-3.2" /><div class="sect2">
+<h3 class="sect2">7.3.2. Problem checklist</h3>
+
+<p>
+<a name="IXT-7-280038" />
+</p>
+
+<dl>
+<dt><i><em class="emphasis">The process didn't die when I told it to.</em></tt></i></dt><dd>
+
+Some processes can be hard to kill.  If a normal kill of these
+processes is not working, 
+enter "<b class="emphasis-bold">kill -9</b> 
+<em class="emphasis">PID</em></tt>".  This is
+a sure kill and can destroy almost anything, including the shell that
+is interpreting it.
+</p>
+
+<p>
+In addition, if you've run an interpreted program (such as a shell
+script), you may not be able to kill all dependent processes by
+killing the interpreter process that got it all started; you may need
+to kill them individually.  However, killing a process that is feeding
+data into a pipe generally kills any processes receiving that
+data.
+</p>
+</dd>
+
+</dl>
+
+
+
+<a name="IXTR3-134" />
+<a name="IXTR3-135" />
+<a name="IXTR3-136" />
+<a name="IXTR3-137" />
+<a name="IXTR3-138" />
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.2. Checking on a Process</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8. Where to Go from Here</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

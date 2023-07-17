@@ -1,0 +1,103 @@
+<html><head><title>How Unix Keeps Time (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch37_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch37_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">37.6. How Unix Keeps Time</h2>
+
+<p><a name="IXT-37-3131" /><a name="IXT-37-3132" />Like
+<a name="IXT-37-3133" />all other operating systems, Unix has a
+concept of the time. And virtually all Unix systems, even the
+smallest, include a clock with some sort of battery backup built in.
+</p>
+
+<p>All Unix systems keep time by counting the number of microseconds
+since midnight, January 1, 1970, Greenwich Mean Time. This date is
+commonly called the
+<em class="emphasis">epoch</em><a name="IXT-37-3134" />,
+and it has folk-significance as the begining of the Unix era.
+Although the first work on Unix began in the late
+'60s, the first versions of Unix were available
+(within Bell Laboratories) in the early '70s.
+</p>
+
+<p>This count gets updated roughly 60 times per second. The exact rate
+depends on your particular Unix system and is determined by the
+constant, <a name="IXT-37-3135" />HZ, defined in the header file
+<em class="filename">/usr/include/sys/param.h</em>:<a href="#FOOTNOTE-118">[118]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-118" /><p> [118]It may
+be in a file included thereby; on
+<a name="IXT-37-3136" />Linux, a bit of hunting shows it
+in <em class="filename">/usr/include/asm/param.h</em>. The value may vary
+from system to system, as well.</p> </blockquote>
+
+<blockquote><pre class="code">#define   HZ   60</pre></blockquote>
+
+<p>This is the time's
+"resolution," often referred to as
+the clock's
+"tick." Note that it has nothing to
+do with your system's CPU clock rate. Time
+measurements are normally no more precise than your
+system's clock resolution, although some systems
+have added facilities for more precise timing.
+</p>
+
+<p><a name="IXT-37-3137" />If your Unix
+system belongs to a <a name="IXT-37-3138" /><a name="IXT-37-3139" />network, it is important to keep all
+the clocks on the network "in
+sync." <a href="#FOOTNOTE-119">[119]</a> Strange things happen if you copy a file from one system
+to another and its date appears to be some time in the future. Many
+Unix systems run a <em class="emphasis">time daemon</em> (one of those
+mysterious <b class="emphasis-bold">helper programs</b> (<a href="ch01_10.htm#upt3-CHP-1-SECT-10">Section 1.10</a>)) to take care of this.<a href="#FOOTNOTE-120">[120]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-119" /><p> [119]This is particularly true if
+your system runs public services such as mail or HTTP.</p>
+</blockquote><blockquote class="footnote"> <a name="FOOTNOTE-120" /><p> [120]A
+popular choice for network time synchronization is
+<em class="emphasis">ntp</em>, available from
+<a href="http://www.eecis.udel.edu/~ntp/">http://www.eecis.udel.edu/~ntp/</a>.</p>
+</blockquote>
+
+<p>Unix automatically keeps track of daylight savings time (summer
+time), leap years, and other chronological trivia. When the system is
+installed, you have to tell it your time zone and the style of
+daylight savings time you want to observe. As Unix has become an
+international standard, the number of time zones (and obscure ways of
+handling daylight savings time) it can handle correctly has
+proliferated. In a few cases, you still have to handle these things
+by hand; for example, in Europe, as of this writing, the beginning
+and end of Summer Time were set periodically by the European
+Parliament, and so may change. Care for Libyan Standard Time?
+</p>
+
+<p>Unix's internal routines compute time in relation to
+the epoch, but there is no reason for you to worry about it unless
+you're a C programmer. A library of time routines
+can convert between this internal representation and more usable
+representations; see the Unix manual page for
+<em class="emphasis">ctime</em><a name="IXT-37-3140" />(3).
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch37_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch37_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">37.5. Quoting and Command-Line Parameters</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">37.7. Copy What You Do with script</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

@@ -1,0 +1,162 @@
+<html><head><title>Finding File Types (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch12_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">12.6. Finding File Types</h2>
+
+<p><a name="IXT-12-6470" /><a name="IXT-12-6471" />Many different kinds of files live on
+the typical Unix system: database files, executable files, regular
+text files, files for applications like StarOffice,
+<i class="command">tar</i> files, mail messages, directories, font files,
+and so on.
+</p>
+
+<p>You often want to check to make sure you have the right
+"kind" of file before doing
+something. For example, you'd like to read the file
+<i class="command">tar</i>. But before typing <tt class="literal">more
+tar</tt>, you'd like to know whether this file
+is your set of notes on carbon-based sludge or the
+<i class="command">tar</i> executable. If you're wrong,
+the consequences might be unpleasant. Sending the
+<i class="command">tar</i> executable to your screen might screw up your
+terminal settings, log you off, or do any number of unpleasant
+things.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: file</p>
+
+<p>The <i class="command">file</i><a name="IXT-12-6472" /> utility tells you what sort of file
+something is. It's fairly self-explanatory:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>file /bin/sh</b></tt>
+/bin/sh:       sparc demand paged executable
+% <tt class="userinput"><b>file 2650</b></tt>
+2650:          [nt]roff, tbl, or eqn input text
+% <tt class="userinput"><b>file 0001,v</b></tt>
+0001,v:        ascii text
+% <tt class="userinput"><b>file foo.sh</b></tt>
+foo.sh:        shell commands</pre></blockquote>
+
+<p><i class="command">file</i> is actually quite clever though it
+isn't always correct -- some versions are better
+than others. It doesn't just tell you if
+something's binary or text; it looks at the
+beginning of the file and tries to figure out what
+it's doing. So, for example, you see that file
+<em class="emphasis">2650</em> is an <b class="emphasis-bold">nroff</b> (<a href="ch45_12.htm#upt3-CHP-45-SECT-12">Section 45.12</a>) file and
+<em class="emphasis">foo.sh</em> is a shell script. It
+isn't quite clever enough to figure out that
+<em class="emphasis">0001,v</em> is an <b class="emphasis-bold">RCS</b> (<a href="ch39_05.htm#upt3-CHP-39-SECT-5">Section 39.5</a>) archive,
+but it does know that it's a plain ASCII text file.
+</p>
+
+<p>Many versions of <i class="command">file</i> can be customized to
+recognize additional file types. The file
+<em class="emphasis">/etc/magic</em> tells <i class="command">file</i> how to
+recognize different kinds of files. [My Linux system has the
+<i class="command">file</i> command from
+<em class="emphasis">ftp://ftp.astron.com/pub/file/</em>, which uses a
+multiple-database format. It's updated fairly often
+to understand new file formats.  -- <em class="emphasis">JP</em>]
+It's capable of a lot (and should be capable of even
+more), but we'll satisfy ourselves with an
+introductory explanation. Our goal will be to teach
+<i class="command">file</i> to recognize <a name="IXT-12-6473" />RCS archives.
+</p>
+
+<p><em class="emphasis">/etc/magic</em> has four fields:</p>
+
+
+<p><em class="replaceable"><tt>offset data-type value file-type</tt></em></p>
+
+
+<p>These are as follows:</p>
+
+<dl>
+<dt><i><tt><em class="replaceable"><tt>offset</tt></em></tt></i></dt>
+<dd>
+The offset into the file at which <em class="emphasis">magic</em></tt> will try
+to find something. If you're looking for something
+right at the beginning of the file, the offset should be
+<tt class="literal">0</tt>. (This is usually what you want.)
+</p>
+</dd>
+
+
+<dt><i><tt><em class="replaceable"><tt>data-type</tt></em></tt></i></dt>
+<dd>
+The type of test to make. Use <tt class="literal">string</tt> for text
+comparisons, <tt class="literal">byte</tt> for byte comparisons,
+<tt class="literal">short</tt> for two-byte comparisons, and
+<tt class="literal">long</tt> for four-byte comparisons.
+</p>
+</dd>
+
+
+<dt><i><tt><em class="replaceable"><tt>value</tt></em></tt></i></dt>
+<dd>
+The value you want to find. For string comparisons, any text string
+will do; you can use the standard Unix escape sequences (such as
+<tt class="literal">\n</tt> for newline). For numeric comparisons (byte,
+short, long), this field should be a number, expressed as a C
+constant (e.g., <tt class="literal">0x77</tt> for the hexadecimal byte 77).
+</p>
+</dd>
+
+
+<dt><i><tt><em class="replaceable"><tt>file-type</tt></em></tt></i></dt>
+<dd>
+The string that <i class="command">file</i> will print if this test
+succeeds.
+</p>
+</dd>
+
+</dl>
+
+<p>So, we know that RCS archives begin with the word
+<tt class="literal">head</tt>. This word is right at the beginning of the
+file (offset 0). Since we obviously want a string comparison, we make
+the the following addition to <em class="emphasis">/etc/magic</em>:
+</p>
+
+<blockquote><pre class="code">0     string     head     RCS archive</pre></blockquote>
+
+<p>This says, "The file is an RCS archive if you find
+the string <tt class="literal">head</tt> at an offset of 0 bytes from the
+beginning of the file." Does it work?
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>file RCS/0001,v</b></tt>
+RCS/0001,v:        RCS archive</pre></blockquote>
+
+<p>As I said, the tests can be much more complicated, particularly if
+you're working with binary files. To recognize
+simple text files, this is all you need to know.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch12_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch12_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">12.5. What's in That Whitespace?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">12.7. Squash Extra Blank Lines</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

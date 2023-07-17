@@ -1,0 +1,344 @@
+<html><head><title>History Substitutions (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch30_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">30.8. History Substitutions</h2>
+
+<p><a name="upt3-IDXTERM-4670" /> <a name="upt3-IDXTERM-4671" />Although <a name="upt3-IDXTERM-4672" />most of the examples here use
+<i class="command">echo</i> to demonstrate clearly just what is going on,
+you'll normally use history with other Unix
+commands.
+</p>
+
+<p><a name="IXT-30-4238" /><a name="IXT-30-4239" /><a name="IXT-30-4240" />The <a name="IXT-30-4241" />exclamation point
+(<tt class="literal">!</tt>) is the <b class="emphasis-bold">default</b> (<a href="ch30_15.htm#upt3-CHP-30-SECT-15">Section 30.15</a>) history
+substitution character. This allows you to recall previously entered
+commands and re-execute them without retyping. To use the
+<tt class="literal">!</tt> in a command line, you have several choices.
+Some of the following examples are more of a headache than they may
+be worth, but they are also used to <b class="emphasis-bold">select
+arguments from the command line in aliases</b> (<a href="ch29_03.htm#upt3-CHP-29-SECT-3">Section 29.3</a>): 
+</p>
+
+<ul><li>
+<p><tt class="literal">!!</tt><a name="IXT-30-4242" /> repeats the last command.
+</p>
+</li><li>
+<p><tt class="literal">!:</tt> repeats the last command. This form is used if
+you want to add a <b class="emphasis-bold">modifier</b> (<a href="ch28_05.htm#upt3-CHP-28-SECT-5">Section 28.5</a>) like the following:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo xy</b></tt>
+xy
+% <tt class="userinput"><b>!:s/xy/yx</b></tt>
+echo yx
+yx</pre></blockquote>
+<p>The second <tt class="literal">!</tt> was left out.</p>
+</li><li>
+<p><tt class="literal">!so</tt> repeats the last command that starts with
+<tt class="literal">so</tt>.
+</p>
+</li><li>
+<p><tt class="literal">!?fn?</tt> repeats the last command that has
+<tt class="literal">fn</tt> anywhere in it. The string could be found in an
+argument or in the command name. This is opposed to
+<tt class="literal">!fn</tt>, in which <tt class="literal">!fn</tt> must be in a
+command name. (The last <tt class="literal">?</tt> need not be there. Thus
+<tt class="literal">!?fn</tt> means the same thing.)
+</p>
+</li><li>
+<p><tt class="literal">!34</tt> executes command number
+34. You can find the appropriate history number when you list your
+history using the <i class="command">history</i> command, or by <b class="emphasis-bold">putting the history number in your prompt</b>
+(<a href="ch04_03.htm#upt3-CHP-4-SECT-3">Section 4.3</a>).
+</p>
+</li><li>
+<p><tt class="literal">!! &amp;</tt> adds an ampersand
+(<tt class="literal">&amp;</tt>) to the end of the last command, which
+executes it and places it into the background. You can add anything
+to the end of a previous command. For example:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cat -v foo</b></tt>
+       ...
+% <tt class="userinput"><b>!! | more</b></tt>
+cat -v foo | more
+       ...</pre></blockquote>
+<p>In this case the shell will repeat the command to be executed and run
+it, adding the pipe through the <i class="command">more</i> pager.
+Another common usage is:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cat -v foo</b></tt>
+       ...
+% <tt class="userinput"><b>!! &gt; out</b></tt>
+cat -v foo &gt; out</pre></blockquote>
+<p>which returns the command but redirects the output into a file.</p>
+</li><li>
+<p><tt class="literal">!:0</tt> selects only the command
+name, rather than the entire command line.
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>/usr/bin/grep Ah fn1</b></tt>
+       ...
+% <tt class="userinput"><b>!:0 Bh fn2</b></tt>
+/usr/bin/grep Bh fn2</pre></blockquote>
+
+<p>Note that as an <b class="emphasis-bold">operator</b> (<a href="ch28_05.htm#upt3-CHP-28-SECT-5">Section 28.5</a>,),
+<tt class="literal">:0</tt><a name="IXT-30-4243" /> can be appended to these
+history substitutions as well. For example, <tt class="literal">!!:0</tt>
+will give the last command name, and a colon followed by any number
+will give the corresponding argument. For example,
+<tt class="literal">!:3</tt> gives the third argument:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cat fn fn1 fn2</b></tt>
+       ...
+% <tt class="userinput"><b>more !:3</b></tt>
+more fn2
+       ...</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">!:2-4</tt> gives the second through the fourth
+argument; use any numbers you choose:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo 1 2 3 4 5</b></tt>
+1 2 3 4 5
+% <tt class="userinput"><b>echo !:2-4</b></tt>
+echo 2 3 4
+2 3 4</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">!:-3</tt> gives zero through the third argument; use
+any number you wish:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo 1 2 3 4</b></tt>
+1 2 3 4
+% <tt class="userinput"><b>echo !:-3</b></tt>
+echo echo 1 2 3
+echo 1 2 3</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">!^</tt><a name="IXT-30-4244" />
+gives the first argument of the previous command. This is the same as
+<tt class="literal">!:1</tt>. Remember that just as the
+<tt class="literal">^</tt> (caret) is the beginning-of-line anchor in
+<b class="emphasis-bold">regular expressions</b> (<a href="ch32_05.htm#upt3-CHP-32-SECT-5">Section 32.5</a>), <tt class="literal">!^</tt> gives the beginning
+history argument.
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cat fn fn1 fn2</b></tt>
+       ...
+% <tt class="userinput"><b>more !^</b></tt>
+more fn
+       ...</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">!$</tt><a name="IXT-30-4245" />
+gives the last argument of the last command. In the same way that
+<tt class="literal">$</tt> (dollar sign) is the end-of-line anchor in
+regular expressions, <tt class="literal">!$</tt> gives the ending history
+argument. Thus:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>cat fn</b></tt>
+       ...
+% <tt class="userinput"><b>more !$</b></tt>
+more fn
+       ...</pre></blockquote>
+
+<p>The new command (<tt class="literal">more</tt>) is given the last argument
+of the previous command. This is also handy for pulling the last
+argument from earlier commands, which is typically a filename. To get
+the last argument from the previous <i class="command">vi</i> command,
+for example, you'd use <tt class="literal">!vi:$</tt>. So
+you could type <tt class="literal">lpr !vi:$</tt> to print the last file
+you edited with <i class="command">vi</i>.
+</p>
+</li><li>
+<p><tt class="literal">!*</tt><a name="IXT-30-4246" />is shorthand for
+the first through the last argument. This is used a lot in
+<a name="IXT-30-4247" />aliases:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo 1 2 3 4 5</b></tt>
+1 2 3 4 5
+% <tt class="userinput"><b>echo !*</b></tt>
+echo 1 2 3 4 5
+1 2 3 4 5</pre></blockquote>
+<p>In an alias:</p>
+<blockquote><pre class="code">alias vcat 'cat -v \!* | more'</pre></blockquote>
+<p>This alias will pipe the output of <b class="emphasis-bold">cat
+-v</b> (<a href="ch12_04.htm#upt3-CHP-12-SECT-4">Section 12.4</a>) command through
+<i class="command">more</i>. The backslash (<tt class="literal">\</tt>) has to
+be there to hide the history character, <tt class="literal">!</tt>, until
+the alias is used -- see <a href="ch29_03.htm#upt3-CHP-29-SECT-3">Section 29.3</a> for
+more information.
+</p>
+</li><li>
+<p><tt class="literal">!:2*</tt> gives the second through the last arguments;
+use any number you wish:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo 1 2 3 4 5</b></tt>
+1 2 3 4 5
+% <tt class="userinput"><b>echo !:2*</b></tt>
+echo 2 3 4 5
+2 3 4 5</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">!:2-</tt> is like <tt class="literal">2*</tt> but the last
+argument is dropped:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo 1 2 3 4 5</b></tt>
+1 2 3 4 5
+% <tt class="userinput"><b>echo !:2-</b></tt>
+echo 2 3 4
+2 3 4</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">!?fn?%</tt> gives the first word found that has
+<tt class="literal">fn</tt> in it:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>sort fn1 fn2 fn3</b></tt>
+       ...
+% <tt class="userinput"><b>echo !?fn?%</b></tt>
+echo fn1
+fn1</pre></blockquote>
+<p>That found the <tt class="literal">fn</tt> in <tt class="literal">fn1</tt>. You
+can get wilder with:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo 1 2 3 4 5</b></tt>
+1 2 3 4 5
+% <tt class="userinput"><b>echo !?ec?^</b></tt>
+echo 1
+1</pre></blockquote>
+<p>That selected the command that had <tt class="literal">ec</tt> in it, and
+the caret (<tt class="literal">^</tt>) said to give the first argument of
+that command. You can also do something like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo fn fn1 fn2</b></tt>
+fn fn1 fn2
+% <tt class="userinput"><b>echo !?fn1?^ !$</b></tt>
+echo fn fn2
+fn fn2</pre></blockquote>
+
+<p>That cryptic command told the shell to look for a command that had
+<tt class="literal">fn1</tt> in it (<tt class="literal">!?fn1?</tt>), and gave
+the first argument of that command (<tt class="literal">^</tt>). Then it
+gave the last argument (<tt class="literal">!$</tt>).
+</p>
+</li><li>
+<p><tt class="literal">^xy^yx</tt><a name="IXT-30-4248" /> <a name="IXT-30-4249" /> is the <b class="emphasis-bold">shorthand substitution</b> (<a href="ch30_03.htm#upt3-CHP-30-SECT-3">Section 30.3</a>, <a href="ch30_05.htm#upt3-CHP-30-SECT-5">Section 30.5</a>) command. In
+the case of:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo xxyyzzxx</b></tt>
+xxyyzzxx
+% <tt class="userinput"><b>^xx^ab</b></tt>
+echo abyyzzxx
+abyyzzxx</pre></blockquote>
+<p>it replaced the first set of characters <tt class="literal">xx</tt> with
+<tt class="literal">ab</tt>. This makes editing the previous command much
+easier.
+</p>
+</li><li>
+<p><tt class="literal">!!:s/xx/ab/</tt> is doing the same thing as the
+previous example, but it is using the
+<a name="IXT-30-4250" />substitute command
+instead of the <tt class="literal">^</tt>. This works for any previous
+command, as in:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>more afile bfile</b></tt>
+       ...
+% <tt class="userinput"><b>echo xy</b></tt>
+xy
+% <tt class="userinput"><b>!m:s/b/c/</b></tt>
+more afile cfile</pre></blockquote>
+
+<p>You do not have to use the slashes (<tt class="literal">/</tt>); any
+character can act as a delimiter.
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>!!:s:xy:yx</b></tt></pre></blockquote>
+
+<p>There we used colons (:), good when the characters
+you're trying to edit contain a slash. If you want
+to add more to the replacement, use <tt class="literal">&amp;</tt> to
+"replay it" and then add on
+whatever you like:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo xy</b></tt>
+xy
+% <tt class="userinput"><b>!!:s/xy/&amp;yx</b></tt>
+echo xyyx
+xyyx</pre></blockquote>
+
+<p>The <tt class="literal">&amp;</tt> in the replacement part said to give
+what the search part found, which was the <tt class="literal">xy</tt>
+characters.
+</p>
+
+<p>The search part, or left side, cannot include <b class="emphasis-bold">metacharacters</b> (<a href="ch32_03.htm#upt3-CHP-32-SECT-3">Section 32.3</a>).
+You must type the actual string you are looking for.
+</p>
+
+<p>Also, the example above replaces only the first occurrence of
+<tt class="literal">xy</tt>. <a name="IXT-30-4251" />To replace them all, use
+<em class="emphasis">g</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo xy xy xy xy</b></tt>
+xy xy xy xy
+% <tt class="userinput"><b>!!:s/xy/yx/</b></tt>
+echo yx xy xy xy
+yx xy xy xy
+% <tt class="userinput"><b>!!:gs/xy/yx/</b></tt>
+echo yx yx yx yx
+yx yx yx yx</pre></blockquote>
+
+<p>The <em class="emphasis">g</em> command in this case meant
+"do all the
+<tt class="literal">xy</tt> s." And oddly enough, the
+<em class="emphasis">g</em> has to come before the <em class="emphasis">s</em>
+command. This may seem odd to those of you familiar with
+<i class="command">vi</i>, so be careful.
+</p>
+
+<p>Or you could have done this:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo xy xy xy xy</b></tt>
+xy xy xy xy
+% <tt class="userinput"><b>!!:s/xy/yx/</b></tt>
+echo yx xy xy xy
+yx xy xy xy
+% <tt class="userinput"><b>!!:g&amp;</b></tt>
+echo yx yx yx yx
+yx yx yx yx</pre></blockquote>
+
+<p>In this example, we told the shell to globally
+(<tt class="literal">:g</tt><a name="IXT-30-4252" />) replace every matched string from the
+last command with the last substitution (<tt class="literal">&amp;</tt>).
+Without the <em class="emphasis">g</em> command, the shells would have
+replaced just <a name="IXTR3-4337" />one more <tt class="literal">xy</tt>
+<a name="IXTR3-4338" />
+<a name="IXTR3-4339" />with
+<tt class="literal">yx</tt>.
+</p>
+</li></ul>
+<p> <em class="emphasis">-- DR</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch30_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch30_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">30.7. History by Number</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">30.9. Repeating a Cycle of Commands</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

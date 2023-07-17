@@ -1,0 +1,168 @@
+<html><head><title>Command-Line Syntax (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">2.2. Command-Line Syntax</h2>
+
+<p>
+<a name="IXT-2-265344" />
+<a name="IXT-2-265345" />
+<a name="IXT-2-265346" />
+<a name="IXT-2-265347" />
+You invoke sed and awk in much the same way.  The command-line
+syntax is:</p>
+
+
+<p><em class="replaceable"><tt>command </em>[<em class="replaceable">options</em>] <em class="replaceable">script filename</tt></em></p>
+
+
+<p>
+<a name="IXT-2-265348" />
+<a name="IXT-2-265349" />
+<a name="IXT-2-265350" />
+<a name="IXT-2-265351" />
+Like almost all UNIX programs, sed and awk can take input from
+standard input and send the output to standard output.  If a
+<em class="emphasis">filename</em> is specified, input is taken from
+that file. The output
+contains the processed information.  Standard output is the display
+screen, and typically the output from these programs is directed
+there.  It can also be sent to a file, using I/O redirection in the
+shell, but it must not go to the same file that supplies input to the
+program.</p>
+
+<p>
+<a name="IXT-2-265352" />
+The <em class="emphasis">options</em> for each command are different.  
+We will demonstrate many of these options in upcoming sections. 
+(The complete list
+of command-line options for sed can be found in <a href="appa_01.htm">Appendix A, "Quick Reference for sed"</a>;
+the complete list of options for awk is in <a href="appb_01.htm">Appendix B, "Quick Reference
+for awk"</a>.)</p>
+
+<p>
+<a name="IXT-2-265353" />
+<a name="IXT-2-265354" />
+<a name="IXT-2-265355" />
+<a name="IXT-2-265356" />
+The <em class="emphasis">script</em> specifies what instructions to perform. 
+If specified on the command line, the script must
+be surrounded in single quotes if it contains a space or any
+characters that might be interpreted by the shell ($ and * for
+instance).</p>
+
+<p>
+<a name="IXT-2-265357" />
+<a name="IXT-2-265358" />
+<a name="IXT-2-265359" />
+One option common to both sed and awk is
+the <span class="option">-f</span> option 
+that allows you to specify the name of a script file. 
+As a script grows in size, it is convenient to place
+it in a file.  Thus, you might invoke sed as follows:</p>
+
+<blockquote><pre class="code"><tt class="literal">sed -f</tt> <em class="replaceable"><tt>scriptfile</em> <em class="replaceable">inputfile</tt></em></pre></blockquote><p><a href="ch02_02.htm#sedawk-ch-2-fig-1">Figure 2.1</a> shows the basic operation of sed
+and awk.  Each program reads one input line at a time from the input
+file, makes a copy of the input line, and executes the instructions
+specified in the script on that copy.  Thus, changes made to the input
+line do not affect the actual input file.</p>
+
+<a name="sedawk-ch-2-fig-1" /><div class="figure"><img src="figs/sed_0201.gif" alt="Figure 2.1" width="503" /></div><h4 class="objtitle">Figure 2.1. How sed and awk work</h4>
+<a name="sedawk-ch-2-sect-2.1" /><div class="sect2">
+<h3 class="sect2">2.2.1. Scripting</h3>
+
+<p>
+<a name="IXT-2-265360" />
+A script is where you tell the program what to do.  At least one line of
+instruction is required.  Short scripts can be specified on the
+command line; longer scripts are usually placed in a file where they
+can easily be revised and tested.  In writing a script, keep in mind
+the sequence in which instructions will be executed and how each
+instruction changes the input line.</p>
+
+<p>
+<a name="IXT-2-265361" />
+<a name="IXT-2-265362" />
+<a name="IXT-2-265363" />
+<a name="IXT-2-265364" />
+<a name="IXT-2-265365" />
+In sed and awk, each instruction has two parts: a
+<em class="emphasis">pattern</em> and a
+<em class="emphasis">procedure</em>.  The pattern is a regular
+expression delimited with slashes (/).  A procedure specifies
+one or more actions to be performed.</p>
+
+<p>As each line of input is read, the program reads the first instruction
+in the script and checks the <em class="emphasis">pattern</em>
+against the current line.  If there is no match, the
+<em class="emphasis">procedure</em> is ignored and the next
+instruction is read.  If there is a match, then the action or actions
+specified in the <em class="emphasis">procedure</em> are followed.
+All of the instructions are read, not just the first instruction that
+matches the input line.</p>
+
+<p>When all the applicable instructions have been interpreted and applied
+for a single line, sed outputs the line and repeats the cycle for each
+input line.  Awk, on the other hand, does not
+<em class="emphasis">automatically</em> output the line; the instructions
+in your script control what is finally done with it.</p>
+
+<p>The contents of a procedure are very different in sed and awk.  In
+sed, the procedure consists of editing commands like those used in the
+line editor.  Most commands consist of a single letter.</p>
+
+<p>In awk, the procedure consists of programming statements and
+functions.  A procedure must be surrounded by braces.</p>
+
+<p>In the sections that follow, we'll look at a few scripts that process
+a sample mailing list.</p>
+</div>
+
+
+
+
+<a name="sedawk-ch-2-sect-2.2" /><div class="sect2">
+<h3 class="sect2">2.2.2. Sample Mailing List</h3>
+
+<p>In the upcoming sections, the examples use a sample file, named
+<em class="emphasis">list</em>.  It contains a list of names and addresses,
+as shown below.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat list</b></tt>
+John Daggett, 341 King Road, Plymouth MA
+Alice Ford, 22 East Broadway, Richmond VA
+Orville Thomas, 11345 Oak Bridge Road, Tulsa OK
+Terry Kalkas, 402 Lans Road, Beaver Falls PA
+Eric Adams, 20 Post Road, Sudbury MA
+Hubert Sims, 328A Brook Road, Roanoke VA
+Amy Wilde, 334 Bayshore Pkwy, Mountain View CA
+Sal Carpenter, 73 6th Street, Boston MA</pre></blockquote>
+
+<p>If you like, create this file on your system or use a similar one of
+your own making.  Because many of the examples in this chapter are
+short and interactive, you can enter them at your keyboard and verify
+the results.</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch02_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch02_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">2. Understanding
+Basic Operations</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">2.3. Using sed</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

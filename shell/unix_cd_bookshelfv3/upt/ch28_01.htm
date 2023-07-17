@@ -1,0 +1,135 @@
+<html><head><title>Saving Time on the Command Line (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch28_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 28. Saving Time on the Command Line</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch28_01.htm#sect1">What's Special About the Unix Command Line</a><br />
+<a href="ch28_02.htm">Reprinting Your Command Line with CTRL-r</a><br />
+<a href="ch28_03.htm">Use Wildcards to Create Files?</a><br />
+<a href="ch28_04.htm">Build Strings with { }</a><br />
+<a href="ch28_05.htm">String Editing (Colon) Operators</a><br />
+<a href="ch28_06.htm">Automatic Completion</a><br />
+<a href="ch28_07.htm">Don't Match Useless Files in Filename Completion</a><br />
+<a href="ch28_08.htm">Repeating Commands</a><br />
+<a href="ch28_09.htm">Repeating and Varying Commands</a><br />
+<a href="ch28_10.htm">Repeating a Command with Copy-and-Paste</a><br />
+<a href="ch28_11.htm">Repeating a Time-Varying Command</a><br />
+<a href="ch28_12.htm">Multiline Commands, Secondary Prompts</a><br />
+<a href="ch28_13.htm">Here Document Example #1: Unformatted Form Letters</a><br />
+<a href="ch28_14.htm">Command Substitution</a><br />
+<a href="ch28_15.htm">Handling Lots of Text with Temporary Files</a><br />
+<a href="ch28_16.htm">Separating Commands with Semicolons</a><br />
+<a href="ch28_17.htm">Dealing with Too Many Arguments</a><br />
+<a href="ch28_18.htm">Expect</a><br /></p></div><div class="sect1"><a name="upt3-CHP-28-SECT-1" />
+<h2 class="sect1"><a name="sect1" />28.1. What's Special About the Unix Command Line</h2>
+
+<blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Summary Box</h4>
+<p><a name="upt3-IDXTERM-4155" />One of Unix's best
+features is the shell's command line. Why? Nearly
+every modern operating system has a command line; we
+don't use card readers with obscure job setup cards
+any more. What makes Unix's special?
+</p>
+&nbsp;
+<p><a name="IXT-28-4539" />The Unix
+shell command line allows lots of shortcuts. Some of these
+you'll find in other operating systems; some you
+won't. In this chapter, we'll
+introduce a lot of these shortcuts. Among other things,
+we'll discuss:
+</p>
+&nbsp;
+<ul><li>
+<p>How to <b class="emphasis-bold">run commands more than
+once</b> (<a href="ch28_08.htm#upt3-CHP-28-SECT-8">Section 28.8</a>).
+</p>
+</li><li>
+<p><b class="emphasis-bold">Filename completion</b>
+(<a name="IXT-28-4540" /><a href="ch28_06.htm#upt3-CHP-28-SECT-6">Section 28.6</a>, <a href="ch28_07.htm#upt3-CHP-28-SECT-7">Section 28.7</a>), which allows you to type the beginning of a
+filename and let the shell fill in the rest. (This is finally
+possible on certain Redmond-born OSes as well, but it usually
+involves a registry hack or two.)
+</p>
+</li><li>
+<p><b class="emphasis-bold">Command substitution</b>
+(<a name="IXT-28-4541" /><a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a>), which lets you use the output from one
+command as arguments to another. (Note that this is
+<em class="emphasis">different</em> from pipelining.)
+</p>
+</li><li>
+<p><a name="IXT-28-4542" /><a name="IXT-28-4543" />Process substitution in
+<i class="command">bash</i>, and a script named <i class="command">!</i> for
+other shells, lets you put the output of a command into a temporary
+file and give that filename to a process.
+</p>
+</li><li>
+<p>The ability to <b class="emphasis-bold">repeat commands with various
+methods</b> (<a href="ch28_10.htm#upt3-CHP-28-SECT-10">Section 28.10</a>, <a href="ch28_11.htm#upt3-CHP-28-SECT-11">Section 28.11</a>). 
+</p>
+</li><li>
+<p>Handling of <b class="emphasis-bold">command lines that become too
+long</b> (<a href="ch28_17.htm#upt3-CHP-28-SECT-17">Section 28.17</a>).
+</p>
+</li></ul>
+&nbsp;
+<p>Some fundamental command-line features that we
+aren't discussing in this chapter, but which are
+discussed elsewhere, are:
+</p>
+&nbsp;
+<ul><li>
+<p><b class="emphasis-bold">Job control</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>), which lets you run several commands at the
+same time.
+</p>
+</li><li>
+<p><b class="emphasis-bold">Aliases</b> (<a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>), or abbreviations, for commands. <b class="emphasis-bold">Shell functions</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>)
+are similar.
+</p>
+</li><li>
+<p><b class="emphasis-bold">Command-line editing</b> (<a href="ch30_14.htm#upt3-CHP-30-SECT-14">Section 30.14</a>) and <b class="emphasis-bold">history
+substitution</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>). These are two
+different ways (both useful) to
+"recall" previous commands.
+</p>
+</li><li>
+<p><b class="emphasis-bold">Quoting</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>, <a href="ch27_13.htm#upt3-CHP-27-SECT-13">Section 27.13</a>), the way you
+"protect" special characters from
+the Unix shell.
+</p>
+</li><li>
+<p><b class="emphasis-bold">Wildcards</b> (<a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a>). 
+</p>
+</li></ul>
+<p>You don't need to be a command-line virtuoso to use
+Unix effectively. But you'd be surprised at how much
+you can do with a few tricks. If all you can do at the command line
+is type <tt class="literal">ls</tt> or start Mozilla or the Gimp,
+you're missing out on a lot.
+</p>
+&nbsp;
+<p> <em class="emphasis">-- ML</em></p>
+</td></tr></table><p></blockquote>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_18.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch28_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">27.18. How Many Backslashes?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">28.2. Reprinting Your Command Line with CTRL-r</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

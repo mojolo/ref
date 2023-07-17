@@ -1,0 +1,320 @@
+<html><head><title>refer (UNIX in a Nutshell: System V Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-427-4" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX in a Nutshell: System V Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch17_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="part4.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h2 class="sect1">17.4. refer</h2><p>
+<a name="ch17.troff1d" />
+<a name="ch17.troff2d" />
+<a name="ch17.troff3d" />
+<a name="ch17.troff4d" />
+<a name="ch17.troff4e" />Along with several associated commands,
+<tt class="literal">refer</tt> is a preprocessor for
+managing a database of bibliographic references.
+The database is kept in a separate file, and short references
+within a document are replaced by an expanded formal version.</p>
+<p>The alphabetical command summary at the end of this section
+lists the usage and options for <tt class="literal">refer</tt> and
+the other commands that work with bibliographic databases.</p>
+<p><tt class="literal">refer</tt> is not supplied with SVR4, but it is
+a standard part of Solaris.</p>
+
+<a name="unut-ch-17-sect-4.1" /><div class="sect2"><h3 class="sect2">17.4.1. Bibliographic Entries</h3><p>Bibliographic databases are text files, with each entry separated from the
+next by one or more blank lines.
+Within an entry, each field consists of a key letter (given
+as <tt class="literal">%</tt><em class="emphasis">letter</em>) and associated value.
+Values may continue onto subsequent lines, ending at the next line
+that starts with a <tt class="literal">%</tt>.
+For example:</p>
+<blockquote><pre class="code">%T 5-by-5 Palindromic Word Squares
+%A M.D. McIlroy
+%J Word Ways
+%V 9
+%P 199-202
+%D 1976</pre></blockquote>
+<p>Except for <tt class="literal">%A</tt> (the author),
+fields should only be supplied once.
+Irrelevant or inapplicable fields should not be provided.</p>
+<table border="1" cellpadding="3">
+<tr><th><em class="emphasis">Key</em></th><th><em class="emphasis">Meaning</em></th></tr>
+
+<tr><td><tt class="literal">%A</tt></td><td><p>Author's name</p>
+</td></tr>
+<tr><td><tt class="literal">%B</tt></td><td><p>Book containing article </p>
+</td></tr>
+<tr><td><tt class="literal">%C</tt></td><td><p>City (place where published)</p>
+</td></tr>
+<tr><td><tt class="literal">%D</tt></td><td><p>Date of publication</p>
+</td></tr>
+<tr><td><tt class="literal">%E</tt></td><td><p>Editor of book containing article</p>
+</td></tr>
+<tr><td><tt class="literal">%F</tt></td><td><p>Footnote number or label (supplied by <tt class="literal">refer</tt>)</p>
+</td></tr>
+<tr><td><tt class="literal">%G</tt></td><td><p>Government order number</p>
+</td></tr>
+<tr><td><tt class="literal">%H</tt></td><td><p>Header commentary, printed before reference</p>
+</td></tr>
+<tr><td><tt class="literal">%I</tt></td><td><p>Issuer (publisher)</p>
+</td></tr>
+<tr><td><tt class="literal">%J</tt></td><td><p>Journal containing article</p>
+</td></tr>
+<tr><td><tt class="literal">%K</tt></td><td><p>Keywords to use in locating reference</p>
+</td></tr>
+<tr><td><tt class="literal">%L</tt></td><td><p>Label field used by <tt class="literal">refer -k</tt></p>
+</td></tr>
+<tr><td><tt class="literal">%M</tt></td><td><p>Bell Labs Memorandum</p>
+</td></tr>
+<tr><td><tt class="literal">%N</tt></td><td><p>Number within volume</p>
+</td></tr>
+<tr><td><tt class="literal">%O</tt></td><td><p>Other commentary, printed at end of reference</p>
+</td></tr>
+<tr><td><tt class="literal">%P</tt></td><td><p>Page number(s)</p>
+</td></tr>
+<tr><td><tt class="literal">%Q</tt></td><td><p>Corporate or Foreign Author (unreversed)</p>
+</td></tr>
+<tr><td><tt class="literal">%R</tt></td><td><p>Report, paper, or thesis (unpublished)</p>
+</td></tr>
+<tr><td><tt class="literal">%S</tt></td><td><p>Series title</p>
+</td></tr>
+<tr><td><tt class="literal">%T</tt></td><td><p>Title of article or book</p>
+</td></tr>
+<tr><td><tt class="literal">%V</tt></td><td><p>Volume number</p>
+</td></tr>
+<tr><td><tt class="literal">%X</tt></td><td><p>Abstract (used by <tt class="literal">roffbib</tt>, not <tt class="literal">refer</tt>)</p>
+</td></tr>
+<tr><td><tt class="literal">%Y</tt>, <tt class="literal">%Z</tt></td><td><p>Ignored by <tt class="literal">refer</tt></p>
+</td></tr>
+</table><p>
+</div>
+
+<a name="unut-ch-17-sect-4.2" /><div class="sect2"><h3 class="sect2">17.4.2. General Coding Scheme</h3><p>In a document, use of <tt class="literal">refer</tt> might look like this:</p>
+<blockquote><pre class="code">Palindromes are fun.
+Very large ones can be used to impress your friends.
+Palindromic word squares
+.[
+%A McIlroy
+.]
+are even more amazing,
+and should be reserved for impressing your boss.
+...
+.SH REFERENCES
+.[
+$LIST$
+.]</pre></blockquote>
+<p>The document shown here uses <tt class="literal">refer</tt>'s 
+collection mode (<tt class="literal">-e</tt>),
+where all the references are printed at the end
+of the document, instead of at each place they are referenced.</p>
+</div>
+
+<a name="unut-ch-17-sect-4.3" /><div class="sect2"><h3 class="sect2">17.4.3. Alphabetical Summary of Commands</h3>
+<table border="1" cellpadding="5"><tr><td valign="top"><a name="addbib">addbib</a></td><td><p><tt class="literal">addbib</tt> [<em class="replaceable"><tt>options</em>] <em class="replaceable">database</tt></em></p>
+<p>Interactively add bibliography records to <em class="emphasis">database</em>.
+<a name="IXT-17-123471" /></p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-a</tt></dt><dd>Don't prompt for an abstract.</p>
+</dd>
+<dt><tt class="literal">-p</tt> <tt><em class="replaceable">file</em></tt></dt><dd>Use <em class="emphasis">file</em></tt> as the prompting &#8220;skeleton.&#8221;
+Each
+
+
+line should be a prompt, a tab, and then the key letter to write.</p>
+</dd>
+</dl>
+
+</td></tr><tr><td valign="top"><a name="indxbib">indxbib</a></td><td><p><tt class="literal">indxbib</tt> <em class="replaceable"><tt>files</tt></em></p>
+<p>
+<a name="IXT-17-123472" />Create an inverted index for <tt class="literal">refer</tt>
+bibliographic database files.
+These are then used by <tt class="literal">lookbib</tt> and <tt class="literal">refer</tt>.</p>
+<h4 class="refsect2">Generated files</h4><p>For each original file <em class="emphasis">x</em>,
+<tt class="literal">indxbib</tt> creates four new files.</p>
+
+<table border="1" cellpadding="3">
+
+<tr><td><em class="emphasis">x</em><tt class="literal">.ia</tt></td><td><p>The entry file</p>
+</td></tr>
+<tr><td><em class="emphasis">x</em><tt class="literal">.ib</tt></td><td><p>The posting file</p>
+</td></tr>
+<tr><td><em class="emphasis">x</em><tt class="literal">.ic</tt></td><td><p>The tag file</p>
+</td></tr>
+<tr><td><em class="emphasis">x</em><tt class="literal">.ig</tt></td><td><p>The reference file</p>
+</td></tr>
+</table><p>
+
+</td></tr><tr><td valign="top"><a name="lookbib">lookbib</a></td><td><p><tt class="literal">lookbib</tt> <em class="replaceable"><tt>database</tt></em></p>
+<p>
+<a name="IXT-17-123473" />Search a bibliographic database created by <tt class="literal">indxbib</tt>.
+<tt class="literal">lookbib</tt> prompts with a <tt class="literal">&gt;</tt> sign
+for keywords and prints all records matching the keyword.
+If none are found, only another <tt class="literal">&gt;</tt> prompt appears.
+While <tt class="literal">lookbib</tt> works without the inverted index
+files created by <tt class="literal">indxbib</tt>, such operation is slower.
+
+See also <b class="emphasis-bold"><a href="#addbib">addbib</a></b> and 
+<b class="emphasis-bold"><a href="#indxbib">indxbib</a></b>.
+</td></tr>
+
+<tr><td valign="top"><a name="refer">refer</a></td><td><p><tt class="literal">refer</tt> [<em class="replaceable"><tt>options</em>] <em class="replaceable">files</tt></em></p>
+<p>
+<a name="IXT-17-123474" />Process files for bibliographic references.
+Input is passed through to the output unchanged,
+except for lines bracketed by <tt class="literal">.[</tt> and <tt class="literal">.]</tt>.
+Such lines are taken to be references to citations kept in a separate
+database.
+Based on the keywords provided between the brackets,
+<tt class="literal">refer</tt>
+generates <tt class="literal">troff</tt> <tt class="literal">.ds</tt> commands
+that define strings containing the relevant pieces of information.
+It then generates calls to macros that can format
+the references appropriately.
+The <em class="emphasis">ms</em> and <em class="emphasis">me</em> macro
+packages contain macro definitions for use with <tt class="literal">refer</tt>.
+The line right before the call to <tt class="literal">.[</tt>
+will have a suitable string appended to its end to indicate the use
+of a reference.
+Using the <tt class="literal">-e</tt> option, references can be gathered
+for placement at the end as a group.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-a</tt>[<tt><em class="replaceable">n</em></tt>]</dt><dd>Reverse the first <em class="emphasis">n</em></tt> author names
+(i.e., last name first).
+With no <em class="emphasis">n</em></tt>, all names are reversed.</p>
+</dd>
+<dt><tt class="literal">-b</tt></dt><dd>Bare mode.
+Do not add inline references to the text.</p>
+</dd>
+<dt><tt class="literal">-c</tt><tt><em class="replaceable">list</em></tt></dt><dd>Capitalize, with <em class="emphasis">SMALL CAPS</em></tt>,
+those fields whose letters are given in <em class="emphasis">list</em></tt>.</p>
+</dd>
+<dt><tt class="literal">-e</tt></dt><dd>Collect references for output at the end.
+References to the same source are only printed once.
+The references are printed when these lines are encountered:</p>
+
+<blockquote><pre class="code">.[
+$LIST$
+.]</pre></blockquote>
+</dd>
+<dt><tt class="literal">-k</tt><tt><em class="replaceable">c</em></tt></dt><dd>Instead of numbered references, use labeled references,
+where the data supplied is from field <tt class="literal">%</tt><em class="emphasis">c</em></tt>
+in the database.
+The default is <tt class="literal">%L</tt>.</p>
+</dd>
+<dt><tt class="literal">-l</tt>[<tt><em class="replaceable">m</em></tt>[<tt class="literal">,</tt><tt><em class="replaceable">n</em></tt>]]</dt><dd>Instead of numbered references, use labeled references,
+where the label is generated based on the senior (first) author's
+last name, and the year of publication.
+If supplied, <em class="emphasis">m</em> and <em class="emphasis">n</em> indicate
+how many letters from the author's last name and the last <em class="emphasis">n</em>
+digits of the year.
+Otherwise, the full name and year are used.</p>
+</dd>
+<dt><tt class="literal">-n</tt></dt><dd>Do not search the default file
+(found in <tt class="literal">/usr/lib/refer/papers</tt>).</p>
+</dd>
+<dt><tt class="literal">-p</tt> <tt><em class="replaceable">refsfile</em></tt></dt><dd>Use <em class="emphasis">refsfile</em></tt> as a list of references.</p>
+</dd>
+<dt><tt class="literal">-s</tt><tt><em class="replaceable">keylist</em></tt></dt><dd>Sort references based on the fields listed in <em class="emphasis">keylist</em></tt>.
+This implies <tt class="literal">-e</tt>.
+Each letter may be followed by a number, indicating how many of that
+field is to be used.
+A <tt class="literal">+</tt> is equivalent to infinity.
+The default is <tt class="literal">-sAD</tt>, which sorts on the
+senior author and date.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Example</h4><p>Sort on all authors, and then the date;
+use <tt class="literal">mybib</tt> for references.</p>
+<blockquote><pre class="code"><tt class="userinput"><b>refer -sA+D -p mybib thesis.ms | tbl | eqn | troff -ms - | lp</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="roffbib">roffbib</a></td><td><p><tt class="literal">roffbib</tt> [<tt><em class="replaceable"><tt>options</em></tt>] [<tt><em class="replaceable">files</tt></em></tt>]</p>
+<p>
+<a name="IXT-17-123475" />Print a bibliographic database.
+<tt class="literal">roffbib</tt> is a shell script that processes the named <em class="emphasis">files</em></tt>
+(or standard input if no <em class="emphasis">files</em></tt>) through <tt class="literal">refer</tt>
+and prints the results as a bibliography.
+By default, the bibliography is formatted using <tt class="literal">nroff</tt>,
+use the <tt class="literal">-Q</tt> option to use <tt class="literal">troff</tt> instead.</p>
+<p><tt class="literal">roffbib</tt> accepts the following
+<tt class="literal">nroff</tt>/<tt class="literal">troff</tt> options and simply
+passes them to the formatter:
+<tt class="literal">-e</tt>,
+<tt class="literal">-h</tt>,
+<tt class="literal">-m</tt>,
+<tt class="literal">-n</tt>,
+<tt class="literal">-o</tt>,
+<tt class="literal">-q</tt>,
+<tt class="literal">-r</tt>,
+<tt class="literal">-s</tt>,
+and
+<tt class="literal">-T</tt>.
+See <a href="ch12_01.htm">Chapter 12</a>, for more details.</p>
+<h4 class="refsect2">Options</h4><dl><dt><tt class="literal">-H</tt> <tt><em class="replaceable">header</em></tt></dt><dd>Set the &#8220;header&#8221; (title) to <em class="emphasis">header</em></tt>.
+The default is <tt class="literal">BIBLIOGRAPHY</tt>.
+(This option is in the script, but is not documented.)</p>
+</dd>
+<dt><tt class="literal">-Q</tt></dt><dd>Use <tt class="literal">troff</tt> instead of <tt class="literal">nroff</tt>.
+The page offset is set to one inch.</p>
+</dd>
+<dt><tt class="literal">-V</tt></dt><dd>Typeset for Versatec printer/plotter.
+While documented in the manpage, this option is not in the script.</p>
+</dd>
+<dt><tt class="literal">-x</tt></dt><dd>Format abstracts or comments in the <tt class="literal">%X</tt> field of
+a bibliographic reference.
+Useful for annotated bibliographies.
+<tt class="literal">refer</tt> does not use the <tt class="literal">%X</tt> field.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Example</h4><p>Sort a database and print it to a PostScript printer:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>sortbib refs | roffbib -Q -x | /usr/lib/lp/postscript/dpost | lp</b></tt></pre></blockquote>
+
+</td></tr><tr><td valign="top"><a name="sortbib">sortbib</a></td><td><p><tt class="literal">sortbib</tt> [<tt><em class="replaceable"><tt>option</em></tt>] <tt><em class="replaceable">files</tt></em></tt></p>
+<p>
+<a name="IXT-17-123476" />Sort one or more bibliographic databases.
+Typically used for printing with <tt class="literal">roffbib</tt>.
+Up to 16 databases may be sorted.
+Records may not exceed 4096 bytes in length.</p>
+<h4 class="refsect2">Option</h4><dl><dt><tt class="literal">-s</tt> <tt><em class="replaceable">keys</em></tt></dt><dd>Sort on the given <em class="emphasis">keys</em></tt>.
+The first four keys influence the sort; the rest are ignored.
+Letters in <em class="emphasis">keys</em> correspond to the key letters
+in bibliography entries.
+Append a <tt class="literal">+</tt> to a letter to sort completely by that key
+before moving to the next.</p>
+</dd>
+</dl>
+
+<h4 class="refsect2">Examples</h4><p>Sort by authors first, then by date:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>sortbib -sA+D myrefs |</b></tt> ...</pre></blockquote>
+<p>Sort by author, title, and date:</p>
+<blockquote><pre class="code"><tt class="userinput"><b>sortbib -sATD myrefs |</b></tt> ...</pre></blockquote>
+
+</td></tr></table><p>
+<a name="IXT-17-123477" />
+<a name="IXT-17-123478" />
+<a name="IXT-17-123479" />
+<a name="IXT-17-123480" />
+<a name="IXT-17-123481" />
+<a name="IXT-17-123482" />
+<a name="IXT-17-123483" />
+<a name="IXT-17-123484" />
+<a name="IXT-17-123485" />
+</div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch17_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="part4.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">17.3. pic</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">IV. Software Development</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

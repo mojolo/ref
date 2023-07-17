@@ -1,0 +1,347 @@
+<html><head><title>Checklist: Terminal Hangs When I Log In (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.6. Checklist: Terminal Hangs When I Log In</h2>
+
+<p><a name="upt3-IDXTERM-866" /> <a name="upt3-IDXTERM-867" /> <a name="upt3-IDXTERM-868" />If
+<a name="IXT-5-7333" />your terminal seems to
+"hang" (freeze, lock up) when you
+log in, here are some things to try:
+</p>
+
+<ul><li>
+<p>Have another user look at your shell's <b class="emphasis-bold">setup files</b> (<a href="ch03_03.htm#upt3-CHP-3-SECT-3">Section 3.3</a>).
+There could be some obvious mistakes that you didn't
+catch.
+</p>
+</li><li>
+<p><a name="IXT-5-7334" />Log in to another account and use
+the <em class="emphasis">su stucklogin</em><a name="IXT-5-7335" /> command (if the stuck account uses
+Bourne-type shells) or the <em class="emphasis">su -f
+stucklogin</em><a name="IXT-5-7336" /> <a name="IXT-5-7337" /> <a name="IXT-5-7338" /> <a name="IXT-5-7339" /> command (if the stuck account uses
+<i class="command">csh</i> or <i class="command">tcsh</i>). Change
+(<i class="command">cd </i>) to the home directory. Rename the
+account's setup files so the shell
+won't see them as you log in. (If you have <b class="emphasis-bold">superuser access</b> (<a href="ch01_18.htm#upt3-CHP-1-SECT-18">Section 1.18</a>), you also can use it to rename the
+file.)<a href="#FOOTNOTE-18">[18]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-18" /><p> [18]Note that there is no user named
+<em class="emphasis">stucklogin</em>; you're expected to
+supply the actual login username as an argument to
+<i class="command">su</i>.</p> </blockquote>
+
+<p>If you can log in after that, you know that the problem is with the
+account's setup files.
+</p>
+</li><li>
+<p><b class="emphasis-bold">Set shell debugging</b>
+(<a name="IXT-5-7340" /><a name="IXT-5-7341" /><a href="ch27_15.htm#upt3-CHP-27-SECT-15">Section 27.15</a>) on the stuck account's setup
+files. From another account or as the superuser, start an editor and
+put the following line at the top of an <i class="command">sh</i>-like
+setup file (such as <em class="filename">.profile</em>).
+<a name="IXT-5-7342" />It'll tell you whether
+<em class="filename">.profile</em> is being read at all and where it
+hangs:
+</p>
+<blockquote><pre class="code">set -xv</pre></blockquote>
+
+<p>You'll see each line read from the
+<em class="filename">.profile</em> and the commands executed on the
+screen. If you don't see anything, then the shell
+probably didn't read <em class="filename">.profile</em>.
+Bash users would want to check<a name="IXT-5-7343" /> <em class="filename">.bashrc</em> or
+<em class="filename">.bash_profile</em>.
+</p>
+
+<p><a name="IXT-5-7344" /> <a name="IXT-5-7345" />C-shell users should put this command
+at the top of <em class="filename">.cshrc</em><a name="IXT-5-7346" /> <a name="IXT-5-7347" /> (or <em class="filename">.tcshrc</em>, for
+<i class="command">tcsh</i>) instead:
+</p>
+<blockquote><pre class="code">set echo verbose</pre></blockquote>
+
+<p>Note that on many Unix systems, the shell won't read
+its startup files if the files aren't owned by you.
+You might use <a name="IXT-5-7348" /><b class="emphasis-bold">ls -l</b> (<a href="ch50_02.htm#upt3-CHP-50-SECT-2">Section 50.2</a>) to check.
+</p>
+</li><li>
+<p>Look at the entry in the <b class="emphasis-bold">/etc/passwd</b>
+<b class="emphasis-bold">file</b> (<a href="ch22_03.htm#upt3-CHP-22-SECT-3">Section 22.3</a>)
+for this user. <a name="IXT-5-7349" /><a name="IXT-5-7350" />Be sure it has the correct number of
+fields (separated by :). Also, see if there's
+another user with the same login name. (If your system has commands
+like <i class="command">useradd</i>, <i class="command">linuxconf</i>, or
+<i class="command">vipw</i>(8) and <i class="command">pwck</i>(8), using them
+to edit and check the <em class="filename">passwd</em> file will avoid
+many of these problems, as those programs perform sanity checks on
+any modifications you make before taking them live.)
+</p>
+</li><li>
+<p><a name="IXT-5-7351" /><a name="IXT-5-7352" />Does your
+account use any <b class="emphasis-bold">directories remotely mounted
+(by NFS)</b> (<a name="IXT-5-7353" /><a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>)?
+If the remote host or network is down and any command in your startup
+files (especially <em class="emphasis">set
+path</em><a name="IXT-5-7354" /><a name="IXT-5-7355" />) tries to access those
+directories, the shell may hang there.
+</p>
+
+<p>To fix that problem, <i class="command">su</i> to the account as
+explained earlier, and take the command or directory name out of your
+startup file. Or, if this problem happens a lot, the system
+administrator can mount an <a name="IXT-5-7356" /><a name="IXT-5-7357" />NFS filesystem
+"soft" (instead of
+"hard," the default) and limit the
+number of retrys.
+</p>
+</li><li>
+<p>What looks like a "hang" might also
+be that you just aren't getting any output to the
+terminal, for some very weird reason. Then the <em class="emphasis">set
+-xv</em><a name="IXT-5-7358" /> wouldn't help
+you. In that case, try adding this line to the start of the
+<em class="filename">.profile</em>:
+</p>
+
+<blockquote><pre class="code">exec &gt; /tmp/sh.out.$$ 2&gt;&amp;1</pre></blockquote>
+
+<p><a name="IXT-5-7359" />If the Bourne shell starts
+reading <em class="filename">.profile</em>, it'll make a
+file in <em class="filename">/tmp</em> called
+<tt class="literal">sh.out</tt>.<em class="replaceable"><tt>nnn</tt></em> with output
+from the commands and the shell's
+<i class="command">set</i> -<span class="option">xv</span>.
+</p>
+
+<p>There's no command like that for the C shell or
+<i class="command">tcsh</i>.
+</p>
+</li></ul>
+<p>Here are a few more tips for dealing with stuck terminals.</p>
+
+<a name="upt3-CHP-5-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">5.6.1. Output Stopped?</h3>
+
+<p><a name="IXT-5-7360" /><a name="IXT-5-7361" /><a name="IXT-5-7362" />If your terminal has a HOLD SCREEN or
+SCROLL LOCK button, did you accidentally press it? Try pressing it
+and see if things start working again. If pressing the button once
+doesn't fix the problem, you should probably press
+it once more to undo the screen hold. Otherwise, you may lock up your
+session worse than it was before!
+</p>
+
+<p><a name="IXT-5-7363" /> <a name="IXT-5-7364" />Another way to stop output is by
+pressing CTRL-s. The way to restart stopped output is with
+<a name="IXT-5-7365" />CTRL-q -- try pressing that now.
+(Unlike a SCROLL LOCK button, though, if CTRL-q
+doesn't help, you don't need to
+undo it.)
+</p>
+
+</div>
+<a name="upt3-CHP-5-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">5.6.2. Job Stopped?</h3>
+
+<p><a name="IXT-5-7366" /> <a name="IXT-5-7367" />If you're at a shell
+prompt instead of in the program you thought you were
+running -- and if your Unix has job control -- you may have
+stopped a job. <b class="emphasis-bold">Try the</b> <b class="emphasis-bold">jobs</b> <b class="emphasis-bold">command</b>
+(<a href="ch23_01.htm#upt3-CHP-23-SECT-1">Section 23.1</a>); if the job is stopped, restart it.
+</p>
+
+</div>
+<a name="upt3-CHP-5-SECT-6.3" /><div class="sect2">
+<h3 class="sect2">5.6.3. Program Waiting for Input?</h3>
+
+<p><a name="IXT-5-7368" /> <a name="IXT-5-7369" />The program may be waiting for you to
+answer a question or type text to its standard input.
+</p>
+
+<a name="ch05-2-fm2xml" /><blockquote><b>WARNING:</b> 
+If the program you were running does something
+that's hard to undo -- like removing
+files -- <em class="emphasis">don't</em> try this step
+unless you've thought about it carefully.
+</p>
+
+<p><a name="IXT-5-7370" /><a name="IXT-5-7371" />If your system has job control, you
+can find out by putting the job in the background with CTRL-z and
+<i class="command">bg</i>. If the job was waiting for input,
+you'll see the message:
+</p>
+
+<blockquote><pre class="code">[1]  + Stopped (tty input)  grep pat</pre></blockquote>
+
+<p>You can bring the job back into the foreground and answer its
+question, if you know what that question is. Otherwise, now that the
+job is stopped, you can kill it. See the following directions.
+</p>
+
+<p>On systems without job control, you might satisfy the program by
+pressing RETURN or some other key that the program is expecting, like
+<em class="emphasis">y</em> or <em class="emphasis">n</em>. You could also try
+pressing CTRL-d or whatever your "end of
+input" character is set to. That might log you out,
+though, unless you've set the
+<em class="emphasis">ignoreeof</em> variable.
+</p>
+</blockquote>
+
+</div>
+<a name="upt3-CHP-5-SECT-6.4" /><div class="sect2">
+<h3 class="sect2">5.6.4. Stalled Data Connection?</h3>
+
+<p><a name="IXT-5-7372" /> <a name="IXT-5-7373" /><a name="IXT-5-7374" />Be sure that the wires
+haven't come loose.
+</p>
+
+<p><a name="IXT-5-7375" /><a name="IXT-5-7376" /><a name="IXT-5-7377" />If you're using a
+modem and the modem has function lights, try pressing keys to see if
+the Send Data (SD) light flashes. If it does, your terminal is
+sending data to the host computer. If the Receive Data (RD) light
+flashes, the computer is sending data to your terminal. If you
+don't see anything, there might be something wrong
+on your terminal.
+</p>
+
+<p><a name="IXT-5-7378" /><a name="IXT-5-7379" /><a name="IXT-5-7380" />If you're connected with
+<b class="emphasis-bold">rlogin</b> <b class="emphasis-bold">or</b> <b class="emphasis-bold">telnet</b>
+<b class="emphasis-bold">or</b> <b class="emphasis-bold">ssh</b> (<a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>), the
+network to the remote computer might be down or really slow. Try
+opening another connection to the same remote host -- if you get a
+response like <tt class="literal">Connection</tt> <tt class="literal">timed</tt>
+<tt class="literal">out</tt>, you have two choices:
+</p>
+
+<ol><li>
+<p>Wait for your original connection to unfreeze. The connection may
+come back and let you keep working where you left off. Or the
+connection may end when <i class="command">rlogin</i>,
+<i class="command">telnet,</i> or <i class="command">ssh </i>notices the
+network problem.
+</p>
+</li><li>
+<p>Quit the session, and try again later.</p>
+</li></ol>
+</div>
+<a name="upt3-CHP-5-SECT-6.5" /><div class="sect2">
+<h3 class="sect2">5.6.5. Aborting Programs</h3>
+
+<p><a name="IXT-5-7381" /><a name="IXT-5-7382" /><a name="IXT-5-7383" /><a name="IXT-5-7384" />To abort a program, most users press
+CTRL-c. Your account may be set up to use a different interrupt
+character, such as DELETE. If this doesn't work, try
+CTRL-\ (CTRL-backslash). Under most circumstances, this will force
+the program to terminate. Otherwise, do the following:
+</p>
+
+<ol><li>
+<p>Log in at another terminal or window.</p>
+</li><li>
+<p><a name="IXT-5-7385" />Enter the command
+<tt class="literal">ps</tt> <tt class="literal">x</tt>, or, if that
+doesn't work, use <tt class="literal">ps</tt>
+<tt class="literal">-u</tt> <em class="replaceable"><tt>yourname</tt></em>, where
+<em class="replaceable"><tt>yourname</tt></em> is your Unix username. This
+displays a list of the programs you are running, something like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ps x</b></tt>
+PID     TTY     STAT    TIME    COMMAND
+163     i26     I       0:41    -csh (csh)
+8532    i26     TW      2:17    vi ts.ms
+22202   i26     S       12:50   vi UNIXintro.ms
+8963    pb      R       0:00    ps -x
+24077   pb      S       0:05    -bin/csh (csh)
+%</pre></blockquote>
+</li>
+
+<li>
+<p>Search through this list to find the command that has backfired. Note
+the process identification (PID) number for this command.
+</p>
+</li>
+
+<li>
+<p><a name="IXT-5-7386" />Enter the command <b class="emphasis-bold">kill PID</b> (<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>), where
+<em class="emphasis">PID</em> is the identification number from the
+previous step. If that doesn't work, try
+<tt class="literal">kill -1</tt> <em class="replaceable"><tt>PID</tt></em> to send a
+HUP signal. You can also try various other signals, including
+<tt class="literal">-2</tt> or <tt class="literal">-15</tt>. If none of them
+work, you may need <em class="emphasis">kill -9</em>, but try the other
+<i class="command">kill</i>s first.
+</p>
+</li>
+
+<li>
+<p>If the Unix shell prompt (such as <tt class="literal">%</tt> or
+<tt class="literal">$</tt>) has appeared at your original terminal, things
+are probably back to normal. You may still have to take the terminal
+out of a strange mode though.
+</p>
+
+<p><a name="IXT-5-7387" /><a name="IXT-5-7388" />If the shell prompt
+hasn't come back, find the shell associated with
+your terminal (identified by a tty number), and
+<i class="command">kill</i> it. The command name for the C shell is
+<i class="command">csh</i>. For the Bourne shell, it is
+<i class="command">sh</i>. In most cases, this will destroy any other
+commands running from your terminal. Be sure to
+<i class="command">kill</i> the shell on your own terminal, not the
+terminal you borrowed to enter these commands. The tty you borrowed
+is the one running <i class="command">ps</i>; look at the previous
+example and check the <tt class="literal">TTY</tt> column. In this case,
+the borrowed terminal is TTY pb.
+</p>
+
+<p>Check <i class="command">ps</i> to ensure that your shell has died. If it
+is still there, take more drastic action with the command
+<tt class="literal">kill -9</tt><em class="replaceable"><tt>PID</tt></em>.
+</p>
+</li>
+
+<li>
+<p>Run <tt class="literal">ps x</tt> or <tt class="literal">ps -u</tt>
+<em class="replaceable"><tt>yourname</tt></em> again to be sure that all
+processes on the other tty have died. (In some cases, processes will
+remain.) If there are still processes on the other tty, kill them.
+</p>
+</li>
+
+<li>
+<p>At this point, you should be able to log in again from your own
+terminal.
+</p>
+</li></ol>
+<p>The <b class="emphasis-bold">ps</b> (<a href="ch24_05.htm#upt3-CHP-24-SECT-5">Section 24.5</a>) command, which lists some or all of the
+programs you are running, also gives you useful information about the
+status of each program and the amount of CPU time it has
+consumed.<a name="IXTR3-7512" />
+<a name="IXTR3-7513" />
+<a name="IXTR3-7514" />
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.5. Querying Your xterm Size: resize</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.7. Find Out Terminal Settings with stty</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

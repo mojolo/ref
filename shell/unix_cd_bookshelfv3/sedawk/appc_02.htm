@@ -1,0 +1,95 @@
+<html><head><title>Listing of masterindex Shell Script (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appc_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="appc_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">C.2. Listing of masterindex Shell Script</h2>
+
+<a name="c.mast" />
+<blockquote><pre class="code">#! /bin/sh
+# 1.1 -- 7/9/90
+MASTER=""
+FILES=""
+PAGE=""
+FORMAT=1
+INDEXDIR=/work/sedawk/awk/index
+#INDEXDIR=/work/index
+INDEXMACDIR=/work/macros/current
+# Add check that all dependent modules are available.
+sectNumber=1
+useNumber=1
+while [ "$#" != "0" ]; do
+   case $1 in
+   -m*)     MASTER="TRUE";;
+   [1-9])   sectNumber=$1;;
+   *,*)     sectNames=$1; useNumber=0;;
+   -p*)     PAGE="TRUE";;
+   -s*)     FORMAT=0;;
+   -*)      echo $1 " is not a valid argument";;
+   *)       if [ -f $1 ]; then
+              FILES="$FILES $1"
+            else 
+              echo "$1: file not found"
+            fi;;
+   esac
+   shift
+done
+if [ "$FILES" = "" ]; then
+   echo "Please supply a valid filename."
+   exit
+fi
+if [ "$MASTER" != "" ]; then
+   for x in $FILES
+   do
+   if [ "$useNumber" != 0 ]; then
+      romaNum=`$INDEXDIR/romanum $sectNumber`
+      awk '-F\t' '
+         NF == 1 { print $0 } 
+         NF &gt; 1  { print $0 ":" volume }
+      ' volume=$romaNum $x &gt;&gt;/tmp/index$$ 
+      sectNumber=`expr $sectNumber + 1`
+   else
+      awk '-F\t' '
+         NR == 1 { split(namelist, names, ","); 
+                   volname = names[volume] }
+         NF == 1 { print $0 } 
+         NF &gt; 1  { print $0 ":" volname }
+      ' volume=$sectNumber namelist=$sectNames $x &gt;&gt;/tmp/index$$ 
+      sectNumber=`expr $sectNumber + 1`
+   fi
+   done 
+   FILES="/tmp/index$$"
+fi
+if [ "$PAGE" != "" ]; then
+   $INDEXDIR/page.idx $FILES
+   exit
+fi
+$INDEXDIR/input.idx $FILES | 
+sort -bdf -t:  +0 -1 +1 -2 +3 -4 +2n -3n | uniq | 
+$INDEXDIR/pagenums.idx | 
+$INDEXDIR/combine.idx | 
+$INDEXDIR/format.idx FMT=$FORMAT MACDIR=$INDEXMACDIR
+if [ -s "/tmp/index$$" ]; then
+   rm /tmp/index$$
+fi</pre></blockquote>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appc_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="appc_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">C. Supplement for Chapter 12</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">C.3. Documentation for masterindex</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

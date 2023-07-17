@@ -1,0 +1,783 @@
+<html><head><title>Basic Shell Programming (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 4. Basic Shell  Programming</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch04_01.htm#sect1">Shell Scripts and Functions</a><br />
+<a href="ch04_02.htm">Shell Variables</a><br />
+<a href="ch04_03.htm">Compound Variables</a><br />
+<a href="ch04_04.htm">Indirect Variable References (namerefs)</a><br />
+<a href="ch04_05.htm">String Operators</a><br />
+<a href="ch04_06.htm">Command Substitution</a><br />
+<a href="ch04_07.htm">Advanced Examples: pushd and popd</a><br /></p></div><p>
+<a name="korn2-IDXTERM-721" />
+<a name="korn2-IDXTERM-722" />
+<a name="korn2-IDXTERM-723" />
+
+If you have become familiar with the customization techniques
+we presented in the previous chapter, you have probably run into
+various modifications to your environment that you want to make
+but can't -- yet. Shell programming makes these possible.
+</p><p>
+The Korn shell has some of the most advanced programming
+capabilities of any command interpreter of its type. Although its syntax
+is nowhere near as elegant or consistent as that of most conventional
+programming languages, its power and flexibility are comparable.
+In fact, the Korn shell can be used as a complete environment for writing
+software prototypes.
+</p><p>
+Some aspects of Korn shell programming are really extensions of
+the customization techniques we have already seen, while others
+resemble traditional programming language features.
+We have structured this chapter so that if you aren't
+a programmer, you can read this chapter and do quite a bit more than
+you could with the information in the previous chapter.
+<a name="IXT-4-287440" />
+<a name="IXT-4-287441" />
+Experience with a conventional
+programming language like Pascal or C is helpful
+(though not strictly necessary) for subsequent chapters.
+Throughout the rest of the book, we will encounter occasional
+programming problems, called <em class="emphasis">tasks</em>, whose solutions make use of
+the concepts we cover.
+<a name="IXT-4-287442" />
+
+</p><div class="sect1"><a name="korn2-CHP-4-SECT-1" />
+<h2 class="sect1"><a name="sect1" />4.1. Shell Scripts and Functions</h2>
+
+<p>
+A <em class="emphasis">script</em>, or file that contains shell commands, is a shell
+program. Your <em class="emphasis">.profile</em> and environment files,
+discussed in <a href="ch03_01.htm">Chapter 3</a>, are shell scripts.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-727" />
+You can create a script using the text editor of your choice.
+Once you have created one,
+there are a number of ways to run it.
+<a name="IXT-4-287443" />
+<a name="IXT-4-287444" />
+One, which we have already covered,
+is to type <tt class="literal">. </tt><em class="replaceable"><tt>scriptname</tt></em>
+(i.e., the command is a dot). This causes
+the commands in the script to be read and run as if you typed them in.
+</p>
+
+<p>
+Two more ways are to type <tt class="literal">ksh</tt> <em class="replaceable"><tt>script</tt></em>
+or <tt class="literal">ksh &lt;</tt> <em class="replaceable"><tt>script</tt></em>.
+These explicitly invoke the Korn shell on the script, requiring that you
+(and your users) be aware that they are scripts.
+</p>
+
+<p>
+The final way to run a script
+is simply to type its name and hit ENTER, just as if
+you were invoking a built-in command.
+This, of course, is the most convenient way.
+<a name="IXT-4-287445" />
+<a name="IXT-4-287446" />
+<a name="IXT-4-287447" />
+This method makes the script look just like any other Unix
+command, and in fact several "regular" commands are implemented as
+shell scripts (i.e., not as programs originally written in C or some
+other language), including <em class="emphasis">spell</em>, <em class="emphasis">man</em> on some systems,
+and various commands for system administrators.
+The resulting lack of distinction between "user command files"
+and "built-in commands" is one factor in Unix's extensibility
+and, hence, its favored status among programmers.
+</p>
+
+<p>
+You can run a script by typing its name only
+if <tt class="literal">.</tt> (the current directory) is part of your command
+search path, i.e., is included in your <tt class="literal">PATH</tt> variable
+(as discussed in <a href="ch03_01.htm">Chapter 3</a>). If <tt class="literal">.</tt> isn't on your path,
+you must type <tt class="literal">./</tt><em class="emphasis">scriptname</em>, which is really the
+same thing as typing the script's relative pathname
+(see <a href="ch01_01.htm">Chapter 1</a>).
+</p>
+
+<p>
+<a name="IXT-4-287448" />
+<a name="IXT-4-287449" />
+
+Before you can invoke the shell script by name, you must also
+give it "execute" permission.
+If you are familiar with
+the Unix filesystem, you know that files have three types of
+permissions (read, write, and execute) and that those permissions
+apply to three categories of user (the file's owner, a group
+of users, and everyone else). Normally, when you create a
+file with a text editor, the file is set up with read and write
+permission for you and read-only permission for everyone else.<a href="#FOOTNOTE-49">[49]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-49" /><p> [49]
+This actually depends on the setting of your <em class="emphasis">umask</em>,
+an advanced feature described in <a href="ch10_01.htm">Chapter 10</a>.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-4-287450" />
+Therefore you must give your script execute permission explicitly,
+by using the <em class="emphasis">chmod</em>(1) command. The simplest way to do
+this is like so:
+</p>
+
+<p>
+<blockquote><pre class="code">
+chmod +x <em class="replaceable"><tt>scriptname</tt></em>
+</pre></blockquote>
+</p>
+
+<p>
+Your text editor preserves this permission if you make subsequent
+changes to your script.  If you don't add execute permission to the
+script, and you try to invoke it, the shell prints the message:
+</p>
+
+<p>
+<blockquote><pre class="code">
+ksh: <em class="replaceable"><tt>scriptname</tt></em>: cannot execute [Permission denied]
+</pre></blockquote>
+</p>
+
+<p>
+But there is a more important difference between the two ways of
+running shell scripts. While the "dot" method
+causes the commands in the script
+to be run as if they were part of your login session, the "just the name"
+method causes the shell to do a series of things.
+<a name="korn2-IDXTERM-736" />
+First, it runs another copy of the shell as a subprocess.
+The shell subprocess then takes commands from the script, runs them,
+and<?troff .ne 10?>
+terminates, handing control back to the parent shell.
+</p>
+
+<p>
+<a href="ch04_01.htm#korn2-CHP-4-FIG-1">Figure 4-1</a> shows how the shell executes scripts.
+Assume you have a simple shell script called <em class="emphasis">fred</em>
+that contains the commands <em class="emphasis">bob</em> and
+<em class="emphasis">dave</em>.  In <a href="ch04_01.htm#korn2-CHP-4-FIG-1">Figure 4-1</a>.a,
+typing <tt class="literal">. fred</tt> causes the two commands to
+run in the same shell, just as if you had typed them in by hand.
+<a href="ch04_01.htm#korn2-CHP-4-FIG-1">Figure 4-1</a>.b shows what happens when you type
+just <tt class="literal">fred</tt>: the commands run in the shell subprocess while
+the parent shell waits for the subprocess to finish.
+</p>
+
+<p>
+You may find it interesting to compare this with the situation in <a href="ch04_01.htm#korn2-CHP-4-FIG-1">Figure 4-1</a>.c, which shows what happens when you
+type <tt class="literal">fred &amp;</tt>. 
+<a name="IXT-4-287451" />
+As you will recall from <a href="ch01_01.htm">Chapter 1</a>, the <tt class="literal">&amp;</tt> makes the command
+run in the <em class="emphasis">background</em>, which is really just
+another term for "subprocess."  It turns out that the only significant
+difference between <a href="ch04_01.htm#korn2-CHP-4-FIG-1">Figure 4-1</a>.c and <a href="ch04_01.htm#korn2-CHP-4-FIG-1">Figure 4-1</a>.b is that you have control of your terminal
+or workstation while the command runs -- you need not wait until it
+finishes before you can enter further commands.
+</p>
+
+<a name="korn2-CHP-4-FIG-1" /><div class="figure"><img src="figs/ksh2.0401.gif" alt="Figure 4-1" width="430" /></div><h4 class="objtitle">Figure 4-1. Ways to run a shell script</h4>
+
+<p>
+There are many ramifications to using shell subprocesses.
+<a name="IXT-4-287452" />
+
+An important one is that the <em class="emphasis">export</em>ed environment variables
+that we saw in the last chapter (e.g., <tt class="literal">TERM</tt>, <tt class="literal">LOGNAME</tt>,
+<tt class="literal">PWD</tt>)
+are known in shell subprocesses, whereas other shell variables (such as any
+that you define in your <em class="emphasis">.profile</em> without an <em class="emphasis">export</em>
+statement) are not.
+</p>
+
+<p>
+Other issues involving shell subprocesses
+are too complex to go into now; see <a href="ch07_01.htm">Chapter 7</a>
+and <a href="ch08_01.htm">Chapter 8</a>
+for more details about subprocess I/O
+and process characteristics, respectively.
+For now, just bear
+in mind that a script normally runs in a shell subprocess.
+<a name="IXTR3-159" />
+<a name="IXTR3-160" />
+
+</p>
+
+<a name="korn2-CHP-4-SECT-1.1" /><div class="sect2">
+<h3 class="sect2">4.1.1. Functions</h3>
+
+<p>
+<a name="korn2-IDXTERM-741" />
+<a name="IXT-4-287453" />
+
+The Korn shell's <em class="emphasis">function</em> feature is an expanded version of a similar
+facility in the System V Bourne shell and a few other shells.
+A function is sort of a script-within-a-script;
+you use it to define some shell code by name and
+store it in the shell's memory, to be
+invoked and run later.
+</p>
+
+<p>
+
+Functions improve the shell's programmability significantly,
+for two main reasons. First,
+when you invoke a function, it is already in the shell's memory
+(except for automatically loaded functions;
+see <a href="ch04_01.htm#korn2-CHP-4-SECT-1.1.1">Section 4.1.1.1</a>, later in this chapter); therefore
+a function runs faster.
+Modern computers have plenty of memory, so there is no need to worry
+about the amount of space a typical function takes up.
+For this reason, most people define as many
+functions as possible rather than keep lots of scripts around.
+</p>
+
+<p>
+The other advantage of functions is that they are ideal
+for organizing long shell scripts into modular "chunks" of
+code that are easier to develop and maintain. If you aren't a programmer,
+ask one what life would be like without functions (also called
+<em class="emphasis">procedures</em> or <em class="emphasis">subroutines</em> in other languages) and
+you'll probably get an earful.
+<a name="IXTR3-161" />
+
+</p>
+
+<p>
+
+To define a function, you can use either one of two forms:
+</p>
+
+<p>
+<blockquote><pre class="code">
+function <em class="replaceable"><tt>functname</tt></em> {    <i class="lineannotation">Korn shell semantics</i>
+    <em class="replaceable"><tt>shell commands</tt></em>
+}
+</pre></blockquote>
+</p>
+
+<p>
+or:
+</p>
+
+<p>
+<blockquote><pre class="code">
+<em class="replaceable"><tt>functname</tt></em> () {          <i class="lineannotation">POSIX semantics</i>
+    <em class="replaceable"><tt>shell commands</tt></em>
+}
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-4-287454" />
+
+The first form provides access to the full power and programmability
+of the Korn shell.
+The second is compatible with the syntax for shell functions
+introduced in the System V Release 2 Bourne shell.
+This form obeys the semantics of the POSIX standard,
+which are less powerful than full Korn shell-style functions.
+(We discuss the differences in detail shortly.)
+We always use the first form in this book.
+<a name="IXT-4-287455" />
+You can delete a function definition with the command
+<tt class="literal">unset -f</tt> <em class="replaceable"><tt>functname</tt></em>.
+</p>
+
+<p>
+When you define a function,
+you tell the shell to store its name and definition (i.e.,
+the shell commands it contains) in memory.
+<a name="IXTR3-162" />
+If you want to run the
+function later, just
+type in its name followed by any arguments, as if it were a shell script.
+</p>
+
+<p>
+You can find
+out what functions are defined in your login session by typing
+<tt class="literal">functions</tt>.<a href="#FOOTNOTE-50">[50]</a>
+(Note the <tt class="literal">s</tt> at the end of the command name.)
+The shell will print not just the names but also the definitions
+of all functions, in alphabetical order by function name.
+Since this may result in long output, you might want to pipe
+the output through <em class="emphasis">more</em> or redirect it to a file for examination
+with a text editor.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-50" /><p> [50]
+This is actually an alias for <tt class="literal">typeset -f</tt>; see <a href="ch06_01.htm">Chapter 6</a>.
+</p>
+</blockquote>
+
+<p>
+
+Apart from the advantages, there are two important differences
+between functions and scripts.  First, functions do not run in
+separate processes, as scripts do when you invoke them by name; the
+"semantics" of running a function are more like those of
+your <em class="emphasis">.profile</em> when you log in or
+any script when invoked with the "dot" command.  Second, if a function has
+the same name as a script or executable program, the function takes
+precedence.
+</p>
+
+<p>
+<a name="IXT-4-287456" />
+
+This is a good time to show the order of precedence for
+the various sources of commands.  When you type a command to the
+shell, it looks in the following places until it finds a match:
+<a name="IXT-4-287457" />
+<a name="IXT-4-287458" />
+<a name="IXT-4-287459" />
+<a name="IXT-4-287460" />
+<a name="IXT-4-287461" />
+<a name="IXT-4-287462" />
+
+</p>
+
+<ol>
+
+<li><p>
+Keywords, such as <tt class="literal">function</tt> and several others (e.g.,
+<tt class="literal">if</tt> and <tt class="literal">for</tt>)
+that we will see in <a href="ch05_01.htm">Chapter 5</a>
+</p></li>
+
+<li><p>
+Aliases
+(although you can't define an alias whose name is a shell keyword, you can
+define an alias that expands to a keyword, e.g.,
+<tt class="literal">alias aslongas=while</tt>;
+see <a href="ch07_01.htm">Chapter 7</a> for more details)
+</p></li>
+
+<li><p>
+Special built-ins, such as
+<em class="emphasis">break</em> and <em class="emphasis">continue</em>
+(the full list is
+<em class="emphasis">.</em> (dot),
+<em class="emphasis">:</em>,
+<em class="emphasis">alias</em>,
+<em class="emphasis">break</em>,
+<em class="emphasis">continue</em>,
+<em class="emphasis">eval</em>,
+<em class="emphasis">exec</em>,
+<em class="emphasis">exit</em>,
+<em class="emphasis">export</em>,
+<em class="emphasis">login</em>,
+<em class="emphasis">newgrp</em>,
+<em class="emphasis">readonly</em>,
+<em class="emphasis">return</em>,
+<em class="emphasis">set</em>,
+<em class="emphasis">shift</em>,
+<em class="emphasis">trap</em>,
+<em class="emphasis">typeset</em>,
+<em class="emphasis">unalias</em>,
+and
+<em class="emphasis">unset</em>)
+</p></li>
+
+<li><p>
+Functions
+</p></li>
+
+<li><p>
+Non-special built-ins, such as <em class="emphasis">cd</em> and <em class="emphasis">whence</em>
+</p></li>
+
+<li><p>
+Scripts and executable programs, for which the shell searches
+in the directories listed in the <tt class="literal">PATH</tt> environment variable
+</p></li>
+</ol>
+
+<p>
+We'll examine this process in more detail in the section on
+command-line processing in <a href="ch07_01.htm">Chapter 7</a>.
+</p>
+
+<p>
+
+<a name="IXT-4-287463" />
+<a name="IXT-4-287464" />
+
+If you need to know the exact source of a command, there is
+an option to the <em class="emphasis">whence</em> built-in command that we saw
+in <a href="ch03_01.htm">Chapter 3</a>.  <em class="emphasis">whence</em> by itself will
+print the pathname of a command if the command
+is a script or executable
+program, but it will only parrot the command's
+name back if it
+is anything else.
+But if you type<?troff .ne 10?> <tt class="literal">whence -v</tt> <em class="replaceable"><tt>commandname</tt></em>,
+you get more complete information, such as:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>whence -v cd</b></tt>
+cd is a shell builtin
+$ <tt class="userinput"><b>whence -v function</b></tt>
+function is a keyword
+$ <tt class="userinput"><b>whence -v man</b></tt>
+man is a tracked alias for /usr/bin/man
+$ <tt class="userinput"><b>whence -v ll</b></tt>
+ll is an alias for 'ls -l'
+</pre></blockquote>
+</p>
+
+<p>
+For compatibility with the System V Bourne shell, the Korn shell
+predefines the alias <tt class="literal">type='whence -v'</tt>.
+This definitely makes the transition to the Korn shell easier for
+long-time Bourne shell users; <em class="emphasis">type</em> is
+similar to <em class="emphasis">whence</em>.
+The <em class="emphasis">whence</em> command actually has several
+options, described in <a href="ch04_01.htm#korn2-CHP-4-TABLE-1">Table 4-1</a>.
+</p>
+
+<a name="korn2-CHP-4-TABLE-1" /><h4 class="objtitle">Table 4-1. Options for the whence command</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+
+
+
+
+
+<tr>
+<td><tt class="literal">-a</tt></td>
+<td>Print all interpretations of given name.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-f</tt></td>
+<td>Skip functions in search for name.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-p</tt></td>
+<td>Search <tt class="literal">$PATH</tt>, even if name is a built-in or function.</td>
+</tr>
+
+<tr>
+<td><tt class="literal">-v</tt></td>
+<td>Print more verbose description of name.</td>
+</tr>
+
+
+</table><p>
+
+<p>
+Throughout the remainder of this book
+we refer mainly to scripts,
+but unless we note otherwise, you should assume that whatever we
+say applies equally to functions.
+</p>
+
+<a name="korn2-CHP-4-SECT-1.1.1" /><div class="sect3">
+<h3 class="sect3">4.1.1.1. Automatically loading functions</h3>
+
+<p>
+At first glance, it would seem that the best place to put
+your own function definitions is in your <em class="emphasis">.profile</em>
+or environment file.
+This is great for interactive use, since your login shell reads
+<em class="emphasis">~/.profile</em>, and other interactive shells
+read the environment file. However, any shell scripts that you
+write don't read either file.
+Furthermore, as your collection of functions grows, so too
+do your initialization files, making them hard to work with.
+</p>
+
+<p>
+<em class="emphasis">ksh93</em> works around both of these issues by integrating the
+search for functions with the search for commands.
+Here's how it works:
+</p>
+
+<ol>
+
+<li><p>
+Create a directory to hold your function definitions.
+This can be your private <em class="emphasis">bin</em> directory, or
+you may wish to have a separate directory, such as <em class="emphasis">~/funcs</em>.
+For the sake of discussion, assume the latter.
+</p></li>
+
+<li><p>
+In your <em class="emphasis">.profile</em> file, add this directory
+to <em class="emphasis">both</em> the variables <tt class="literal">PATH</tt>
+and <tt class="literal">FPATH</tt>:
+</p>
+
+<blockquote><pre class="code">
+PATH=$PATH:~/funcs
+FPATH=~/funcs
+export PATH FPATH
+</pre></blockquote>
+</li>
+
+<li><p>
+In <em class="emphasis">~/funcs</em>,
+place the definition of each of your functions into a
+separate file.  Each function's file should have the same
+name as the function:
+
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>mkdir ~/funcs</b></tt>
+$ <tt class="userinput"><b>cd ~/funcs</b></tt>
+$ <tt class="userinput"><b>cat &gt; whoson</b></tt>
+<tt class="userinput"><b># whoson --- create a sorted list of logged-on users</b></tt>
+<tt class="userinput"><b>function whoson {</b></tt>
+<tt class="userinput"><b>    who | awk '{ print $1 }' | sort -u</b></tt>
+<tt class="userinput"><b>}</b></tt>
+<tt class="userinput"><b>^D</b></tt>
+</pre></blockquote>
+</p></li>
+
+</ol>
+
+<p>
+Now, the first time you type <tt class="literal">whoson</tt>, the shell looks
+for a command named <em class="emphasis">whoson</em> using the search order
+described earlier.  It will not be found as a special-built-in, as a function,
+or as a regular built-in.
+The shell then starts a search along <tt class="literal">$PATH</tt>.
+When it finally finds <em class="emphasis">~/funcs/whoson</em>, the shell
+notices that <em class="emphasis">~/funcs</em> is also in <tt class="literal">$FPATH</tt>.
+("Aha!" says the shell.)
+When this is the case, the shell expects to find the definition of
+the function named <em class="emphasis">whoson</em> inside the file.
+It reads and executes the entire contents of the file and only
+then runs the function <em class="emphasis">whoson</em>, with any supplied
+arguments.
+(If the file found in both <tt class="literal">$PATH</tt> and <tt class="literal">$FPATH</tt>
+doesn't actually define the function, you'll get a "not found" error
+message.)
+</p>
+
+<p>
+The next time you type <tt class="literal">whoson</tt>, the function is
+already defined, so the shell finds it immediately, without the need
+for the path search.
+</p>
+
+<p>
+Note that directories listed in <tt class="literal">FPATH</tt> but not in
+<tt class="literal">PATH</tt> won't be searched for functions, and that as
+of <em class="emphasis">ksh93l</em>,
+the current directory must be listed in <tt class="literal">FPATH</tt> via an explicit dot;
+a leading or trailing colon doesn't cause the current directory
+to be searched.
+</p>
+
+<p>
+As a final wrinkle, starting with <em class="emphasis">ksh93m</em>,
+each directory named in <tt class="literal">PATH</tt> may contain a file
+named <em class="emphasis">.paths</em>.
+This file may contain comments and blank lines, and specialized variable assignments.
+The first allowed assignment is to <tt class="literal">FPATH</tt>, where the value should
+name an existing directory.  If that directory contains a file whose name
+matches the function being searched for, that file is read and executed
+as if via the <tt class="literal">.</tt> (dot) command, and then the function
+is executed.
+</p>
+
+<p>
+In addition, one other environment variable may be assigned to.
+The intended use of this is to specify a relative or absolute path
+for a library directory containing the shared libraries for executables
+in the current bin directory.
+On many Unix systems, this variable is <tt class="literal">LD_LIBRARY_PATH</tt>,
+but some systems have a different variable -- check your local documentation.
+The given value is prepended to the existing value of the variable
+when the command is executed.
+(This mechanism may open security holes. System administrators
+should use it with caution!)
+</p>
+
+<p>
+For example, the AT&amp;T Advanced Software Tools
+group that distributes <em class="emphasis">ksh93</em>
+also has many other tools, often installed in a separate <em class="emphasis">ast/bin</em>
+directory.  This feature allows the <em class="emphasis">ast</em> programs to find
+their shared libraries, without the user having to manually adjust
+<tt class="literal">LD_LIBRARY_PATH</tt> in the <em class="emphasis">.profile</em> file.<a href="#FOOTNOTE-51">[51]</a>
+For example, if a command is found in <em class="emphasis">/usr/local/ast/bin</em>,
+and the <em class="emphasis">.paths</em> file in that directory contains the
+assignment <tt class="literal">LD_LIBRARY_PATH=../lib</tt>, the shell
+prepends <tt class="literal">/usr/local/ast/lib:</tt> to the value of
+<tt class="literal">LD_LIBRARY_PATH</tt> before running the command.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-51" /><p> [51]
+<em class="emphasis">ksh93</em> point releases <em class="emphasis">h</em> through <em class="emphasis">l+</em>
+used a similar but more restricted mechanism, via a file named <em class="emphasis">.fpath</em>,
+and they hard-wired the setting of the library path variable.
+As this feature was not wide-spread, it was generalized into a single file
+starting with point release <em class="emphasis">m</em>.
+</p>
+</blockquote>
+
+<p>
+Readers familiar with <em class="emphasis">ksh88</em> will notice that
+this part of the shell's behavior has changed significantly.
+Since <em class="emphasis">ksh88</em> always read the environment
+file, whether or not the shell was interactive, it was simplest to
+just put function definitions there.
+However, this could still yield a large, unwieldy file.
+To get around this, you could create files in one or more
+directories listed in <tt class="literal">$FPATH</tt>.
+Then, in the environment file, you would mark the functions
+as being <em class="emphasis">autoloaded</em>:
+</p>
+
+<blockquote><pre class="code">
+autoload whoson
+...
+</pre></blockquote>
+
+<p>
+Marking a function with <em class="emphasis">autoload</em><a href="#FOOTNOTE-52">[52]</a>
+tells the shell that this name is a function, and to find the definition by
+searching <tt class="literal">$FPATH</tt>.
+The advantage to this is that the function is not loaded into the shell's
+memory if it's not needed.
+The disadvantage is that you have to explicitly list all your functions
+in your environment file.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-52" /><p> [52]
+<em class="emphasis">autoload</em> is actually an alias for <em class="emphasis">typeset -fu</em>.
+</p>
+</blockquote>
+
+<p>
+<em class="emphasis">ksh93</em>'s integration of <tt class="literal">PATH</tt>
+and <tt class="literal">FPATH</tt> searching thus simplifies the way
+you add shell functions to your personal shell function "library."
+</p>
+</div>
+
+<a name="korn2-CHP-4-SECT-1.1.2" /><div class="sect3">
+<h3 class="sect3">4.1.1.2. POSIX functions</h3>
+
+<p>
+As mentioned earlier, functions defined using the POSIX syntax obey POSIX semantics and not Korn shell semantics:
+</p>
+
+<p>
+<blockquote><pre class="code">
+<em class="replaceable"><tt>functname</tt></em> () {
+    <em class="replaceable"><tt>shell commands</tt></em>
+}
+</pre></blockquote>
+</p>
+
+<p>
+The best way to understand this is to
+think of a POSIX function as being like a dot script.
+Actions within the body of the function affect <em class="emphasis">all</em> the
+state of the current script.
+In contrast, Korn shell functions have much less shared state
+with the parent shell, although they are not identical to
+totally separate scripts.
+</p>
+
+<p>
+The technical details follow; they include
+information that we haven't covered yet.
+So come back and reread this section after you've learned about the
+<em class="emphasis">typeset</em> command in <a href="ch06_01.htm">Chapter 6</a>
+and about traps in <a href="ch08_01.htm">Chapter 8</a>.
+</p>
+
+<ul>
+
+<li><p>
+POSIX functions share variables with the parent script.
+Korn shell functions can have their own local variables.
+</p></li>
+
+<li><p>
+POSIX functions share traps with the parent script.
+Korn shell functions can have their own local traps.
+</p></li>
+
+<li><p>
+POSIX functions cannot be recursive (call themselves).<a href="#FOOTNOTE-53">[53]</a>
+Korn shell functions can.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-53" /><p> [53]
+This is a restriction imposed by the Korn shell, not by the
+POSIX standard.
+</p>
+</blockquote></li>
+
+<li><p>
+When a POSIX function is run, <tt class="literal">$0</tt> is
+<em class="emphasis">not</em> changed to the name of the function.
+</p></li>
+
+</ul>
+
+<p>
+If you use the dot command with the name of a
+Korn shell function, that function will obey POSIX semantics,
+affecting all the state (variables and traps) of the parent shell:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>function demo {</b></tt>                          <i class="lineannotation">Define a Korn shell function</i>
+&gt;   <tt class="userinput"><b>typeset myvar=3</b></tt>                        <i class="lineannotation">Set a local variable myvar</i>
+&gt;   <tt class="userinput"><b>print "demo: myvar is $myvar"</b></tt>
+&gt; <tt class="userinput"><b>}</b></tt>
+$ <tt class="userinput"><b>myvar=4</b></tt>                                  <i class="lineannotation">Set the global myvar</i>
+$ <tt class="userinput"><b>demo ; print "global: myvar is $myvar"</b></tt>   <i class="lineannotation">Run the function</i>
+demo: myvar is 3
+global: myvar is 4
+$ <tt class="userinput"><b>. demo</b></tt>                                   <i class="lineannotation">Run with POSIX semantics</i>
+demo: myvar is 3
+$ <tt class="userinput"><b>print "global: myvar is $myvar"</b></tt>          <i class="lineannotation">See the results</i>
+global: myvar is 3
+</pre></blockquote>
+<a name="IXTR3-163" />
+
+</p>
+
+</div>
+</div>
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.6. Customization Hints</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.2. Shell Variables</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

@@ -1,0 +1,124 @@
+<html><head><title>Gotchas in set prompt Test (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.9. Gotchas in set prompt Test</h2>
+
+<p>Lots of users add an <tt class="literal">if</tt><a name="IXT-3-7108" /> <a name="IXT-3-7109" /><a name="IXT-3-7110" /><a name="IXT-3-7111" /> <tt class="literal">(! $?prompt)</tt>
+<tt class="literal">exit</tt> test to their <em class="filename">.cshrc</em>
+files. It's gotten so common that some vendors add a
+workaround to defeat the test. For instance, some versions of the
+<b class="emphasis-bold">which</b><a name="IXT-3-7112" /><a name="IXT-3-7113" /><a name="IXT-3-7114" />
+<b class="emphasis-bold">command</b> (<a href="ch02_06.htm#upt3-CHP-2-SECT-6">Section 2.6</a>) set the <em class="emphasis">prompt</em> variable
+so that it can see your aliases
+"hidden" inside the
+<tt class="literal">$?prompt</tt> test. I've also seen a
+version of <i class="command">at</i> that starts an interactive shell to
+run jobs.
+</p>
+
+<p>If you've buried commands after
+<tt class="literal">if</tt> <tt class="literal">(! $?prompt)</tt> that should
+only be run on interactive shells or at login time, then you may have
+trouble.
+</p>
+
+<p>There are workarounds. What you'll need depends on
+the problem you're trying to work around.
+</p>
+
+<ul><li>
+<p>The version of <i class="command">which</i> on the CD-ROM [see <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a>] works without
+reading your <em class="emphasis">.cshrc</em> file, so
+there's no problem there.
+</p>
+</li><li>
+<p>Here's a way to stop the standard
+<i class="command">which</i> from reading parts of your
+<em class="filename">.cshrc</em> that you don't want it
+to read. The first time you log in, this scheme sets a
+<a name="IXT-3-7115" /> <a name="IXT-3-7116" /><em class="emphasis">CSHRC_READ</em>
+<b class="emphasis-bold">environment variable</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>). The variable will be copied into all
+<b class="emphasis-bold">subshells</b>
+(<a name="IXT-3-7117" /><a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) (like the one that <i class="command">which</i>
+starts). In subshells, the test <tt class="literal">if</tt>
+<tt class="literal">($?CSHRC_READ)</tt><a name="IXT-3-7118" /> will branch to the end of your
+<em class="filename">.cshrc</em> file:
+</p>
+
+<blockquote><pre class="code">if (! $?prompt) goto cshrc_end
+
+# COMMANDS BELOW HERE ARE READ ONLY BY INTERACTIVE SHELLS:
+alias foo bar
+   ...
+
+if ($?CSHRC_READ) goto cshrc_end
+
+
+# COMMANDS BELOW HERE ARE READ ONLY AT LOGIN TIME:
+setenv CSHRC_READ yes
+   ...
+
+cshrc_end:</pre></blockquote>
+</li>
+<li>
+<p>If you have a buggy version of <b class="emphasis-bold">at</b>
+(<a href="ch25_05.htm#upt3-CHP-25-SECT-5">Section 25.5</a>) that runs jobs from interactive
+shells, make <b class="emphasis-bold">your own frontend to</b>
+<b class="emphasis-bold">at</b> (<a href="ch29_01.htm#upt3-CHP-29-SECT-1">Section 29.1</a>)
+<a name="IXT-3-7119" /><a name="IXT-3-7120" />that sets an
+environment variable named <em class="emphasis">AT</em> temporarily before
+it submits the <i class="command">at</i> job. Add a test to your
+<em class="emphasis">.cshrc</em> that quits if <em class="emphasis">AT</em> is
+set:
+</p>
+<p><tt class="literal">( )</tt> <a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>, <tt class="literal">\at</tt> <a href="ch29_08.htm#upt3-CHP-29-SECT-8">Section 29.8</a></p>
+
+
+<blockquote><pre class="code"># at JOBS RUN INTERACTIVE SHELLS ON MY BUGGY VERSION OF UNIX.
+# WORKAROUND IS HERE AND IN THE at ALIAS BELOW:
+if ($?AT) goto cshrc_end
+
+   ...
+alias at '(setenv AT yes; \at \!*)'
+   ...
+
+cshrc_end:</pre></blockquote>
+
+<p>Most modern versions of <i class="command">at</i> save a copy of your
+environment when you submit the job and use it when the
+<i class="command">at</i> job is run. At that time, the
+<em class="emphasis">AT</em> environment variable will be set; the C shell
+will skip the parts of your <em class="filename">.cshrc</em> that you want
+it to. It's ugly, but it works.
+</p>
+</li></ul>
+<p>Those workarounds probably won't solve all the
+problems on your version of Unix, but I hope they'll
+give you some ideas.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_08.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_10.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.8. Setup Files Aren't Read When You Want?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.10. Automatic Setups for Different Terminals</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

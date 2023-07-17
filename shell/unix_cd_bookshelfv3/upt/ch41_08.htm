@@ -1,0 +1,292 @@
+<html><head><title>Perl Boot Camp, Part 5: Perl Knows Unix (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch41_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">41.8. Perl Boot Camp, Part 5: Perl Knows Unix</h2>
+
+<p><a name="IXT-41-2674" />There are many built-in Perl
+operators that mimic Unix system calls and standard utilities, as are
+partially listed in <a href="ch41_08.htm#upt3-CHP-41-TABLE-9">Table 41-9</a>. Those that
+aren't hardcoded into the language are often
+available through <b class="emphasis-bold">modules</b> (<a href="ch41_09.htm#upt3-CHP-41-SECT-9">Section 41.9</a>). In fact, there are too many Unix-like
+operators to describe here, but this sampling should give you a good
+start.<a name="IXT-41-2675" /><a name="IXT-41-2676" />
+</p>
+
+<a name="upt3-CHP-41-TABLE-9" /><h4 class="objtitle">Table 41-9. Perl filesystem functions </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Function</p>
+</th>
+<th>
+<p>Example</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">chmod</tt><a name="IXT-41-2677" />
+</p>
+</td>
+<td>
+<p><tt class="literal">chmod 0775,</tt> <em class="replaceable"><tt>filenames</tt></em></p>
+</td>
+<td>
+<p>Change file permission on given file or list of files; same as the
+system command.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">chown</tt><a name="IXT-41-2678" />
+</p>
+</td>
+<td>
+<p><tt class="literal">chown</tt> <em class="replaceable"><tt>UID</tt></em><tt class="literal">,</tt>
+<em class="replaceable"><tt>GID</tt></em><tt class="literal">,</tt>
+<em class="replaceable"><tt>filenames</tt></em>
+</p>
+</td>
+<td>
+<p>Change <a name="IXT-41-2679" /><a name="IXT-41-2680" />owner and group on given list of
+filenames; same as the system command.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">rename</tt><a name="IXT-41-2681" />
+</p>
+</td>
+<td>
+<p><tt class="literal">rename</tt>
+<em class="replaceable"><tt>oldname</tt></em><tt class="literal">,</tt>
+<em class="replaceable"><tt>newname</tt></em>
+</p>
+</td>
+<td>
+<p><a name="IXT-41-2682" />Change a
+file's name; similiar to <i class="command">mv.</i>
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">unlink</tt><a name="IXT-41-2683" />
+</p>
+</td>
+<td>
+<p><tt class="literal">unlink</tt> <em class="replaceable"><tt>filenames</tt></em></p>
+</td>
+<td>
+<p><a name="IXT-41-2684" />Unlink given filenames; deletes files
+that aren't hard linked elsewhere.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">system</tt><a name="IXT-41-2685" />
+</p>
+</td>
+<td>
+<p><tt class="literal">system(</tt><em class="replaceable"><tt>executable</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p>Create a subshell to execute an external command whose ouput
+isn't accessible to Perl.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">qx()</tt><a name="IXT-41-2686" /> <a name="IXT-41-2687" />
+</p>
+</td>
+<td>
+<p><tt class="literal">@output =
+qc(</tt><em class="replaceable"><tt>executable</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p>Create a subshell to execute external command and return lines of
+output as an array to Perl; same as <tt class="literal">''</tt>.
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>One advantage Perl has over shell scripting is that Perl has
+<a name="IXT-41-2688" />filehandles. In Perl, files can only be
+created, edited, or read through special variables called
+filehandles. These variables have no funny punctuation prefixing
+them. It is customary to make filehandles all uppercase. The code
+below shows a typical way to read an existing file and echo its
+contents to the screen:
+</p>
+
+<blockquote><pre class="code">my $file = "<em class="replaceable"><tt>your_filename</tt></em>";
+open (IN, $file) || die "can't open $file: $!";
+while (&lt;IN&gt;) {
+   print;
+}
+close (IN);</pre></blockquote>
+
+<p>In this simple code, the <tt class="literal">open</tt> function is used to
+associate the filehandle <tt class="literal">IN</tt> with whatever filename
+you choose. If the <tt class="literal">open</tt> fails, the expression to
+the right of the logical OR will execute. The <tt class="literal">die</tt>
+function halts the program with the string provided. Here, that
+string includes the special variable <tt class="literal">$!</tt>, which
+contains the error message from the last failed system call (which
+here is <tt class="literal">open</tt>). If the <tt class="literal">open</tt>
+succeeds, <tt class="literal">IN</tt> can be read from with the
+<tt class="literal">&lt;&gt;</tt> operator. As noted earlier, this operator
+populates <tt class="literal">$_</tt> with the next line of input each time
+through the loop until there are no more lines to read. The
+<tt class="literal">print</tt> function will use <tt class="literal">$_</tt> if
+no other argument is passed to it. Although Perl will free all
+filehandles when the script exits, it's a good habit
+to close all filehandles you open.
+</p>
+
+<p>Writing to files is almost as easy as reading from them. Consider
+this code:
+</p>
+
+<blockquote><pre class="code">my $file = "<em class="replaceable"><tt>your_filename</tt></em>";
+open (OUT, "&gt; ". $file) || die "can't make $file: $!";
+print OUT "&lt;html&gt;&lt;body&gt;&lt;h1&gt;hello, world&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;\n";
+close(OUT);</pre></blockquote>
+
+<p>This snippet starts in a familiar way, but the
+<tt class="literal">open</tt> call is a little different. To tell Perl you
+want to create a new file or overwrite an existing one, simply prefix
+the filename with a <tt class="literal">&gt;</tt>. If you wanted to append
+to an existing file, use <tt class="literal">&gt;&gt;</tt> instead. Now you
+can print to that file by passing the filehandle to
+<tt class="literal">print</tt> (notice there's no comma
+after the filehandle). Here, a simple HTML file is being created.
+</p>
+
+<p>You can also read directories in Perl. The following code looks in
+the current directory and describes each file as a directory,
+symbolic link, or regular file.
+</p>
+
+<blockquote><pre class="code">opendir (DIR, ".") || die "error: $!";
+
+while (my $file = readdir(DIR)) {
+    print "$file -&gt; ";
+
+    if ( -d $file ) {
+      print "directory\n";
+
+    } elsif ( -l $file ) {
+      print "symlink\n";
+
+    } else{
+      print "file\n"
+    }
+}
+closedir (DIR);</pre></blockquote>
+
+<p>To read directories, use the <tt class="literal">opendir</tt> function,
+which has a similiar interface to
+<tt class="literal">open</tt>'s. Unfortunately, the
+<tt class="literal">&lt;&gt;</tt> operator won't work on
+directory handles, so use the <tt class="literal">readdir</tt> command to
+iterate over each file in the directory. Perl provides file test
+operators, like those in the Bourne shell, to determine what kind of
+file its argument is. The <tt class="literal">-d</tt> operator tests
+whether a file is a directory, while the <tt class="literal">-l</tt>
+operator tests whether a file is symbolic link. Perl
+doesn't have a switch operator like C, but you can
+tack on as many <tt class="literal">elsif</tt> blocks as you need.
+What's not shown here is how to create a directory.
+Just as you would at the shell prompt, Perl provides a
+<tt class="literal">mkdir</tt> function that takes an octal number (which
+must start with zero!) and the name of the directory to create.
+Pretty simple.
+</p>
+
+<p>In <em class="emphasis">/etc/passwd</em> and in password files for CVS and
+Apache, user passwords are stored as a string that has been passed
+through a one-way hashing algorithm (such as DES), usually using the
+system's <tt class="literal">crypt(3)</tt> system call.
+Perl provides access to this system call with a function of the same
+name. The following code prompts users for a new password for a
+fictional program and creates its own password file.
+</p>
+
+<blockquote><pre class="code">print "Username: \n";
+my $user = &lt;&gt;;
+print "Password: \n";
+my $pass = &lt;&gt;;
+
+chomp($user, $pass);
+my $crypt = crypt($pass, substr($user, 0, 2));
+open (OUT, "&gt;&gt;passwd") || die "error: $_";
+print OUT "$user;$crypt;". localtime( ) . "\n";
+close (OUT);</pre></blockquote>
+
+<p>After collecting the username and password from the user, the
+<tt class="literal">chomp</tt> function removes the trailing newline from
+the input just collected. The <tt class="literal">crypt</tt> function
+expects the string to be hashed and a random two-character salt.
+Here, the first two characters of the username are used, via the
+<tt class="literal">substr</tt> function. The line written to the password
+file consists of a semicolon-separated list of the username, the
+hashed password, and a date stamp of when the account was added.
+Here, the <tt class="literal">localtime</tt> function call is used in
+scalar context because of the concatenation operator. This produces a
+human-readable string like <tt class="literal">Sat Mar 16 21:17:44</tt>
+<tt class="literal">2002</tt>. Used in list context,
+<tt class="literal">localtime</tt> returns a nine element list
+that's not easily consumed by human eyes (see
+<em class="citetitle">Programming Perl</em>, published by
+O'Reilly, for more details on scalar versus list
+context).
+</p>
+
+<p>This section hardly scratched the surface of using Perl as a system
+administration tool. Many books have been written on this very topic,
+including O'Reilly's <em class="citetitle">Perl
+for System Administration</em>.
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch41_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">41.7. Perl Boot Camp, Part 4: Pattern Matching</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">41.9. Perl Boot Camp, Part 6: Modules</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

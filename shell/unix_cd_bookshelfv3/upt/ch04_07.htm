@@ -1,0 +1,121 @@
+<html><head><title>Multiline Shell Prompts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch04_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">4.7. Multiline Shell Prompts</h2>
+
+<p><a name="IXT-4-6757" /><a name="IXT-4-6758" />Lots
+of people like lots of information in their prompts: hostname,
+directory name, <a name="IXT-4-6759" />history number, and maybe username.
+Lots of people have spent lots of time trying to make their prompts
+short enough to fit across the screen and still leave room for typing
+a command longer than <i class="command">ls</i>:
+</p>
+
+<blockquote><pre class="code">&lt;elaineq@applefarm&gt; [/usr/elaineq/projects/april/week4] 23 % <tt class="userinput"><b>ls</b></tt></pre></blockquote>
+
+<p>Even with fairly short prompts, if you look back at a screen after
+running a few commands, telling the data from the prompts can be a
+little tough (real terminals don't show user input
+in boldface, so I won't do it here either):
+</p>
+
+<blockquote><pre class="code">+&lt;elaineq@applefarm&gt; [~] 56% cd beta
+&lt;elaineq@applefarm&gt; [~/beta] 57% which prog
+/usr/tst/applefarm/bin/beta/prog
+&lt;elaineq@applefarm&gt; [~/beta] 58% prog
+61,102 units inventoried; 3142 to do
+&lt;elaineq@applefarm&gt; [~/beta] 59%</pre></blockquote>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: mlprompt.cshmlprompt.sh</p>
+
+<p><a name="IXT-4-6760" />One nice answer is to make a prompt
+that has more than one line. Here's part of a
+<em class="filename">.cshrc</em> file that sets a three-line prompt: one
+blank line, one line with the
+<a name="IXT-4-6761" /> <a name="IXT-4-6762" />hostname and current directory, and a
+third line with the history number and a percent sign. (If this were
+a <i class="command">tcsh</i>, I could have gotten the hostname with
+<tt class="literal">%m</tt>.) The <a name="IXT-4-6763" /><a name="IXT-4-6764" /><b class="emphasis-bold">C shell
+quoting</b> (<a href="ch27_13.htm#upt3-CHP-27-SECT-13">Section 27.13</a>) is
+ugly -- doubly ugly because the prompt is set inside an
+<a name="IXT-4-6765" />alias -- but otherwise
+it's straightforward:
+</p>
+
+<p><tt class="literal">uname -n</tt> <a href="ch02_05.htm#upt3-CHP-2-SECT-5">Section 2.5</a>, <tt class="literal">{..}</tt> <a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+
+<blockquote><pre class="code">set hostname=`uname -n`
+alias setprompt 'set prompt="\\
+${hostname}:${cwd}\\
+\! % "'
+alias cd 'chdir \!* &amp;&amp; setprompt'
+alias pushd 'pushd \!* &amp;&amp; setprompt'
+alias popd 'popd \!* &amp;&amp; setprompt'
+setprompt           # to set the initial prompt</pre></blockquote>
+
+<p>(There's a version on the Web for Bourne-type
+shells.) The prompts look like this:
+</p>
+
+<blockquote><pre class="code">applefarm:/usr/elaineq/projects/april/week4
+23 % prog | tee /dev/tty | mail -s "prog results" bigboss@corpoffice
+61,102 units inventoried; 3142 to do
+
+applefarm:/usr/elaineq/projects/april/week4
+24 % cd ~/beta
+
+applefarm:/usr/elaineq/beta
+25 % prog | mail joanne</pre></blockquote>
+
+<p>The blank lines separate each command -- though you may want to
+save space by omitting them. <a name="IXT-4-6766" />For example, Mike Sierra of
+O'Reilly &amp; Associates has used a row of
+asterisks:
+</p>
+
+<blockquote><pre class="code">***** 23 *** &lt;mike@mymac&gt; *** ~/calendar *****
+% cd Sep*
+***** 24 *** &lt;mike@mymac&gt; *** ~/calendar/September *****
+%</pre></blockquote>
+
+<p>Other shells have different syntax, but the idea is the same: embed
+newlines to get multiline prompts. In <a name="IXT-4-6767" /><a name="IXT-4-6768" />Bourne-type shells
+you'll need zero or one backslash before each
+newline; <a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a> explains.
+<a name="IXT-4-6769" /><a name="IXT-4-6770" />In <i class="command">bash</i>,
+put a <tt class="literal">\n</tt> (which stands for a newline character)
+anywhere you want the prompt to break to a new line.
+</p>
+
+<p>What I like best about multiline prompts is that you get a lot of
+information but have the whole screen width for typing. Of course,
+you can put different information in the prompt than
+I've shown here. The important idea is that if you
+want more information and need room to type, try a multiline prompt.
+</p>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch04_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch04_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">4.6. Faster Prompt Setting with Built-ins</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">4.8. Session Info in Window Title or Status Line</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

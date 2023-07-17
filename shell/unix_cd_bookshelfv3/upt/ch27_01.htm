@@ -1,0 +1,146 @@
+<html><head><title>Shell Interpretation (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="part6.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch27_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 27. Shell Interpretation</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch27_01.htm#sect1">What the Shell Does</a><br />
+<a href="ch27_02.htm">How the Shell Executes Other Commands</a><br />
+<a href="ch27_03.htm">What's a Shell, Anyway?</a><br />
+<a href="ch27_04.htm">Command Evaluation and Accidentally Overwriting Files</a><br />
+<a href="ch27_05.htm">Output Command-Line Arguments One by One</a><br />
+<a href="ch27_06.htm">Controlling Shell Command Searches</a><br />
+<a href="ch27_07.htm">Wildcards Inside Aliases</a><br />
+<a href="ch27_08.htm">eval: When You Need Another Chance</a><br />
+<a href="ch27_09.htm">Which One Will bash Use?</a><br />
+<a href="ch27_10.htm">Which One Will the C Shell Use?</a><br />
+<a href="ch27_11.htm">Is It "2&gt;&amp;1 file" or "&gt; file 2&gt;&amp;1"? Why?</a><br />
+<a href="ch27_12.htm">Bourne Shell Quoting</a><br />
+<a href="ch27_13.htm">Differences Between Bourne and C Shell Quoting</a><br />
+<a href="ch27_14.htm">Quoting Special Characters in Filenames</a><br />
+<a href="ch27_15.htm">Verbose and Echo Settings Show Quoting</a><br />
+<a href="ch27_16.htm">Here Documents</a><br />
+<a href="ch27_17.htm">"Special" Characters and Operators</a><br />
+<a href="ch27_18.htm">How Many Backslashes?</a><br /></p></div><div class="sect1"><a name="upt3-CHP-27-SECT-1" />
+<h2 class="sect1"><a name="sect1" />27.1. What the Shell Does</h2>
+
+<p><a name="upt3-IDXTERM-3910" />As we've said, the
+shell is just another program. It's responsible for
+interpreting the commands you type. There are several commonly used
+shells, primarily based on two or three major families and a wide
+variety of other projects:
+</p>
+
+<ul><li>
+<p>The <a name="IXT-27-4767" /><a name="IXT-27-4768" /><a name="IXT-27-4769" /><a name="IXT-27-4770" />Bourne shell
+(<i class="command">sh</i>) and its derivatives and progeny (including
+<i class="command">bash</i>, <i class="command">ash</i>, and even the Korn
+shell <i class="command">ksh</i>)
+</p>
+</li><li>
+<p>The <a name="IXT-27-4771" /><a name="IXT-27-4772" />C shell
+(<i class="command">csh</i>) and its progeny (including
+<i class="command">tcsh</i>)
+</p>
+</li><li>
+<p>The <a name="IXT-27-4773" /><a name="IXT-27-4774" /> <a name="IXT-27-4775" />Korn shell (<i class="command">ksh</i>) and
+variants (including <i class="command">pdksh</i> and
+<i class="command">zsh</i><a href="#FOOTNOTE-82">[82]</a>)
+</p><blockquote class="footnote"> <a name="FOOTNOTE-82" /><p> [82]It's
+difficult to trace the development of all these shells in a simple
+manner. Their authors have borrowed ideas and syntax from the
+others -- and sometimes code -- and sometimes a shell starts
+out trying to emulate another but evolves away from its original
+inspiration (or the inspiration evolves away from the
+aspirant).</p> </blockquote>
+</li><li>
+<p><a name="IXT-27-4776" />Specialized shells based on languages
+such as Python, TCL, <i class="command">perl</i>, and so on.
+</p>
+</li><li>
+<p>Shells invented to meet specific needs such as
+<a name="IXT-27-4777" /><a name="IXT-27-4778" /><a name="IXT-27-4779" />restricted
+command access (<i class="command">rsh</i>), recovery after a system
+failure (<i class="command">sash</i>), and downloading, installing, and
+configuring software libraries.
+</p>
+</li></ul>
+<p>If you can think of a reason to have a specialized shell, someone
+probably has already written one to meet that need.
+</p>
+
+<p><a name="IXT-27-4780" /> <a name="IXT-27-4781" />Interpreting your
+commands might seem simple enough, but a lot of things happen between
+the time you press RETURN and the time the computer actually does
+what you want. The process of interpretation is very complex: the
+shell has to break the command into words and expand <b class="emphasis-bold">aliases</b> (<a href="ch29_02.htm#upt3-CHP-29-SECT-2">Section 29.2</a>),
+<b class="emphasis-bold">history operators</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>), and <b class="emphasis-bold">shell and
+environment variables</b> (<a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>, <a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>). It also <b class="emphasis-bold">sets up
+standard input and output streams</b> (<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>) and performs a lot of other tasks. Indeed, if
+a command looks right but doesn't work right, the
+cause is probably either one of the following:
+</p>
+
+<ul><li>
+<p><a name="IXT-27-4782" />File permissions are set
+incorrectly.
+</p>
+</li><li>
+<p>You don't understand how the shell is processing
+your command line.
+</p>
+</li></ul>
+<p>I'd say that file permission problems are more
+common, but it's a close call. File permission
+problems are usually easy to understand, once you know what to look
+for, but the rules by which a shell interprets your command line are
+another thing altogether. Lest I scare you, we'll
+try to go slow with this material. Although it's
+difficult, understanding how the shell parses your commands is
+important to becoming a power user.
+</p>
+
+<p>In this chapter, we'll look at how a Unix shell
+interprets commands. Shells have similar interpretation rules. The C
+shell can be tricky at times, mostly because its behavior
+isn't as well defined as the others. And
+<i class="command">zsh</i> has some twists that others
+don't -- they're included by
+design, but they can surprise users of other shells. However,
+there's nothing
+"magical" about these rules.
+Tomorrow morning, you may grab some new shell from the Net and find
+out that it has a new and different way of interpreting commands. For
+better or worse, that's what Unix is all about.
+</p>
+
+<p>As part of this discussion, we'll cover quoting,
+which is the mechanism by which you can turn off the special meanings
+that the shell assigns to some characters. Quoting is an integral
+part of command-line processing; it allows you to control what the
+shell will do to your commands.
+</p>
+
+<p><em class="emphasis">--ML and SJC</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="part6.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch27_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">VI. Scripting</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">27.2. How the Shell Executes Other Commands</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

@@ -1,0 +1,161 @@
+<html><head><title>The Idea of a Terminal Database (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.2. The Idea of a Terminal Database</h2>
+
+<p>In the past few years, terminals have been standardized to a few
+types. In fact, most terminals nowadays are
+<a name="IXT-5-7277" />terminal
+<em class="emphasis">emulators</em> (like <i class="command">xterm</i>) that
+simulate a terminal on a graphical display. Years ago, though,
+terminals differed widely. Rather than simply being implemented in
+software, they were hardware -- keyboards and monitors or even
+teletypes, with which the user interacted to communicate with an
+often faraway mainframe or other big iron. All were specialized, and
+differences between them often came down to how much you paid and to
+what manufacturer. This lets you take advantage of other features of
+the manufacturer's primary hardware -- the big
+computers they considered their main product. Manufacturers produced
+a variety of terminals, each one including a particular set of
+features for a certain price. There were smart terminals and dumb
+ones, terminals with big screens and terminals with small screens,
+printing terminals and video displays, and terminals with all sorts
+of special features.
+</p>
+
+<p>Differences between terminals do not matter much to programs like
+<b class="emphasis-bold">cat</b> (<a href="ch12_02.htm#upt3-CHP-12-SECT-2">Section 12.2</a>)
+or <b class="emphasis-bold">who</b> (<a href="ch02_08.htm#upt3-CHP-2-SECT-8">Section 2.8</a>) that use the terminal screen as a sort of
+typewriter with an endless scroll of paper. These programs produce
+sequential output and do not make use of the
+terminal's special features; they do not need to
+know much to do their job.
+<a name="IXT-5-7278" /> <a name="IXT-5-7279" />Only programs such as screen editors,
+which make use of screen-handling features, need to know a lot about
+differences between terminals.
+</p>
+
+<p>However, even today, we find a wide variety of terminal emulators
+across a multitude of platforms. My new Kyocera Smartphone, for
+example, is a Palm device integrated with a PCS telephone; one of the
+main reasons I bought it was for remote, emergency
+<i class="command">ssh</i> access to my servers, using a tiny terminal
+emulator that runs on the
+<a name="IXT-5-7280" />PalmOS. Many Unix programs assume a basic
+environment that this terminal emulator does not provide -- an
+80-column screen -- so even simple commands such as
+<i class="command">w</i>, which prints a list of who is logged in, where
+they logged in from, and what they're currently
+running, become impossible to run. But let's go back
+to the early days and revisit some of the old problems that plagued
+early Unix developers, so that we might better understand how to deal
+with today's problems.
+</p>
+
+<p><a name="IXT-5-7281" /><a name="IXT-5-7282" />In
+the late 1970s, Bill Joy created the <b class="emphasis-bold">vi</b> (<a href="ch17_02.htm#upt3-CHP-17-SECT-2">Section 17.2</a>) text editor
+at UC Berkeley. Like all screen-oriented editors,
+<i class="command">vi</i> uses the terminal screen nonsequentially (in
+stark contrast to earlier editors such as <i class="command">ed</i>,
+which were designed for a teletype, and so use even more terse
+commands and feature even more terse output). A program performing
+nonsequential output does not just print character after character,
+but must manipulate the text that was sent before, scroll the page,
+move the cursor, delete lines, insert characters, and more. While it
+would be possible to keep redrawing the screen in its entirety, many
+features are provided in hardware or firmware by the terminal itself,
+saving too much time and trouble to be ignored.
+</p>
+
+<p>The first version of <i class="command">vi</i> was written specifically
+for Lear Siegler ADM3a terminals. <i class="command">vi</i> was such an
+improvement over line-oriented editors that there was great demand to
+port <i class="command">vi</i> to other brands of terminals. The problem
+was that each terminal had different features and used different
+control codes to manipulate the features that they did have in
+common.
+</p>
+
+<p>Rather than write separate terminal drivers for each terminal type,
+Bill Joy did something very clever, which all Unix users now take for
+granted. He wrote a version of <i class="command">vi</i> with generic
+commands to manipulate the screen instead of hardcoding the control
+codes and dimensions for a particular terminal.<a href="#FOOTNOTE-15">[15]</a>
+</p><blockquote class="footnote"> <a name="FOOTNOTE-15" /><p> [15]When
+we refer to <em class="emphasis">terminals</em> throughout this and other
+chapters, understand that we mean, more often than not, the set of
+standard terminal-emulation control codes implemented by terminal
+emulators, such as <em class="emphasis">vt100</em> or <em class="emphasis">ANSI
+color</em>. So, though we may refer to a vt100 terminal,
+we're more likely referring to any terminal-emulator
+software that can understand and react to that set of control
+codes.</p> </blockquote>
+
+<p>Joy came up with a generic terminal-handling mechanism that had two
+parts: a database describing the capabilities of each of the
+terminals to be supported and a subroutine library that allows
+programs to query that database and make use of the capability values
+it contains. Both the library and the database were given the name
+<em class="emphasis">termcap</em>, which is short for
+<a name="IXT-5-7283" /><em class="emphasis">term</em>inal
+<em class="emphasis">cap</em>abilities. <a name="IXT-5-7284" /><a name="IXT-5-7285" />
+</p>
+
+<p>At this point, users take for granted that you can use just about any
+terminal with a Unix system and use screen-oriented programs like
+<i class="command">vi</i> without any problem. But this is really quite
+remarkable!
+</p>
+
+<p>The <em class="emphasis">termcap</em> database is contained in a single
+text file, which grew quite large over the years to include
+descriptions of hundreds of different terminals. To improve
+performance, AT&amp;T later introduced a <a name="IXT-5-7286" /><a name="IXT-5-7287" />database called
+<em class="emphasis">terminfo</em>, which stores terminal descriptions in
+compiled form in a separate file for each terminal.
+</p>
+
+<p>If a program is designed to use <em class="emphasis">termcap</em> or
+<em class="emphasis">terminfo</em>, it queries an
+<a name="IXT-5-7288" /><a name="IXT-5-7289" />environment variable called
+<em class="emphasis">TERM</em> to determine the terminal type (or terminal
+type being emulated), then looks up the entry for that terminal in
+the terminal database, and reads the definition of any capabilities
+it plans to use as external variables. Programs that use
+<em class="emphasis">termcap</em> or <em class="emphasis">terminfo</em> range
+from screen editors like <b class="emphasis-bold">vi</b>
+<b class="emphasis-bold">and</b> <b class="emphasis-bold">emacs</b> (<a href="ch19_01.htm#upt3-CHP-19-SECT-1">Section 19.1</a>), which
+use the complete terminal description, to a program like
+<i class="command">clear</i>, which needs to know only one capability
+(the escape sequence to clear the screen). Other programs include
+<i class="command">more</i>, <i class="command">pg</i>,
+<i class="command">rogue</i><b class="emphasis-bold">, tset</b>
+(<a href="ch05_03.htm#upt3-CHP-5-SECT-3">Section 5.3</a>), <i class="command">ul</i>, and
+<i class="command">nroff</i>.
+</p>
+
+<p><em class="emphasis">--JS and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5. Getting the Most out of Terminals, xterm, and X Windows</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.3. Setting the Terminal Type When You Log In</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

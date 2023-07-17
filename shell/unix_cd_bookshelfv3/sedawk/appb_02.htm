@@ -1,0 +1,856 @@
+<html><head><title>Language Summary for awk (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appb_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="appb_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">B.2. Language Summary for awk</h2>
+
+<p>This section summarizes how awk processes input records and
+describes the various syntactic elements that make up an awk program.</p>
+
+<a name="sedawk-app-b-sect-2.1" /><div class="sect2">
+<h3 class="sect2">B.2.1. Records and Fields</h3>
+
+<p>
+<a name="IXT-B-265245" />
+<a name="IXT-B-265246" />
+Each line of input is split into fields.  By default, the field
+delimiter is one or more spaces and/or tabs.  You can change the
+field separator by using the <em class="emphasis">-F</em> command-line
+option.  Doing so also sets the value of <b class="emphasis-bold">FS</b>.  The
+following command-line changes the field separator to a colon:</p>
+
+<blockquote><pre class="code">awk -F: -f awkscr /etc/passwd</pre></blockquote>
+
+<p>You can also assign the delimiter to the system variable <b class="emphasis-bold">FS</b>. 
+This is typically done in the <b class="emphasis-bold">BEGIN</b> procedure, but can also
+be passed as a parameter on the command line.</p>
+
+<blockquote><pre class="code">awk -f awkscr FS=: /etc/passwd</pre></blockquote>
+
+<p>Each input line forms a record containing any number of fields.  Each
+field can be referenced by its position in the record.  "$1" refers to
+the value of the first field; "$2" to the second field, and so on.
+"$0" refers to the entire record.  The following action prints the
+first field of each input line:</p>
+
+<blockquote><pre class="code">{ print $1 }</pre></blockquote>
+
+<p>The default record separator is a newline.  The following procedure
+sets <b class="emphasis-bold">FS</b> and <b class="emphasis-bold">RS</b> so that awk
+interprets an input record as any number of lines up to a blank line,
+with each line being a separate field.</p>
+
+<blockquote><pre class="code">BEGIN { FS = "\n"; RS = "" }</pre></blockquote>
+
+<p>It is important to know that when <b class="emphasis-bold">RS</b> is set to the
+empty string, newline <em class="emphasis">always</em> separates fields, in
+addition to whatever value <b class="emphasis-bold">FS</b> may have.  This is
+discussed in more detail in both <em class="citetitle">The AWK Programming
+Language</em> and <em class="citetitle">Effective AWK
+Programming</em>.</p>
+</div>
+
+
+
+
+<a name="sedawk-app-b-sect-2.2" /><div class="sect2">
+<h3 class="sect2">B.2.2. Format of a Script</h3>
+
+<p>
+<a name="IXT-B-265247" />
+<a name="IXT-B-265248" />
+An awk script is a set of pattern-matching rules and
+<em class="emphasis">actions</em>:</p>
+
+<blockquote><pre class="code"><em class="emphasis">pattern</em> { <em class="emphasis">action</em> }</pre></blockquote><p>An action is one or more statements that will be performed on those
+input lines that match the pattern.  If no pattern is specified, the
+action is performed for every input line.  The following example uses
+the <b class="emphasis-bold">print</b> statement to print each line in the input
+file:</p>
+
+<blockquote><pre class="code">{ print }</pre></blockquote>
+
+<p>If only a pattern is specified, then the default action consists of
+the <b class="emphasis-bold">print</b> statement, as shown above.</p>
+
+<p>Function definitions can also appear:</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">function</b> <em class="emphasis">name</em> (<em class="emphasis">parameter list</em>) { <em class="emphasis">statements</em> }</pre></blockquote><p>This syntax defines the function <em class="emphasis">name</em>, making
+available the list of parameters for processing in the body of the
+function.  Variables specified in the parameter-list are treated as
+local variables within the function.  All other variables are global
+and can be accessed outside the function.  When calling a user-defined
+function, no space is permitted between the name of the function and
+the opening parenthesis.  Spaces are allowed in the function's
+definition.  User-defined functions are described in <a href="ch09_01.htm">Chapter 9, "Functions"</a>.</p>
+
+<a name="sedawk-app-b-sect-2.2.1" /><div class="sect3">
+<h3 class="sect3">B.2.2.1. Line termination</h3>
+
+<p>
+<a name="IXT-B-265249" />
+<a name="IXT-B-265250" />
+<a name="IXT-B-265251" />
+<a name="IXT-B-265252" />
+A line in an awk script is terminated by a newline or a semicolon.
+Using semicolons to put multiple statements on a line, while
+permitted, reduces the readability of most programs.  Blank lines are
+permitted between statements.</p>
+
+<p>Program control statements (<b class="emphasis-bold">do</b>,
+<b class="emphasis-bold">if</b>, <b class="emphasis-bold">for</b>, or
+<b class="emphasis-bold">while</b>) continue on the next line, where a dependent
+statement is listed.  If multiple dependent statements are specified,
+they must be enclosed within braces.</p>
+
+<blockquote><pre class="code">if (NF &gt; 1) {
+	name = $1
+	total += $2
+}</pre></blockquote>
+
+<p>You cannot use a semicolon to avoid using braces for multiple
+statements.</p>
+
+<p>You can type a single statement over multiple lines by escaping the
+newline with a backslash (\).  You can also break
+lines following any of the following characters:</p>
+
+<blockquote><pre class="code">, { &amp;&amp; ||</pre></blockquote>
+
+<p>Gawk also allows you to continue a line after either a "?" or a ":".
+Strings cannot be broken across a line (except in gawk,
+using "\" followed by a newline).</p>
+</div>
+
+
+<a name="sedawk-app-b-sect-2.2.2" /><div class="sect3">
+<h3 class="sect3">B.2.2.2. Comments</h3>
+
+<p>
+<a name="IXT-B-265253" />
+<a name="IXT-B-265254" />
+<a name="IXT-B-265255" />
+A comment begins with a "#" and ends with a newline.  It can appear on
+a line by itself or at the end of a line.  Comments are descriptive
+remarks that explain the operation of the script.  Comments cannot be
+continued across lines by ending them with a backslash.</p>
+</div>
+</div>
+
+
+
+
+<a name="sedawk-app-b-sect-2.3" /><div class="sect2">
+<h3 class="sect2">B.2.3. Patterns</h3>
+
+<p>
+<a name="IXT-B-265256" />
+A pattern can be any of the following:</p>
+
+<blockquote><pre class="code">/<em class="emphasis">regular expression</em>/
+<em class="emphasis">relational expression</em>
+<b class="emphasis-bold">BEGIN</b>
+<b class="emphasis-bold">END</b>
+<em class="emphasis">pattern</em>, <em class="emphasis">pattern</em></pre></blockquote><ol><li><p>
+<a name="IXT-B-265257" />
+Regular expressions use the extended set of metacharacters and must be
+enclosed in slashes.  For a full discussion of regular expressions,
+see <a href="ch03_01.htm">Chapter 3, "Understanding Regular Expression Syntax"</a>.</p></li><li><p>
+<a name="IXT-B-265258" />
+Relational expressions use the relational operators
+listed under "Expressions" later in this chapter.</p></li><li><p>The <b class="emphasis-bold">BEGIN</b> pattern is applied before the first line
+of input is read and the <b class="emphasis-bold">END</b> pattern is applied
+after the last line of input is read.</p></li><li><p>Use <b class="emphasis-bold">!</b> to negate the match; i.e., to handle
+lines not matching the pattern.</p></li><li><p>You can address a range of lines, just as in sed:</p>
+
+<blockquote><pre class="code"><em class="emphasis">pattern</em>, <em class="emphasis">pattern</em></pre></blockquote><p>Patterns, except <b class="emphasis-bold">BEGIN</b> and <b class="emphasis-bold">END</b>, 
+can be expressed in compound forms using the following operators:</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<td>&amp;&amp;</td>
+<td>Logical And</td>
+</tr>
+
+<tr>
+<td>||</td>
+<td>Logical Or</td>
+</tr>
+
+
+</table>Sun's version of nawk (SunOS 4.1.x) does not support treating regular
+expressions as parts of a larger Boolean expression. E.g.,
+"/cute/ &amp;&amp; /sweet/" or "/fast/ || /quick/"
+do not work.</p>
+
+<p>In addition the C conditional operator <b class="emphasis-bold">?:</b>
+(<em class="emphasis">pattern</em> ? <em class="emphasis">pattern</em> :
+<em class="emphasis">pattern</em>) may be used in a pattern.</p></li><li><p>Patterns can be placed in parentheses to ensure proper evaluation.</p></li><li><p><b class="emphasis-bold">BEGIN</b> and <b class="emphasis-bold">END</b> patterns must be
+associated with actions.  If multiple <b class="emphasis-bold">BEGIN</b> and
+<b class="emphasis-bold">END</b> rules are written, they are merged into a
+single rule before being applied.</p></li></ol>
+</div>
+
+
+
+
+<a name="sedawk-app-b-sect-2.4" /><div class="sect2">
+<h3 class="sect2">B.2.4. Regular Expressions</h3>
+
+<p>
+<a name="IXT-B-265259" />
+<a name="IXT-B-265260" />
+<a name="IXT-B-265261" />
+<a href="appb_02.htm#sedawk-app-b-tab-1">Table B.1</a> summarizes the regular expressions
+as described in <a href="ch03_01.htm">Chapter 3, "Understanding Regular Expression Syntax"</a>.  The metacharacters are
+listed in order of precedence.</p>
+
+<a name="sedawk-app-b-tab-1" /><h4 class="objtitle">Table B.1. Regular Expression Metacharacters</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Special</th>
+<th />
+</tr>
+
+<tr>
+<th>Characters</th>
+<th>Usage</th>
+</tr>
+
+
+
+
+<tr>
+<td><em class="emphasis">c</em></td>
+<td><p>Matches any literal character <em class="emphasis">c</em> that is not a
+metacharacter.</p></td>
+</tr>
+
+<tr>
+<td>\</td>
+<td><p>Escapes any metacharacter that follows, including itself.</p></td>
+</tr>
+
+<tr>
+<td>^</td>
+<td><p>Anchors following regular expression to the beginning of string.</p></td>
+</tr>
+
+<tr>
+<td>$</td>
+<td><p>Anchors preceding regular expression to the end of string.</p></td>
+</tr>
+
+<tr>
+<td>.</td>
+<td><p>Matches any single character, including <em class="emphasis">newline</em>.</p></td>
+</tr>
+
+<tr>
+<td>[...]</td>
+<td><p>Matches any <em class="emphasis">one</em> of the class of characters
+enclosed between the brackets.  A circumflex (^) as the first
+character inside brackets reverses the match to all characters except
+those listed in the class.  A hyphen (-) is used to indicate a range
+of characters.  The close bracket (]) as the first
+character in a class is a member of the class.  All other
+metacharacters lose their meaning when specified as members of a
+class, except \, which can be used to escape ], even if it is not
+first.</p></td>
+</tr>
+
+<tr>
+<td><em class="emphasis">r1</em>|<em class="emphasis">r2</em></td>
+<td><p>Between two regular expressions, <em class="emphasis">r1</em> and
+<em class="emphasis">r2</em>, it allows either of the regular
+expressions to be matched.</p></td>
+</tr>
+
+<tr>
+<td>(<em class="emphasis">r1</em>)(<em class="emphasis">r2</em>)</td>
+<td><p>Used for concatenating regular expressions.</p></td>
+</tr>
+
+<tr>
+<td><em class="emphasis">r</em>*</td>
+<td><p>Matches any number (including zero) of the regular expression 
+that immediately precedes it.</p></td>
+</tr>
+
+<tr>
+<td><em class="emphasis">r</em>+</td>
+<td><p>Matches one or more occurrences of the preceding regular expression.</p></td>
+</tr>
+
+<tr>
+<td><em class="emphasis">r</em>?</td>
+<td><p>Matches 0 or 1 occurrences of the preceding regular expression.</p></td>
+</tr>
+
+<tr>
+<td>(<em class="emphasis">r</em>)</td>
+<td><p>Used for grouping regular expressions.</p></td>
+</tr>
+
+
+</table><p>
+
+<p>Regular expressions can also make use of the escape sequences for
+accessing special characters, as defined in <a href="appb_02.htm#sedawk-app-b-sect-2.5.2">Section B.2.5.2</a> later in this appendix.</p>
+
+<p>Note that <b class="emphasis-bold">^</b> and <b class="emphasis-bold">$</b> work on
+<em class="emphasis">strings</em>; they do not match against newlines
+embedded in a record or string.</p>
+
+<p>Within a pair of brackets, POSIX allows special notations for
+matching non-English characters. They are described in
+<a href="appb_02.htm#sedawk-app-b-tab-2">Table B.2</a>.
+<a name="IXT-B-265262" /></p>
+
+<a name="sedawk-app-b-tab-2" /><h4 class="objtitle">Table B.2. POSIX Character List Facilities</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Notation</th>
+<th>Facility</th>
+</tr>
+
+
+
+
+<tr>
+<td>[.<em class="emphasis">symbol</em>.]</td>
+<td><p>Collating symbols.  A collating symbol is a multi-character sequence
+that should be treated as a unit.</p></td>
+</tr>
+
+<tr>
+<td>[=<em class="emphasis">equiv</em>=]</td>
+<td><p>Equivalence classes.  An equivalence class lists a set of characters
+that should be considered equivalent, such as "e" and "&#232;".</p></td>
+</tr>
+
+<tr>
+<td>[:<em class="emphasis">class</em>:]</td>
+<td><p>Character classes. Character class keywords describe different
+classes of characters such as alphabetic characters, control
+characters, and so on.</p></td>
+</tr>
+
+<tr>
+<td>[:alnum:]</td>
+<td>Alphanumeric characters</td>
+</tr>
+
+<tr>
+<td>[:alpha:]</td>
+<td>Alphabetic characters</td>
+</tr>
+
+<tr>
+<td>[:blank:]</td>
+<td>Space and tab characters</td>
+</tr>
+
+<tr>
+<td>[:cntrl:]</td>
+<td>Control characters</td>
+</tr>
+
+<tr>
+<td>[:digit:]</td>
+<td>Numeric characters</td>
+</tr>
+
+<tr>
+<td>[:graph:]</td>
+<td><p>Printable and visible (non-space) characters</p></td>
+</tr>
+
+<tr>
+<td>[:lower:]</td>
+<td>Lowercase characters</td>
+</tr>
+
+<tr>
+<td>[:print:]</td>
+<td>Printable characters</td>
+</tr>
+
+<tr>
+<td>[:punct:]</td>
+<td>Punctuation characters</td>
+</tr>
+
+<tr>
+<td>[:space:]</td>
+<td>Whitespace characters</td>
+</tr>
+
+<tr>
+<td>[:upper:]</td>
+<td>Uppercase characters</td>
+</tr>
+
+<tr>
+<td>[:xdigit:]</td>
+<td>Hexadecimal digits</td>
+</tr>
+
+
+</table><p>
+
+<p>Note that these facilities (as of this writing) are still not
+widely implemented.</p>
+</div>
+
+
+
+
+<a name="sedawk-app-b-sect-2.5" /><div class="sect2">
+<h3 class="sect2">B.2.5. Expressions</h3>
+
+<p>
+<a name="IXT-B-265263" />
+An expression can be made up of constants, variables, operators and
+functions.  A constant is a string (any sequence of characters) or a
+numeric value.  A variable is a symbol that references a value.  You
+can think of it as a piece of information that retrieves a particular
+numeric or string value.</p>
+
+<a name="sedawk-app-b-sect-2.5.1" /><div class="sect3">
+<h3 class="sect3">B.2.5.1. Constants</h3>
+
+<p>
+<a name="IXT-B-265264" />
+There are two types of constants, string and numeric.  A string
+constant must be quoted while a numeric constant is not.</p>
+</div>
+
+
+<a name="sedawk-app-b-sect-2.5.2" /><div class="sect3">
+<h3 class="sect3">B.2.5.2. Escape sequences</h3>
+
+<p>
+
+
+
+<a name="IXT-B-265265" />
+<a name="IXT-B-265266" />
+The escape sequences described in <a href="appb_02.htm#sedawk-app-b-tab-3">Table B.3</a>
+can be used in strings and regular expressions.</p>
+
+<a name="sedawk-app-b-tab-3" /><h4 class="objtitle">Table B.3. Escape Sequences</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Sequence</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>\a</td>
+<td>Alert character, usually ASCII BEL character</td>
+</tr>
+
+<tr>
+<td>\b</td>
+<td>Backspace</td>
+</tr>
+
+<tr>
+<td>\f</td>
+<td>Formfeed</td>
+</tr>
+
+<tr>
+<td>\n</td>
+<td>Newline</td>
+</tr>
+
+<tr>
+<td>\r</td>
+<td>Carriage return</td>
+</tr>
+
+<tr>
+<td>\t</td>
+<td>Horizontal tab</td>
+</tr>
+
+<tr>
+<td>\v</td>
+<td>Vertical tab</td>
+</tr>
+
+<tr>
+<td>\<em class="emphasis">ddd</em></td>
+<td>Character represented as 1 to 3 digit octal value</td>
+</tr>
+
+<tr>
+<td>\x<em class="emphasis">hex</em></td>
+<td>Character represented as hexadecimal value<a href="#FOOTNOTE-91">[91]</a></td>
+</tr>
+
+<tr>
+<td>\<em class="emphasis">c</em></td>
+<td><p>Any literal character <em class="emphasis">c</em> (e.g.,
+<b class="emphasis-bold">\"</b> for <b class="emphasis-bold">"</b>)<a href="#FOOTNOTE-92">[92]</a></p></td>
+</tr>
+
+
+</table><p>
+
+<a name="FOOTNOTE-91" /><p> [91]POSIX does not provide "\x", but it is commonly available.</p>
+
+</blockquote><blockquote class="footnote">
+
+<a name="FOOTNOTE-92" /><p> [92]Like ANSI C, POSIX leaves it purposely undefined what you get when
+you put a backslash before any character not listed in the table.
+In most awks, you just get that character.</p>
+
+</blockquote>
+</div>
+
+
+<a name="sedawk-app-b-sect-2.5.3" /><div class="sect3">
+<h3 class="sect3">B.2.5.3. Variables</h3>
+
+<p>
+<a name="IXT-B-265267" />
+There are three kinds of variables: user-defined, built-in, and
+fields.  By convention, the names of built-in or system variables
+consist of all capital letters.</p>
+
+<p>The name of a variable cannot start with a digit.
+Otherwise, it consists of letters, digits, and underscores.
+Case is significant in variable names.</p>
+
+<p>A variable does not need to be declared or initialized.  A variable
+can contain either a string or numeric value.  An uninitialized
+variable has the empty string ("") as its string value and 0
+as its numeric value.  Awk attempts to decide whether a value should
+be processed as a string or a number depending upon the operation.</p>
+
+<p>The assignment of a variable has the form:</p>
+
+<blockquote><pre class="code"><em class="emphasis">var</em> = <em class="emphasis">expr</em></pre></blockquote><p>It assigns the value of the expression to
+<em class="emphasis">var</em>.  The following expression assigns a
+value of 1 to the variable <b class="emphasis-bold">x</b>.</p>
+
+<blockquote><pre class="code">x = 1</pre></blockquote>
+
+<p>The name of the variable is used to reference the value:</p>
+
+<blockquote><pre class="code">{ print x }</pre></blockquote>
+
+<p>prints the value of the variable <b class="emphasis-bold">x</b>.  In this case,
+it would be 1.</p>
+
+<p>See the later <a href="appb_02.htm#sedawk-app-b-sect-2.5.5">Section 2.2.5.5</a> for information on
+built-in variables.  A field variable is referenced using
+<b class="emphasis-bold">$</b><em class="emphasis">n</em>, where
+<em class="emphasis">n</em> is any number 0 to <b class="emphasis-bold">NF</b>,
+that references the field by position.  It can be supplied by a
+variable, such as <b class="emphasis-bold">$NF</b> meaning the last field, or
+constant, such as $1 meaning the first field.</p>
+</div>
+
+
+<a name="sedawk-app-b-sect-2.5.4" /><div class="sect3">
+<h3 class="sect3">B.2.5.4. Arrays</h3>
+
+<p>
+<a name="IXT-B-265268" />
+<a name="IXT-B-265269" />
+<a name="IXT-B-265270" />
+An array is a variable that can be used to store a set of values.  The
+following statement assigns a value to an element of an array:</p>
+
+<blockquote><pre class="code"><em class="emphasis">array</em>[<em class="emphasis">index</em>] = <em class="emphasis">value</em></pre></blockquote><p>In awk, all arrays are <em class="emphasis">associative</em> arrays.  What
+makes an associative array unique is that its index can be a string or
+a number.</p>
+
+<p>An associative array makes an "association" between the indices and
+the elements of an array.  For each element of the array, a pair of
+values is maintained: the index of the element and the value of the
+element.  The elements are not stored in any particular order as in a
+conventional array.</p>
+
+<p>You can use the special <b class="emphasis-bold">for</b> loop to read all the
+elements of an associative array.</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">for</b> (<em class="emphasis">item</em> <b class="emphasis-bold">in</b> <em class="emphasis">array</em>)</pre></blockquote><p>The index of the array is available as
+<em class="emphasis">item</em>, while the value of an element of the
+array can be referenced as
+<em class="emphasis">array</em>[<em class="emphasis">item</em>].</p>
+
+<p>You can use the operator <b class="emphasis-bold">in</b> to test that an element
+exists by testing to see if its index exists.</p>
+
+<blockquote><pre class="code"><b class="emphasis-bold">if</b> (<em class="emphasis">index</em> <b class="emphasis-bold">in</b> <em class="emphasis">array</em>)</pre></blockquote><p>tests that
+<em class="emphasis">array</em>[<em class="emphasis">index</em>]
+exists, but you cannot use it to test the value of the element
+referenced by
+<em class="emphasis">array</em>[<em class="emphasis">index</em>].</p>
+
+<p>You can also delete individual elements of the array using the
+<b class="emphasis-bold">delete</b> statement.</p>
+</div>
+
+
+<a name="sedawk-app-b-sect-2.5.5" /><div class="sect3">
+<h3 class="sect3">B.2.5.5. System variables</h3>
+
+<p>
+<a name="IXT-B-265271" />
+<a name="IXT-B-265272" />
+<a name="IXT-B-265273" />
+Awk defines a number of special variables that can be referenced or
+reset inside a program, as shown in <a href="appb_02.htm#sedawk-app-b-tab-4">Table B.4</a> (defaults are listed in parentheses).</p>
+
+<a name="sedawk-app-b-tab-4" /><h4 class="objtitle">Table B.4. Awk System Variables</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td><b class="emphasis-bold">ARGC</b></td>
+<td>Number of arguments on command line</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">ARGV</b></td>
+<td>An array containing the command-line arguments</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">CONVFMT</b></td>
+<td>String conversion format for numbers (%.6g). (POSIX)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">ENVIRON</b></td>
+<td>An associative array of environment variables</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">FILENAME</b></td>
+<td>Current filename</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">FNR</b></td>
+<td>Like <b class="emphasis-bold">NR</b>, but relative to the current file</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">FS</b></td>
+<td>Field separator (a blank)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">NF</b></td>
+<td>Number of fields in current record</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">NR</b></td>
+<td>Number of the current record</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">OFMT</b></td>
+<td>Output format for numbers (%.6g)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">OFS</b></td>
+<td>Output field separator (a blank)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">ORS</b></td>
+<td>Output record separator (a newline)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">RLENGTH</b></td>
+<td><p>Length of the string matched by <b class="emphasis-bold">match()</b> function</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">RS</b></td>
+<td>Record separator (a newline)</td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">RSTART</b></td>
+<td><p>First position in the string matched by <b class="emphasis-bold">match()</b> function</p></td>
+</tr>
+
+<tr>
+<td><b class="emphasis-bold">SUBSEP</b></td>
+<td><p>Separator character for array subscripts (\034)</p></td>
+</tr>
+
+
+</table><p>
+</div>
+
+
+<a name="sedawk-app-b-sect-2.5.6" /><div class="sect3">
+<h3 class="sect3">B.2.5.6. Operators</h3>
+
+<p>
+<a name="IXT-B-265274" />
+<a name="IXT-B-265275" />
+<a name="IXT-B-265276" />
+<a href="appb_02.htm#sedawk-app-b-tab-5">Table B.5</a> lists the operators
+in the order of precedence (low to high) that are available in awk.</p>
+
+<a name="sedawk-app-b-tab-5" /><h4 class="objtitle">Table B.5. Operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Operators</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>=   +=   -=   *=   /=   %=   ^=   **=</td>
+<td>Assignment</td>
+</tr>
+
+<tr>
+<td>?:</td>
+<td>C conditional expression</td>
+</tr>
+
+<tr>
+<td>||</td>
+<td>Logical OR</td>
+</tr>
+
+<tr>
+<td>&amp;&amp;</td>
+<td>Logical AND</td>
+</tr>
+
+<tr>
+<td>~    !~</td>
+<td>Match regular expression and negation</td>
+</tr>
+
+<tr>
+<td>&lt;   &lt;=   &gt;   &gt;=   !=  ==</td>
+<td>Relational operators</td>
+</tr>
+
+<tr>
+<td>(blank)</td>
+<td>Concatenation</td>
+</tr>
+
+<tr>
+<td>+   -</td>
+<td>Addition, subtraction</td>
+</tr>
+
+<tr>
+<td>*  /  %</td>
+<td>Multiplication, division, and modulus</td>
+</tr>
+
+<tr>
+<td>+   -   !</td>
+<td>Unary plus and minus, and logical negation</td>
+</tr>
+
+<tr>
+<td>^  **</td>
+<td>Exponentiation</td>
+</tr>
+
+<tr>
+<td>++ --</td>
+<td>Increment and decrement, either prefix or postfix</td>
+</tr>
+
+<tr>
+<td>$</td>
+<td>Field reference</td>
+</tr>
+
+
+</table><p>
+
+<blockquote><b>NOTE:</b> 
+While "**" and "**=" are common extensions, they are not
+part of POSIX awk.</p>
+</blockquote>
+</div>
+</div>
+
+
+
+
+<a name="sedawk-app-b-sect-2.6" /><div class="sect2">
+<h3 class="sect2">B.2.6. Statements and Functions</h3>
+
+<p>
+<a name="IXT-B-265277" />
+<a name="IXT-B-265278" />
+An action is enclosed in braces and consists of one or more statements
+and/or expressions. The difference between a statement and a function
+is that a function returns a value, and its argument list is specified
+within parentheses. (The formal syntactical difference does not always
+hold true: <b class="emphasis-bold">printf</b> is considered a statement, but
+its argument list can be put in parentheses;
+<b class="emphasis-bold">getline</b> is a function that does not use
+parentheses.)</p>
+
+<p>Awk has a number of predefined arithmetic and string functions.  A
+function is typically called as follows:</p>
+
+<blockquote><pre class="code"><em class="emphasis">return</em> = <em class="emphasis">function</em>(<em class="emphasis">arg1</em>,<em class="emphasis">arg2</em>)</pre></blockquote><p>where <em class="emphasis">return</em> is a variable created to hold
+what the function returns.  (In fact, the return value of a function
+can be used anywhere in an expression, not just on the right-hand side
+of an assignment.)  Arguments to a function are specified as a
+comma-separated list.  The left parenthesis follows after the name of
+the function.  (With built-in functions, a space is permitted between
+the function name and the parentheses.)</p>
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="appb_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="appb_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">B. Quick Reference
+for awk</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">B.3. Command Summary for awk</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

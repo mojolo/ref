@@ -1,0 +1,106 @@
+<html><head><title>Make Columns Automatically with column (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.16. Make Columns Automatically with column</h2>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: column</p>
+
+<p><a name="IXT-21-5763" /> <a name="IXT-21-5764" /><a name="IXT-21-5765" /><a name="IXT-21-5766" />Another
+column-making program, besides <i class="command">cols</i> and <b class="emphasis-bold">pr</b> (<a href="ch21_15.htm#upt3-CHP-21-SECT-15">Section 21.15</a>), is the
+creatively named utility <i class="command">column</i>. It tries to
+determine the terminal width, which you can override with the
+<span class="option">-c</span> option (<tt class="literal">-c 132</tt>, for example,
+gives 132 columns: handy for printing on wide line-printer paper.)
+The <span class="option">-x</span> option fills columns before rows -- 
+similar to <i class="command">pr</i> with its
+<tt class="literal">-</tt><em class="emphasis">n</em> option and
+<i class="command">cols</i> -<span class="option">d</span>.
+</p>
+
+<p><a name="IXT-21-5767" /> <a name="IXT-21-5768" />What makes
+<i class="command">column</i><a name="IXT-21-5769" /> different from the
+others is its <span class="option">-t</span> option. This reads input data
+that's already in columns and rebalances the columns
+into a table with variable-width columns. Say what? This is easiest
+to see with an example, and the <i class="command">column</i>(1) manual
+page has a good one.
+</p>
+
+<p>If you'd like to add column headings to
+<i class="command">ls</i> -<span class="option">l</span> output, it can be a pain to
+try to make headings that each take the same number of characters as
+the data below them. For instance, the first field on each line, the
+permissions, takes 10 characters, but if you want to use the heading
+"PERM", which takes only 4
+characters, you need to balance it by adding 6 spaces after. Using
+<tt class="literal">column -t</tt>, you can balance these automatically.
+Here's an example. The first command is plain
+<i class="command">ls -l</i>. In the second and third examples, I use
+<b class="emphasis-bold">sed 1d</b> (<a href="ch34_01.htm#upt3-CHP-34-SECT-1">Section 34.1</a>) to delete the <tt class="literal">total</tt>
+<em class="replaceable"><tt>n</tt></em> line from <i class="command">ls</i>, and
+<b class="emphasis-bold">subshells</b> (<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) to make both commands use the same standard
+output; this is important only in the third command, where I pipe the
+combined <em class="emphasis">stdout</em> to <i class="command">column</i> for
+balancing:
+</p><p><tt class="literal">;</tt> <a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a>, <tt class="literal">&gt;</tt> <a href="ch28_12.htm#upt3-CHP-28-SECT-12">Section 28.12</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>ls -lo</b></tt>
+total 1644
+-r--r--r--    1 jpeek     1559177 Sep 19  1999 ORA_tifs.tgz
+-rw-rw-r--    1 jpeek        4106 Oct 21  1999 UPT_Russian.jpg
+-rw-rw-r--    1 jpeek      101944 Nov 19 09:30 london_dusk-livesights.xwd.gz
+dr-xr-xr-x    2 jpeek        4096 Dec 12  1999 me
+$ <tt class="userinput"><b>(echo "PERM      LINKS OWNER        SIZE MON DY TM/YR NAME"; \</b></tt>
+&gt; <tt class="userinput"><b>ls -lo | sed 1d)</b></tt>
+PERM      LINKS OWNER        SIZE MON DY TM/YR NAME
+-r--r--r--    1 jpeek     1559177 Sep 19  1999 ORA_tifs.tgz
+-rw-rw-r--    1 jpeek        4106 Oct 21  1999 UPT_Russian.jpg
+-rw-rw-r--    1 jpeek      101944 Nov 19 09:30 london_dusk-livesights.xwd.gz
+dr-xr-xr-x    2 jpeek        4096 Dec 12  1999 me
+
+$ <tt class="userinput"><b>(echo PERM LINKS OWNER SIZE MONTH DAY HH:MM/YEAR NAME; \</b></tt>
+&gt; <tt class="userinput"><b>ls -lo | sed 1d) | column -t</b></tt>
+PERM        LINKS  OWNER  SIZE     MONTH  DAY  HH:MM/YEAR  NAME
+-r--r--r--  1      jpeek  1559177  Sep    19   1999        ORA_tifs.tgz
+-rw-rw-r--  1      jpeek  4106     Oct    21   1999        UPT_Russian.jpg
+-rw-rw-r--  1      jpeek  101944   Nov    19   09:30       london_dusk-livesights.xwd.gz
+dr-xr-xr-x  2      jpeek  4096     Dec    12   1999        me</pre></blockquote>
+
+<p>My feeble attempt in the second example took a lot of trial-and-error
+to get the right spacing, and I still had to cram
+<tt class="literal">DY</tt> over the tiny sixth column and
+<tt class="literal">TM/YR</tt> over the seventh. In the third example,
+<i class="command">column</i> automatically adjusted the column width to
+compensate for the <tt class="literal">HH:MM/YEAR</tt> heading.
+Unfortunately, the long filename
+<em class="emphasis">london_dusk-livesights.xwd.gz</em> ran off the right
+edge (past column 80, my window width) -- but there was nothing
+<i class="command">column</i> could do in this case because the combined
+header+columns were just too wide.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_15.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_17.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.15. Making Text in Columns with pr</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.17. Straightening Jagged Columns</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

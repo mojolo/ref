@@ -1,0 +1,190 @@
+<html><head><title>String Editing (Colon) Operators (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch28_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">28.5. String Editing (Colon) Operators</h2>
+
+<p><a name="upt3-IDXTERM-4193" /> <a name="upt3-IDXTERM-4194" /> <a name="upt3-IDXTERM-4195" /> <a name="upt3-IDXTERM-4196" /><a name="IXT-28-4568" /><a name="IXT-28-4569" />When the <a name="upt3-IDXTERM-4199" />C shells,
+<i class="command">zsh</i>, and <i class="command">bash</i> do <b class="emphasis-bold">history substitutions</b> <a name="upt3-IDXTERM-4200" /> <a name="upt3-IDXTERM-4201" /> <a name="upt3-IDXTERM-4202" />(<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>) they can also edit the substitution. The C
+shells and <i class="command">zsh</i> -- but not
+<i class="command">bash</i> -- can also edit <b class="emphasis-bold">variable substitutions</b>
+(<a name="IXT-28-4570" /><a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>).
+(<i class="command">bash</i> has a different syntax, which
+<i class="command">zsh</i> understands, too.) For instance, in the first
+example below, when <tt class="literal">!$</tt> contains
+<tt class="literal">/a/b/c</tt>, adding the
+"head" operator
+<tt class="literal">:h</tt> will give just the head of the pathname,
+<tt class="literal">/a/b</tt>.
+</p>
+
+<p>For a complete but very terse list of these operators, see the
+<i class="command">csh</i> manual page. We hope the examples below will
+help you understand these useful operators.
+</p>
+
+<ul><li>
+<p><tt class="literal">:h</tt><a name="IXT-28-4571" /><a name="IXT-28-4572" /> gives the head of a
+<b class="emphasis-bold">pathname</b> (<a href="ch31_02.htm#upt3-CHP-31-SECT-2">Section 31.2</a>), as follows:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo /a/b/c</b></tt>
+/a/b/c
+% <tt class="userinput"><b>echo !$:h</b></tt>
+echo /a/b
+/a/b</pre></blockquote>
+
+<p>That took off the filename and left the header. This also could be
+used with C shell <b class="emphasis-bold">variables</b> (<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>) as:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>set x = /a/b/c</b></tt>
+% <tt class="userinput"><b>echo $x</b></tt>
+/a/b/c
+% <tt class="userinput"><b>echo $x:h</b></tt>
+/a/b</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">:r</tt><a name="IXT-28-4573" /> returns the root of a
+filename:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo xyz.c abc.c</b></tt>
+xyz.c abc.c
+% <tt class="userinput"><b>echo !$:r</b></tt>
+echo abc
+abc</pre></blockquote>
+
+<p>The <tt class="literal">:r</tt> removed the <tt class="literal">.c</tt> from the
+last argument, leaving the root name. This could also be used in C
+shell variable names:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>set x = abc.c</b></tt>
+% <tt class="userinput"><b>echo $x:r</b></tt>
+</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">:g</tt> makes the operation <a name="IXT-28-4574" />global if you have
+more than one name. For example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>set x = (a.a b.b c.c)</b></tt>
+% <tt class="userinput"><b>echo $x:gr</b></tt>
+a b c</pre></blockquote>
+
+<p>The <tt class="literal">:gr</tt> operator stripped off all dot (.)
+suffixes. By the way, this use of <tt class="literal">g</tt> does not work
+with the history commands.
+</p>
+
+<p>This is the C shell's answer to the <b class="emphasis-bold">basename</b> (<a href="ch36_13.htm#upt3-CHP-36-SECT-13">Section 36.13</a>)
+command.
+</p>
+</li><li>
+<p><tt class="literal">:e</tt> returns the <a name="IXT-28-4575" />extension (the part of the name after
+a dot). Using <i class="command">csh</i> variables:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>set x=(abc.c)</b></tt>
+% <tt class="userinput"><b>echo $x:e</b></tt>
+c</pre></blockquote>
+
+<p>No luck using that within history, either.</p>
+</li><li>
+<p><tt class="literal">:t</tt><a name="IXT-28-4576" /><a name="IXT-28-4577" /> gives the tail of a
+pathname -- the actual filename without the path:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo /a/b/c</b></tt>
+/a/b/c
+% <tt class="userinput"><b>echo !$:t</b></tt>
+c</pre></blockquote>
+
+<p>With <i class="command">csh</i> variables:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>set x=(/a/b/c)</b></tt>
+% <tt class="userinput"><b>echo $x:t</b></tt>
+c</pre></blockquote>
+
+<p>And with multiple pathnames, you can do it globally with:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>set x=(/a/b/c /d/e/f /g/h/i)</b></tt>
+% <tt class="userinput"><b>echo $x:gt</b></tt>
+c f i</pre></blockquote>
+
+<p>The corresponding heads would be:</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>set x=(/a/b/c /d/e/f /g/h/i)</b></tt>
+% <tt class="userinput"><b>echo $x:gh</b></tt>
+</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">:p</tt><a name="IXT-28-4578" /><a name="IXT-28-4579" /> <b class="emphasis-bold">prints the
+command but does not execute it</b> (<a href="ch30_11.htm#upt3-CHP-30-SECT-11">Section 30.11</a>): 
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>echo *</b></tt>
+fn1 fn2 fn3
+% <tt class="userinput"><b>!:p</b></tt>
+echo fn1 fn2 fn3</pre></blockquote>
+</li>
+<li>
+<p><tt class="literal">:q</tt><a name="IXT-28-4580" /> prevents further filename expansion or
+prints the command as is:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo *</b></tt>
+fn1 fn2 fn3
+% <tt class="userinput"><b>!:q</b></tt>
+echo *
+*</pre></blockquote>
+
+<p>The first command echoed the files in the directory, and when the
+<tt class="literal">:q</tt> was applied, it echoed only the special
+character.
+</p>
+</li><li>
+<p><tt class="literal">:x</tt><a name="IXT-28-4581" /><a name="IXT-28-4582" /> is like
+<tt class="literal">:q</tt>, but it breaks the line into words. That is,
+when using <tt class="literal">:q</tt>, it is all one word, while
+<tt class="literal">:x</tt> will break it up into multiple words.
+<tt class="literal">:q</tt> and <tt class="literal">:x</tt> are more often used
+with C shell arrays.
+</p>
+</li></ul>
+<p>[Wait, Dan, what about <tt class="literal">&amp;</tt> on the right-hand
+side to repeat the previous substitution? <a name="IXTR3-4744" />And
+there's more since Dan wrote this article (in
+1983!). <i class="command">tcsh</i> also has
+<tt class="literal">:u</tt><a name="IXT-28-4583" /><a name="IXT-28-4584" /> to convert the first lowercase
+letter to uppercase and <tt class="literal">:l</tt> to convert the first
+uppercase letter to lowercase. In <i class="command">zsh</i>,
+<tt class="literal">:u</tt> converts all letters to uppercase and
+<tt class="literal">:l</tt> converts all letter to lowercase.
+<i class="command">zsh</i> also has <tt class="literal">f</tt> and
+<tt class="literal">F</tt> to repeat a substitution until it
+fails -- and even more. Check your shell's manual
+page.  -- <em class="emphasis">JP</em>]<a name="IXTR3-4745" /> <a name="IXTR3-4746" /> <a name="IXTR3-4747" /> 
+</p>
+
+<p><em class="emphasis"><a name="IXTR3-4748" /> <a name="IXTR3-4749" /> <a name="IXTR3-4750" /> <a name="IXTR3-4751" /> -- DR</em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch28_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch28_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">28.4. Build Strings with { }</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">28.6. Automatic Completion</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

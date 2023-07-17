@@ -1,0 +1,168 @@
+<html><head><title>The PATH Environment Variable (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.6. The PATH Environment Variable</h2>
+
+<p><a name="IXT-35-3561" /><a name="IXT-35-3562" />Of all the
+environment variables, the <em class="emphasis">PATH</em> and
+<em class="emphasis">TERM</em> variables are the most important. The
+others are often great conveniences, but <em class="emphasis">PATH</em>
+and <em class="emphasis">TERM</em> can make your life miserable if they
+get screwed up.
+</p>
+
+<p>The <em class="emphasis">PATH</em> variable is just a list of directories
+separated by colon (:) characters. The shell searches through these
+directories in order whenever it needs to find a command. So, if you
+want to execute commands in <em class="filename">/bin</em>,
+<em class="filename">/usr/bin</em>, <em class="filename">/usr/local</em>, the
+current directory, and your personal <em class="filename">bin</em>
+directory, you would put a line like the one below in your
+<em class="filename">.login</em> file. An empty entry (: as the first or
+last character, or <tt class="literal">::</tt> in the middle) means
+"the current directory."
+</p>
+
+<p><tt class="literal">$HOME/bin</tt> <a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a></p>
+
+<blockquote><pre class="code">setenv PATH /bin:/usr/bin:/usr/local::$HOME/bin</pre></blockquote>
+
+<p><a href="ch27_06.htm#upt3-CHP-27-SECT-6">Section 27.6</a> explains more about setting the
+path.
+</p>
+
+<p>The most common problem with <em class="emphasis">PATH</em> is that,
+somehow, it gets deleted. This usually happens if you try to change
+<em class="emphasis">PATH</em> and do so incorrectly. When
+<em class="emphasis">PATH</em> is deleted, your shell can find only its
+<b class="emphasis-bold">built-in commands</b> (<a href="ch01_09.htm#upt3-CHP-1-SECT-9">Section 1.9</a>) and commands for which you give the complete
+pathname. Here's a demonstration:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>setenv PATH   </b></tt><i class="lineannotation">Set PATH to null accidentally</i>
+% <tt class="userinput"><b>ls</b></tt>
+ls: Command not found.</pre></blockquote>
+
+<p>Needless to say, this can be very frustrating -- especially if you
+can't figure out what's going on.
+There are a couple of easy fixes. The easiest is just to log out and
+log back in again.
+(<em class="emphasis">logout</em><a name="IXT-35-3563" /> is a built-in C shell command, so you
+won't have trouble finding it. If you get an error
+message like "Not login shell," try
+<i class="command">exit</i> instead.) Another fix is to <b class="emphasis-bold">read</b> (<a href="ch35_29.htm#upt3-CHP-35-SECT-29">Section 35.29</a>) whichever
+initialization file defined your <em class="emphasis">PATH</em> variable,
+usually <em class="filename">.login</em> for C shell users or
+<em class="filename">.profile</em> or <em class="filename">.bash_profile</em>
+for Bourne or <i class="command">bash</i> shell users, respectively:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>source ~/.login</b></tt>
+$ <tt class="userinput"><b>. $HOME/.profile</b></tt>
+bash$ <tt class="userinput"><b>. $HOME/.bash_profile</b></tt></pre></blockquote>
+
+<p>This will almost certainly give you <em class="emphasis">some</em> of your
+path back; the problem is that a lot of initialization files merely
+add a few "private" directories to
+a system-wide default path. In this case, just execute the
+system-wide initialization files first (if your system has them).
+Their pathnames vary:
+</p>
+
+<blockquote><pre class="code">+$ <tt class="userinput"><b>source /etc/profile</b></tt>
+$ <tt class="userinput"><b>source /etc/profile.d/*.sh</b></tt>
+$ <tt class="userinput"><b>source ~/.login</b></tt>
+bash$ <tt class="userinput"><b>source ~/.bash_profile</b></tt></pre></blockquote>
+
+<p>Your best bet, if you're unfamiliar with the quirks
+of your system and how it sets up your shell, is to simply log out
+and log back in again. Some newer Linux systems, for example, use
+<em class="filename">/etc/profile</em> for <i class="command">bash</i> setup,
+inheriting the hardwired defaults set by the
+<i class="command">login</i><a name="IXT-35-3564" /> command, and then go on to read
+shell-specific files (often in <em class="filename">/etc/profile.d</em>,
+for example). <i class="command">tcsh</i> and <i class="command">csh</i> are
+configured using the <em class="filename">/etc/csh.login</em>,
+<em class="filename">/etc/csh.cshrc</em>, and other files in
+<em class="filename">/etc/profile.d</em> in similar fashion to
+<i class="command">bash</i>. This allows package managers to install
+package specific initialization without modifying (and potentially
+corrupting) the system's default initialization.
+</p>
+
+<p>The other common <em class="emphasis">PATH</em> problem is that users
+sometimes can't find the commands they want. This
+happens most often when someone writes a new shell script with the
+same name as a standard Unix command -- say,
+<i class="command">true</i>. He or she tries to execute it and
+can't; in fact, all that happens is:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>true</b></tt>
+%</pre></blockquote>
+
+<p>After staring at the script for a long time, the user sometimes gets
+the right idea: the script is fine; it's the path
+that's wrong. The <em class="emphasis">PATH</em> variable
+will look something like this:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>printenv PATH</b></tt>
+/bin:/usr/local/bin:/usr/bin:/sbin::/home/schampeo/bin</pre></blockquote>
+
+<p>The shell searches the <em class="emphasis">PATH</em> in order; therefore,
+it finds the system's standard
+<i class="command">true</i> command before seeing the new one. The new
+command never gets a chance. You <em class="emphasis">could</em> fix this
+problem by putting the current directory and
+<em class="emphasis">$HOME/bin</em> at the head of the search path, in
+which case commands in the current directory and your private
+<em class="filename">bin</em> directory will override the standard
+commands. However, that's <em class="emphasis">not</em>
+recommended; it's a well-known security hole.
+</p>
+
+<p>So what is recommended? Nothing much, except that if you write shell
+scripts or other programs, give them names that are <b class="emphasis-bold">different from the standard Unix utilities</b>
+(<a href="ch35_27.htm#upt3-CHP-35-SECT-27">Section 35.27</a>). If you really need an overlapping
+name, you can use a <b class="emphasis-bold">relative
+pathname</b> (<a href="ch01_16.htm#upt3-CHP-1-SECT-16">Section 1.16</a>) to specify
+"the program called <i class="command">true</i> in the
+current directory":
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>./true</b></tt></pre></blockquote>
+
+<p><a name="IXT-35-3565" />You can search your
+<em class="emphasis">PATH</em> for a command with <b class="emphasis-bold">which</b> (<a href="ch02_06.htm#upt3-CHP-2-SECT-6">Section 2.6</a>),
+<i class="command">findcmd</i>, and <i class="command">whereiz</i>.
+<a href="ch35_07.htm#upt3-CHP-35-SECT-7">Section 35.7</a> explains the pair of
+<em class="emphasis">path</em> variables in <i class="command">csh</i> and
+<i class="command">zsh</i>.
+</p>
+
+<p><em class="emphasis">--ML and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.5. Predefined Environment Variables</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.7. PATH and path</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

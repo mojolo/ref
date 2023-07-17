@@ -1,0 +1,294 @@
+<html><head><title>Executing UNIX Commands  (Learning the vi Editor, Sixth Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Linda Lamb and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-426-6" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the vi Editor, Sixth Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Learning the vi Editor" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.2. Executing UNIX Commands </h2>
+
+<p>
+<a name="ch07.unix1" />
+<a name="ch07.unix3" />
+You can display or read in the results of any UNIX
+command while you are editing in <em class="emphasis">vi</em>.
+An exclamation mark (<tt class="literal">!</tt>) tells
+<em class="emphasis">ex</em> to create a shell and to regard what follows as a
+UNIX command:
+<a name="IXT-7-280999" />
+<a name="IXT-7-281000" />
+<a name="IXT-7-281001" />
+<a name="IXT-7-281002" /></p>
+
+<blockquote><pre class="code">:!<em class="replaceable"><tt>command</tt></em></pre></blockquote>
+
+<p>So if you are editing and you want to check the time or date
+without exiting <em class="emphasis">vi</em>, you can enter:
+<a name="IXT-7-281003" /></p>
+
+<blockquote><pre class="code">:!date</pre></blockquote>
+
+<p>The time and date will appear on your screen;  press
+<span class="keycap">RETURN</span>
+
+to continue editing at the same place in your file.</p>
+
+<p>
+<a name="IXT-7-281004" />
+<a name="IXT-7-281005" />
+If you want to give several UNIX commands in a row without returning to
+<em class="emphasis">vi</em> editing in between,
+you can create a shell with the <em class="emphasis">ex</em>
+command:</p>
+
+<blockquote><pre class="code">:sh</pre></blockquote>
+
+<p>
+When you want to exit the shell and return to <em class="emphasis">vi</em>, press
+<span class="keycap">CTRL-D</span>.</p>
+
+<p>
+<a name="IXT-7-281006" />
+<a name="IXT-7-281007" />
+You can combine <tt class="literal">:read</tt> with a call to UNIX, to
+read the results of a UNIX command into your file.
+As a very simple example:</p>
+
+<blockquote><pre class="code">:r !date</pre></blockquote>
+
+<p>will read in the system's date information into the text of your file.
+By preceding the <tt class="literal">:r</tt> command with a line address, you can read
+the result of the command in at any desired point in your file. By
+default, it will appear after the current line.</p>
+
+<p>Suppose you are editing a file and want to read in four phone
+numbers from a file called <em class="filename">phone</em>, but in alphabetical
+order.
+<em class="filename">phone</em> reads:</p>
+
+<blockquote><pre class="code">Willing, Sue  333-4444
+  Walsh, Linda  555-6666
+  Quercia, Valerie  777-8888
+  Dougherty, Nancy  999-0000</pre></blockquote>
+
+<p>The command:
+<a name="IXT-7-281008" /></p>
+
+<blockquote><pre class="code">:r !sort phone</pre></blockquote>
+
+<p>reads in the contents of <em class="filename">phone</em> after they have been passed
+through the <em class="emphasis">sort</em> filter:</p>
+
+<blockquote><pre class="code">Dougherty, Nancy  999-0000
+  Quercia, Valerie  777-8888
+  Walsh, Linda  555-6666
+  Willing, Sue  333-4444</pre></blockquote>
+
+<p>Suppose you are editing a file and want to insert text from
+another file in the directory, but you can't remember the new file's name.
+You <em class="emphasis">could</em> perform this task the long way: exit your
+file, give the <tt class="literal">ls</tt> command, note the correct filename,
+reenter your file, and search for your place.</p>
+
+<p>Or you could do the task in fewer steps:</p>
+
+<table border="1" cellpadding="3">
+
+<tr>
+<th>Keystrokes</th>
+<th>Results</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">:!ls</tt></td>
+<?graphic_args "" "" 1.19 -.35?><td><img src="figs/vi.0701.gif" alt="Figure " width="334" /><p>
+<?troff .sp -1v?>Display a list of files in the current directory.
+Note the correct filename.
+Press <span class="keycap">RETURN</span> to continue editing.</p></td>
+</tr>
+
+<?troff .sp .5v?><tr>
+<td><tt class="literal">:r newfile</tt></td>
+<?graphic_args "" "" 1.19 -.35?><td><img src="figs/vi.0702.gif" alt="Figure " width="334" /><p>
+<?troff .sp -1v?>Read in the new file.</p></td>
+</tr>
+
+
+</table><p><p>
+<a name="vi6-ch-7-sect-2.1" /><div class="sect2">
+<h3 class="sect2">7.2.1. Filtering Text Through a Command </h3>
+
+<p>
+<a name="ch07.block1" />
+<a name="ch07.block2" />
+<a name="ch07.block3" />
+You can also send a block of text as standard input to a UNIX command.
+The output from this command replaces the block of text in the buffer.
+You can filter text through a command from either <em class="emphasis">ex</em> or
+<em class="emphasis">vi</em>.
+The main difference between the two methods is that you indicate
+the block of text with line addresses in <em class="emphasis">ex</em> and
+with text objects (movement commands) in <em class="emphasis">vi</em>.</p>
+
+<a name="vi6-ch-7-sect-2.1.1" /><div class="sect3">
+<h3 class="sect3">7.2.1.1. Filtering text with ex</h3>
+
+<p>
+<a name="IXT-7-281009" />
+The first example demonstrates how to filter text with <em class="emphasis">ex</em>.
+Assume that the list of names in the preceding example,
+instead of being contained in a separate file called <em class="filename">phone</em>,
+is already contained in the current file on lines 96 through 99.
+You simply type the addresses of the lines you want to filter, followed
+by an exclamation mark and the UNIX command to be executed.
+For example, the command:</p>
+
+<blockquote><pre class="code">:96,99!sort</pre></blockquote>
+
+<p>will pass lines 96 through 99 through the <em class="emphasis">sort</em> filter and replace
+those lines with the output of <em class="emphasis">sort</em>.</p>
+</div>
+
+
+<a name="vi6-ch-7-sect-2.1.2" /><div class="sect3">
+<h3 class="sect3">7.2.1.2. Filtering text with vi</h3>
+
+<p>
+<a name="IXT-7-281010" />
+In <em class="emphasis">vi</em>, text is filtered through a UNIX command by typing an exclamation mark
+followed by any of <em class="emphasis">vi</em>'s movement keystrokes
+that indicate a block of text,
+and then by the UNIX command line to be executed.
+For example:</p>
+
+<blockquote><pre class="code">!)<em class="replaceable"><tt>command</tt></em></pre></blockquote>
+
+<p>will pass the next sentence through <em class="emphasis">command</em>.</p>
+
+<p>There are a few unusual features about how <em class="emphasis">vi</em>
+acts when you use this feature:</p>
+
+<ul><li><p>The exclamation mark doesn't appear on your
+screen right away.
+When you type the keystroke(s)
+for the text object you want to filter, the
+exclamation mark appears at the bottom of the screen, <em class="emphasis">but the
+character you type to reference the object does not.</em></p></li><li><p>Text blocks must be more than one line, so
+you can use only the keystrokes that would move more than one line
+( <tt class="literal">G</tt>, <tt class="literal">{ }</tt>, <tt class="literal">( )</tt>, <tt class="literal">[[ ]]</tt>, <tt class="literal">+</tt>, <tt class="literal">-</tt> ).
+To repeat the effect,
+a number may precede either the exclamation mark or the text object.
+(For example, both <tt class="literal">!10+</tt> and <tt class="literal">10!+</tt> would indicate the
+next ten lines.)
+Objects such as <tt class="literal">w</tt> do not work unless
+enough of them are specified so as to exceed a single line.
+You can also use a slash (<tt class="literal">/</tt>) followed by a <em class="emphasis">pattern</em> and
+a carriage return to specify the object.
+This takes the text up to the pattern as input to the command.</p></li><li><p>Entire lines are affected. For example, if your cursor is in the middle
+of a line and you issue a command to go to the end of the next sentence,
+the entire lines containing the beginning and end of the sentence will
+be changed, not just the sentence itself.<a href="#FOOTNOTE-30">[30]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-30" /><p> [30]Of course, there's always an exception. In this example,
+<em class="emphasis">vim</em> 5.0 changes only the current line.</p>
+
+</blockquote></li><li><p>There is a special text object that can be used only with
+this command syntax: you can specify the current line
+by entering a second exclamation mark:
+<a name="IXT-7-281011" />
+<a name="IXT-7-281012" /></p>
+
+<blockquote><pre class="code">!!<em class="replaceable"><tt>command</tt></em></pre></blockquote>
+
+<p>Remember that either the entire sequence or the text object
+can be preceded by a number to repeat the effect.
+For instance, to change lines 96 through 99 as in the above example,
+you could position the cursor on line 96 and enter either:</p>
+
+<blockquote><pre class="code">4!!sort</pre></blockquote>
+
+<p>or:</p>
+
+<blockquote><pre class="code">!4!sort</pre></blockquote></li></ul><p>As another example, assume you have a portion of text in a file
+that you want to change from lowercase to uppercase letters.
+You could process that portion with the <tt class="literal">tr</tt> command to change the case.
+In this example, the second sentence is the block of text
+that will be filtered through the command.</p>
+
+<?graphic_args "" "" .815?><img src="figs/vi.0703.gif" alt="Figure 7.2.1.2" width="334" /><table border="1" cellpadding="3">
+
+<tr>
+<th>Keystrokes</th>
+<th>Results</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">!)</tt></td>
+<?graphic_args "" "" 1.19 -.35?><td><img src="figs/vi.0704.gif" alt="Figure " width="334" /><p>
+<?troff .sp -1v?>An exclamation mark appears on the last line to prompt you
+for the UNIX command.
+The <tt class="literal">)</tt> indicates that a sentence is the unit
+of text to be filtered.</p></td>
+</tr>
+
+<?troff .sp .5v?><tr>
+<td><tt class="literal">tr '[a-z]' '[A-Z]'</tt></td>
+<?graphic_args "" "" 1.19 -.35?><td><img src="figs/vi.0705.gif" alt="Figure " width="334" /><p>
+<?troff .sp -1v?>Enter the UNIX command and press <span class="keycap">RETURN</span>.
+The input is replaced by the output.</p></td>
+</tr>
+
+
+</table><p><p>To repeat the previous command, the syntax is:</p>
+
+<blockquote><pre class="code">! <em class="replaceable"><tt>object</tt></em> !</pre></blockquote>
+
+
+<?troff .wcon_off?><p>It is sometimes useful to send sections of a coded document to
+<em class="emphasis">nroff</em> to be replaced by formatted output.
+(Or when editing electronic mail, you
+might use the <em class="emphasis">fmt</em> program to "beautify" your text
+before sending the message.)
+Remember that the "original" input is replaced
+by the output.
+Fortunately, if there is a mistake, such as an error
+message being sent instead of the expected output,
+you can undo the command and restore the lines.</p>
+</div>
+
+
+<a name="IXT-7-281013" />
+<a name="IXT-7-281014" />
+<a name="IXT-7-281015" />
+</div>
+
+
+
+
+<a name="IXT-7-281016" />
+<a name="IXT-7-281017" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7. Advanced Editing</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.3. Saving Commands </td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

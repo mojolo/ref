@@ -1,0 +1,141 @@
+<html><head><title>Test Exit Status with the if Statement (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.13. Test Exit Status with the if Statement</h2>
+
+<p><a name="upt3-IDXTERM-5561" /> <a name="upt3-IDXTERM-5562" /> <a name="upt3-IDXTERM-5563" /><a name="upt3-IDXTERM-5564" /><a name="IXT-35-3642" />If
+you <a name="upt3-IDXTERM-5566" /> <a name="upt3-IDXTERM-5567" />are
+going to write a shell script of any complexity at all, you need some
+way to write "conditional
+expressions." Conditional expressions are nothing
+more than statements that have a value of
+"true" or
+"false", such as
+"Am I wearing pants today?" or
+"Is it before 5 p.m.?" or
+"Does the file <em class="emphasis">indata</em>
+exist?" or "Is the value of
+<tt class="literal">$aardvark</tt> greater than 60?"
+</p>
+
+<p>The Unix shell is a complete programming language. Therefore, it
+allows you to write "if" statements
+with conditional expressions -- just like C, BASIC, Pascal, or any
+other language. Conditional expressions can also be used in several
+other situations, but most obviously, they're the
+basis for any sort of <i class="command">if</i> statement.
+<a name="IXT-35-3643" />Here's the
+syntax of an <i class="command">if</i> statement for the Bourne shell:
+</p>
+
+<blockquote><pre class="code">+if <em class="replaceable"><tt>conditional</tt></em>
+then
+    # do this if <em class="replaceable"><tt>conditional</tt></em> returns a zero ("true") status
+    <em class="replaceable"><tt>one-or-more-commands</tt></em>
+else
+    # do this if <em class="replaceable"><tt>conditional</tt></em> returns non-zero ("false") status
+    <em class="replaceable"><tt>one-or-more-commands</tt></em>
+fi</pre></blockquote>
+
+<p>Depending on how many different ways the command might exit, and thus
+the varying values its exit status may have, you may want to use
+either a <i class="command">case</i><a name="IXT-35-3644" /> <a name="IXT-35-3645" /> <a name="IXT-35-3646" /> statement or
+<i class="command">elif</i> (for testing multiple conditionals in a
+single <em class="emphasis">if/else</em> block.)
+</p>
+
+<p><a name="IXT-35-3647" /><a name="IXT-35-3648" />You can omit the
+<i class="command">else</i><a name="IXT-35-3649" /> <a name="IXT-35-3650" /> and the block of code following it.
+However, you can't omit the <i class="command">then</i>
+or the <i class="command">fi</i>. If you want to omit the
+<i class="command">then</i> (i.e., if you want to do something special
+when <em class="emphasis">condition</em> is false, but nothing when it is
+true), write the statement like this:
+</p>
+
+<blockquote><pre class="code">if <em class="replaceable"><tt>conditional</tt></em>
+then
+    :    # do nothing
+else
+    # do this if <em class="replaceable"><tt>conditional</tt></em> returns non-zero ("false") status
+    <em class="replaceable"><tt>one-or-more-commands</tt></em>
+fi</pre></blockquote>
+
+<p><a name="IXT-35-3651" /><a name="IXT-35-3652" /><a name="IXT-35-3653" /><a name="IXT-35-3654" />Note that this uses a
+<a name="IXT-35-3655" />special null command, a <b class="emphasis-bold">colon (:)</b> (<a href="ch36_06.htm#upt3-CHP-36-SECT-6">Section 36.6</a>).
+There's another, more useful way of expressing the
+inverse of a condition (do something if
+<em class="emphasis">conditional</em> is not
+"true"), the <b class="emphasis-bold">|| operator</b> (<a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a>)
+(two vertical bars). You can use this to write an
+<i class="command">if</i>-type statement without the
+<i class="command">if</i>!
+</p>
+
+<p><a name="IXT-35-3656" />Don't forget the
+<i class="command">fi</i> terminating the statement. This is a
+surprisingly common source of bugs (at least for me).
+</p>
+
+<p>Another common debugging problem: the manual pages that discuss this
+material imply that you can smash the <i class="command">if</i>,
+<i class="command">then</i>, and <i class="command">else</i> onto one line.
+Well, it's true, but it's not
+always easy. Do yourself a favor: write your <i class="command">if</i>
+statements <em class="emphasis">exactly</em> like the one above.
+You'll rarely be disappointed, and you may even
+start writing programs that work correctly the first time.
+</p>
+
+<p><a name="IXT-35-3657" /><a name="IXT-35-3658" /><a name="IXT-35-3659" />Here's a real-life
+example, a shell script named <i class="command">bkedit</i> that makes a
+backup copy of a file before editing it. If <i class="command">cp</i>
+returns a zero status, the script edits the file; otherwise, it
+prints a message. (The <tt class="literal">$1</tt> is replaced with the
+first filename from the command line -- see <a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a>.) 
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+if cp "$1" "$1.bak"
+then
+    vi "$1"
+else
+echo "bkedit quitting: can't make backup?" 1&gt;&amp;2
+fi</pre></blockquote>
+
+<p>You can try typing that shell script in and running it. Or just type
+in the lines (starting with the <tt class="literal">if</tt>) on a terminal
+running the Bourne shell; use a real filename instead of
+<tt class="literal">$1</tt>.
+</p>
+
+<p>The <i class="command">if</i> statement is often used with a command
+named <b class="emphasis-bold">test</b> (<a href="ch35_26.htm#upt3-CHP-35-SECT-26">Section 35.26</a>). The <i class="command">test</i> command does a
+test and returns an <a name="IXTR3-3811" />exit status of 0 <a name="IXTR3-3812" /> <a name="IXTR3-3813" />or 1.<a name="IXTR3-3814" /> <a name="IXTR3-3815" /> <a name="IXTR3-3816" />
+</p>
+
+<p><em class="emphasis">--ML, JP, and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_14.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.12. Exit Status of Unix Processes</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.14. Testing Your Success</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

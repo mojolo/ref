@@ -1,0 +1,189 @@
+<html><head><title>What's a Shell, Anyway? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch27_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">27.3. What's a Shell, Anyway?</h2>
+
+<p><a name="IXT-27-4789" />A
+<em class="emphasis">shell</em> is a program that interprets your command
+lines and runs other programs. Another name for the shell is
+"command interpreter." This article
+covers the two major Unix shell families, including discussion about
+how shells run, search for programs, and read shell script files.
+</p>
+
+<a name="upt3-CHP-27-SECT-3.1" /><div class="sect2">
+<h3 class="sect2">27.3.1. How Shells Run Other Programs</h3>
+
+<p><a name="IXT-27-4790" /><a name="IXT-27-4791" />For each command it runs, a shell
+performs a series of steps. First, if the shell is reading commands
+from a terminal (interactively), it prints a
+<a name="IXT-27-4792" />prompt (such as
+<tt class="literal">%</tt> or <tt class="literal">$</tt>) and waits for you to
+type something. Next, the shell reads the command line (like
+<em class="emphasis">cat -v afile bfile &gt; cfile</em>), <b class="emphasis-bold">interprets it</b> (<a href="ch27_01.htm#upt3-CHP-27-SECT-1">Section 27.1</a>),
+and runs the result. When the command finishes running (unless the
+command is <b class="emphasis-bold">in the background</b> (<a href="ch23_02.htm#upt3-CHP-23-SECT-2">Section 23.2</a>)), the shell is ready to read another command
+line.
+</p>
+
+</div>
+<a name="upt3-CHP-27-SECT-3.2" /><div class="sect2">
+<h3 class="sect2">27.3.2. Interactive Use Versus Shell Scripts</h3>
+
+<p><a name="IXT-27-4793" /> <a name="IXT-27-4794" /> <a name="IXT-27-4795" />A shell can read command lines from a
+terminal or it can read them from a file. When you put command lines
+into a file, that file is called a <b class="emphasis-bold">shell
+script</b> (<a href="ch35_01.htm#upt3-CHP-35-SECT-1">Section 35.1</a>) or shell program.
+The shell handles the shell script just as it handles the commands
+you type from a terminal (though the shell uses its <b class="emphasis-bold">non-interactive mode</b> (<a href="ch03_04.htm#upt3-CHP-3-SECT-4">Section 3.4</a>), which means, basically, that it
+doesn't print the <tt class="literal">%</tt> or
+<tt class="literal">$</tt> prompts, among other things). With this
+information, you already know how to write simple shell
+scripts -- just put commands in a file and feed them to the shell!
+</p>
+
+<p>In addition, though, there are a number of programming constructs
+that make it possible to write shell programs that are much more
+powerful than just a list of commands.
+</p>
+
+</div>
+<a name="upt3-CHP-27-SECT-3.3" /><div class="sect2">
+<h3 class="sect2">27.3.3. Types of Shells</h3>
+
+<p><a name="IXT-27-4796" />There are two main shell families in Unix:
+</p>
+
+<ul><li>
+<p>The <em class="emphasis">C shell</em><a name="IXT-27-4797" /> <a name="IXT-27-4798" /> and its derivatives
+(<i class="command">csh</i>, <i class="command">tcsh</i>) are considered very
+powerful for situations where you are interactively working on a
+terminal. <i class="command">csh</i> will read shell scripts and has some
+useful features for programmers. Unfortunately, it has some quirks
+that can make shell programming tough.
+</p>
+</li><li>
+<p>The <em class="emphasis">Bourne shell</em><a name="IXT-27-4799" /><a name="IXT-27-4800" />
+(<i class="command">sh</i>) and shells like it are probably used more
+often for shell programming. (Some newer <i class="command">sh</i>-like
+shells, including <i class="command">ksh</i>, <i class="command">zsh</i>, and
+<b class="emphasis-bold">bash</b> (<a href="ch01_06.htm#upt3-CHP-1-SECT-6">Section 1.6</a>),
+combine handy interactive C shell-like features with Bourne shell
+syntax.)
+</p>
+</li></ul>
+</div>
+<a name="upt3-CHP-27-SECT-3.4" /><div class="sect2">
+<h3 class="sect2">27.3.4. Shell Search Paths</h3>
+
+<p><a name="IXT-27-4801" />
+If the shell is trying to run a
+command, and the command isn't built-in to the shell
+itself, the shell looks in a list of directories called a
+<em class="emphasis">search
+path</em><a name="IXT-27-4802" />. Unix systems have standard
+directories with names like <em class="filename">/bin</em> and
+<em class="filename">/usr/bin</em> that hold standard Unix programs.
+Almost everyone's search path includes these
+directories.
+</p>
+
+<p>If you do much shell programming, you should make a directory on your
+account for executable files. Most people name theirs
+<em class="filename">bin</em> and put it under their home directory. See
+<a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a>.
+</p>
+
+</div>
+<a name="upt3-CHP-27-SECT-3.5" /><div class="sect2">
+<h3 class="sect2">27.3.5. Bourne Shell Used Here</h3>
+
+<p><a name="IXT-27-4803" />Most serious shell
+programmers write their scripts for the Bourne shell or its variants,
+such as <i class="command">bash</i><a name="IXT-27-4804" /> <a name="IXT-27-4805" /> or <i class="command">ksh</i>. So do we.
+</p>
+
+<p>Newer Bourne shells have features -- such as <b class="emphasis-bold">shell functions</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>), an <i class="command">unset</i> command for
+shell variables, and others -- that the earlier Version 7 Bourne
+shell didn't. Most scripts in this book are written
+to work on all Bourne shells -- for the sake of portability, some
+scripts don't use these new features.
+It's pretty rare to find such old shells around
+nowadays, though, so use your own judgment. It is pretty unlikely
+that if you're writing a shell script for your own
+use on a new system you will ever need to back-port it to run on a V7
+system.
+</p>
+
+<p>For the rest of these introductory articles, it may be easier if you
+have a terminal close by so you can try the examples. If your account
+uses the Bourne shell or one of its relatives
+(<i class="command">ksh</i>, <i class="command">bash</i>, etc.), your
+<a name="IXT-27-4806" />prompt probably has a
+dollar sign (<tt class="literal">$</tt>) in it somewhere, unless
+you've <b class="emphasis-bold">modified the prompt
+yourself</b> (<a href="ch04_01.htm#upt3-CHP-4-SECT-1">Section 4.1</a>). If your account
+isn't running the Bourne shell, start one by typing
+<tt class="literal">sh</tt><a name="IXT-27-4807" />. Your prompt should change to a dollar
+sign (<tt class="literal">$</tt>). You'll be using the
+Bourne shell until you type <a name="IXT-27-4808" />CTRL-d at the start of a line:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sh</b></tt>
+$
+$ <i class="lineannotation">...Enter commands...</i>
+$ CTRL-d
+%</pre></blockquote>
+
+</div>
+<a name="upt3-CHP-27-SECT-3.6" /><div class="sect2">
+<h3 class="sect2">27.3.6. Default Commands</h3>
+
+<p><a name="IXT-27-4809" /> <a name="IXT-27-4810" /><a name="IXT-27-4811" />One more thing to note is that when
+dealing with shell scripts, which store sequences of commands that
+you want to be able to run at one time, you will likely need to
+specify the shell or other program that will run the commands by
+default. This is normally done using the <b class="emphasis-bold">special #! notation</b> (<a href="ch36_02.htm#upt3-CHP-36-SECT-2">Section 36.2</a>) in the first line of the script.
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+# everything in this script will be run under the Bourne shell
+
+...
+
+#!/bin/tcsh
+# everything in this script will be run under tcsh
+
+...
+
+#!/usr/bin/perl
+# everything in this script will be interpreted as a perl command
+
+...</pre></blockquote>
+
+<p><em class="emphasis">--JP and SJC</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch27_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch27_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">27.2. How the Shell Executes Other Commands</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">27.4. Command Evaluation and Accidentally Overwriting Files</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

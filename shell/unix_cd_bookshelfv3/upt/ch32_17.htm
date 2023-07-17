@@ -1,0 +1,135 @@
+<html><head><title>Just What Does a Regular Expression Match? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch32_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">32.17. Just What Does a Regular Expression Match?</h2>
+
+<p><a name="IXT-32-4023" /><a name="IXT-32-4024" /><a name="IXT-32-4025" />One
+of the toughest things to learn about regular expressions is just
+what they do match. The problem is that a regular expression tends to
+find the longest possible match -- which can be more than you
+want.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: showmatch</p>
+
+<p>Here's a simple script called
+<i class="command">showmatch</i> that is useful for testing regular
+expressions, when writing <i class="command">sed</i> scripts, etc. Given
+a regular expression and a filename, it finds lines in the file
+matching that expression, just like <i class="command">grep</i>, but it
+uses a row of carets (<tt class="literal">^^^^</tt>) to highlight the
+portion of the line that was actually matched. Depending on your
+system, you may need to call <i class="command">nawk</i> instead of
+<i class="command">awk</i>; most modern systems have an
+<i class="command">awk</i> that supports the syntax introduced by
+<i class="command">nawk</i>, however.
+</p>
+
+<blockquote><pre class="code">#! /bin/sh
+# showmatch - mark string that matches pattern
+pattern=$1; shift
+awk 'match($0,pattern) &gt; 0 {
+    s = substr($0,1,RSTART-1)
+    m = substr($0,1,RLENGTH)
+    gsub (/[^\b- ]/, " ", s)
+    gsub (/./,       "^", m)
+    printf "%s\n%s%s\n", $0, s, m
+}' pattern="$pattern" $*</pre></blockquote>
+
+<p>For example:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>showmatch 'CD-...' mbox</b></tt>
+and CD-ROM publishing. We have recognized
+    ^^^^^^
+that documentation will be shipped on CD-ROM; however,
+                                      ^^^^^^</pre></blockquote>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: xgrep</p>
+
+<p><a name="IXT-32-4026" /><a name="IXT-32-4027" /><a name="IXT-32-4028" /><i class="command">xgrep</i>
+is a related script that simply retrieves only the matched text. This
+allows you to extract patterned data from a file. For example, you
+could extract only the numbers from a table containing both text and
+numbers. It's also great for counting the number of
+occurrences of some pattern in your file, as shown below. Just be
+sure that your expression matches only what you want. If you
+aren't sure, leave off the <i class="command">wc</i>
+command and glance at the output. For example, the regular expression
+<tt class="literal">[0-9]*</tt> will match numbers like
+<tt class="literal">3.2</tt> <em class="emphasis">twice</em>: once for the
+<tt class="literal">3</tt> and again for the <tt class="literal">2</tt>! You want
+to include a dot (.) and/or comma (,), depending on how your numbers
+are written. For example: <tt class="literal">[0-9][.0-9]*</tt> matches a
+leading digit, possibly followed by more dots and digits.
+</p>
+
+<a name="ch32-6-fm2xml" /><blockquote><b>NOTE:</b> 
+Remember that an expression like <tt class="literal">[0-9]*</tt> will match
+zero numbers (because <tt class="literal">*</tt> means
+"zero or more of the preceding
+character"). That expression can make
+<i class="command">xgrep</i> run for a very long time! The following
+expression, which matches one or more digits, is probably what you
+want instead:
+</p>
+
+
+<blockquote><pre class="code"><tt class="userinput"><b>xgrep "[0-9][0-9]*" </b></tt><em class="replaceable"><tt>files</tt></em><tt class="userinput"><b> | wc -l</b></tt></pre></blockquote>
+</blockquote>
+
+<p>The <i class="command">xgrep</i> shell script runs the
+<i class="command">sed</i> commands below, replacing
+<tt class="literal">$re</tt> with the regular expression from the command
+line and <tt class="literal">$x</tt> with a CTRL-b character (which is used
+as a delimiter). We've shown the
+<i class="command">sed</i> commands numbered, like
+<em class="replaceable"><tt>5&gt;</tt></em>; these are only for reference and
+aren't part of the script:
+</p>
+
+<blockquote><pre class="code"><em class="replaceable"><tt>1&gt;</tt></em> \$x$re$x!d
+<em class="replaceable"><tt>2&gt;</tt></em> s//$x&amp;$x/g
+<em class="replaceable"><tt>3&gt;</tt></em> s/[^$x]*$x//
+<em class="replaceable"><tt>4&gt;</tt></em> s/$x[^$x]*$x/\
+<em class="replaceable"><tt>  </tt></em> /g
+<em class="replaceable"><tt>5&gt;</tt></em> s/$x.*//</pre></blockquote>
+
+<p>Command 1 deletes all input lines that don't contain
+a match. On the remaining lines (which do match), command 2 surrounds
+the matching text with CTRL-b delimiter characters. Command 3 removes
+all characters (including the first delimiter) before the first match
+on a line. When there's more than one match on a
+line, command 4 breaks the multiple matches onto separate lines.
+Command 5 removes the last delimiter, and any text after it, from
+every output line.
+</p>
+
+<p>Greg Ubben revised <i class="command">showmatch</i> and wrote
+<i class="command">xgrep</i>.
+</p>
+
+<p><em class="emphasis">--JP, DD, andTOR</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_16.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch32_18.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">32.16. Getting Regular Expressions Right</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">32.18. Limiting the Extent of a Match</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

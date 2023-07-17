@@ -1,0 +1,230 @@
+<html><head><title>List (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.6. List</h2>
+
+<p>
+<a name="ch05.list" />
+<a name="IXT-5-265714" />
+<a name="IXT-5-265715" />
+<a name="IXT-5-265716" />
+The list command (<b class="emphasis-bold">l</b>) displays the contents of the
+pattern space, showing non-printing characters as two-digit ASCII
+codes.  It is similar in function to the list (:l) command in
+<b class="emphasis-bold">vi</b>.  You can use this command to detect "invisible"
+characters in the input.<a href="#FOOTNOTE-32">[32]</a></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-32" /><p> [32] 
+GNU sed displays certain characters, such as carriage return, using
+the ANSI C escape sequences, instead of straight octal.  Presumably,
+this is easier to comprehend for those who are familiar with C (or
+awk, as we'll see later in the book).</p>
+
+</blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat test/spchar</b></tt>
+Here is a string of special characters: ^A  ^B
+^M ^G</pre></blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>sed -n -e "l" test/spchar</b></tt>
+Here is a string of special characters: \01 \02 
+\15 \07</pre></blockquote>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b># test with GNU sed too</b></tt>
+$ <tt class="userinput"><b>gsed -n -e "l" test/spchar</b></tt>
+Here is a string of special characters: \01  \02
+\r \a</pre></blockquote>
+
+<p>Because the list command causes immediate output, we suppress the
+default output or we would get duplicate copies of the lines.</p>
+
+<p>You cannot match a character by ASCII value (nor can you match octal
+values) in sed.<a href="#FOOTNOTE-33">[33]</a>
+Instead, you have to find a key combination in <b class="emphasis-bold">vi</b>
+to produce it.  Use CTRL-V to quote the character.
+For instance, you can match an ESC character
+(^[).  Look at the following script:
+<a name="IXT-5-265717" />
+<a name="IXT-5-265718" /></p><blockquote class="footnote">
+
+<a name="FOOTNOTE-33" /><p> [33]You can do this in awk, however.</p>
+
+</blockquote>
+
+<blockquote><pre class="code"># list line and replace ^[ with "Escape"
+l
+s/^[/Escape/</pre></blockquote>
+
+<p>Here's a one-line test file:</p>
+
+<blockquote><pre class="code">The Great ^[ is a movie starring Steve McQueen.</pre></blockquote>
+
+<p>Running the script produces the following output:</p>
+
+<blockquote><pre class="code">The Great \33 is a movie starring Steve McQueen.
+The Great Escape is a movie starring Steve McQueen.</pre></blockquote>
+
+<p>GNU sed produces this:</p>
+
+<blockquote><pre class="code">The Great \1b is a movie starring Steve McQueen.
+The Great Escape is a movie starring Steve McQueen.</pre></blockquote>
+
+<p>The ^[ character was made in <b class="emphasis-bold">vi</b> by entering
+CTRL-V, then pressing the ESC key.</p>
+
+<a name="sedawk-ch-5-sect-6.1" /><div class="sect2">
+<h3 class="sect2">5.6.1. Stripping Out Non-Printable Characters
+from nroff Files</h3>
+
+<p>
+<a name="ch05.nroff1" />
+<a name="ch05.nroff2" />
+<a name="ch05.nroff3" />
+The UNIX formatter <b class="emphasis-bold">nroff</b> produces output for line
+printers and CRT displays.  To achieve such special effects as
+bolding, it outputs the character followed by a backspace and then
+outputs the same character again.  A sample of it viewed with a text
+editor might look like:</p>
+
+<blockquote><pre class="code">N^HN^HN^HNA^HA^HA^HAM^HM^HM^HME^HE^HE^HE</pre></blockquote>
+
+<p>which bolds the word "NAME."  There are three overstrikes for each
+character output.  Similarly, underlining is achieved by outputting an
+underscore, a backspace and then the character to be underlined.  The
+following example is the word "file" surrounded by a sequence for
+underscoring it.</p>
+
+<blockquote><pre class="code">_^Hf_^Hi_^Hl_^He</pre></blockquote>
+
+<p>It might be necessary at times to strip these printing
+"special-effects"; perhaps if you are given this type of output as a
+source file.  The following line removes the sequences for emboldening
+and underscoring:</p>
+
+<blockquote><pre class="code">s/.^H//g</pre></blockquote>
+
+<p>It removes any character preceding the backspace along with the
+backspace itself.  In the case of underlining, "." matches the
+underscore; for emboldening, it matches the overstrike character.
+Because it is applied repeatedly, multiple occurrences of the
+overstrike character are removed, leaving a single character for each
+sequence.  Note that <b class="emphasis-bold">^H</b> is entered in
+<b class="emphasis-bold">vi</b> by pressing CTRL-V followed by
+CTRL-H.</p>
+
+<p>A sample application is "de-formatting" an nroff-produced
+<b class="emphasis-bold">man</b> page found on an older System V
+UNIX system.<a href="#FOOTNOTE-34">[34]</a>
+If you should want to
+access the formatted pages with a text editor, you'd want to get a
+clean version.  (In many ways, this is a similar problem to one we
+solved in converting a word processing file in the previous chapter.)
+A formatted <b class="emphasis-bold">man</b> page captured in a file looks like
+this:</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-34" /><p> [34]For a while, many System V UNIX
+vendors only provided preformatted
+manpages.  This allowed the <b class="emphasis-bold">man</b> command to show
+information quickly, instead of having to format it, but the lack of
+<b class="emphasis-bold">troff</b> source to the manpages made it difficult to
+fix documentation errors.  Fortunately, most vendors of modern UNIX
+systems supply source for their manuals.</p>
+
+</blockquote>
+
+<blockquote><pre class="code">^[9     who(1)                                             who(1)
+^[9 N^HN^HN^HNA^HA^HA^HAM^HM^HM^HME^HE^HE^HE
+      who - who is on the system?
+  S^HS^HS^HSY^HY^HY^HYN^HN^HN^HNO^HO^HO^HOP^HP^HP^HPS^HS^HS^HSI^HI
+      who [-a] [-b] [-d] [-H] [-l] [-p] [-q] [-r] [-s] [-t] [-T]
+      [-u] [_^Hf_^Hi_^Hl_^He]
+          who am i
+          who am I
+  D^HD^HD^HDE^HE^HE^HES^HS^HS^HSC^HC^HC^HCR^HR^HR^HRI^HI^HI^HIP^HP
+      who can list the user's name, terminal line, login time,
+      elapsed time since activity occurred on the line, and the
+...</pre></blockquote>
+
+<p>In addition to stripping out the bolding and underlining
+sequences, there are strange escape sequences that produce form feeds
+or various other printer functions.  You can see the sequence
+"^[9" at the top of the formatted manpage.  This escape
+sequence can simply be removed:</p>
+
+<blockquote><pre class="code">s/^[9//g</pre></blockquote>
+
+<p>Once again, the ESC character is entered in
+<b class="emphasis-bold">vi</b> by typing CTRL-V followed by
+pressing the ESC key.  The number 9 is literal.
+There are also what look to be leading spaces that supply the left
+margin and indentation.  On further examination, it turns out that
+leading spaces precede the heading such as "NAME" but a single tab
+precedes each line of text.  Also, there are tabs that unexpectedly
+appear in the text, which have to do with how <b class="emphasis-bold">nroff</b>
+optimizes for display on a CRT screen.</p>
+
+<p>To eliminate the left margin and the unwanted tabs, we add two
+commands to our previous two:</p>
+
+<blockquote><pre class="code"># sedman -- deformat nroff-formatted manpage
+s/.^H//g
+s/^[9//g
+s/^[<img src="figs/squ.gif" alt="Figure " />&#x95;]*//g
+s/&#x95;/ /g</pre></blockquote>
+
+<p>The third command looks for any number of tabs or spaces at the
+beginning of a line.  (A tab is represented by "&#x95;" and a space by
+"<img src="figs/squ.gif" alt="Figure " />".) The last command looks for a tab and replaces it
+with a single space.  Running this script on our sample
+<b class="emphasis-bold">man</b> page output produces a file that looks like
+this:</p>
+
+<blockquote><pre class="code">who(1)                                                     who(1)
+NAME
+who - who is on the system?
+SYNOPSIS
+who [-a] [-b] [-d] [-H] [-l] [-p] [-q] [-r] [-s] [-t] [-T]
+[-u] [file]
+who am i
+who am I
+DESCRIPTION
+who can list the user's name, terminal line, login time,
+elapsed time since activity occurred on the line, and the
+...</pre></blockquote>
+
+<p>This script does not eliminate the unnecessary blank lines
+caused by paging.  We will look at how to do that in the next
+chapter, as it requires a multiline operation.</p>
+
+<a name="IXT-5-265719" />
+<a name="IXT-5-265720" />
+<a name="IXT-5-265721" />
+</div>
+
+
+
+
+<a name="IXT-5-265722" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.5. Append, Insert, and Change</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.7. Transform</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

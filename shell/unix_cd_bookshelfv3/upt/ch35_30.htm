@@ -1,0 +1,163 @@
+<html><head><title>Using Shell Functions in Shell Scripts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_29.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.30. Using Shell Functions in Shell Scripts</h2>
+
+<p><a name="upt3-IDXTERM-5742" /> <a name="upt3-IDXTERM-5743" />So far, we have discussed <b class="emphasis-bold">some shell function basics</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>), using examples such as the <tt class="literal">mx(
+)</tt> function that uses <i class="command">sed</i> and
+<i class="command">dig</i> to find out what host accepts mail for a given
+address. In that example, we simply made a set of complex
+functionality available as a quick and easy (and short) call from the
+command line. But you can also define functions and use them within
+shell scripts, or you can use the . and <tt class="literal">source</tt>
+commands to include those functions from an external file (<a href="ch35_29.htm#upt3-CHP-35-SECT-29">Section 35.29</a>). 
+</p>
+
+<p>We've also discussed using functions to <b class="emphasis-bold">automate repetitive tasks</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>), such as calculating factorials.
+</p>
+
+<p><a name="IXT-35-3802" />For now, let's
+demonstrate both of these approaches specifically with respect to
+defining a function to automate a repetitive task and then sharing
+the function with other shell scripts. Using the <tt class="literal">mx(
+)</tt> function we defined earlier, let's put
+it into its own file, <em class="filename">mx.sh</em>, and store it in our
+personal shell function library directory (in this case,
+<em class="filename">$HOME/lib)</em>:
+</p>
+
+<blockquote><pre class="code">$ cat &gt; ~/lib/mx.sh
+function mx( ) {
+# Look up mail exchanger for host(s)
+for host
+do
+    echo "==== $host ===="
+    dig "$host" mx in |
+    sed -n '/^;; ANSWER SECTION:/,/^$/{
+            s/^[^;].* //p
+    }'
+done
+}
+^D
+$ more !$
+function mx( ) {
+# Look up mail exchanger for host(s)
+for host
+do
+    echo "==== $host ===="
+    dig "$host" mx in |
+    sed -n '/^;; ANSWER SECTION:/,/^$/{
+            s/^[^;].* //p
+    }'
+done
+}
+$</pre></blockquote>
+
+<p>Now the file <em class="filename">~/lib/mx.sh</em> contains a function
+named <tt class="literal">mx( )</tt> -- fair enough, but
+let's say we want to be able to pass a list of hosts
+(determined dynamically on a regular basis, say, from spam-fighting
+tools that find open SMTP proxies) to a shell script, and have that
+shell script email a form letter to the <tt class="literal">postmaster</tt>
+address at that host. We will call the shell script
+<i class="command">proxynotify</i>, and call it as follows:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>proxynotify</b></tt> &lt; <em class="replaceable"><tt>proxyList</tt></em></pre></blockquote>
+
+<p><em class="replaceable"><tt>proxylist</tt></em> contains a list of hosts, one
+per line, in the <tt class="literal">com</tt> domain. We want to iterate
+over them and mail the postmaster for the domain, rather than mailing
+directly to an address such as
+<tt class="literal">postmaster@[</tt><em class="replaceable"><tt>IP</tt></em><tt class="literal">]</tt>,
+on the assumption that maybe the top-level postmaster can fix what
+may be an unmonitored relay. Just to verify that some other system
+isn't responsible for delivering the mail, we will
+check using the <tt class="literal">mx( )</tt> shell function.
+We've also included a quickie shell function named
+<tt class="literal">ip( )</tt> that returns the IP address for a given
+hostname. As you can see, we use a local variable for the IP address,
+and we use the <tt class="literal">-z</tt><a name="IXT-35-3803" /><a name="IXT-35-3804" /> test for zero
+length of a string. We also check whether the file is readable, check
+the script arguments, and use a variety of other tricks.
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+# proxynotify demo
+
+# get our function
+. $HOME/lib/mx.sh
+
+function ip( ) {
+    for host
+    do
+        local ip=`dig in host $host |\
+        grep $host |\
+        grep "TABATAB" |\
+        awk '{print $5}'`
+        echo $ip
+    done
+}
+
+if [ -z "$1" ]
+then
+    echo "Usage: $0 [file]"
+    exit 1
+elif [ -r "$1" ]
+then
+    echo "found a file and it is readable"
+else
+    echo "file $1 not readable or does not exist"
+    exit 1
+fi
+
+    for domain in `cat "$1"`
+    do
+    echo "processing $domain"
+    themx=`mx $domain`
+    echo "MX for $domain is '$themx'"
+    if [ ! -z $themx ]
+    then
+        cat formletter | mail -s "proxy" postmaster@$themx
+    else
+        echo "couldn't find MX for $domain,"
+        echo "mailing direct-to-IP instead."
+        theip=`ip $domain`
+        if [ ! -z $theip ]; then
+            cat formletter | mail -s "proxy" postmaster@$theip
+        else
+            echo "giving up, can't find anyone to notify"
+            echo "$domain" &gt;&gt; /tmp/proxybadlist.$$
+            return 1
+        fi
+   fi
+done
+mail -s "bad proxies" &lt;&lt;/tmp/proxybadlist.$$
+rm /tmp/proxybadlist.$$</pre></blockquote>
+
+<p><em class="emphasis"><a name="IXTR3-3822" /> <a name="IXTR3-3823" /> -- SJC<a name="IXTR3-3824" /> <a name="IXTR3-3825" /></em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_29.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.29. Reading Files with the . and source Commands</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36. Shell Programming for the Initiated</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

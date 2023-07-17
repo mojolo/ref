@@ -1,0 +1,199 @@
+<html><head><title>Hacking on Characters with tr (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch21_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">21.11. Hacking on Characters with tr</h2>
+
+<p><a name="upt3-IDXTERM-3030" /> <a name="upt3-IDXTERM-3031" /> <a name="upt3-IDXTERM-3032" /> <a name="upt3-IDXTERM-3033" />The <i class="command">tr</i>
+command is a character translation filter, reading <b class="emphasis-bold">standard input</b> (<a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a>)
+and either deleting specific characters or substituting one character
+for another.
+</p>
+
+<p>The most common use of <i class="command">tr</i> is to change each
+character in one string to the corresponding character in a second
+string. (<a name="IXT-21-5700" />A string of
+consecutive ASCII characters can be represented as a hyphen-separated
+range.) <a name="IXT-21-5701" />
+</p>
+
+<p>For example, the command:</p>
+
+<p><tt class="literal">&lt;</tt> <a href="ch43_01.htm#upt3-CHP-43-SECT-1">Section 43.1</a></p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>tr 'A-Z' 'a-z' &lt;</b></tt><em class="replaceable"><tt> file</tt></em>        <i class="lineannotation">Berkeley version</i></pre></blockquote>
+
+<p>will convert all uppercase characters in <em class="emphasis">file</em> to
+the equivalent lowercase characters. The result is printed on
+standard output.
+</p>
+
+<p><a name="IXT-21-5702" /><a name="IXT-21-5703" />In fact, a frequent trick I use
+<tt class="literal">tr</tt> for is to convert filenames from all uppercase
+to all lowercase. This comes up when you're dealing
+with files from MS-DOS or VMS that you are copying on to a Unix
+filesystem. To change all the files in the current directory to
+uppercase, try this from a Bash or Bourne shell prompt:
+</p>
+
+<blockquote><pre class="code">$ for i in `ls`; do mv $i `echo $i | tr [A-Z] [a-z]`; done</pre></blockquote>
+
+<p>Of course, you need to be careful that there are no files that have
+the same name regardless of case. The GNU <i class="command">mv</i> can
+be passed the <tt class="literal">-i</tt> flag that will make the program
+prompt you before overwriting an existing file. If you want to
+uppercase filenames, simply flip the arguments to
+<i class="command">tr</i>. You can even apply this to an entire branch of
+a file system by sticking this in a <i class="command">find</i> command.
+First, create a small shell script that can downcase a file and call
+it <tt class="literal">downcase</tt>:
+</p>
+
+<blockquote><pre class="code">#!/bin/sh
+mv $1 `echo $1 | tr [A-Z] [a-z]`</pre></blockquote>
+
+<p>Now you can really do some damage with <i class="command">find</i>:</p>
+
+<blockquote><pre class="code">$ find /<em class="replaceable"><tt>directory</em>/<em class="replaceable">to</em>/<em class="replaceable">be</em>/<em class="replaceable">affected</tt></em> -exec 'downcase' '{}' ';'</pre></blockquote>
+
+<p>Obviously, running this programming on random directories as
+<tt class="literal">root</tt> is not recomended, unless
+you're looking to test your backup system.
+</p>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: tr</p>
+
+<p>In the <a name="IXT-21-5704" />System
+<a name="IXT-21-5705" />V version of
+<i class="command">tr</i>, <a name="IXT-21-5706" />square brackets must surround any
+range of characters. That is, you have to say
+<tt class="literal">[a-z]</tt> instead of simply <tt class="literal">a-z</tt>.
+And of course, because square brackets are meaningful to the shell,
+you must protect them from interpretation by putting the string in
+quotes. The <span class="acronym">GNU</span> <i class="command">tr</i>, on the web
+site, is basically the System V version.
+</p>
+
+<p>If you aren't sure which version you have,
+here's a test. Both <i class="command">tr</i> examples
+below will convert the lowercase letters <tt class="literal">a</tt> through
+<tt class="literal">z</tt> to an uppercase <tt class="literal">A</tt>, but
+that's not what we're testing here.
+The <a name="IXT-21-5707" />Berkeley version also
+converts the input <tt class="literal">[ ]</tt> to <tt class="literal">A</tt>
+characters because <tt class="literal">[ ]</tt> aren't
+treated as range operators:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>echo '[ ]' | tr '[a-z]' A</b></tt>
+AA                               <i class="lineannotation">Berkeley version</i>
+% <tt class="userinput"><b>echo '[ ]' | tr '[a-z]' A</b></tt>
+[ ]                               <i class="lineannotation">System V version</i></pre></blockquote>
+
+<p>There's one place you don't have to
+worry about the difference between the two versions: when
+you're converting one range to another range, and
+both ranges have the same number of characters. For example, this
+command works in both versions:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>tr '[A-Z]' '[a-z]' &lt; <em class="replaceable"><tt>file</tt></em></b></tt>
+       <i class="lineannotation">both versions</i></pre></blockquote>
+
+<p>The Berkeley <i class="command">tr</i> will convert a
+<tt class="literal">[</tt> from the first string into the same character
+<tt class="literal">[</tt> in the second string, and the same for the
+<tt class="literal">]</tt> characters. The System V version uses the
+<tt class="literal">[ ]</tt> characters as range operators. In both
+versions, you get what you want: the range <tt class="literal">A-Z</tt> is
+converted to the corresponding range <tt class="literal">a-z</tt>. Again,
+this trick works only when both ranges have the same number of
+characters.
+</p>
+
+<p>The System V version also has a nice feature: the syntax
+<tt class="literal">[a*</tt><em class="replaceable"><tt>n</tt></em><tt class="literal">]</tt>,
+where <em class="replaceable"><tt>n</tt></em> is some digit, means that the
+string should consist of <em class="replaceable"><tt>n</tt></em> repetitions of
+character "a." If
+<em class="replaceable"><tt>n</tt></em> isn't specified or is
+0, it is taken to be some indefinitely large number. This is useful
+if you don't know how many characters might be
+included in the first string.
+</p>
+
+<p><a name="IXT-21-5708" /> <a name="IXT-21-5709" />As described in <a href="ch17_18.htm#upt3-CHP-17-SECT-18">Section 17.18</a>, this translation (and the reverse) can be
+useful from within <i class="command">vi</i> for translating a string.
+You can also delete specific characters. The <span class="option">-d</span>
+option deletes from the input each occurrence of one or more
+characters specified in a string (special characters should be placed
+within quotation marks to protect them from the shell). For instance,
+the following command passes to standard output the contents of
+<em class="emphasis">file</em> with all punctuation deleted (and is a
+great exercise in <b class="emphasis-bold">shell quoting</b>
+(<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>)): <a name="IXT-21-5710" />
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>tr -d ",.\!?;:\"\'`" &lt; <em class="replaceable"><tt>file</tt></em></b></tt></pre></blockquote>
+
+<p>The <span class="option">-s</span> (<em class="emphasis">squeeze</em>) option of
+<i class="command">tr</i> removes multiple consecutive occurrences of the
+same character in the second argument. For example, the command:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>tr -s " " " " &lt; <em class="replaceable"><tt>file</tt></em></b></tt> </pre></blockquote>
+
+<p>will print on standard output a copy of <em class="emphasis">file</em> in
+which multiple spaces in sequence have been replaced with a single
+space.
+</p>
+
+<p>We've also found <i class="command">tr</i> useful when
+converting documents created on other systems for use under Unix. For
+example, as described in <a href="ch01_08.htm#upt3-CHP-1-SECT-8">Section 1.8</a>,
+<i class="command">tr</i> can be used to change the carriage returns at
+the end of each line in a Macintosh text file into the newline Unix
+expects. <i class="command">tr</i> allows you to specify characters as
+octal values by preceding the value with a backslash, so the
+following command does the trick:
+<a name="IXT-21-5711" /><a name="IXT-21-5712" /><a name="IXT-21-5713" />
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>tr '\015' '\012' &lt; file.mac &gt; file.unix</b></tt></pre></blockquote>
+
+<p><a name="IXT-21-5714" />The command:
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b> tr -d '\015' &lt; pc.file</b></tt></pre></blockquote>
+
+<p>will remove the carriage return from the carriage return/newline pair
+that a PC file uses as a line terminator. (This command is also handy
+for removing the excess carriage returns from a file created with
+<b class="emphasis-bold">script</b> (<a href="ch37_07.htm#upt3-CHP-37-SECT-7">Section 37.7</a>).) 
+</p>
+
+<p><em class="emphasis">--TOR, JP, and JJ<a name="IXTR3-5801" /> <a name="IXTR3-5802" /> <a name="IXTR3-5803" /> <a name="IXTR3-5804" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch21_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch21_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">21.10. Splitting Files by Context: csplit</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">21.12. Encoding "Binary" Files into ASCII</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

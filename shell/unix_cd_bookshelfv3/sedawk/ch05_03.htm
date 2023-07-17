@@ -1,0 +1,462 @@
+<html><head><title>Substitution (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">5.3. Substitution</h2>
+
+<p>
+<a name="ch05.sub1" />
+<a name="ch05.sub2" />
+<a name="IXT-5-265656" />
+We have already demonstrated many uses of the substitute command.
+Let's look carefully at its syntax:</p>
+
+<blockquote><pre class="code">[<em class="replaceable"><tt>address</em>]<b class="emphasis-bold">s</b>/<em class="replaceable">pattern</em>/<em class="replaceable">replacement</em>/<em class="replaceable">flags</em></pre></blockquote><p>where the <em class="emphasis">flags</tt></em> that modify the substitution are:</p>
+
+<dl>
+<dt><b class="emphasis-bold">n</b></i></dt><dd>A number (1 to 512) indicating that a replacement should be made for
+only the <em class="emphasis">n</em></tt>th occurrence of the
+<a name="IXT-5-265657" />
+<a name="IXT-5-265658" />
+<em class="emphasis">pattern</em></tt>.</p></dd>
+
+
+<dt><b class="emphasis-bold">g</b></i></dt><dd>Make changes globally on all occurrences in the pattern space.  Normally
+only the first occurrence is replaced.
+<a name="IXT-5-265659" />
+<a name="IXT-5-265660" /></p></dd>
+
+
+<dt><b class="emphasis-bold">p</b></i></dt><dd>Print the contents of the pattern space.
+<a name="IXT-5-265661" />
+<a name="IXT-5-265662" /></p></dd>
+
+
+<dt><b class="emphasis-bold">w</b> <em class="emphasis">file</em></tt></i></dt><dd>Write the contents of the pattern space to <em class="emphasis">file</em></tt>.
+<a name="IXT-5-265663" />
+<a name="IXT-5-265664" /></p></dd>
+
+</dl>
+
+<p>The substitute command is applied to the lines matching the
+<em class="emphasis">address</em>.  If no address is specified, it is
+applied to all lines that match the <em class="emphasis">pattern</em>, a
+regular expression.  If a regular expression is supplied as an
+address, and no <em class="emphasis">pattern</em> is specified, the
+substitute command matches what is matched by the address.  This can
+be useful when the substitute command is one of multiple commands
+applied at the same address.  For an example,
+see <a href="ch05_11.htm#sedawk-ch-5-sect-11.1">Section 5.11.1</a> later in this chapter.</p>
+
+<p>
+<a name="IXT-5-265665" />
+<a name="IXT-5-265666" />
+<a name="IXT-5-265667" />
+<a name="IXT-5-265668" />
+<a name="IXT-5-265669" />
+Unlike addresses, which require a slash (/) as a delimiter,
+the regular expression can be delimited by any character except
+a newline.  Thus, if the pattern contained slashes, you could
+choose another character, such as an exclamation mark, as the
+delimiter.</p>
+
+<blockquote><pre class="code">s!/usr/mail!/usr2/mail!</pre></blockquote>
+
+<p>Note that the delimiter appears three times and is required after the
+<em class="emphasis">replacement</em>.  Regardless of which delimiter
+you use, if it does appear in the regular expression, or in the
+replacement text, use a backslash (\) to escape it.</p>
+
+<p>
+<a name="IXT-5-265670" />
+Once upon a time, computers stored text in fixed-length records.  A
+line ended after so many characters (typically 80), and then the next
+line started. There was no explicit character in the data to mark the
+end of one line and the beginning of the next; every line had the same
+(fixed) number of characters.  Modern systems are more flexible; they
+use a special character (referred to as <em class="emphasis">newline</em>)
+to mark the end of the line.  This allows lines to be of arbitrary<a href="#FOOTNOTE-29">[29]</a>
+length.</p><blockquote class="footnote">
+
+<a name="FOOTNOTE-29" /><p> [29]Well, more or less. Many UNIX programs have internal limits on the
+length of the lines that they will process. Most GNU programs, though,
+do not have such limits.</p>
+
+</blockquote>
+
+<p>Since newline is just another character when stored internally, a
+regular expression can use "\n" to match an
+<em class="emphasis">embedded</em> newline.  This occurs, as you will see
+in the next chapter, in the special case when another line is appended
+to the current line in the pattern space.  (See
+<a href="ch02_01.htm">Chapter 2, "Understanding
+Basic Operations"</a>, for a discussion of line addressing and 
+<a href="ch03_01.htm">Chapter 3, "Understanding Regular Expression Syntax"</a>, for a discussion of regular expression syntax.)</p>
+
+<p>The <em class="emphasis">replacement</em> is a string of characters that
+will replace what is matched by the regular expression.  (See <a href="ch03_02.htm#sedawk-ch-3-sect-2.12.1">Section 3.2.12.1</a> in <a href="ch03_01.htm">Chapter 3</a>.)  In the
+<em class="replaceable"><tt>replacement</tt></em> section, only the following
+characters have special meaning:</p>
+
+<dl>
+<dt>&amp;</i></dt><dd>Replaced by the string matched by the regular expression. 
+<a name="IXT-5-265671" />
+<a name="IXT-5-265672" /></p></dd>
+
+
+<dt>\<em class="emphasis">n</em></tt></i></dt><dd>Matches the <em class="emphasis">n</em></tt>th substring
+(<em class="emphasis">n</em> is a single digit) previously specified
+in the <em class="replaceable"><tt>pattern</tt></em> using "\(" and "\)".</p></dd>
+
+
+<dt>\</i></dt><dd>
+<a name="IXT-5-265673" />
+<a name="IXT-5-265674" />
+Used to escape the ampersand (&amp;), the backslash (\), and the
+substitution command's delimiter when they are used literally in the
+replacement section.  In addition, it can be used to escape the
+newline and create a multiline <em class="emphasis">replacement</em></tt>
+string.</p></dd>
+
+</dl>
+
+<p>Thus, besides metacharacters in regular expressions, sed also has
+metacharacters in the replacement.  See
+the next section, "Replacement Metacharacters," for examples of using them.</p>
+
+<p>
+<a name="IXT-5-265675" />
+<em class="emphasis">Flags</em></tt> can be used in combination where it
+makes sense.  For instance, <b class="emphasis-bold">gp</b> makes the
+substitution globally on the line and prints the line.  The global
+flag is by far the most commonly used.  Without it, the replacement is
+made only for the first occurrence on the line.  The print flag and
+the write flag both provide the same functionality as the print and
+write commands (which are discussed later in this chapter) with one
+important difference.  These actions are contingent upon a successful
+<a name="IXT-5-265676" />
+<a name="IXT-5-265677" />
+<a name="IXT-5-265678" />
+<a name="IXT-5-265679" />
+<a name="IXT-5-265680" />
+<a name="IXT-5-265681" />
+substitution occurring.  In other words, if the replacement is made,
+the line is printed or written to file.  Because the default action is
+to pass through all lines, regardless of whether any action is taken,
+the print and write flags are typically used when the default output
+is suppressed (the <span class="option">-n</span> option).  In addition, if a
+script contains multiple substitute commands that match the same line,
+multiple copies of that line will be printed or written to file.</p>
+
+<p>
+<a name="IXT-5-265682" />
+<a name="IXT-5-265683" />
+The numeric flag can be used in the rare instances where the
+regular expression repeats itself on a line and the replacement must
+be made for only one of those occurrences by position.  For instance,
+a line, perhaps containing <b class="emphasis-bold">tbl</b> input, might contain
+multiple tabs.  Let's say that there are three tabs per line, and
+you'd like to replace the second tab with "&gt;".  The
+following substitute command would do it:</p>
+
+<blockquote><pre class="code">s/&#x95;/&gt;/2</pre></blockquote>
+
+<p>"&#x95;" represents an actual tab character, which is otherwise
+invisible on the screen.  If the input is a one-line file such as the
+following:</p>
+
+<blockquote><pre class="code">Column1&#x95;Column2&#x95;Column3&#x95;Column4</pre></blockquote>
+
+<p>the output produced by running the script on this file will be:</p>
+
+<blockquote><pre class="code">Column1&#x95;Column2&gt;Column3&#x95;Column4</pre></blockquote>
+
+<p>Note that without the numeric flag, the substitute command would
+replace only the first tab.  (Therefore "1" can be considered the
+default numeric flag.)</p>
+
+<a name="sedawk-ch-5-sect-3.1" /><div class="sect2">
+<h3 class="sect2">5.3.1. Replacement Metacharacters</h3>
+
+<p>
+<a name="ch05.rep1" />
+<a name="ch05.rep2" />
+<a name="ch05.rep3" />
+The replacement metacharacters are backslash (\), ampersand (&amp;),
+and \<em class="emphasis">n</em></tt>.  The backslash is generally
+used to escape the other metacharacters but it is also used to include
+a newline in a replacement string.
+<a name="IXT-5-265684" />
+<a name="IXT-5-265685" />
+<a name="IXT-5-265686" /></p>
+
+<p>We can do a variation on the previous example to replace the second
+tab on each line with a newline.</p>
+
+<blockquote><pre class="code">s/&#x95;/\
+/2</pre></blockquote>
+
+<p>Note that no spaces are permitted after the backslash.  This script
+produces the following result:</p>
+
+<blockquote><pre class="code">Column1&#x95;Column2
+Column3&#x95;Column4</pre></blockquote>
+
+<p>Another example comes from the conversion of a file for
+<b class="emphasis-bold">troff</b> to an ASCII input format for Ventura
+Publisher.  It converts the following line for
+<b class="emphasis-bold">troff</b>:</p>
+
+<blockquote><pre class="code">.Ah "Major Heading"</pre></blockquote>
+
+<p>to a similar line for Ventura Publisher:</p>
+
+<blockquote><pre class="code">@A HEAD = Major Heading</pre></blockquote>
+
+<p>The twist in this problem is that the line needs to be preceded and followed
+by blank lines.  It is an example of writing a multiline replacement
+string.</p>
+
+<blockquote><pre class="code">/^\.Ah/{
+s/\.Ah */\
+\
+@A HEAD = /
+s/"//g
+s/$/\
+/    
+}</pre></blockquote>
+
+<p>The first substitute command replaces ".Ah" with two newlines
+and "@A HEAD =".  A backslash at the end of the line is necessary to escape
+the newline.  The second substitution removes the quotation marks.
+The last command matches the end of line in the pattern space (not the
+embedded newlines) and adds a newline after it.</p>
+
+<p>
+<a name="IXT-5-265687" />
+<a name="IXT-5-265688" />
+In the next example, the backslash is used to escape the ampersand,
+which appears literally in the replacement section.</p>
+
+<blockquote><pre class="code">s/ORA/O'Reilly \&amp; Associates, Inc./g</pre></blockquote>
+
+<p>It's easy to forget about the ampersand appearing literally in the
+replacement string.  If we had not escaped it in this example, the
+output would have been "O'Reilly ORA Associates, Inc."</p>
+
+<p>As a metacharacter, the ampersand (&amp;) represents the extent of the
+pattern match, not the line that was matched.  You might use the
+ampersand to match a word and surround it by <b class="emphasis-bold">troff</b>
+requests.  The following example surrounds a word with point-size
+requests:</p>
+
+<blockquote><pre class="code">s/UNIX/\\s-2&amp;\\s0/g</pre></blockquote>
+
+<p>Because backslashes are also replacement metacharacters, two
+backslashes are necessary to output a single backslash.  The "&amp;"
+in the replacement string refers to "UNIX."  If the input line is:</p>
+
+<blockquote><pre class="code">on the UNIX Operating System.</pre></blockquote>
+
+<p>then the substitute command produces:</p>
+
+<blockquote><pre class="code">on the \s-2UNIX\s0 Operating System.</pre></blockquote>
+
+<p>The ampersand is particularly useful when the regular expression
+matches variations of a word.  It allows you to specify a variable
+replacement string that corresponds to what was actually matched.  For
+instance, let's say that you wanted to surround with parentheses any
+cross reference to a numbered section in a document.  In other words,
+any reference such as "See Section 1.4" or "See Section 12.9" should
+appear in parentheses, as "(See Section 12.9)."  A regular expression
+can match the different combination of numbers, so we use "&amp;" in
+the replacement string and surround whatever was matched.</p>
+
+<blockquote><pre class="code">s/See Section [1-9][0-9]*\.[1-9][0-9]*/(&amp;)/</pre></blockquote>
+
+<p>The ampersand makes it possible to reference the entire match in the
+replacement string.</p>
+
+<p>
+<a name="IXT-5-265689" />
+<a name="IXT-5-265690" />
+<a name="IXT-5-265691" />
+<a name="IXT-5-265692" />
+<a name="IXT-5-265693" />
+Now let's look at the metacharacters that allow us to select any
+individual portion of a string that is matched and recall it in the
+replacement string.  A pair of escaped parentheses are used in sed to
+enclose any part of a regular expression and save it for recall.  Up
+to nine "saves" are permitted for a single line.
+"<em class="emphasis">\n</em></tt>" is used to recall the portion of the
+match that was saved, where <em class="emphasis">n</em></tt> is a number
+from 1 to 9 referencing a particular "saved" string in order of use.</p>
+
+<p>For example, to put the section numbers in boldface when they appeared as a
+cross reference, we could write the following substitution:</p>
+
+<blockquote><pre class="code">s/\(See Section \)\([1-9][0-9]*\.[1-9][0-9]*\)/\1\\fB\2\\fP/</pre></blockquote>
+
+<p>Two pairs of escaped parentheses are specified.  The first captures
+"See Section<img src="figs/squ.gif" alt="Figure " />" (because this is a fixed string, it could have been
+simply retyped in the replacement string).  The second captures the
+section number.  The replacement string recalls the first saved
+substring as "\1" and the second as "\2," which is surrounded by
+bold-font requests.</p>
+
+<p>We can use a similar technique to match parts of a line and swap them.
+For instance, let's say there are two parts of a line separated by a
+colon.  We can match each part, putting them within escaped
+parentheses and swapping them in the replacement.</p>
+
+<blockquote><pre class="code">$<tt class="userinput"><b> cat test1</b></tt>
+first:second
+one:two
+$ <tt class="userinput"><b>sed  's/\(.*\):\(.*\)/\2:\1/' test1</b></tt>
+second:first
+two:one</pre></blockquote>
+
+<p>The larger point is that you can recall a saved substring in any order,
+and multiple times, as you'll see in the next example.</p>
+
+<a name="sedawk-ch-5-sect-3.1.1" /><div class="sect3">
+<h3 class="sect3">5.3.1.1. Correcting index entries</h3>
+
+<p>Later, in the awk section of this book, we will present a program for
+formatting an index, such as the one for this book.  The first step in
+creating an index is to place index codes in the document files.  We
+use an index macro named .XX, which takes a single argument, the index
+entry.  A sample index entry might be:</p>
+
+<blockquote><pre class="code">.XX "sed, substitution command"</pre></blockquote>
+
+<p>Each index entry appears on a line by itself.  When you run an index,
+you get a collection of index entries with page numbers that are then
+sorted and merged in a list.  An editor poring over that list will
+typically find errors and inconsistencies that need to be corrected.
+It is, in short, a pain to have to track down the file where an index
+entry resides and then make the correction, particularly when there
+are dozens of entries to be corrected.</p>
+
+<p>Sed can be a great help in making these edits across a group of files.
+One can simply create a list of edits in a sed script and then run it
+on all the files.  A key point is that the substitute command needs an
+address that limits it to lines beginning ".XX".  Your script should
+not make changes in the text itself.</p>
+
+<p>Let's say that we wanted to change the index entry above to "sed,
+substitute command."  The following command would do it:</p>
+
+<blockquote><pre class="code">/^\.XX /s/sed, substitution command/sed, substitute command/</pre></blockquote>
+
+<p>The address matches all lines that begin with ".XX " and only on those
+lines does it attempt to make the replacement.  You might wonder, why
+not specify a shorter regular expression?  For example:</p>
+
+<blockquote><pre class="code">/^\.XX /s/substitution/substitute/</pre></blockquote>
+
+<p>The answer is simply that there could be other entries which use the
+word "substitution" correctly and which we would not want to change.</p>
+
+<p>We can go a step further and provide a shell script that creates a
+list of index entries prepared for editing as a series of sed
+substitute commands.</p>
+
+<blockquote><pre class="code">#! /bin/sh
+# index.edit -- compile list of index entries for editing.
+grep "^\.XX" $* | sort -u |
+sed '
+s/^\.XX \(.*\)$/\/^\\.XX \/s\/\1\/\1\//'</pre></blockquote>
+
+<p>The <b class="emphasis-bold">index.edit</b> shell script
+uses <b class="emphasis-bold">grep</b> to extract
+all lines containing index entries from any number of files specified
+on the command line.  It passes this list through
+<b class="emphasis-bold">sort</b> which, with the <span class="option">-u</span> option,
+sorts and removes duplicate entries.  The list is then piped to sed,
+and the one-line sed script builds a substitution command.</p>
+
+<p>Let's look at it more closely.  Here's just the regular expression:</p>
+
+<blockquote><pre class="code">^\.XX \(.*\)$</pre></blockquote>
+
+<p>It matches the entire line, saving the index entry for recall.  Here's
+just the replacement string:</p>
+
+<blockquote><pre class="code">\/^\\.XX \/s\/\1\/\1\/</pre></blockquote>
+
+<p>It generates a substitute command beginning with an address: a slash,
+followed by two backslashes--to output one backslash to protect
+the dot in the ".XX" that follows--then comes a space, then
+another slash to complete the address.  Next we output an "s" followed
+by a slash, and then recall the saved portion to be used as a regular
+expression.  That is followed by another slash and again we
+recall the saved substring as the replacement string.  A slash finally
+ends the command.</p>
+
+<p>When the <b class="emphasis-bold">index.edit</b> script is run on a file, it
+creates a listing similar to this:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>index.edit ch05</b></tt>
+/^\.XX /s/"append command(a)"/"append command(a)"/
+/^\.XX /s/"change command"/"change command"/
+/^\.XX /s/"change command(c)"/"change command(c)"/
+/^\.XX /s/"commands:sed, summary of"/"commands:sed, summary of"/
+/^\.XX /s/"delete command(d)"/"delete command(d)"/
+/^\.XX /s/"insert command(i)"/"insert command(i)"/
+/^\.XX /s/"line numbers:printing"/"line numbers:printing"/
+/^\.XX /s/"list command(l)"/"list command(l)"/</pre></blockquote>
+
+<p>This output could be captured in a file.  Then you can delete the
+entries that don't need to change and you can make changes by editing
+the replacement string.  At that point, you can use this file as a sed
+script to correct the index entries in all document files.</p>
+
+<p>When doing a large book with lots of entries, you
+might use <b class="emphasis-bold">grep</b> again to extract particular entries
+from the output of <b class="emphasis-bold">index.edit</b> and direct them into
+their own file for editing.  This saves you from having to wade through
+numerous entries.</p>
+
+<p>There is one small failing in this program.  It should look for
+metacharacters that might appear literally in index entries and
+protect them in regular expressions.  For instance, if an index entry
+contains an asterisk, it will not be interpreted as such, but as a
+metacharacter.  To make that change effectively requires the use of
+several advanced commands, so we'll put off improving this script until
+the next chapter.</p>
+</div>
+
+
+<a name="IXT-5-265694" />
+<a name="IXT-5-265695" />
+<a name="IXT-5-265696" />
+</div>
+
+
+
+
+<a name="IXT-5-265697" />
+<a name="IXT-5-265698" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch05_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch05_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">5.2. Comment</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">5.4. Delete</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

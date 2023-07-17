@@ -1,0 +1,125 @@
+<html><head><title>Outputting Text to an X Window (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_25.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch36_27.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">36.26. Outputting Text to an X Window</h2>
+
+<p><a name="upt3-IDXTERM-6017" /> <a name="upt3-IDXTERM-6018" /> <a name="upt3-IDXTERM-6019" />Unix has a lot of ways to output text
+from the command line into the
+<a name="IXT-36-3420" />terminal (or window)
+where a script is running. But there are times you'd
+like to pop open a new window (under the <b class="emphasis-bold">X
+Window System</b> (<a href="ch01_22.htm#upt3-CHP-1-SECT-22">Section 1.22</a>)), give the
+user a message -- and maybe let the user reply too. X comes with a
+standard client named <i class="command">xmessage</i> that does this. It
+pops open a window like <a href="ch36_26.htm#upt3-CHP-36-FIG-7">Figure 36-7</a> with a message,
+then waits for the user to click a button (possibly one of many) or
+press RETURN. For details, you can read the
+<i class="command">xmessage</i> manual page. I'll show
+how I integrated <i class="command">xmessage</i> into a shell script.
+</p>
+
+<a name="upt3-CHP-36-FIG-7" /><div class="figure"><img src="figs/upt3_3607.gif" alt="Figure 36-7" width="417" /></div><h4 class="objtitle">Figure 36-7. An xmessage window from xwrist</h4>
+
+<p><img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: xwrist</p>
+
+<p><a name="IXT-36-3421" /><a name="IXT-36-3422" />A good way to
+prevent wrist injuries (from too much typing) is by taking periodic
+breaks. The <i class="command">xwrist</i> script uses
+<i class="command">xmessage</i> to remind me (every 10 minutes) to take a
+break -- and prints a fortune for me to read while I do.
+</p>
+
+<p>Let's look at two parts of the script.
+<a name="IXT-36-3423" />First, the script checks to see if the
+<b class="emphasis-bold">X Window System DISPLAY environment
+variable</b> (<a href="ch35_05.htm#upt3-CHP-35-SECT-5">Section 35.5</a>) is set; if not, it
+complains (with a message like <tt class="literal">xwrist: DISPLAY: unset? I
+only work under the X Window System</tt>) and exits:
+</p>
+
+<p><tt class="literal">:</tt> <a href="ch36_06.htm#upt3-CHP-36-SECT-6">Section 36.6</a>, <tt class="literal">${..?..}</tt> <a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a></p>
+
+<blockquote><pre class="code">: ${DISPLAY?"unset? I only work under the X Window System"}</pre></blockquote>
+
+<p>After checking the command-line arguments and setting some shell
+variables, the script does its main work with an endless loop:
+</p>
+<p>`<tt class="literal">...</tt>`<a href="ch28_14.htm#upt3-CHP-28-SECT-14">Section 28.14</a></p>
+<blockquote><pre class="code">while sleep $delay
+do
+    if xmessage -nearmouse -geometry $geometry -title "$title" \
+        -buttons okay:1,quit:0 -default okay \
+        "`/usr/games/fortune | fmt $fmtarg`"
+    then exit 0
+    fi
+done</pre></blockquote>
+
+<p>The <b class="emphasis-bold">while loop</b>
+(<a name="IXT-36-3424" /><a name="IXT-36-3425" /><a href="ch35_15.htm#upt3-CHP-35-SECT-15">Section 35.15</a>) is endless because
+<i class="command">sleep</i><a name="IXT-36-3426" /> normally <b class="emphasis-bold">returns
+0</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>). As long as the user
+keeps clicking the <em class="emphasis">okay</em> button, a new
+<i class="command">xmessage</i> window will pop up again
+<tt class="literal">$delay</tt> seconds after the previous one. The
+<i class="command">xmessage</i> command line is split into three pieces.
+It's run by an <b class="emphasis-bold">if
+statement</b> (<a name="IXT-36-3427" /><a href="ch35_13.htm#upt3-CHP-35-SECT-13">Section 35.13</a>). On the
+second line, <tt class="literal">-buttons okay:1,quit:0</tt> tells
+<i class="command">xmessage</i> to make the two buttons. If the user
+clicks the <em class="emphasis">quit</em> button,
+<i class="command">xmessage</i> returns 0 status and the
+<i class="command">if</i> runs <tt class="literal">exit 0</tt> to end the
+script. Otherwise, <i class="command">xmessage</i> returns 1 (because the
+user clicked <em class="emphasis">okay</em> or pressed RETURN; the
+<tt class="literal">-default okay</tt> sets this up) and the loop repeats.
+</p>
+
+<p><a name="IXT-36-3428" />(Here's
+a fun enhancement, left as an exercise for you. Add a third button
+labeled <em class="emphasis">mail this</em> that uses
+<i class="command">mail</i>(1) to send you (<em class="emphasis">$USER</em>)
+an email copy of the current fortune. You'll need to
+change the <i class="command">if</i> to a <b class="emphasis-bold">case
+statement</b> (<a name="IXT-36-3429" /><a href="ch35_10.htm#upt3-CHP-35-SECT-10">Section 35.10</a>) that tests
+<b class="emphasis-bold">$?</b> (<a href="ch35_12.htm#upt3-CHP-35-SECT-12">Section 35.12</a>).)
+</p>
+
+<p>The last <i class="command">xmessage</i> argument is the text to put on
+the screen. <b class="emphasis-bold">fmt</b>
+(<a name="IXT-36-3430" /><a href="ch21_02.htm#upt3-CHP-21-SECT-2">Section 21.2</a>)
+reformats the output of <i class="command">fortune</i> roughly to fit the
+window. (There's no fancy coding here to be sure
+that the text fits the
+<a name="IXT-36-3431" />window exactly; I just tweak the
+output width, set in the <em class="emphasis">fmtarg</em> variable, to
+match the window geometry, which is set in the
+<em class="emphasis">geometry</em><a name="IXT-36-3432" /> <a name="IXT-36-3433" /> variable.) If you
+set the geometry to make a fairly wide window, you may not need
+<i class="command">fmt</i> at all.<a name="IXTR3-3451" /> <a name="IXTR3-3452" /> <a name="IXTR3-3453" />
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch36_25.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch36_27.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">36.25. Testing Two Strings with One case Statement</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">36.27. Shell Lockfile</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

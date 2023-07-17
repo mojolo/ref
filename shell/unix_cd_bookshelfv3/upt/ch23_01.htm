@@ -1,0 +1,207 @@
+<html><head><title>Job Control (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="part5.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch23_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 23. Job Control</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch23_01.htm#sect1">Job Control in a Nutshell</a><br />
+<a href="ch23_02.htm">Job Control Basics</a><br />
+<a href="ch23_03.htm">Using jobs Effectively</a><br />
+<a href="ch23_04.htm">Some Gotchas with Job Control</a><br />
+<a href="ch23_05.htm">The "Current Job" Isn't Always What You Expect</a><br />
+<a href="ch23_06.htm">Job Control and autowrite: Real Timesavers!</a><br />
+<a href="ch23_07.htm">System Overloaded? Try Stopping Some Jobs</a><br />
+<a href="ch23_08.htm">Notification When Jobs Change State</a><br />
+<a href="ch23_09.htm">Stop Background Output with stty tostop</a><br />
+<a href="ch23_10.htm">nohup</a><br />
+<a href="ch23_11.htm">Disowning Processes</a><br />
+<a href="ch23_12.htm">Linux Virtual Consoles</a><br />
+<a href="ch23_13.htm">Stopping Remote Login Sessions</a><br /></p></div><div class="sect1"><a name="upt3-CHP-23-SECT-1" />
+<h2 class="sect1"><a name="sect1" />23.1. Job Control in a Nutshell</h2>
+
+<p><a name="upt3-IDXTERM-3209" />As has been said many times in this
+book, Unix is a <a name="IXT-23-5484" />mutliprocessing system. Unlike some
+historic systems such as MS-DOS, all flavors of Unix run more than
+one process at a time. In fact, when Unix boots, the first program
+executed is called <i class="command">init</i><a name="IXT-23-5485" /> <a name="IXT-23-5486" />, which is the parent of all future
+processes. <i class="command">init</i> immediately creates a new process
+in which other programs can run, such as <i class="command">getty</i> and
+the various <i class="command">rc</i> setup scripts. At some point when a
+user logs into the system, the <i class="command">getty</i> program
+creates a new shell for that session. Even when the system is in
+single-user mode, Unix is still capable of running multiple
+processes. Multiprocessing is prevasive in Unix.
+</p>
+
+<p><a name="IXT-23-5487" />But multiprocessing
+isn't just for system daemons. It's
+also there to make your interactive shell session just a little bit
+more productive. Often, you will need to execute a program that takes
+a long time to run. For instance, you might be downloading a file
+with FTP or Lynx. It is possible to have that task put into the
+<a name="IXT-23-5488" /><a name="IXT-23-5489" />background so that you may execute new
+commands while the previous ones are running to completion. Just as
+you may have several piles of work on your desk, you often need to
+set aside one stack to work on another. A process is said to be in
+the foreground when it is receiving your keyboard input and is
+writing to your screen. Using the desk analogy, the foreground
+process is that pile of work currently in front of you. Only one
+process can be in the foreground at a time. Putting a process in the
+background is like putting the current stack of work in front of you
+on the floor. And if your desk is anything like mine, you can soon
+find your desk surrounded by piles of work. Unlike the real world,
+Unix is able to continue working on completing processes in the
+background. The management and manipulation of foreground and
+background processes is called <em class="emphasis">job control</em>. By
+understanding job control, you can begin to take better advantage of
+your Unix system.
+</p>
+
+<p>One cautionary note on job control: there's no such
+thing as a free lunch. In other words, while Unix blithely lets you
+put all the processes you want into the background, they all share
+the same CPU, RAM, and hard drive resources. If one process dominates
+one of these resources, the other processes won't
+get done any faster than they would have had you run them one after
+the other to completion. So if you've got a process
+that's CPU-intensive (such as a photomosiac
+program), there's little point in trying to run more
+processes on that machine.
+</p>
+
+<p>From the days of mainframes, when programs were submitted on stacks
+of cards, comes the term "job
+control." This chapter is going to go into some
+depth about using your shell's job control features.
+For those already familar with the concept, here is the thirty-second
+version of "Job Control in a
+Nutshell."
+</p>
+
+<blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Summary Box</h4>
+<p>Unless otherwise noted, these commands apply only to the
+<a name="IXT-23-5490" /> <a name="IXT-23-5491" /> <a name="IXT-23-5492" />C shell, Korn shell, and
+<i class="command">bash</i>:
+</p>
+&nbsp;
+<dl>
+<a name="IXT-23-5493" /><dt><i><b class="emphasis-bold">command &amp;</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>)</i></dt>
+<dd>
+Run <tt><em class="replaceable"><tt>command</tt></em></tt> in the background. You can
+continue to execute jobs in the foreground. This is the most common
+way to put processes in the background.
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5494" /><dt><i><b class="emphasis-bold">CTRL-c</b> (<a href="ch24_11.htm#upt3-CHP-24-SECT-11">Section 24.11</a>)</i></dt>
+<dd>
+Kill the current foreground job by sending the <b class="emphasis-bold">INTR signal</b> (<a href="ch24_10.htm#upt3-CHP-24-SECT-10">Section 24.10</a>).
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5495" /><a name="IXT-23-5496" /><dt><i><b class="emphasis-bold">CTRL-z</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>, <a href="ch23_06.htm#upt3-CHP-23-SECT-6">Section 23.6</a>)</i></dt>
+<dd>
+Suspend the current foreground job by sending the <b class="emphasis-bold">TSTP signal</b> (<a href="ch24_10.htm#upt3-CHP-24-SECT-10">Section 24.10</a>).
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5497" /><a name="IXT-23-5498" /><dt><i><i class="command">suspend</i></i></dt>
+<dd>
+Suspend a shell with the <i class="command">suspend</i> command.</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5499" /><a name="IXT-23-5500" /><a name="IXT-23-5501" /><dt><i><i class="command">stop</i></i></dt>
+<dd>
+Suspend a background job with the <i class="command">stop</i> command or
+an <b class="emphasis-bold">alias that does the same thing</b>
+(<a href="ch23_07.htm#upt3-CHP-23-SECT-7">Section 23.7</a>).
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5502" /><a name="IXT-23-5503" /><dt><i><b class="emphasis-bold">bg %num</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>)</i></dt>
+<dd>
+Let a stopped job (by job number <em class="replaceable"><tt>num</tt></em>)
+continue in the background.
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5504" /><a name="IXT-23-5505" /><a name="IXT-23-5506" /><dt><i><b class="emphasis-bold">fg %num</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>)</i></dt>
+<dd>
+Put a background job or a stopped job (by job number
+<tt><em class="replaceable"><tt>num</tt></em></tt>) into the foreground.
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5507" /><a name="IXT-23-5508" /><dt><i><b class="emphasis-bold">kill %num</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>)</i></dt>
+<dd>
+Kill an arbitrary background job (by job number
+<em class="replaceable"><tt>num</tt></em>).
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5509" /><a name="IXT-23-5510" /><a name="IXT-23-5511" /><dt><i><b class="emphasis-bold">kill pid</b> (<a href="ch24_12.htm#upt3-CHP-24-SECT-12">Section 24.12</a>)</i></dt>
+<dd>
+Kill an arbitrary job (by process ID number
+<tt><em class="replaceable"><tt>num</tt></em></tt>).
+</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5512" /><a name="IXT-23-5513" /><a name="IXT-23-5514" /><dt><i><b class="emphasis-bold">jobs</b> (<a href="ch23_03.htm#upt3-CHP-23-SECT-3">Section 23.3</a>)</i></dt>
+<dd>
+List background and stopped jobs and their job numbers.</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5515" /><a name="IXT-23-5516" /><dt><i><b class="emphasis-bold">set notify</b> (<a href="ch23_08.htm#upt3-CHP-23-SECT-8">Section 23.8</a>)</i></dt>
+<dd>
+Immediate job-state change notices.</p>
+</dd>
+&nbsp;
+&nbsp;
+<a name="IXT-23-5517" /><a name="IXT-23-5518" /><dt><i><b class="emphasis-bold">stty tostop</b> (<a href="ch23_09.htm#upt3-CHP-23-SECT-9">Section 23.9</a>)</i></dt>
+<dd>
+Automatically stop background processes if they try writing to the
+screen.
+</p>
+</dd>
+&nbsp;
+</dl>
+</td></tr></table><p></blockquote>
+
+<p>Some systems, like Linux, extend the <i class="command">kill</i> to kill
+processes by name. See <a href="ch24_15.htm#upt3-CHP-24-SECT-15">Section 24.15</a>, which introduces <i class="command">killall</i>.
+</p>
+
+<p><em class="emphasis">--ML and JJ</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="part5.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch23_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">V. Processes and the Kernel</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">23.2. Job Control Basics</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>

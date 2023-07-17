@@ -1,0 +1,1549 @@
+<html><head><title>Using the tcsh Shell (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">1.5. Using the tcsh Shell</h2>
+
+<p><a name="mosxgeeks-IDXTERM-54" />The <em class="filename">tcsh</em> shell offers
+advanced command-line editing capabilities, filename completion, and
+a variety of customizations. Although <em class="filename">tcsh </em>is
+the default user shell, Mac OS X 10.2 (Jaguar) uses the Bourne shell
+(<em class="filename">/bin/sh</em>) for handling
+<a name="IXT-1-85" />scripts (such as those found under the
+<em class="filename">/etc</em> directory), and we suggest you do the same.
+However, <em class="filename">tcsh</em> is a fine user shell, and this
+section explains how to customize it and take advantage of some of
+its features.
+</p>
+
+<a name="mosxgeeks-CHP-1-SECT-5.1" /><div class="sect2">
+<h3 class="sect2">1.5.1. Customizing the tcsh Shell</h3>
+
+<p>You can customize <em class="filename">tcsh</em><a name="IXT-1-86" /> by
+changing certain environment variables, by creating aliases for
+frequently used commands, or by binding keys to commands (see
+"bindkey" in <a href="ch01_05.htm#mosxgeeks-CHP-1-SECT-5.4">Section 1.5.4</a>, later in this chapter).
+</p>
+
+<p>If you want to make your customizations permanent (so you
+don't have to issue the commands each time you log
+in), put the appropriate commands in one of
+<em class="filename">tcsh</em>'s startup files in your
+home directory. Here are some of the startup files into which you can
+put these commands:
+</p>
+
+<dl>
+<a name="IXT-1-87" /><dt><i><em class="filename">.tcshrc</em></tt></i></dt>
+<dd>
+This script is executed each time you launch a shell. When you open a
+Terminal window, <em class="filename">.tcshrc</em></tt> is executed. If you
+start a sub-shell (or run a <em class="filename">csh</em></tt> shell script),
+<em class="filename">.tcshrc</em></tt> will again be executed. If your
+<em class="filename">.tcshrc</em></tt> contains recursive definitions, consider
+moving those commands to <em class="filename">.login</em></tt>. For example, if
+you issue the command <em class="emphasis">set path = ( $HOME/bin $path
+)</em></tt> in your <em class="filename">.tcshrc</em></tt>, then
+<em class="filename">$HOME/bin</em></tt> will get prepended to your
+<tt class="literal">PATH</tt> environment variable each time you launch a
+sub-shell.
+</p>
+</dd>
+
+
+
+<a name="IXT-1-88" /><dt><i><em class="filename">.login</em></tt></i></dt>
+<dd>
+This script is executed each time you launch a login shell, which
+includes opening a new Terminal window or logging in remotely. The
+<em class="filename">.login </em>script runs after
+<em class="filename">.tcshrc</em>. The <em class="emphasis">.login</em> file
+should contain settings that should only be applied once, such as
+<tt class="literal">PATH</tt> settings. The <em class="filename">.login</em>
+script is guaranteed to be run only once, regardless of how many
+sub-shells you invoke under a single login shell.
+</p>
+</dd>
+
+
+
+<a name="IXT-1-89" /><dt><i><em class="filename">.logout</em></tt></i></dt>
+<dd>
+This script is run when you exit a login shell, but not when you exit
+a sub-shell.
+</p>
+</dd>
+
+</dl>
+
+<p>The following listing shows what happens when you initially launch a
+shell, start a sub-shell, and exit the sub-shell and login shell:
+</p>
+
+<blockquote><pre class="code">Last login: Fri Jul 19 19:24:52 on ttyp1
+Welcome to Darwin!
+Running .tcshrc script
+Running .login script
+[Brian-Jepsons-Computer:~] bjepson% <b class="emphasis-bold">tcsh</b>
+Running .tcshrc script
+[Brian-Jepsons-Computer:~] bjepson% <b class="emphasis-bold">exit</b>
+exit
+[Brian-Jepsons-Computer:~] bjepson% <b class="emphasis-bold">exit</b>
+logout
+Running .logout script</pre></blockquote>
+
+<p>There are system-wide versions of these scripts, which are invoked
+before the scripts in a user's home directory:
+<em class="filename">/etc/csh.login</em></tt>,
+<em class="filename">/etc/csh.cshrc</em></tt>, and
+<em class="filename">/etc/csh.logout</em></tt>.
+</p>
+
+<a name="ch01-20-fm2xml" /><blockquote><b>WARNING:</b> 
+<em class="filename">tcsh</em></tt> will also read commands from the
+<em class="filename">.cshrc</em></tt><a name="IXT-1-90" /> fikle, if present,
+but if you have both a <em class="filename">.tcshrc</em></tt> file and a
+<em class="filename">.cshrc </em></tt>file, it will ignore
+<em class="filename">.cshrc</em></tt>. For example, Fink (see <a href="ch06_01.htm">Chapter 6</a>) instructs you to insert a path in
+<em class="filename">.cshrc</em></tt>, but if you've already
+got a <em class="filename">.tcshrc </em></tt>file, that's
+where you should put the command instead.
+</p>
+</blockquote>
+
+<p>Mac OS X borrows a handful of scripts from
+<a name="IXT-1-91" />
+<a name="IXT-1-92" />MIT's Project Athena to
+help simplify this configuration. On Mac OS X, sample
+<em class="filename">tcsh</em></tt> configuration files are kept in the
+<em class="filename">/usr/share/tcsh/examples</em></tt> directory. In
+particular, this directory contains <em class="filename">.tcshrc</em></tt>,
+<em class="filename">.login</em></tt>, and <em class="filename">.logout</em></tt> files
+named as <em class="filename">rc</em></tt>, <em class="filename">login</em></tt>, and
+<em class="filename">logout</em></tt>. To use these configurations, create
+<em class="filename">.tcshrc</em></tt>, <em class="filename">.login</em></tt>, and
+<em class="filename">.logout</em></tt> files that invoke the sample ones. This
+can be done by adding the following lines to your
+<em class="filename">.tcshrc</em></tt>, <em class="filename">.login</em></tt>, and
+<em class="filename">.logout </em></tt>files:
+</p>
+
+<blockquote><pre class="code">source /usr/share/tcsh/examples/rc        # put this in ~/.tcshrc
+source /usr/share/tcsh/examples/login     # put this in ~/.login
+source /usr/share/tcsh/examples/logout    # put this in ~/.logout</pre></blockquote>
+
+<p>Once this is done, you can then customize the
+<em class="filename">tcsh</em></tt> environment by creating a
+<em class="filename">~/Library/init/tcsh </em></tt>directory. You can create
+individual files in this directory for each type of customization.
+</p>
+
+<dl>
+<dt><i><em class="filename">aliases.mine</em></tt></i></dt>
+<dd>
+Contains shell aliases.</p>
+</dd>
+
+
+
+<dt><i><em class="filename">completions.mine</em></tt></i></dt>
+<dd>
+Contains command-line completions.</p>
+</dd>
+
+
+
+<dt><i><em class="filename">environment.mine</em></tt></i></dt>
+<dd>
+Defines environment variables.</p>
+</dd>
+
+
+
+<dt><i><em class="filename">rc.mine</em></tt></i></dt>
+<dd>
+Specifies run commands.</p>
+</dd>
+
+
+
+<dt><i><em class="filename">path</em></tt></i></dt>
+<dd>
+Defines the command search path.</p>
+</dd>
+
+</dl>
+
+<p>The startup scripts in <em class="filename">/usr/share/tcsh/examples</em>
+will use these files, if they exist. Of course, you can simply use a
+<em class="filename">.tcshrc</em> file in your home directory. (The
+system-wide <em class="filename">/etc/csh.cshrc </em>script will be read
+first.) For more information on <em class="filename">tcsh</em>, see
+<em class="emphasis">Using csh and tcsh</em> (O'Reilly).
+</p>
+
+</div>
+<a name="mosxgeeks-CHP-1-SECT-5.2" /><div class="sect2">
+<h3 class="sect2">1.5.2. Working with File and Directory Names</h3>
+
+<p>Traditionally, Unix users tend to avoid spaces in
+<a name="IXT-1-93" />
+<a name="IXT-1-94" />file and directory names, sometimes
+inserting hyphens and underscores where <a name="IXT-1-95" />spaces are implied, as follows:
+</p>
+
+<blockquote><pre class="code">textFile.txt
+text-file.txt
+text_file.txt</pre></blockquote>
+
+<p>However, most Mac users tend to insert spaces into their file and
+directory names, and in a lot of cases, these names tend to be long
+and descriptive. While this practice is okay if
+you're going to work in the GUI all the time, it
+creates a small hurdle to jump over when you're
+working on the command line. To get around these spaces, you have two
+choices: escape them, or quote the file or directory name.
+</p>
+
+<p>To <a name="IXT-1-96" />escape a space on the command line, simply
+insert a backslash (<tt class="literal">\</tt>) before the space or any
+other special characters, such as a parenthesis. Because they have
+meaning to the shell, special characters that must be escaped are:
+<tt class="literal">* # ` " ' \ $ | &amp; ? ; ~</tt> <tt class="literal">( ) &lt; &gt;
+! ^</tt>. Here is an example of how to use a backslash to escape
+a space character in a file or directory name:
+</p>
+
+<blockquote><pre class="code">cd ~/Documents/Editorial\ Reports</pre></blockquote>
+
+<p>Or you can use quotation marks around the file or directory name that
+contains the space, as follows:
+</p>
+
+<blockquote><pre class="code">cd ~/Documents/"Editorial Reports"</pre></blockquote>
+
+<p>There is one other way to get around this problem, but it involves
+using the Finder in combination with the Terminal application. To
+launch a Classic application such as Word 2001, which probably lives
+on the Mac OS 9 partition of your hard drive, you could enter the
+path as follows, using escape characters:
+</p>
+
+<blockquote><pre class="code">open -a /Volumes/Mac\ OS\ 9/Applications\ \(Mac\ OS\ 9\)/Microsoft\ Office\
+   2001/Microsoft\ Word </pre></blockquote>
+
+<p>Or you can enter the path using <a name="IXT-1-97" />quotes:
+</p>
+
+<blockquote><pre class="code">open -a /Volumes/"Mac OS 9"/"Applications (Mac OS 9)"/"Microsoft Office
+   2001"/"Microsoft Word"</pre></blockquote>
+
+<p>As you can see, neither way is very pretty, and both require you to
+know a lot of detail about the path. Now for the easy way:
+</p>
+
+<ol><li>
+<p>Type <em class="filename">open -a,</em><a name="IXT-1-98" /> followed by a space on the command line
+(don't press Return yet).
+</p>
+</li><li>
+<p>Locate Microsoft Word in the Finder and then drag its icon to a
+Terminal window to insert the path after the space. When you do this,
+the spaces and any other special characters will be escaped with
+backslashes, as follows:
+</p>
+
+<blockquote><pre class="code">open -a /Volumes/Mac\ OS\ 9/Applications\ \(Mac\ OS\ 9\)/Microsoft\ Office\ 2001/
+    Microsoft\ Word </pre></blockquote>
+</li>
+
+<li>
+<p>Press Return to invoke the command and launch Word 2001. If Classic
+isn't already running, Classic will start, too.
+</p>
+</li></ol>
+<p>You can also drag and drop URLs from a web browser, which can be used
+with <em class="filename">curl -O</em> to download
+<a name="IXT-1-99" /> <a name="IXT-1-100" />files from the command line. For example:
+</p>
+
+<ol><li>
+<p>Open a new Terminal window and type <em class="filename">curl -O </em>,
+with a space after the switch.
+</p>
+</li><li>
+<p>Bring up your web browser and navigate to <a href="http://www.oreilly.com">http://www.oreilly.com</a>.
+</p>
+</li><li>
+<p>Drag the image at the top of the page to the Terminal window. You
+should now see the following in the Terminal window:
+</p>
+
+<blockquote><pre class="code">curl -O http://www.oreilly.com/graphics_new/header_main.gif</pre></blockquote>
+</li>
+
+<li>
+<p>Press Enter in the Terminal window to download
+<em class="filename">header_main.gif</em> to your computer.
+</p>
+</li></ol>
+<a name="mosxgeeks-CHP-1-SECT-5.2.1" /><div class="sect3">
+<h3 class="sect3">1.5.2.1. Tab completion</h3>
+
+<p>If you want to type a long pathname, you can cut down on the number
+of keystrokes needed to type it by using <a name="IXT-1-101" /> <a name="IXT-1-102" />tab completion. For example, to type
+<em class="filename">/Library/StartupItems</em>, you could type
+<em class="filename">/Li&lt;tab&gt;</em>, which gives you
+<em class="filename">/Library/</em>. Next, type
+<em class="filename">S&lt;tab&gt;</em>. This time, instead of completing
+the path, you're given a choice of completions:
+<em class="filename">Screen Savers/Scripts/StartupItems/</em>. Type a
+little bit more of the desired item, followed by a tab, as in
+<em class="filename">t&lt;tab&gt;</em>. The full key sequence
+for<em class="filename"> /Library/StartupItems</em> is
+<em class="filename">/Li&lt;tab&gt;St&lt;tab&gt;</em>.
+</p>
+
+<p>If you have multiple completions where a space is involved, you can
+type a literal space with <em class="filename">\&lt;space&gt;</em>. So, to
+get a completion for <em class="filename">/System Folder</em> (the Mac OS
+9 system folder), you should use
+<em class="filename">/Sy&lt;tab&gt;\&lt;space&gt;&lt;tab&gt;</em>. It
+stops just before the space because <em class="filename">/System</em> (the
+Mac OS X system folder) is a valid completion for the first three
+characters.
+</p>
+
+</div>
+</div>
+<a name="mosxgeeks-CHP-1-SECT-5.3" /><div class="sect2">
+<h3 class="sect2">1.5.3. Command-Line Editing with tcsh</h3>
+
+<p><a name="mosxgeeks-IDXTERM-70" />Mac <a name="mosxgeeks-IDXTERM-71" />
+<a name="mosxgeeks-IDXTERM-72" />OS X's default shell,
+<em class="filename">tcsh</em>, lets you move your cursor around in the
+command line, editing the line as you type. There are two main modes
+for editing the command line, based on the two most commonly used
+text editors, <em class="filename">Emacs</em><a name="IXT-1-103" /> and
+<em class="filename">vi</em><a name="IXT-1-104" />. <em class="filename">Emacs</em> mode is the
+default; you can switch between the modes with the following
+commands:
+</p>
+
+<blockquote><pre class="code">bindkey -e      <em class="replaceable"><tt>Select Emacs bindings</tt></em>
+bindkey -v      <em class="replaceable"><tt>Select vi bindings</tt></em></pre></blockquote>
+
+<p>The main difference between the <em class="filename">Emacs</em> and
+<em class="filename">vi</em> bindings is that the
+<em class="filename">Emacs</em> bindings are modeless (i.e., they always
+work). With the <em class="filename">vi</em> bindings, you must switch
+between insert and command modes; different commands are useful in
+each mode. Additionally:
+</p>
+
+<ul><li>
+<p><em class="filename">Emacs</em> mode is simpler; <em class="filename">vi</em>
+mode allows finer control.
+</p>
+</li><li>
+<p><em class="filename">Emacs</em> mode allows you to yank cut text and set a
+mark; <em class="filename">vi</em> mode does not.
+</p>
+</li><li>
+<p>The command-history-searching capabilities of the two modes differ.</p>
+</li></ul>
+<a name="mosxgeeks-CHP-1-SECT-5.3.1" /><div class="sect3">
+<h3 class="sect3">1.5.3.1. Emacs mode</h3>
+
+<p><a href="ch01_05.htm#mosxgeeks-CHP-1-TABLE-2">Table 1-2</a>, <a href="ch01_05.htm#mosxgeeks-CHP-1-TABLE-3">Table 1-3</a>,
+<a name="mosxgeeks-IDXTERM-75" /> <a name="mosxgeeks-IDXTERM-76" />and <a href="ch01_05.htm#mosxgeeks-CHP-1-TABLE-4">Table 1-4</a> describe the various editing keystrokes
+available in <em class="filename">Emacs</em> mode.
+</p>
+
+<a name="mosxgeeks-CHP-1-TABLE-2" /><h4 class="objtitle">Table 1-2. Cursor positioning commands (Emacs mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Control-B</p>
+</td>
+<td>
+<p>Moves the cursor back (left) one character.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-F</p>
+</td>
+<td>
+<p>Moves the cursor forward (right) one character.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc then B</p>
+</td>
+<td>
+<p>Moves the cursor back one word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc then F</p>
+</td>
+<td>
+<p>Moves the cursor forward one word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-A</p>
+</td>
+<td>
+<p>Moves the cursor to the beginning of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-E</p>
+</td>
+<td>
+<p>Moves the cursor to the end of the line.</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="mosxgeeks-CHP-1-TABLE-3" /><h4 class="objtitle">Table 1-3. Text deletion commands (Emacs mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Del or Control-H</p>
+</td>
+<td>
+<p>Deletes the character to the left of the cursor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-D</p>
+</td>
+<td>
+<p>Deletes the character under the cursor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc then D</p>
+</td>
+<td>
+<p>Deletes the next word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc then Delete or Esc then Control-H</p>
+</td>
+<td>
+<p>Deletes the previous word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-K</p>
+</td>
+<td>
+<p>Deletes from the cursor to the end of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-U</p>
+</td>
+<td>
+<p>Deletes the entire line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-W</p>
+</td>
+<td>
+<p>Deletes everything to the left of the cursor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-Y</p>
+</td>
+<td>
+<p>Yanks the previously deleted string.</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="mosxgeeks-CHP-1-TABLE-4" /><h4 class="objtitle">Table 1-4. Command control (Emacs mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Control-P</p>
+</td>
+<td>
+<p>Recalls the previous command from history.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-N</p>
+</td>
+<td>
+<p>Recalls the next command from history.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Up arrow</p>
+</td>
+<td>
+<p>Recalls the previous command from history.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Down arrow</p>
+</td>
+<td>
+<p>Recalls the next command from history.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">File-fragment</em> Tab</p>
+</td>
+<td>
+<p>Performs command-line completion. <em class="filename">file-fragment</em>
+can be a filename, a directory, or an executable in your
+<em class="filename">$PATH</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">cmd-fragment</em> Esc then P</p>
+</td>
+<td>
+<p>Searches history for <em class="filename">cmd-fragment</em>, which must be
+the beginning of a command.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="filename">cmd-fragment</em> Esc then N</p>
+</td>
+<td>
+<p>Like Esc then P, but searches forward in the history.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc <em class="filename">num</em></p>
+</td>
+<td>
+<p>Repeats the next command <em class="filename">num</em> times.</p>
+</td>
+</tr>
+
+</table><p>
+
+</div>
+
+<a name="mosxgeeks-CHP-1-SECT-5.3.2" /><div class="sect3">
+<h3 class="sect3">1.5.3.2. vi mode</h3>
+
+<p><em class="filename">vi</em><a name="IXT-1-108" /> mode has two submodes,
+<em class="emphasis">insert</em><a name="IXT-1-109" /> and
+<em class="emphasis">command</em><a name="IXT-1-110" /> mode. The default mode is insert. You can
+toggle between the modes by pressing Esc. Alternatively, in command
+mode, typing <b class="emphasis-bold">a</b> (append) or <b class="emphasis-bold">i</b> (insert) will return you to insert mode.
+</p>
+
+<p><a href="ch01_05.htm#mosxgeeks-CHP-1-TABLE-5">Table 1-5</a> through <a href="ch01_05.htm#mosxgeeks-CHP-1-TABLE-11">Table 1-11</a>
+describe the editing keystrokes available in <em class="emphasis">vi</em>
+mode.
+</p>
+
+<a name="mosxgeeks-CHP-1-TABLE-5" /><h4 class="objtitle">Table 1-5. Commands available (vi's insert and command mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Control-P</p>
+</td>
+<td>
+<p>Recalls the previous command from history.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-N</p>
+</td>
+<td>
+<p>Recalls the next command from history.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Up arrow</p>
+</td>
+<td>
+<p>Recalls the previous command from history.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Down arrow</p>
+</td>
+<td>
+<p>Recalls the next command from history.</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="mosxgeeks-CHP-1-TABLE-6" /><h4 class="objtitle">Table 1-6. Editing commands (vi insert mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Control-B</p>
+</td>
+<td>
+<p>Moves the cursor back (left) one character.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-F</p>
+</td>
+<td>
+<p>Moves the cursor forward (right) one character.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-A</p>
+</td>
+<td>
+<p>Moves the cursor to the beginning of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-E</p>
+</td>
+<td>
+<p>Moves the cursor to the end of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Delete or Control-H</p>
+</td>
+<td>
+<p>Deletes the character to the left of the cursor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-W</p>
+</td>
+<td>
+<p>Deletes the previous word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-U</p>
+</td>
+<td>
+<p>Deletes from the beginning of the line to the cursor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-K</p>
+</td>
+<td>
+<p>Deletes from the cursor to the end of the line.</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="mosxgeeks-CHP-1-TABLE-7" /><h4 class="objtitle">Table 1-7. Cursor positioning commands (vi command mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>h or Control-H</p>
+</td>
+<td>
+<p>Moves the cursor back (left) one character.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>l or Space</p>
+</td>
+<td>
+<p>Moves the cursor forward (right) one word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>w</p>
+</td>
+<td>
+<p>Moves the cursor forward (right) one word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>b</p>
+</td>
+<td>
+<p>Moves the cursor back (left) one word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>e</p>
+</td>
+<td>
+<p>Moves the cursor to the end of the next word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>W, B, E</p>
+</td>
+<td>
+<p>Has the same effect as <em class="filename">w</em>,
+<em class="filename">b</em>, and <em class="filename">e</em>, but treats
+whitespace as a word separator instead of any non-alphanumeric
+character.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>^ or Control-A</p>
+</td>
+<td>
+<p>Moves the cursor to the beginning of the line (first non-whitespace
+character).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>O</p>
+</td>
+<td>
+<p>Moves the cursor to the beginning of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>$ or Control-E</p>
+</td>
+<td>
+<p>Moves the cursor to the end of the line.</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="mosxgeeks-CHP-1-TABLE-8" /><h4 class="objtitle">Table 1-8. Text insertion commands (vi command mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>a</p>
+</td>
+<td>
+<p>Appends new text after the cursor until Esc is pressed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>i</p>
+</td>
+<td>
+<p>Inserts new text before the cursor until Esc is pressed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>A</p>
+</td>
+<td>
+<p>Appends new text after the end of the line until Esc is pressed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>I</p>
+</td>
+<td>
+<p>Inserts new text before the beginning of the line until Esc is
+pressed.
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="mosxgeeks-CHP-1-TABLE-9" /><h4 class="objtitle">Table 1-9. Text deletion commands (vi command mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>x</p>
+</td>
+<td>
+<p>Deletes the character under the cursor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>X or Delete</p>
+</td>
+<td>
+<p>Deletes the character to the left of the cursor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>d<em class="filename">m</em></p>
+</td>
+<td>
+<p>Deletes from the cursor to the end of motion command
+<em class="filename">m</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>D</p>
+</td>
+<td>
+<p>Deletes from the cursor to the end of the line (similar to issuing
+<tt class="literal">d$</tt>).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-W</p>
+</td>
+<td>
+<p>Deletes the previous word.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-U</p>
+</td>
+<td>
+<p>Deletes from the beginning of the line up to the cursor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-K</p>
+</td>
+<td>
+<p>Deletes from the cursor to the end of the line.</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="mosxgeeks-CHP-1-TABLE-10" /><h4 class="objtitle">Table 1-10. Text replacement commands (vi command mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>c<em class="filename">m</em></p>
+</td>
+<td>
+<p>Changes the characters from the cursor to the end of motion command
+<em class="filename">m</em> until Esc is pressed.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>C</p>
+</td>
+<td>
+<p>Has the same effect as <tt class="literal">c$</tt>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>r<em class="filename">c</em></p>
+</td>
+<td>
+<p>Replaces the character under the cursor with the character
+<em class="filename">c</em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>R</p>
+</td>
+<td>
+<p>Replaces multiple characters until Esc is pressed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>s</p>
+</td>
+<td>
+<p>Substitutes the character under the cursor with the characters typed
+until Esc is pressed.
+</p>
+</td>
+</tr>
+
+</table><p>
+
+<a name="mosxgeeks-CHP-1-TABLE-11" /><h4 class="objtitle">Table 1-11. Character-seeking motion commands (vi command mode) </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>f<em class="filename">c</em></p>
+</td>
+<td>
+<p>Moves the cursor to the next instance of <em class="filename">c</em> in
+the line.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>F<em class="filename">c</em></p>
+</td>
+<td>
+<p>Moves the cursor to the previous instance of <em class="filename">c
+</em>in the line.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>t<em class="filename">c</em></p>
+</td>
+<td>
+<p>Moves the cursor just after the next instance of <em class="filename">c
+</em>in the line.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>T<em class="filename">c</em></p>
+</td>
+<td>
+<p>Moves the cursor just after the previous instance of <em class="filename">c
+</em>in the line.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>;</p>
+</td>
+<td>
+<p>Repeats the previous <em class="filename">f </em>or <em class="filename">F
+</em>command.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>,</p>
+</td>
+<td>
+<p>Repeats the previous <em class="filename">f </em>or <em class="filename">F
+</em>command in the opposite direction.
+</p>
+</td>
+</tr>
+
+</table><p>
+
+</div>
+
+<a name="mosxgeeks-CHP-1-SECT-5.3.3" /><div class="sect3">
+<h3 class="sect3">1.5.3.3. Additional command-line keys</h3>
+
+<p>As we've just illustrated, the
+<em class="filename">tcsh</em> shell offers dozens of special keystroke
+characters for navigation on the command line. <a href="ch01_05.htm#mosxgeeks-CHP-1-TABLE-12">Table 1-12</a> lists some additional command-line keys for
+use in either <em class="filename">Emacs</em> or <em class="filename">vi</em>
+editing mode.
+</p>
+
+<a name="mosxgeeks-CHP-1-TABLE-12" /><h4 class="objtitle">Table 1-12. Additional key commands for the tcsh shell </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p> Key command</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p>Control-C</p>
+</td>
+<td>
+<p>Interrupts the process; cancels the previous command
+(<img src="figs/command.gif" alt="Figure " />-. works as well).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-D</p>
+</td>
+<td>
+<p>Signals end-of-input for some programs and returns you to the shell
+prompt. If Control-D is issued at a shell prompt, it will terminate
+the shell session and close the Terminal window, if
+you've set your Terminal preferences to close the
+window when the shell exits.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-J</p>
+</td>
+<td>
+<p>Has the same effect as pressing the Return (or Enter) key. Hitting
+Control-J after issuing a command will invoke the command, or it will
+take you to the next line in the shell if no command was given.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-K</p>
+</td>
+<td>
+<p>Removes everything to the right of the insertion point.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-L</p>
+</td>
+<td>
+<p>Clears the display.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-Q</p>
+</td>
+<td>
+<p>Restarts the output after a pause by Control-S.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-S</p>
+</td>
+<td>
+<p>Pauses the output from a program that's writing to
+the screen.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-T</p>
+</td>
+<td>
+<p>Transposes the previous two characters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Control-Z</p>
+</td>
+<td>
+<p>Suspends a process. To restart the process, issue the
+<em class="filename">bg</em> or <em class="filename">fg</em> command to place
+the process in the background or foreground, respectively.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc then C</p>
+</td>
+<td>
+<p>Capitalizes the word following the insertion point.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc then Esc</p>
+</td>
+<td>
+<p>Completes the name if only a partial pathname or filename is entered.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc then L</p>
+</td>
+<td>
+<p>Changes the next word to all lowercase letters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Esc then U</p>
+</td>
+<td>
+<p>Changes the next word to all uppercase letters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Tab</p>
+</td>
+<td>
+<p>Has the same effect as pressing the Esc key<a name="IXTR3-296" /> <a name="IXTR3-297" />
+twice.<a name="IXTR3-298" /> 
+</p>
+</td>
+</tr>
+
+</table><p>
+
+</div>
+</div>
+<a name="mosxgeeks-CHP-1-SECT-5.4" /><div class="sect2">
+<h3 class="sect2">1.5.4. Additional Shell Commands</h3>
+
+<p>One of the first things that traditional Unix users will notice when
+they start poking around in the Terminal is that there are a few new
+commands they'll need to add to their repertoire.
+Two that we'll discuss here are
+<em class="filename">bindkey</em> and <em class="filename">open</em>. The
+<em class="filename">defaults</em> command is described in <a href="ch08_01.htm">Chapter 8</a>. 
+</p>
+
+<a name="ch01-_Toc414682826" /><a name="IXT-1-116" /><a name="IXT-1-117" /><div class="refentry"><table width="515" border="0" cellpadding="5"><tr><td align="left"><font size="+1"><b>bindkey</b></font></td><td align="right"><i></i></td></tr></table><hr width="515" size="3" noshade="true" align="left" color="black" /><table width="515" border="0" cellpadding="5"><tr><td align="left" /><td align="right" /></tr></table>
+<h4 class="refsect1">
+Syntax</h4><a name="IXT-1-116" /><a name="IXT-1-117" />
+
+<blockquote><pre class="code">bindkey
+bindkey [<em class="replaceable"><tt>option</tt></em>]
+bindkey [<em class="replaceable"><tt>option</em>] [<em class="replaceable">key</tt></em>]
+bindkey [<em class="replaceable"><tt>option</em>] [<em class="replaceable">key</em>] [<em class="replaceable">command</tt></em>]
+bindkey [<em class="replaceable"><tt>option</em>] [<em class="replaceable">key</em>] [<em class="replaceable">string</tt></em>]</pre></blockquote>
+
+
+<h4 class="refsect1">Description</h4>
+ 
+
+<p><em class="filename">bindkey</em> is a <em class="filename">tcsh</em> shell
+command that is used to select, examine, and define key bindings for
+use in the Terminal.
+</p>
+
+
+<h4 class="refsect1">Options</h4>
+
+
+<p>The following list describes the various uses of the
+<em class="filename">bindkey</em> command.
+</p>
+
+<dl>
+<dt><i><em class="emphasis">bindkey</em></tt></i></dt>
+<dd>
+Lists all of the key bindings.</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey -c </em></tt><tt><em class="replaceable"><tt>key cmd</tt></em></tt></i></dt>
+<dd>
+Binds <em class="replaceable"><tt>key</tt></em> to the Unix command
+<em class="replaceable"><tt>cmd</tt></em>.
+</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey -d</em></tt></i></dt>
+<dd>
+Restores the default key bindings.</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey -e</em></tt></i></dt>
+<dd>
+Changes the key bindings to <em class="filename">Emacs</em> mode.</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey</em></tt> <tt><em class="replaceable"><tt>key</tt></em></tt></i></dt>
+<dd>
+Lists the bindings for <tt><em class="replaceable"><tt>key</tt></em></tt>.</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey </em></tt><tt><em class="replaceable"><tt>key cmd</tt></em></tt></i></dt>
+<dd>
+Binds <em class="replaceable"><tt>key</tt></em> to the editing command
+<em class="replaceable"><tt>cmd</tt></em>.
+</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey -l</em></tt></i></dt>
+<dd>
+Lists the editing commands and their meanings.</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey -r </em></tt><tt><em class="replaceable"><tt>key</tt></em></tt></i></dt>
+<dd>
+Removes the binding for <em class="replaceable"><tt>key</tt></em>.</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey -s </em></tt><tt><em class="replaceable"><tt>key string</tt></em></tt></i></dt>
+<dd>
+Binds <tt><em class="replaceable"><tt>key</tt></em></tt> to the string
+<tt><em class="replaceable"><tt>string</tt></em></tt>.
+</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey -u</em></tt></i></dt>
+<dd>
+Displays a message, showing how to use the
+<em class="filename">bindkey</em> command.
+</p>
+</dd>
+
+
+
+<dt><i><em class="emphasis">bindkey -v</em></tt></i></dt>
+<dd>
+Changes the key bindings to <em class="filename">vi </em></tt>mode.</p>
+</dd>
+
+</dl>
+
+
+<p>For example, to create a binding between the F2 key and the
+<em class="filename">proto.term</em></tt> script from <a href="ch01_03.htm#mosxgeeks-CHP-1-SECT-3.1.1">Section 1.3.1.1</a>, earlier in
+this chapter, use this command:
+</p>
+
+<blockquote><pre class="code">bindkey -c ^[OQ 'open ~/Documents/proto.term'</pre></blockquote>
+
+
+<p>To get the key sequence <tt class="literal">^[OQ</tt>, type Control-V
+followed by the function key you want to bind, in this case F2. Now,
+any time you type F2 in the first Terminal window, it will open a new
+Terminal window using the settings saved in the
+<em class="filename">proto.term</em></tt> file. You can put
+<em class="filename">bindkey</em></tt> commands in your
+<em class="filename">.tcshrc</em></tt> or <em class="filename">.login</em></tt> script to
+make them permanent. For additional information on key bindings, and
+how to alter them, see <em class="emphasis">Using csh &amp; tcsh</em></tt>
+(O'Reilly).
+</p>
+
+</div>
+<a name="ch01-35-fm2xml" /><a name="ch01-idx-1000004118-3" /><a name="IXT-1-118" /><a name="IXT-1-119" /><a name="IXTR3-299" /><a name="IXTR3-300" /><div class="refentry"><table width="515" border="0" cellpadding="5"><tr><td align="left"><font size="+1"><b>open</b></font></td><td align="right"><i></i></td></tr></table><hr width="515" size="3" noshade="true" align="left" color="black" /><table width="515" border="0" cellpadding="5"><tr><td align="left" /><td align="right" /></tr></table>
+<h4 class="refsect1">
+
+Syntax</h4><a name="ch01-idx-1000004118-3" /><a name="IXT-1-118" /><a name="IXT-1-119" />
+
+<blockquote><pre class="code">open <tt><em class="replaceable"><tt>file</tt></em></tt>
+open [-a <tt><em class="replaceable"><tt>application</em></tt>] <tt><em class="replaceable">file</tt></em></tt>
+open [-e] <tt><em class="replaceable"><tt>file</tt></em></tt></pre></blockquote>
+
+
+<h4 class="refsect1">Description</h4>
+
+
+<p>The <em class="filename">open</em></tt> command can be used to open files and
+directories, and to launch applications from the Terminal
+application.
+</p>
+
+
+<h4 class="refsect1">Options</h4>
+
+<dl>
+<dt><i><em class="filename">-a</em></tt> <tt><em class="replaceable"><tt>application</tt></em></tt></i></dt>
+<dd>
+Uses <em class="replaceable"><tt>application</tt></em> to open the file.</p>
+</dd>
+
+
+
+<dt><i><em class="filename">-e</em></tt> <tt><em class="replaceable"><tt>file</tt></em></tt></i></dt>
+<dd>
+Forces the use of Mac OS X's TextEdit application to
+open the specified <tt><em class="replaceable"><tt>file</tt></em></tt>.
+</p>
+</dd>
+
+</dl>
+
+
+<h4 class="refsect1">Examples</h4>
+
+
+<p>To open a directory in the Finder, use <em class="filename">open,
+</em></tt>followed by the name of the directory. For example, to
+open the current directory, type:
+</p>
+
+<blockquote><pre class="code">open .</pre></blockquote>
+
+<p>To open your <em class="filename">/Public </em></tt>directory:</p>
+<blockquote><pre class="code">open ~/Public</pre></blockquote>
+
+<p>To open the <em class="filename">/Applications </em></tt>directory:</p>
+<blockquote><pre class="code">open /Applications</pre></blockquote>
+
+<p>To open an application, you need only its name. For example, you can
+open Project Builder (<em class="filename">/Developer/Applications</em></tt>)
+with this command:
+</p>
+<blockquote><pre class="code">open -a "Project Builder"</pre></blockquote>
+
+
+
+<a name="ch01-41-fm2xml" /><blockquote><b>TIP:</b> 
+You are not required to enter the path for the application, only its
+name--even if it is a Classic application. The only time you are
+required to enter the path is if you have two different versions of
+applications with similar names on your system.
+</p>
+</blockquote>
+
+<p>You can also supply a filename argument with the <em class="filename">-a
+</em></tt>option, which would launch the application and open the
+specified file with that application. You can use this option to open
+a file with something other than the application with which
+it's associated. For example, to open an XML file in
+Project Builder instead of the default text editor, TextEdit, you
+could use the following command:
+</p>
+<blockquote><pre class="code">open -a "Project Builder" data.xml</pre></blockquote>
+
+<p>To open multiple files, you can use wildcards:</p>
+<blockquote><pre class="code">open *.c</pre></blockquote>
+
+<p>To force a file to be opened with TextEdit, use
+<em class="filename">-e</em></tt>:
+</p>
+<blockquote><pre class="code">open -e *.c</pre></blockquote>
+
+<p>The <em class="filename">-e</em></tt> switch will only open files in the
+TextEdit application; it cannot be used to open a file in another
+text editor, such as BBEdit. If you want to use TextEdit on a file
+that is owned by an administrator (or <em class="filename">root</em></tt>),
+<em class="filename">open -e</em></tt> will not work. You'll
+need to specify the full executable path, as in:
+</p>
+<a name="IXTR3-299" /><a name="IXTR3-300" /><blockquote><pre class="code">% sudo /Applications/TextEdit.app/Contents/MacOSextEdit <tt><em class="replaceable"><tt>filename</tt></em></tt></pre></blockquote>
+</div>
+<a name="mosxgeeks-CHP-1-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Enabling the root User</h4>
+
+<p>By default, the Mac OS X
+<em class="filename">root</em></tt><a name="IXT-1-120" /> user account is disabled, so you have to
+use <em class="filename">sudo</em></tt><a name="IXT-1-121" /> to
+perform administrative tasks. Even the most advanced Mac OS X users
+should be able to get by with <em class="filename">sudo</em></tt>, and we
+suggest that you do <em class="emphasis">not</em></tt> enable the
+<em class="filename">root</em></tt> user account. However, if you must enable
+the <em class="filename">root</em></tt> user account, start
+<a name="IXT-1-122" />NetInfo Manager
+(<em class="filename">/Applications/Utilities</em></tt>), click the lock to
+authenticate yourself, and select Enable Root User from the Security
+menu.
+</p>
+</td></tr></table><p></blockquote>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.4. The Services Menu</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.6. Mac OS X's Unix Development Tools</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

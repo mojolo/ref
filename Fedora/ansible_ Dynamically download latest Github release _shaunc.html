@@ -1,0 +1,87 @@
+<!DOCTYPE html> <html lang=en><!--
+ Page saved with SingleFile 
+ url: https://shaunc.com/blog/article/ansible-dynamically-download-the-latest-release-of-a-github-project~-AVrASM2znGI 
+ saved date: Mon Jul 17 2023 11:03:44 GMT-0700 (Pacific Daylight Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>.jfk-bubble.gtx-bubble,.captcheck_answer_label>input+img,span#closed_text>img[src^="https://www.gstatic.com/images/branding/googlelogo"],span[data-href^="https://www.hcaptcha.com/"]>#icon,#bit-notification-bar-iframe,::-webkit-calendar-picker-indicator{filter:invert(100%) hue-rotate(180deg) contrast(90%)!important}:root{--darkreader-neutral-background:#131516;--darkreader-neutral-text:#d8d4cf;--darkreader-selection-background:#004daa;--darkreader-selection-text:#e8e6e3}html{background-color:#181a1b!important}html{color-scheme:dark!important}html,body{background-color:#181a1b}html,body{border-color:#736b5e;color:#e8e6e3}a{color:#3391ff}::placeholder{color:#b2aba1}::-webkit-scrollbar{background-color:#202324;color:#aba499}::-webkit-scrollbar-thumb{background-color:#454a4d}::-webkit-scrollbar-corner{background-color:#181a1b}*{scrollbar-color:#454a4d #202324}::selection{background-color:#004daa!important;color:#e8e6e3!important}::-moz-selection{background-color:#004daa!important;color:#e8e6e3!important}</style>
+<meta name=description content="How to use get_url to automatically find and download the newest release of a GitHub project">
+<meta name=robots content=index,follow>
+<link rel=canonical href=https://shaunc.com/blog/article/ansible-dynamically-download-the-latest-release-of-a-github-project~-AVrASM2znGI><meta name=darkreader content=721ee16378e34705b20edb346b1ebbce><style class="darkreader darkreader--override" media=screen>::placeholder{opacity:0.5!important}</style>
+<style>body{font:normal small Verdana,Arial,Helvetica,sans-serif;font-weight:400;font-size:small;margin:0px}a{color:#2952a3}a[href*="//"]:not([href*="shaunc.com"]){background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAAAFVBMVEVmmcwzmcyZzP8AZswAZv////////9E6giVAAAAB3RSTlP///////8AGksDRgAAADhJREFUGFcly0ESAEAEA0Ei6/9P3sEcVB8kmrwFyni0bOeyyDpy9JTLEaOhQq7Ongf5FeMhHS/4AVnsAZubxDVmAAAAAElFTkSuQmCC)right center no-repeat;padding-right:13px}code,pre{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;font-size:95%;line-height:1.45;font-weight:normal;color:#222222;background:#ffffff;white-space:pre}code{display:inline-block}.article{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";font-weight:400;font-style:normal;font-size:1.0rem;-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;padding:12px;border:2px solid;border-color:#f2f2f2;color:black;-o-text-overflow:ellipsis;text-overflow:ellipsis;background:#fdfdfd}.right-box{text-align:right;width:100%;display:inline-block}.muted-blue{font-stretch:condensed;color:#2952a3}a.muted-blue:hover{color:red}.bigly{font-size:115%}.italic{font-style:italic;font-stretch:condensed}.smaller{font-size:85%}.layout-row:after{content:"";display:table;clear:both}.layout-column{float:left;box-sizing:border-box}.layout-center{width:50%}code[class*="language-"],pre[class*="language-"]{color:black;background:none;text-shadow:0 1px white;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;font-size:95%;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*="language-"]::-moz-selection,pre[class*="language-"] ::-moz-selection,code[class*="language-"]::-moz-selection,code[class*="language-"] ::-moz-selection{text-shadow:none;background:#b3d4fc}pre[class*="language-"]::selection,pre[class*="language-"] ::selection,code[class*="language-"]::selection,code[class*="language-"] ::selection{text-shadow:none;background:#b3d4fc}pre[class*="language-"]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*="language-"],pre[class*="language-"]{background:#ffffff}:not(pre)>code[class*="language-"]{padding:.1em;border-radius:.3em;white-space:normal}</style>
+<meta property=og:site_name content="Shaun's Blog">
+<meta property=og:locale content=en_US>
+<meta property=og:type content=article>
+<meta property=og:article:published_time content=2023-01-13>
+<meta property=og:title content="Ansible: Dynamically download the latest release of a GitHub project - Shaun's Blog">
+<meta property=og:description content="How to use get_url to automatically find and download the newest release of a GitHub project">
+<meta property=og:url content=https://shaunc.com/blog/article/ansible-dynamically-download-the-latest-release-of-a-github-project~-AVrASM2znGI>
+<meta property=og:image content=https://shaunc.com/blog/icons/article-md.png>
+<meta property=og:image:secure_url content=https://shaunc.com/blog/icons/article-md.png>
+<meta property=og:image:type content=image/png>
+<meta property=og:image:width content=299>
+<meta property=og:image:height content=273>
+<meta property=og:image:alt content="A printed page with a bookmark">
+<meta name=twitter:card content=summary>
+<meta name=twitter:title content="Ansible: Dynamically download the latest release of a GitHub project - Shaun's Blog">
+<meta name=twitter:description content="How to use get_url to automatically find and download the newest release of a GitHub project">
+<meta name=twitter:site content=@parseword>
+<meta name=twitter:creator content=@parseword>
+<meta name=twitter:image content=https://shaunc.com/blog/icons/article-md.png>
+<title>Ansible: Dynamically download the latest release of a GitHub project - Shaun's Blog</title>
+<link rel=icon type=image/x-icon href="data:image/x-icon;base64,AAABAAEAEBAAAAEACABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAA27y+AKRUWACxbG8Aun2BANStrwCqYWUA59LTAKJSVgDFk5YAsGptAKlfYwC3d3oA2bi6AKRUWQChUFQAxZGUAN7BwgCoXWEAqV1hANi2uADlzs8ArWZpAKFOUgCnW18AqFtfAOPMzQDkzM0ArmhsAKJQVQCfTFAAplldAKdZXQDJmp0Aun6BAOnX2ACnW2AAv4eJAOLIyQCgTFEAxZSWAK1kaADGlJYA3L2/AOnV1gCnWV4AqmBjAKRVWQDgxscAq2JmALh6fQDbu70Asm9zAL+HigDMn6EA06yuAODExQCqYGQA2rm7AKVVWgDhxsgAolFVAK9pbACjU1gAmkJGAL2DhgDKm50At3h8AKtgZQDEkJMA0aiqAKhcYAC1dHcAr2ltAKBNUQCtZWgAplpeALNydQCnWl4A1rO1AKFPVACiT1QA3sDCAJ9LTwDbvL0AplhcALyBhQCnWl8ApVZaAKxjZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGPAAAAAAAAAAAAAAAAAAHU00AAAAAAAAAAAAAAAAAADFZAAAAAAAAAAAAAAAAAABDTisROlIUBwAVAAAAAAAAKAIgUQ5YPxkGAlYAAAAAAAVQAyVHTlU+Ci9JAAAAAAAwHSpUCCI6WTo5EgAAAAAAAE4yOggQOko6SAI4AAAAAABJOTMuDE89OjUnNwAAAAAAQQ8hQRNBWEUhHgkAAAAAAEIPJElMVR80HC9DAAAAAAANVSkWVS1OOwtXSwAAAAAAAAAAACYbGhssRBgjAAAAAAAAAAAAAAAAAAQXAQAAAAAAAAAAAAAAAAA3QDYAAAAAAAAAAAAAAAAAAFQsAM//AACP/wAAz/8AAMAvAADABwAAwAcAAMAHAADgAwAA4AMAAOADAADgAwAA4AMAAP4BAAD/8QAA//EAAP/5AAA="><meta http-equiv=content-security-policy content="default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;"><style>img[src="data:,"],source[src="data:,"]{display:none!important}</style></head>
+ 
+ <body>
+ 
+ 
+ 
+<header style=display:none!important>
+ 
+</header>
+<hr style=display:none!important>
+<div class=right-float style=display:none!important>
+ 
+</div>
+<div class=layout-row>
+<div class="layout-column layout-left" style=display:none!important>
+ 
+ 
+ 
+ 
+ — 
+ 
+</div> 
+<div class="layout-column layout-center">
+<article>
+ <h2 class=muted-blue>Ansible: Dynamically download the latest release of a GitHub project</h2>
+ <div class="italic bigly">
+ Posted <strong>January 13, 2023</strong>
+ by shaun </div>
+ <div class="right-box muted-blue italic smaller">
+ [<a class="muted-blue italic" href=https://shaunc.com/blog/article/ansible-dynamically-download-the-latest-release-of-a-github-project~-AVrASM2znGI>permalink</a>]
+ </div>
+ <div class=article>
+ <p>Recently I was writing an Ansible playbook where, in order to make use of certain features, I needed cURL 7.77.0 or newer to be installed on the remote managed nodes. The playbook was targeting CentOS 7, which doesn't get much in the way of software updates anymore, so I knew I was going to have to download and compile a suitable cURL from within the Ansible playbook. No problem — except what version should I install?</p>
+<p>Initially I was going to hardcode the URL to the latest release, as of the time I wrote the playbook. I got to thinking, though: what happens if some future vulnerability is discovered in that version of cURL? Am I going to remember to update my playbook to point at a newer release? Do I want the hassle?</p>
+<p>Wouldn't it be great if the Ansible playbook could figure out the latest version of cURL all by itself, and download that?</p>
+<p>Turns out, <em>it can</em>, so long as the GitHub project publishes releases, which cURL does. GitHub has an <a target=_blank rel="noopener noreferrer" href=https://docs.github.com/en/rest>API</a>, and one of its public endpoints happens to be the release manifest for the latest version of a project. This endpoint returns a JSON object full of details about the release. For example, this URL will always return the manifest for the newest release of cURL:</p>
+<p><a target=_blank rel="noopener noreferrer" href=https://api.github.com/repos/curl/curl/releases/latest>https://api.github.com/repos/curl/curl/releases/latest</a></p>
+<p>The RESTful API follows a predictable pattern. Just adjust the username and repository name in the URL to get the latest release manifest for any repository.</p>
+<h2>Use get_uri to download the latest release</h2>
+<p>Given the GitHub API URL, Ansible can automatically load the release data and parse out the link to download the newest distribution file. This can be done in a single <code>ansible.builtin.get_url</code> step:</p>
+<pre class=language-yaml><code class=language-yaml>- name: Download the latest cURL distribution
+  ansible.builtin.get_url:
+    url: "{{ lookup('url', 'https://api.github.com/repos/curl/curl/releases/latest', split_lines=false) | regex_search('browser_download_url.*(https://(.*?).tar.gz)', '\\1') | first }}"
+    dest: '{{ build_directory }}/curl-latest.tar.gz'
+    owner: root
+    group: root</code></pre>
+<p>Here, the <a target=_blank rel="noopener noreferrer" href=https://docs.ansible.com/ansible/latest/collections/ansible/builtin/url_lookup.html>ansible.builtin.url</a> lookup is used to fetch the GitHub API URL's contents inline. The <code>split_lines=false</code> parameter tells Ansible to return the URL contents as a single string, instead of a list of individual lines.</p>
+<p>The URL contents are then passed to the <a target=_blank rel="noopener noreferrer" href=https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_filters.html#searching-strings-with-regular-expressions>regex_search</a> filter. Every file in a GitHub release manifest contains a <code>browser_download_url</code> element, and in this case I was looking for the tar.gz file. Adjust the regex depending on the target GitHub repo and its distribution file formats.</p>
+<p>The results of <code>regex_search</code> are passed to the <code>first</code> filter, returning the first element: here, the outermost capture group from the regex, which contains the full URL of the .tar.gz file for the newest cURL release.</p>
+<p>Finally, that URL is passed to the <a target=_blank rel="noopener noreferrer" href=https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html>ansible.builtin.get_url</a> <code>url</code> parameter.</p>
+ 
+ 
+ 
+ 
+ </div>
+</article>
+</div> 
+</div> 

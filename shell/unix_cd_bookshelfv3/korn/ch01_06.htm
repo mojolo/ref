@@ -1,0 +1,991 @@
+<html><head><title>Files (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch01_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">1.6. Files</h2>
+
+<p>
+<a name="IXT-1-287002" />
+
+Although arguments to commands aren't always files, files
+are the most important types of "things" on any Unix system.
+A file can contain any kind of information, and there
+are different types of files. Four types are
+by far the most important:
+</p>
+
+<dl>
+<dt><i>Regular files</i></dt>
+<dd>
+<a name="IXT-1-287003" />
+<a name="IXT-1-287004" />
+
+Also called <em class="emphasis">text files</em></tt>;
+these contain readable characters.
+For example, this book was created from several regular files
+that contain the text of the book plus human-readable
+DocBook XML formatting instructions.
+</p></dd>
+
+
+<dt><i>Executable files</i></dt>
+<dd>
+<a name="IXT-1-287005" />
+
+Also called programs; these are invoked
+as commands. Some can't be read by humans;
+others -- the shell scripts that we'll examine in this book -- are
+just special text files. The shell itself
+is a (not human-readable) executable file called <em class="emphasis">ksh</em>.
+</p></dd>
+
+
+<dt><i>Directories</i></dt>
+<dd>
+<a name="korn2-IDXTERM-81" />
+
+
+Like folders that contain
+other files -- possibly other directories (called
+<em class="emphasis">subdirectories</em></tt>).
+</p></dd>
+
+
+<dt><i>Symbolic links</i></dt>
+<dd>
+<a name="IXT-1-287006" />
+
+A kind of "shortcut" from
+one place in the system's directory hierarchy to another.
+We will see later in this chapter how symbolic links can affect
+interactive use of the Korn shell.
+</p></dd>
+
+</dl>
+
+<a name="korn2-CHP-1-SECT-6.1" /><div class="sect2">
+<h3 class="sect2">1.6.1. Directories</h3>
+
+<p>
+Let's review the most important concepts about directories.
+The fact that directories can contain other directories leads
+to a hierarchical structure, more popularly
+known as a <em class="emphasis">tree</em>, for all files on a Unix system.
+<a href="ch01_06.htm#korn2-CHP-1-FIG-2">Figure 1-2</a>
+shows part of a typical directory tree;
+ovals are regular files and rectangles are directories.
+<a name="IXT-1-287007" />
+</p>
+
+
+<a name="korn2-CHP-1-FIG-2" /><div class="figure"><img src="figs/ksh2.0102.gif" alt="Figure 1-2" width="434" /></div><h4 class="objtitle">Figure 1-2. A tree of directories and files</h4>
+
+<p>
+The top of the tree is a directory called "root"
+that has no name on the system.<a href="#FOOTNOTE-7">[7]</a>
+All files can be named by expressing their location on the
+system relative to root; such names are built by listing
+all the directory names (in order from root), separated
+by slashes (<tt class="literal">/</tt>), followed by the file's name. This way
+of naming files is called a <em class="emphasis">full</em> (or <em class="emphasis">absolute</em>)
+<em class="emphasis">pathname</em>.
+<a name="IXT-1-287008" />
+<a name="IXT-1-287009" />
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-7" /><p> [7]
+Most introductory Unix tutorials say that root has the
+name <tt class="literal">/</tt>.
+We stand by this alternative explanation because it is more
+logically consistent.
+</p>
+</blockquote>
+
+<p>
+For example, say
+there is a file called <em class="emphasis">memo</em> in the directory
+<em class="emphasis">fred</em>, which is in the directory <em class="emphasis">home</em>, which
+is in the root directory. This file's full pathname
+is <em class="emphasis">/home/fred/memo</em>.
+</p>
+
+<a name="korn2-CHP-1-SECT-6.1.1" /><div class="sect3">
+<h3 class="sect3">1.6.1.1. The working directory</h3>
+
+<p>
+<a name="IXT-1-287010" />
+<a name="IXT-1-287011" />
+
+Of course, it's annoying to have to use full pathnames
+whenever you need to specify a file, so there is also the
+concept of the <em class="emphasis">working directory</em>
+(sometimes called the <em class="emphasis">current directory</em>), which is the
+directory you are "in" at any given time. If you give a
+pathname with no leading slash, the
+location of the file is worked out relative
+to the working directory. Such pathnames are called
+<em class="emphasis">relative</em> pathnames; you'll use them much more often
+than full pathnames.
+<a name="IXT-1-287012" />
+
+</p>
+
+<p>
+<a name="IXT-1-287013" />
+When you log in to the system, your working directory is
+initially set to a special directory called your <em class="emphasis">home</em>
+(or <em class="emphasis">login</em>) directory. System administrators often
+set up the system so that everyone's home directory name
+is the same as their login name, and all home directories
+are contained in a common directory under root.
+It is now common practice to use <em class="emphasis">/home</em> as the
+top directory for home directories.
+</p>
+
+
+<p>
+<a name="IXT-1-287014" />
+
+For example, <em class="emphasis">/home/billr</em> is a typical home directory.
+If this is your working directory
+and you give the command <tt class="literal">lp memo</tt>, the system looks
+for the file <em class="emphasis">memo</em> in <em class="emphasis">/home/billr</em>. If you have
+a directory called <em class="emphasis">bob</em> in your home directory, and it
+contains the file <em class="emphasis">statrpt</em>, you can print <em class="emphasis">statrpt</em> with
+the command <tt class="literal">lp bob/statrpt</tt>.
+</p>
+</div>
+
+<a name="korn2-CHP-1-SECT-6.1.2" /><div class="sect3">
+<h3 class="sect3">1.6.1.2. Tilde notation</h3>
+
+<p>
+<a name="IXT-1-287015" />
+<a name="IXT-1-287016" />
+<a name="IXT-1-287017" />
+
+As you can well imagine, home directories occur often in
+pathnames. Although many systems are organized so that all
+home directories have a common parent (such as <em class="emphasis">/home</em>),
+you should not have to rely on that being
+the case, nor should you even have to know what the absolute
+pathname of someone's home directory is.
+</p>
+
+<p>
+Therefore, the Korn shell has a way of abbreviating home
+directories: just precede the name of the user with a tilde (<tt class="literal">~</tt>).
+For example, you could refer to the file <em class="emphasis">memo</em> in user
+fred's home directory as <em class="emphasis">~fred/memo</em>.
+This is an absolute pathname, so it doesn't matter
+what your working directory is when you use it. If fred's home
+directory has a subdirectory called <em class="emphasis">bob</em> and the file
+is in there instead, you can use <em class="emphasis">~fred/bob/memo</em> as its name.
+</p>
+
+<p>
+Even more conveniently, a tilde by itself refers to your own home
+directory. You can refer to a file called <em class="emphasis">notes</em> in your home
+directory as <em class="emphasis">~/notes</em> (note the
+difference between that and <em class="emphasis">~notes</em>, which the shell would
+try to interpret as user notes's
+home directory). If <em class="emphasis">notes</em> is in your <em class="emphasis">bob</em> subdirectory,
+you can call it <em class="emphasis">~/bob/notes</em>. This notation is
+handiest when your working directory is not in your home directory
+tree, e.g., when it's some "system" directory like <em class="emphasis">/tmp</em>.
+<a name="IXTR3-30" />
+<a name="IXTR3-31" />
+</p>
+</div>
+
+<a name="korn2-CHP-1-SECT-6.1.3" /><div class="sect3">
+<h3 class="sect3">1.6.1.3. Changing working directories</h3>
+
+<p>
+<a name="IXT-1-287018" />
+<a name="IXT-1-287019" />
+
+If you want to change your working directory, use the command <em class="emphasis">cd</em>.
+If you don't remember your working directory, the command
+<em class="emphasis">pwd</em> tells the shell to print it.
+</p>
+
+<p>
+
+<em class="emphasis">cd</em> takes as argument the name of the directory you
+want to become your working directory. It can be relative
+to your current directory, it can contain a tilde, or it can
+be absolute (starting with
+a slash). If you omit the argument, <em class="emphasis">cd</em> changes to your
+home directory (i.e., it's the same as <tt class="literal">cd ~</tt>).
+</p>
+
+<p>
+<a href="ch01_06.htm#korn2-CHP-1-TABLE-1">Table 1-1</a>
+gives some sample <em class="emphasis">cd</em> commands. Each command
+assumes that your working directory is <em class="emphasis">/home/billr</em>
+just before the command is executed, and that your directory structure looks like
+<a href="ch01_06.htm#korn2-CHP-1-FIG-2">Figure 1-2</a>.
+</p>
+
+<a name="korn2-CHP-1-TABLE-1" /><h4 class="objtitle">Table 1-1. Sample cd commands</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Command</th>
+<th>New working directory</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">cd bob</tt></td>
+<td><em class="emphasis">/home/billr/bob</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd bob/dave</tt></td>
+<td><em class="emphasis">/home/billr/bob/dave</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd ~/bob/dave</tt></td>
+<td><em class="emphasis">/home/billr/bob/dave</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd /usr/lib</tt></td>
+<td><em class="emphasis">/usr/lib</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd ..</tt></td>
+<td><em class="emphasis">/home</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd ../pete</tt></td>
+<td><em class="emphasis">/home/pete</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd ~pete</tt></td>
+<td><em class="emphasis">/home/pete</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd billr pete</tt></td>
+<td><em class="emphasis">/home/pete</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">cd illr arry</tt></td>
+<td><em class="emphasis">/home/barry</em></td>
+</tr>
+
+
+</table><p>
+
+<p>
+
+<a name="IXT-1-287020" />
+<a name="IXT-1-287021" />
+
+The first four are straightforward. The next two use a special
+directory called <tt class="literal">..</tt> (two dots, pronounced "dot dot"),
+which means "parent of this directory."
+Every directory has one of these; it's a
+universal way to get to the directory above the current
+one in the hierarchy -- which is called the parent directory.
+</p>
+
+<p>
+<a name="IXT-1-287022" />
+<a name="IXT-1-287023" />
+
+Each directory also has the special directory <tt class="literal">.</tt>
+(single dot), which just means "this directory."
+Thus, <tt class="literal">cd .</tt> effectively does nothing.
+Both <tt class="literal">.</tt> and <tt class="literal">..</tt> are actually
+special hidden files
+in each directory that point to the directory itself and to its
+parent<?troff .ne 10?> directory, respectively. The root directory is its own parent.
+</p>
+
+<p>
+The last two examples in the table use a new form of the <em class="emphasis">cd</em>
+command, which is not included in most Bourne shells. The
+form is <tt class="literal">cd</tt> <em class="replaceable"><tt>old new</tt></em>. It takes the full pathname of
+the current working directory and tries to find the string
+<em class="emphasis">old</em> in it. If it finds the string,
+it substitutes <em class="emphasis">new</em>
+and changes to the resulting directory.
+</p>
+
+<p>
+In the first of the
+two examples, the shell substitutes <em class="emphasis">pete</em> for <em class="emphasis">billr</em> in the
+current directory name and makes the result the new current
+directory. The last example shows that the substitution need
+not be a complete filename: substituting <em class="emphasis">arry</em> for <em class="emphasis">illr</em>
+in <em class="emphasis">/home/billr</em> yields <em class="emphasis">/home/barry</em>.
+(If the <em class="emphasis">old</em> string can't be found in the current directory
+name, the shell prints an error message.)
+</p>
+
+<p>
+<a name="IXT-1-287024" />
+Another feature of the Korn shell's <em class="emphasis">cd</em> command is
+the form <tt class="literal">cd -</tt>, which changes to whatever directory you
+were in before the current one. For example, if you start out
+in <em class="emphasis">/usr/lib</em>, type <tt class="literal">cd</tt>
+without an argument
+to go to your home directory, and then type
+<tt class="literal">cd -</tt>, you will
+be back in <em class="emphasis">/usr/lib</em>.
+</p>
+</div>
+
+<a name="korn2-CHP-1-SECT-6.1.4" /><div class="sect3">
+<h3 class="sect3">1.6.1.4. Symbolic links to directories</h3>
+
+<p>
+<a name="korn2-IDXTERM-103" />
+
+Modern Unix systems provide <em class="emphasis">symbolic links</em>.
+Symbolic links (sometimes called <em class="emphasis">soft links</em>)
+provide a kind of "shortcut" to files in a different
+part of the system's file hierarchy.  You can make a symbolic link to either a file or
+a directory, using either full or relative pathnames.  When you access a file or
+directory via a symbolic link, Unix "follows the link" to the real
+file or directory.
+</p>
+
+<p>
+Symbolic links to directories can generate surprising behavior.
+To explain why, let's start by assuming that you're using the regular Bourne shell,
+<em class="emphasis">sh</em>.<a href="#FOOTNOTE-8">[8]</a>
+Now,
+suppose that we and user fred are working together on a project,
+and the primary directory for the project is under his home directory,
+say <em class="emphasis">/home/fred/projects/important/wonderprog</em>.
+That's a fairly long pathname to have to type, even if using the tilde notation
+(which we can't in the Bourne shell, but that's another story).
+To make life easier, let's create a symbolic link to the <em class="emphasis">wonderprog</em>
+directory in our home directory:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-8" /><p> [8]
+If you have a system where the Korn shell is installed as <em class="emphasis">/bin/sh</em>,
+this example won't work.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>sh</b></tt>                     <i class="lineannotation">Use the Bourne shell</i>
+$ <tt class="userinput"><b>cd</b></tt>                     <i class="lineannotation">Make sure we're in our home directory</i>
+$ <tt class="userinput"><b>pwd</b></tt>                    <i class="lineannotation">Show where we are</i>
+/home/billr
+<i class="lineannotation">Create the symbolic link</i>
+$ <tt class="userinput"><b>ln -s /home/fred/projects/important/wonderprog wonderprog</b></tt>
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+<p>
+Now, when we type <tt class="literal">cd wonderprog</tt>, we end up in
+<em class="emphasis">/home/fred/projects/important/wonderprog</em>:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cd wonderprog</b></tt>
+$ <tt class="userinput"><b>pwd</b></tt>
+/home/fred/projects/important/wonderprog
+</pre></blockquote>
+</p>
+
+<p>
+After working for a while adding important new features<a href="#FOOTNOTE-9">[9]</a>
+to <em class="emphasis">wonderprog</em>,
+we remember that we need to update the <em class="emphasis">.profile</em> file in our home directory.
+No problem: just <em class="emphasis">cd</em> back there and start work on the file, by
+looking at it first with <em class="emphasis">more</em>.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-9" /><p> [9]
+"Important new features" are those that the marketing department wants,
+whether or not the customers actually need them.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cd ..</b></tt>                <i class="lineannotation">Go back up one level</i>
+$ <tt class="userinput"><b>more .profile</b></tt>        <i class="lineannotation">Look at .profile</i>
+.profile: No such file or directory
+</pre></blockquote>
+</p>
+
+<p>
+What happened?
+The <tt class="literal">cd ..</tt> didn't take us back the way we came.  Instead, it
+went up one level in the <em class="emphasis">physical</em> filesystem hierarchy:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>pwd</b></tt>
+/home/fred/projects/important
+</pre></blockquote>
+</p>
+
+<p>
+This is the "gotcha" with symbolic links; the logical view of the filesystem
+hierarchy presented by a symbolic link to a directory breaks down to the underlying
+physical reality when you <em class="emphasis">cd</em> to the parent directory.
+</p>
+
+<p>
+The Korn shell works differently.  It understands symbolic links and, by default,
+always presents you with a logical view of the filesystem.
+Not only is <em class="emphasis">cd</em> built into the shell, but so is <em class="emphasis">pwd</em>.
+Both commands accept the same two options: <em class="emphasis">-L</em>, to perform logical
+operations (the default), and <em class="emphasis">-P</em>, to perform the operations
+on the actual directories.
+Let's start over in the Korn shell:
+</p>
+
+<p>
+<blockquote><pre class="code">
+$ <tt class="userinput"><b>cd wonderprog ; pwd</b></tt>                          <i class="lineannotation">cd through the symbolic link</i>
+/home/billr/wonderprog                         <i class="lineannotation">Answer is logical location</i>
+$ <tt class="userinput"><b>pwd -P</b></tt>                                       <i class="lineannotation">What is the physical location?</i>
+/home/fred/projects/important/wonderprog       <i class="lineannotation">Answer is physical location</i>
+$ <tt class="userinput"><b>cd .. ; pwd</b></tt>                                  <i class="lineannotation">Go back up one level</i>
+/home/billr                                    <i class="lineannotation">Traversal was again logical</i>
+
+$ <tt class="userinput"><b>cd -P wonderprog; pwd</b></tt>                        <i class="lineannotation">Do a physical cd</i>
+/home/fred/projects/important/wonderprog       <i class="lineannotation">Logical now equals physical</i>
+$ <tt class="userinput"><b>cd .. ; pwd</b></tt>                                  <i class="lineannotation">Go back up up one level</i>
+/home/fred/projects/important                  <i class="lineannotation">Logical still equals physical</i>
+</pre></blockquote>
+</p>
+
+<p>
+As shown,
+the <em class="emphasis">-P</em> option to <em class="emphasis">cd</em> and <em class="emphasis">pwd</em>
+lets you "get around" the Korn shell's default use of logical positioning.
+Most of the time, though, logical positioning is exactly what you want.
+</p>
+
+<?troff .bp?>
+<blockquote><b>NOTE:</b> 
+
+The shell sets the <tt class="literal">PWD</tt> and <tt class="literal">OLDPWD</tt>
+variables correspondingly whenever you do a <em class="emphasis">cd</em>;
+the results of typing <tt class="literal">pwd</tt> and
+<tt class="literal">print $PWD</tt> should always be the same.
+</p>
+</blockquote>
+
+<p>
+As an unrelated note that rounds out the discussion, Unix systems also provide
+"hard links" (or just plain <em class="emphasis">links</em>) to files.  Each name for a file is called
+a link; all hard links refer to the same data on disk, and if the file
+is changed by one name, that change is seen when looking at it from a different name.
+Hard links have certain restrictions, which symbolic links overcome.
+(See <em class="emphasis">ln</em>(1) for more information.)
+However, you cannot make hard links to directories, so symbolic links are all
+that matter for <em class="emphasis">cd</em> and <em class="emphasis">pwd</em>.
+<a name="IXTR3-32" />
+<a name="IXTR3-33" />
+
+</p>
+
+</div>
+</div>
+
+<a name="korn2-CHP-1-SECT-6.2" /><div class="sect2">
+<h3 class="sect2">1.6.2. Filenames and Wildcards</h3>
+
+<p>
+<a name="korn2-IDXTERM-106" />
+<a name="korn2-IDXTERM-107" />
+<a name="IXT-1-287025" />
+<a name="IXT-1-287026" />
+
+
+Sometimes you need to run a command on more than one file at a time.
+The most common example of such a command is
+<em class="emphasis">ls</em>, which lists information about files. In its simplest
+form, without options or arguments, it lists the names of all
+files in the working directory except special hidden files,
+whose names begin with a dot (<tt class="literal">.</tt>).
+<a name="IXT-1-287027" />
+<a name="IXT-1-287028" />
+<a name="IXT-1-287029" />
+
+</p>
+
+<p>
+If you give <em class="emphasis">ls</em> filename arguments,
+it will list those files, which is sort of silly: if your
+current directory has the files <em class="emphasis">bob</em> and <em class="emphasis">fred</em> in it,
+and you type <tt class="literal">ls bob fred</tt>, the system will simply parrot
+the filenames back at you.
+</p>
+
+<p>
+<a name="IXT-1-287030" />
+Actually, <tt class="literal">ls</tt> is more often used with options that tell it
+to list information about the files, like the <em class="emphasis">-l</em>
+(long) option,
+which tells <em class="emphasis">ls</em> to list the file's owner, group, size, time of
+last modification, and other information, or <em class="emphasis">-a</em> (all), which
+also lists the hidden files described above.
+<a name="IXTR3-34" />
+But sometimes you
+want to verify the existence of a certain group of files without
+having to know all of their names; for example, if you design web pages,
+you might want to see which files
+in your current directory have names that end in <em class="emphasis">.html</em>.
+</p>
+
+<p>
+<a name="IXT-1-287031" />
+<a name="IXT-1-287032" />
+
+
+Filenames are so important in Unix that the shell provides a
+built-in way to specify the pattern of a set of filenames
+without having to know all of the names themselves.
+
+You can
+use special characters, called <em class="emphasis">wildcards</em>, in filenames
+to turn them into patterns. We'll show the three basic
+types of wildcards that all major Unix shells support, and we'll
+save the Korn shell's set of advanced wildcard operators for
+<a href="ch04_01.htm">Chapter 4</a>.
+<a href="ch01_06.htm#korn2-CHP-1-TABLE-2">Table 1-2</a> lists the basic wildcards.
+</p>
+
+<a name="korn2-CHP-1-TABLE-2" /><h4 class="objtitle">Table 1-2. Basic wildcards</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Wildcard</th>
+<th>Matches</th>
+</tr>
+
+
+
+<tr>
+<td><tt class="literal">?</tt></td>
+<td>Any single character</td>
+</tr>
+
+<tr>
+<td><tt class="literal">*</tt></td>
+<td>Any string of characters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[</tt><em class="emphasis">set</em><tt class="literal">]</tt></td>
+<td>Any character in <em class="emphasis">set</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">[!</tt><em class="emphasis">set</em><tt class="literal">]</tt></td>
+<td>Any character <em class="emphasis">not</em> in <em class="emphasis">set</em></td>
+</tr>
+
+
+</table><p>
+
+<p>
+
+
+<a name="IXT-1-287033" />
+<a name="IXT-1-287034" />
+
+The <tt class="literal">?</tt> wildcard matches any single character, so that
+if your directory contains the files <em class="emphasis">program.c</em>,
+<em class="emphasis">program.log</em>, and
+<em class="emphasis">program.o</em>, then the expression <tt class="literal">program.?</tt> matches
+<em class="emphasis">program.c</em> and <em class="emphasis">program.o</em> but
+not <em class="emphasis">program.log</em>.
+</p>
+
+<p>
+<a name="IXT-1-287035" />
+<a name="IXT-1-287036" />
+
+The asterisk (<tt class="literal">*</tt>) is more powerful and far more
+widely used; it matches
+any string of characters. The expression
+<tt class="literal">program.*</tt>
+will match all three files in the previous paragraph;
+web designers
+can use the expression
+<tt class="literal">*.html</tt> to match their input files.<a href="#FOOTNOTE-10">[10]</a>
+<a name="IXT-1-287037" />
+<a name="IXT-1-287038" />
+<a name="IXT-1-287039" />
+<a name="IXT-1-287040" />
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-10" /><p> [10]
+MS-DOS, Windows, and OpenVMS users should note that there is
+nothing special about the dot (.) in Unix filenames (aside from the leading dot, which
+"hides" the file); it's just another character. For example,
+<tt class="literal">ls *</tt> lists all files in the current directory; you don't
+need <tt class="literal">*.*</tt> as you do on other systems.
+</p>
+</blockquote>
+
+<p>
+<a href="ch01_06.htm#korn2-CHP-1-TABLE-3">Table 1-3</a>
+should give you a better idea of
+how the asterisk works. Assume that you have the files <em class="emphasis">bob</em>,
+<em class="emphasis">darlene</em>, <em class="emphasis">dave</em>, <em class="emphasis">ed</em>,
+<em class="emphasis">frank</em>, and <em class="emphasis">fred</em>
+in your working directory.
+</p>
+
+<p>
+Notice that <tt class="literal">*</tt> can stand for nothing: both
+<tt class="literal">*ed</tt> and
+<tt class="literal">*e*</tt> match
+<em class="emphasis">ed</em>.
+Also notice that the last example shows what the shell
+does if it can't match anything: it just leaves the string
+with the wildcard untouched.
+<a name="IXTR3-35" />
+<a name="IXTR3-36" />
+</p>
+
+<a name="korn2-CHP-1-TABLE-3" /><h4 class="objtitle">Table 1-3. Using the * wildcard</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Expression</th>
+<th>Yields</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">fr*</tt></td>
+<td><em class="emphasis">frank fred</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">*ed</tt></td>
+<td><em class="emphasis">ed fred</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">b*</tt></td>
+<td><em class="emphasis">bob</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">*e*</tt></td>
+<td><em class="emphasis">darlene dave ed fred</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">*r*</tt></td>
+<td><em class="emphasis">darlene frank fred</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">*</tt></td>
+<td><em class="emphasis">bob darlene dave ed frank fred</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">d*e</tt></td>
+<td><em class="emphasis">darlene dave</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">g*</tt></td>
+<td><em class="emphasis">g*</em></td>
+</tr>
+
+
+</table><p>
+
+<p>
+Files are kept within directories in an unspecified order;
+the shell sorts the results of each wildcard expansion.
+(On some systems, the sorting may be subject to an ordering that is
+appropriate to the system's location, but that is different from
+the underlying machine collating order.
+Unix traditionalists can use <tt class="literal">export LANG=C</tt>
+to get the behavior they're used to.)
+</p>
+
+<p>
+<a name="IXT-1-287041" />
+<a name="IXT-1-287042" />
+
+
+The remaining wildcard is the <em class="emphasis">set</em> construct.
+A set is a list of characters (e.g., <tt class="literal">abc</tt>),
+an inclusive range (e.g., <tt class="literal">a-z</tt>), or some combination of the two.
+If you want the dash character to be part of a list, just
+list it first or last.
+<a href="ch01_06.htm#korn2-CHP-1-TABLE-4">Table 1-4</a>
+(which assumes an ASCII environment)
+should explain things more clearly.
+
+</p>
+
+<a name="korn2-CHP-1-TABLE-4" /><h4 class="objtitle">Table 1-4. Using the set construct wildcards</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Expression</th>
+<th>Matches</th>
+</tr>
+
+
+
+
+<tr>
+<td><tt class="literal">[abc]</tt></td>
+<td><em class="emphasis">a</em>, <em class="emphasis">b</em>, or <em class="emphasis">c</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">[.,;]</tt></td>
+<td>Period, comma, or semicolon</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[-_]</tt></td>
+<td>Dash and underscore</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[a-c]</tt></td>
+<td><em class="emphasis">a</em>, <em class="emphasis">b</em>, or <em class="emphasis">c</em></td>
+</tr>
+
+<tr>
+<td><tt class="literal">[a-z]</tt></td>
+<td>All lowercase letters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[!0-9]</tt></td>
+<td>All non-digits</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[0-9!]</tt></td>
+<td>All digits and exclamation point</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[a-zA-Z]</tt></td>
+<td>All lower- and uppercase letters</td>
+</tr>
+
+<tr>
+<td><tt class="literal">[a-zA-Z0-9_-]</tt></td>
+<td>All letters, all digits, underscore, and dash</td>
+</tr>
+
+
+</table><p>
+
+<p>
+In the original wildcard example, <tt class="literal">program.[co]</tt> and
+<tt class="literal">program.[a-z]</tt> both match
+<em class="emphasis">program.c</em> and <em class="emphasis">program.o</em>,
+but not <em class="emphasis">program.log</em>.
+</p>
+
+<p>
+<a name="IXT-1-287043" />
+<a name="IXT-1-287044" />
+
+
+An exclamation point after the left bracket lets you
+"negate" a set.
+For example, <tt class="literal">[!.;]</tt> matches any character
+except period and semicolon;  <tt class="literal">[!a-zA-Z]</tt> matches any
+character that isn't a letter.
+<a name="IXTR3-37" />
+<a name="IXTR3-38" />
+<a name="IXTR3-39" />
+</p>
+
+<p>
+The range notation is handy, but you shouldn't make too many
+assumptions about what characters are included in a range.
+It's generally safe to use a range for uppercase letters, lowercase
+letters, digits, or any subranges thereof
+(e.g., <tt class="literal">[f-q]</tt>, <tt class="literal">[2-6]</tt>).
+Don't use ranges
+on punctuation characters or mixed-case letters: e.g.,
+<tt class="literal">[a-Z]</tt> and <tt class="literal">[A-z]</tt> should not be trusted to include all of the
+letters and nothing more. The problem is that such ranges are
+not entirely portable between different types of computers.<a href="#FOOTNOTE-11">[11]</a>
+<a name="IXT-1-287045" />
+<a name="IXT-1-287046" />
+<a name="IXT-1-287047" />
+
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-11" /><p> [11]
+Specifically, ranges depend on the character encoding scheme
+your computer uses. The vast majority use ASCII, but IBM
+mainframes use EBCDIC.
+(Actually, on EBCDIC systems, not even the upper- and lowercase
+letters make a contiguous range.)
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-1-287048" />
+
+Another problem is that modern systems support different <em class="emphasis">locales</em>,
+which are ways of describing how the local character set works.
+In most countries, the default locale's character set is different from that
+of plain ASCII.
+In <a href="ch04_01.htm">Chapter 4</a>,
+we show you how to use POSIX bracket expressions to denote
+letters, digits, punctuation,<?troff .ne 10?> and other kinds of characters in
+a portable fashion.
+</p>
+
+<p>
+<a name="IXT-1-287049" />
+<a name="IXT-1-287050" />
+
+The process of matching expressions containing
+wildcards to filenames is called <em class="emphasis">wildcard expansion</em>.
+This is just one of several steps the shell takes when
+reading and processing a command line; another that we have already
+seen is <em class="emphasis">tilde expansion</em>, where tildes are replaced with
+home directories where applicable. We'll see others in
+later chapters, and the full details of the process are
+enumerated in <a href="ch07_01.htm">Chapter 7</a>.
+</p>
+
+<p>
+<a name="IXT-1-287051" />
+<a name="IXT-1-287052" />
+
+However, it's important to
+be aware that the commands that you run see only the
+<em class="emphasis">results</em> of wildcard expansion.
+(Indeed, this is true of all expansions.)
+That is, they just see a list of arguments, and they have
+no knowledge of how those arguments came into being. For example, if you type
+<tt class="literal">ls fr*</tt>
+and your files
+are as described earlier, then the shell expands the command
+line to <tt class="literal">ls fred frank</tt> and invokes the
+command <em class="emphasis">ls</em>
+with arguments <em class="emphasis">fred</em> and <em class="emphasis">frank</em>.
+If you type <tt class="literal">ls g*</tt>,
+then (because there is no match) <em class="emphasis">ls</em> will be given
+the literal string <tt class="literal">g*</tt> and will complain with the error message,
+<tt class="literal">g* not found.</tt><a href="#FOOTNOTE-12">[12]</a>
+(The actual message is likely to vary from system to system.)
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-12" /><p> [12]
+This is different from the C shell's wildcard mechanism, which
+prints an error message and doesn't execute the command at all.
+</p>
+</blockquote>
+
+<p>
+Here is another example that should help you understand
+why this is important.
+<a name="IXT-1-287053" />
+Suppose you are a C programmer.
+This just means that you deal with files whose names end
+in <tt class="literal">.c</tt> (programs, a.k.a. source files), <tt class="literal">.h</tt>
+(header files for programs), and <tt class="literal">.o</tt>
+(object code files that aren't human-readable), as well as
+other files.
+</p>
+
+<p>
+<a name="IXT-1-287054" />
+<a name="IXT-1-287055" />
+
+Let's say you want to list all
+source, object, and header files in your working directory. The command
+<tt class="literal">ls *.[cho]</tt> does the trick.
+The shell expands <tt class="literal">*.[cho]</tt> to
+all files whose names end in a period followed
+by a <tt class="literal">c</tt>, <tt class="literal">h</tt>, or <tt class="literal">o</tt>
+and passes the resulting list to <em class="emphasis">ls</em> as
+arguments.
+</p>
+
+<p>
+In other words, <em class="emphasis">ls</em> will see the filenames
+just as if they were all typed in individually -- but notice
+that we assumed no knowledge of the actual filenames
+whatsoever! We let the wildcards do the work.
+</p>
+
+<p>
+As you gain experience with the shell, reflect on what
+life would be like without wildcards. Pretty miserable,
+we would say.
+</p>
+
+<p>
+A final note about wildcards.  You can set the variable
+<tt class="literal">FIGNORE</tt> to a shell pattern describing
+filenames to <em class="emphasis">ignore</em> during pattern matching.
+(The full pattern capabilities of the shell are described later, in
+<a href="ch04_01.htm">Chapter 4</a>.)
+For example,
+<em class="emphasis">emacs</em> saves backup versions of files by appending a
+<tt class="literal">~</tt> to the original filename.
+Often, you don't need to see these files.
+To ignore them, you
+might add the following to your<?troff .ne 10?> <em class="emphasis">.profile</em> file:
+
+<blockquote><pre class="code">
+export FIGNORE='*~'
+</pre></blockquote>
+</p>
+
+<p>
+As with wildcard expansion, the test against <tt class="literal">FIGNORE</tt>
+applies to all components of a pathname, not just the final one.
+<a name="IXTR3-40" />
+<a name="IXTR3-41" />
+<a name="IXTR3-42" />
+
+</p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch01_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch01_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">1.5. Interactive Shell Use</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">1.7. Input and Output</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

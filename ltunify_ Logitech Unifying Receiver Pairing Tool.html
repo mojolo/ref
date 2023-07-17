@@ -1,0 +1,500 @@
+<!DOCTYPE html> <html><!--
+ Page saved with SingleFile 
+ url: https://lekensteyn.nl/logitech-unifying.html 
+ saved date: Wed Mar 25 2020 05:37:32 GMT+0000 (Coordinated Universal Time)
+--><meta charset=utf-8><style class="darkreader darkreader--user-agent" media=screen>[data-darkreader-inline-color]{color:var(--darkreader-inline-color)!important}html{background-color:#141515!important}html,body{background-color:#141515}html,body{border-color:#484745;color:#c0bcb5}a{color:#3375c2}::placeholder{color:#999489}::selection{background-color:#094a99;color:#d3d0cb}::-moz-selection{background-color:#094a99;color:#d3d0cb}::-webkit-scrollbar{background-color:#171819;color:#a39e94}::-webkit-scrollbar-thumb{background-color:#232424}::-webkit-scrollbar-corner{background-color:#141515}*{scrollbar-color:#232424 #171819}</style>
+<link rel=canonical href=https://lekensteyn.nl/logitech-unifying.html>
+<title>Logitech Unifying for Linux: Reverse Engineering and unpairing tool</title>
+<style>pre{margin-left:2em}code.code{display:block;margin:1em 0 1em 2em}nav h2{font-size:large}</style>
+<style class="darkreader darkreader--override" media=screen>::placeholder{opacity:0.5!important}</style><link type=image/x-icon rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAADS3eb/Zo2r/yZdiP8mXYj/ZYyr/12Gpv/+/v7/kq7D/12Gpv9rkK7/ZIuq/2WMqv/5+/z/y9ji//H19//M2OP/8vX3//H19//F1N//WYOk/1N/of/y9fj/k67D/yZdiP9ji6n/6/D0//L19/9rka7/+vv8/16Hp//x9ff/X4en/9Hd5v9ljKr/Jl2I/yZdiP9dhqb/6e/z/6S7zf8mXYj/+/z9/5SvxP+Fo7z//v7+/8vY4v8mXYj/vs/b/yZdiP/6+/z/+fv8/9Hd5v9ljKr/Yoqp/1iCo//+/v7/pLvN/5awxf8rYIr/KmCK/4qnvv9eh6f/Jl2I/1J+oP8mXYj/ZYyq/16Hpv/+/v7/kq7D//39/v+MqcD/gKC5//7+/v/+/v7/jqrB/3+fuP/+/v7/YYmo/2qQrf9hiaj/Zo2r/1aAov/y9ff/kq7D/yZdiP+KqL//kKzC/5y1yf+AoLn/jarA/4+rwf+etsr/f5+4/2aMq//q7/P/8vX4/2uQrf9dhqb/6u/z/6G5y/8mXYj/mrPH/4Khuv+NqsD/j6vB/522yf+AoLn/j6vB/46qwf/+/v7/l7HG/4WkvP/+/v7/Xoem/1aBov/7/P3/nrbK//39/v+btMj/j6vB//7+/v//////nbbJ/42qwP/+/v7/mrTI/ylfif8mXYj/haO8/6C4y/8mXYj/Jl2I/5exxv/+/v7/jqrB/4Khuv/+/v7//v7+/4+rwf+AoLn//v7+/4uov//+/v7/bpOv/2iOrP/+/v7/oLjL/5exxv/+/v7/jqrB/4+rwf+btMj/gqG6/4+rwf+NqsD/nLXJ/4Cguf8qYIr/hqW9//L1+P9ojqz/VoGi/+zx9P/w9Pf/W4Sl/5iyxv+Dorv/j6vB/46qwf+btMj/gqG6/5Cswv+MqcD/KmCK/5Kuw//t8fX/bpOv/1+Ip/9ahKT/VoCi/2OLqf/7/P3/mLLG/4ypwP/9/f7//v7+/5u0yP+LqL///f3+/5exxv//////ao+t/2OKqf8mXYj/VYCh/yZdiP9Uf6H/oLjK/yZdiP8mXYj/lK/E/42qwP/+/v7/bJGu/2eNq/9RfaD/vc3a//7+/v//////Jl2I/8HR3f8mXYj/wNDc//7+/v+guMv/lK/E//7+/v8pX4n/iae+//H19/9njqz/Jl2I/yZdiP9SfaD/vs7b/1WAof/+/v7/VYCh//7+/v9YgqP/6/D0//H09/9dhqb/Jl2I/5Kuw//t8vX/a5Gu/1J9oP++ztv//v7+///////B0d3//////8HR3f//////YIio/12Gpv9XgaL/ZIuq/5Kuw///////Z46s/2KKqf8mXYj/Jl2I/1J9oP++ztv/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="></head>
+<body>
+<header>
+<h1>Logitech Unifying for Linux: Reverse Engineering and unpairing tool</h1>
+Published on <time datetime=2013-04-25>25 April 2013</time>
+by <a href=mailto:lekensteyn@gmail.com rel=author>Peter Wu</a>
+</header>
+<nav>
+<h2>Contents</h2>
+<ul>
+<li><a href=#introduction>Introduction</a>
+<li><a href=#prepare-qemu>Prepare a QEMU VM for USB tapping</a>
+<li><a href=#usbmon>Monitoring USB with usbmon</a>
+<li><a href=#protocol>Quick overview of protocol</a>
+<li><a href=#logitech-software>What does Logitech’s Unifying software do?</a>
+<li><a href=#ltunify>ltunify: Logitech Unifying tool for Linux</a>
+<li><a href=#no-root>Advanced: do not run as root</a>
+<li><a href=#conclusion>Conclusion</a>
+</ul>
+</nav>
+<h2 id=introduction><a href=#introduction>Introduction</a></h2>
+<p>
+Logitech’s Unifying technology is awesome. Plug the USB receiver in the
+computer, power on your keyboard or mouse and it is ready for use! Well, the
+devices themselves <em>do</em> work, but software to attach new devices to a
+single receiver (or detach bound devices) is only available for Mac OS X and
+Windows. This article shows a way to pair and unpair devices in Linux and
+describe the tools that have been used to accomplish that goal.
+If you are not interested in the technical details, but just want to know how to
+use the pairing tool, see <a href=#ltunify>ltunify: Logitech Unifying tool for
+Linux</a>.
+<p>
+For Linux, Logitech engineer Benjamin Tissoires has <a href=https://lkml.org/lkml/2011/9/22/367>published an unofficial utility</a>
+that is able to pair new devices to a receiver. It does so by writing a magic
+byte sequence to the USB receiver. While the tool seems to work, I did not like
+writing random values to a device without knowing what the side-effects are.
+Besides, I also wanted to be able to bind the wireless device back to the
+original receiver. For these reasons, I started exploring possibilities for
+reverse engineering the protocol used to (un)pair devices.
+<p>
+At first, I looked at the kernel source code, <a href=https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/hid/hid-logitech-dj.c>drivers/hid/hid-logitech-dj.c</a>
+and its related header file <a href=https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/hid/hid-logitech-dj.h>drivers/hid/hid-logitech-dj.h</a>.
+This gave me an idea of how the USB data packet had to be interpreted. While I
+was actively reverse engineering the protocol, I spotted the Logitech protocol
+specification by coincidence. These documents can be found in <a href=https://lekensteyn.nl/files/logitech/>my files directory</a>. Especially
+the <a href=https://lekensteyn.nl/files/logitech/logitech_hidpp10_specification_for_Unifying_Receivers.pdf>Logitech
+HID++ 1.0 specification for Unifying Receivers</a> document was very insightful.
+<p>
+My notes and the source code of the resulting pairing program and reverse
+engineer utilities can be found on <a href=https://git.lekensteyn.nl/ltunify/>https://git.lekensteyn.nl/ltunify/</a>.
+<h2 id=prepare-qemu><a href=#prepare-qemu>Prepare a QEMU VM for USB tapping</a></h2>
+<p>
+Inspired by <a href=http://tequals0.wordpress.com/2011/11/01/reverse-engineering-logitech-unifying-usb-protocol/>Avery’s
+post about reverse engineering the Logitech Unifying USB protocol</a>, I used a
+virtual machine running Windows XP on a Linux host. To inspect the USB traffic,
+the usbmon kernel module was used on Linux. Instead of VirtualBox, I chose for
+<a href=http://www.qemu.org/>QEMU</a> because it is easier to setup for
+running over a LAN network. The remote desktop PC had plenty of RAM to store
+the virtual machine disk image, copies of that disk image and any iso files that
+were needed for the installation of the Windows XP guest system and drivers.
+See <a href=https://en.wikibooks.org/wiki/QEMU/Windows_XP>Wikibooks
+QEMU/Windows XP</a> article for instructions on creating and installing a
+Windows XP virtual machine with QEMU.
+<p>
+Since my VM was running on a remote LAN machine, I had to use VNC for viewing
+the virtual machine interface. A virtual network adapter is also added to the VM
+for downloading Logitech programs. Before you can use the virtual network
+adapter, you need to install <a href=http://www.linux-kvm.org/page/WindowsGuestDrivers/Download_Drivers>Windows
+VirtIO Drivers</a> (this is optional as networking is not really necessary for
+tapping USB).
+<p>
+After creating the virtual machine, unload some kernel modules on the host OS to
+avoid interference with the Windows guest. Then determine the USB device that
+you want to pass to the Windows VM and grant yourself read/write permissions to
+this USB device.
+<pre>remote$ sudo modprobe -vr usbhid hid-logitech-dj
+rmmod /lib/modules/3.5.0-25-generic/kernel/drivers/hid/hid-logitech-dj.ko
+rmmod /lib/modules/3.5.0-25-generic/kernel/drivers/hid/usbhid/usbhid.ko
+remote$ lsusb
+...
+Bus <b>005</b> Device <b>004</b>: ID <b>046d:c52b</b> Logitech, Inc. Unifying Receiver
+...
+remote$ sudo chgrp $USER /dev/bus/usb/<b>005</b>/<b>004</b>
+remote$ qemu-system-i386 -enable-kvm -m 1G -vga std -monitor stdio -vnc :0 -S \
+-device usb-host,hostbus=<b>5</b>,vendorid=0x<b>046d</b>,productid=0x<b>c52b</b> \
+-netdev user,id=qnet0 -device virtio-net,netdev=qnet0 \
+-hda winxp.img
+QEMU 1.4.0 monitor - type 'help' for more information
+(qemu) 
+</pre>
+<aside>
+<em>Added on 18 May 2014</em>:
+Previously, I used <code>-usbdevice host:<b>046d:c52b</b></code> instead of
+<code>-device usb-host</code>, but this is a legacy option that should be
+avoided if possible. The newer <code>usb-host</code> device allows you to
+specify the bus which is useful if you have multiple receivers as I do.
+Tested with 2.0.0. See also the USB pass through hints section in <a href="http://git.qemu-project.org/?p=qemu.git;a=blob;f=docs/usb2.txt;hb=HEAD#l112">docs/usb2.txt</a>
+(located in the source tree of QEMU).
+</aside>
+<p>
+The <code>qemu-system-i386</code> command starts a 32-bit VM. Since the
+<code>-S</code> option was passed, it will not immediately boot the guest OS.
+This allows you to attach a VNC client and watch the boot process. On your local
+machine, connect to the VNC server (<code>192.168.4.2</code> in this example):
+<pre>$ gvncviewer 192.168.4.2:0
+Connected to server
+</pre>
+Continue the virtual machine by issuing the <code>c</code> command in the remote
+qemu shell and your virtual machine should be booted up in a few seconds. You
+are now ready to monitor USB traffic.
+<h2 id=usbmon><a href=#usbmon>Monitoring USB with usbmon</a></h2>
+<p>
+Linux makes it easy to monitor USB traffic with the usbmon kernel module. Avery <a href=http://tequals0.wordpress.com/2011/11/01/reverse-engineering-logitech-unifying-usb-protocol/>
+showed</a> how to utilise <code>/sys/kernel/debug/usb/usbmon/5u</code> to watch
+the USB communication. In order to aid me in analysis of its output, I wrote a
+small AWK script (<a href=https://git.lekensteyn.nl/ltunify/tree/usbmon.awk>usbmon.awk</a>) that
+labels bytes and colors the messages based on their direction (received or
+sent). An example session is shown below where <b>5</b> is the Bus ID from
+<code>lsusb</code>.
+<pre>$ sudo modprobe usbmon
+$ sudo mount -t debugfs none /sys/kernel/debug
+$ sudo cat /sys/kernel/debug/usb/usbmon/5u | usbmon.awk
+<i>(lots of long lines here with a lot of noise)</i>
+</pre>
+<p>
+The above method provides me the needed information, but it is too verbose and
+outputs lots of useless messages. It turns out that the usbmon module also
+provides a more flexible device interface that makes it easier to process
+USB messages. Therefore, I wrote a second tool that uses this interface to
+produce more relevant messages, <a href=https://git.lekensteyn.nl/ltunify/tree/read-dev-usbmon.c>read-dev-usbmon.c</a>.
+Another advantage of this tool is that root privileges become unnecessary after
+setting the appropriate file permissions.
+<pre>$ sudo modprobe usbmon
+$ sudo chmod g+r /dev/usbmon5
+$ sudo chgrp $USER /dev/usbmon5
+$ make read-dev-usbmon
+$ ./read-dev-usbmon /dev/usbmon5
+</pre>
+<p>
+In order to understand the contents of USB messages, I will first provide an
+overview of the protocol before investigating how the Logitech Unifying software
+works.
+<h2 id=protocol><a href=#protocol>Quick overview of protocol</a></h2>
+<p>
+The messages that are passed in the USB protocol are pretty simple. Some
+messages are so-called notifications. To enable these notifications, a special
+device register must be written. Other messages written to the USB receiver will
+yield a message that describe the result of the requested action.
+Basically there is a three bytes header followed by a payload that has to
+interpreted according to the message type:
+<ul>
+<li>The first byte encodes the message type. <code>0x10</code> identifies a
+short message with a payload length of 4 bytes. A long message is identified by
+<code>0x11</code> and has a payload length of 17.
+<li>The second byte is known as the device index. <code>0xFF</code> means that
+the message is related to the receiver, values <code>0x01</code> to
+<code>0x06</code> identify paired devices one to six.
+<li>The third byte in the header gives meaning to the bytes following the header
+and is called “Report Sub ID” or “Message Sub ID” in Logitech documents. I just
+call these <em>message types</em>.
+</ul>
+<p>
+Messages can be sent from software to the receiver, or received from the
+receiver to the software. The meaning of these messages do not have to be the
+same. The four most important message types are listed below. These messages
+can query or change a <em>device register</em>.
+<ul>
+<li><code>0x80</code> - Short message to set the contents of a register (three
+bytes available for the value to set).
+<li><code>0x81</code> - Short message to query the contents of a register (three
+bytes available for parameters).
+<li><code>0x82</code> - Long message to set the contents of a register (16 bytes
+available for the value).
+<li><code>0x83</code> - Short message to query the contents of a register that
+yields a long message as result (three bytes available for parameters).
+</ul>
+<p>
+Sending a message to the receiver always generates another message. If the
+command failed (for example, if the message type or register was invalid), an
+error message will be delivered containing the message type, the register
+address and an error code followed by <code>0x00</code>.
+<p>
+The exact parameters vary for device registers, refer to the <a href=https://git.lekensteyn.nl/ltunify/tree/registers.txt>registers.txt file in the
+git repo</a> for an overview of these registers. As an example, consider the
+<em>Enable HID++ Notifications</em> register. Reading this short register will
+show all enabled notifications, writing this register will control which
+notifications will be received.
+<p>
+The <span style=color:orange;--darkreader-inline-color:#cc9633 data-darkreader-inline-color>short</span> message, directed at the <span style=color:red;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>receiver</span> should <span style=color:green;--darkreader-inline-color:#71cb6a data-darkreader-inline-color>query a
+register with few parameters</span>, namely the <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>Enable
+HID++ Notifications</span> register. No parameters are necessary (<code>00 00
+00</code>) and the message looks like:
+<code class=code>
+<span style=color:orange;--darkreader-inline-color:#cc9633 data-darkreader-inline-color>10</span>
+<span style=color:red;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>FF</span>
+<span style=color:green;--darkreader-inline-color:#71cb6a data-darkreader-inline-color>81</span>
+<span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>00</span>
+00 00 00
+</code>
+<p>
+After writing this message to the USB receiver, you will receive a <span style=color:orange;--darkreader-inline-color:#cc9633 data-darkreader-inline-color>short</span> message from the <span style=color:red;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>USB
+receiver</span> describing <span style=color:green;--darkreader-inline-color:#71cb6a data-darkreader-inline-color>the response to the
+query</span> for the <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>Enable HID++ Notifications</span>
+register. The message could look like:
+<code class=code>
+<span style=color:orange;--darkreader-inline-color:#cc9633 data-darkreader-inline-color>10</span>
+<span style=color:red;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>FF</span>
+<span style=color:green;--darkreader-inline-color:#71cb6a data-darkreader-inline-color>81</span>
+<span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>00</span>
+00 <b>01</b> 00
+</code>
+Note the <b>01</b> value above, it means that the software will receive
+notifications whenever a device arrives or disappears. (See <a href=https://lekensteyn.nl/files/logitech/logitech_hidpp10_specification_for_Unifying_Receivers.pdf>Section
+4.1 of the Logitech HID++ 1.0 specification (pdf)</a> for other possible values.)
+<p>
+Another example, the magic sequence provided by Benjamin Tissoires's pairing
+program:
+<code class=code>
+<span style=color:orange;--darkreader-inline-color:#cc9633 data-darkreader-inline-color>10</span>
+<span style=color:red;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>FF</span>
+<span style=color:green;--darkreader-inline-color:#71cb6a data-darkreader-inline-color>80</span>
+<span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>B2</span>
+01 00 00
+</code>
+It is a <span style=color:orange;--darkreader-inline-color:#cc9633 data-darkreader-inline-color>short</span> message that <span style=color:green;--darkreader-inline-color:#71cb6a data-darkreader-inline-color>sets the value</span> of the <span style=color:red;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>USB
+receiver</span> register <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>Device Connection and
+Disconnection (Pairing)</span> to <code>01 00 00</code>. These parameters open
+the receiver for new devices (<code>01</code>) for a default period of 30
+seconds (the last <code>00</code>). See <a href=https://lekensteyn.nl/files/logitech/logitech_hidpp10_specification_for_Unifying_Receivers.pdf>Section
+4.3 of the Logitech HID++ 1.0 specification</a> for a detailed description of
+this message type.
+<h2 id=logitech-software><a href=#logitech-software>What does Logitech’s Unifying software do?</a></h2>
+<p>
+Now that you know the basics of the Logitech HID++ protocol and with the Big
+Brother environment being ready, we can proceed with looking at the behavior of
+<a href=http://www.logitech.com/support/unifying rel=nofollow>Logitech
+Unifying software</a> in the virtual machine using the read-dev-usbmon tool that
+was mentioned in a <a href=#usbmon>previous section about usbmon</a>.
+<p>
+When Logitech’s software is started, it immediately exchanges some messages with
+the receiver. These messages first ask for receiver details (serial, firmware versions,
+etc.) and then allow software to receive device notifications from the receiver.
+Next, similar details are retrieved for all paired devices. (See <a href=https://git.lekensteyn.nl/ltunify/tree/registers.txt>registers.txt</a> for
+detailed steps and an annotated dump.)
+<p>
+Pairing a device is easy and has been explained before. How does Logitech do it?
+Let’s see what the read-dev-usbmon tool shows when no devices are paired and the
+<em>Next</em> button is clicked in the Logitech® Unifying Software:
+<pre><i>Software asks receiver to pair a new device within a timeout of <code>0x3C</code> (60) seconds.</i>
+<span style=color:#ff0000;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>Send</span>     report_id=10 short device=FF RECV type=80 SET_REG
+    reg=B2 DEVICE_PAIRING  params=01 53 3C
+<i>(notification that lock is now open:)</i>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=10 short device=FF RECV type=4A NOTIF_RECV_LOCK_CHANGED
+    params=01 00 00 00
+<i>(feedback that the register was succesfully set:)</i>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=10 short device=FF RECV type=80 SET_REG
+    reg=B2 DEVICE_PAIRING  params=00 00 00
+
+<i>Keyboard is switched on, A <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>Unifying</span> <span style=color:orange;--darkreader-inline-color:#cc9633 data-darkreader-inline-color>keyboard</span> device with product ID <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>2010</span> is deteced.</i>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=10 short device=01 DEV1 type=41 NOTIF_DEVICE_PAIRED
+    params=<span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>04</span> 6<span style=color:orange;--darkreader-inline-color:#cc9633 data-darkreader-inline-color>1</span> <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>10 20</span>
+
+<i>Software requests name of device:</i>
+<span style=color:#ff0000;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>Send</span>     report_id=10 short device=FF RECV type=83 GET_LONG_REG
+    reg=B5 PAIRING_INFO  params=40 00 00 
+<i>(oh, receiver also wants to tell us that receiver is closed for new pairings:)</i>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=10 short device=FF RECV type=4A NOTIF_RECV_LOCK_CHANGED
+    params=00 00 00 00 
+<i>Device responds with name of <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>length 4</span>, namely the UTF-8 string <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>K800</span>:</i>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=11 long  device=FF RECV type=83 GET_LONG_REG
+    reg=B5 PAIRING_INFO  params=40 <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>04</span> <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>4B 38  30 30</span> 00 00  00 00 00 00  00 00 00 00 
+
+<i>Software asks for “extended pairing info”:</i>
+<span style=color:#ff0000;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>Send</span>     report_id=10 short device=FF RECV type=83 GET_LONG_REG
+    reg=B5 PAIRING_INFO  params=30 00 00 
+<i>Device responds with <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>serial number</span> and the <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>location of the power switch</span>:</i>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=11 long  device=FF RECV type=83 GET_LONG_REG
+    reg=B5 PAIRING_INFO  params=30 <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>FB 84 1B  86</span> 1A 40 00  00 <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>07</span> 00 00  00 00 00 00 
+<i>Receiver notifies that pairing has completed, <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>a link had link has been established</span>:</i>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=10 short device=01 DEV1 type=41 NOTIF_DEVICE_PAIRED
+    params=04 <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>A</span>1 10 20 
+
+<i>(more messages that read device firmware/bootloader versions have been omitted)</i>
+</pre>
+<p>
+The key action is making the receiver accept new pairings (just like Benjamins
+pairing tool). The other commands are used to provide feedback, whether a device
+was succesfully paired or not. This was not too difficult to guess. The next,
+more interesting action is unpairing a device. This can be done by pressing the
+<em>Advanced</em> button from the home screen. After pressing that button, it
+can be observed that the software polls repeatedly for status updates (that will
+be ignored in the following annotation). The below messages are communicated
+when pressing the <em>Unpair</em> button:
+<pre><i><span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>Disconnect</span> device number <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>1</span> (the one in device=…):</i>
+    <span style=color:#ff0000;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>Send</span>     report_id=10 short device=FF RECV type=80 SET_REG
+    reg=B2 DEVICE_PAIRING  params=<span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>03</span> <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>01</span> 00 
+
+<span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>Device 1</span> is now <span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>disconnected</span>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=10 short device=<span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>01</span> DEV1 type=40 NOTIF_DEVICE_UNPAIRED
+    params=<span style=color:purple;--darkreader-inline-color:#cb6dc5 data-darkreader-inline-color>02</span> 00 00 00 
+
+<i>(register successfully set:)</i>
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>     report_id=10 short device=FF RECV type=80 SET_REG
+    reg=B2 DEVICE_PAIRING  params=00 00 00 
+</pre>
+<p>
+Benjamin was right that unpairing could not be discovered as easy as pairing,
+but nevertheless it is not impossible, especially if a specification is
+available.
+<p>
+Logitech has more software for keyboards and mice, namely <a rel=nofollow href=http://www.logitech.com/support/3131>SetPoint</a>. By tapping the USB traffic,
+it is possible to discover additional functionalities. For example, flipping the
+functionality of the <kbd>F</kbd> button (like <kbd>F9</kbd> / <kbd>Play</kbd>)
+generated just four messages which can easily be guessed:
+<pre>(Check the “Swap F key functions” checkbox in SetPoint settings)
+Software asks for current status of F key functions
+<span style=color:#ff0000;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>Send</span>      report_id=10 short device=01 DEV1 type=81 GET_REG
+    reg=09 FN_KEY_SWAP?  params=00 00 00
+(device responds: <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>F key is not swapped</span>)
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>      report_id=10 short device=01 DEV1 type=81 GET_REG
+    reg=09 FN_KEY_SWAP?  params=00 <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>00</span> 00 
+Software asks to <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>swap F key functions</span>
+<span style=color:#ff0000;--darkreader-inline-color:#c42f2d data-darkreader-inline-color>Send</span>      report_id=10 short device=01 DEV1 type=80 SET_REG
+    reg=09 FN_KEY_SWAP?  params=00 <span style=color:blue;--darkreader-inline-color:#3266c1 data-darkreader-inline-color>01</span> 00 
+(device responds, register is successfully changed)
+<span style=color:#00ff00;--darkreader-inline-color:#37c831 data-darkreader-inline-color>Recv</span>      report_id=10 short device=01 DEV1 type=80 SET_REG
+    reg=09 FN_KEY_SWAP?  params=00 00 00 
+</pre>
+<h2 id=ltunify><a href=#ltunify>ltunify: Logitech Unifying tool for Linux</a></h2>
+<p>
+<em>ltunify</em> is a program resulting from the gathered knowledge on the
+Logitech HID++ protocol. It allows you to pair additional devices like keyboards
+and mice to your Unifying receiver, unpair existing devices and list information
+about connected devices. This section will show you how to install the
+<em>ltunify</em> program.
+<p>
+Besides a C compiler and a way to fetch sources (wget+tar or git), you will need
+Linux 3.2 or newer with the <em>hid-logitech-dj</em> module. On Debian and
+Ubuntu distributions, the required packages can be installed using:
+<pre>sudo apt-get install git gcc
+</pre>
+Fetch the sources and install <code>ltunify</code> to <code>$HOME/bin/</code>
+using the next commands:
+<pre>git clone https://git.lekensteyn.nl/ltunify.git
+cd ltunify
+make install-home
+</pre>
+<p>
+The following steps will assume that <code>$HOME/bin</code> is available in your
+path. If not, run:
+<pre>export PATH="$HOME/bin:$PATH"
+</pre>
+If everything went well, you should be able to run <code>ltunify --help</code>
+to show the available options:
+<pre>Usage: ltunify [options] cmd [cmd options]
+Logitech Unifying tool version dev
+Copyright (C) 2013 Peter Wu &lt;lekensteyn@gmail.com&gt;
+
+Generic options:
+  -d, --device path Bypass detection, specify custom hidraw device.
+  -D                Print debugging information
+  -h, --help        Show this help message
+
+Commands:
+  list            - show all paired devices
+  pair [timeout]  - Try to pair within "timeout" seconds (1 to 255,
+                    default 0 which is an alias for 30s)
+  unpair idx      - Unpair device
+  info idx        - Show more detailed information for a device
+  receiver-info   - Show information about the receiver
+In the above lines, "idx" refers to the device number shown in the
+ first column of the list command (between 1 and 6). Alternatively, you
+ can use the following names (case-insensitive):
+ Keyboard Mouse Numpad Presenter Trackball Touchpad
+</pre>
+The below session shows you how to use a <em>device index</em> to unpair a
+mouse.
+<pre>$ sudo ltunify list
+Devices count: 1
+Connected devices:
+idx=<b>1</b>   Mouse   M525
+
+$ sudo ltunify unpair <b>1</b>
+Device 0x01 Mouse successfully unpaired
+
+$ sudo ltunify list
+Devices count: 0
+Connected devices:
+
+$ sudo ltunify pair
+Please turn your wireless device off and on to start pairing.
+Found new device, id=<b>0x01</b> Mouse
+
+$ sudo ltunify list
+Devices count: 1
+Connected devices:
+idx=<b>1</b>   Mouse   M525
+</pre>
+It is also possible to select a device by device type (case-insensitive). When
+multiple devices of the same type are available, the first one will be
+selected.
+<pre>$ sudo ltunify unpair <b>mouse</b>
+Device 0x01 <b>Mouse</b> successfully unpaired
+</pre>
+<h3 id=no-root><a href=#no-root>Advanced: do not run as root</a></h3>
+<p>
+<code>ltunify</code> does not have to run as root, but it is easier and faster
+to say “run this program as root” instead of “change permissions of this file
+and then run the program”. “this file” refers to some
+<code>/dev/hidraw<em>X</em></code> where <em>X</em> is some number. An example
+where I allow myself to do anything with the receiver:
+<pre>$ ltunify list
+/dev/hidraw0: Permission denied
+Logitech Unifying Receiver device is not accessible.
+Try running this program as root or enable read/write permissions
+for /dev/hidraw0
+$ ls -l /dev/hidraw0
+crw------- 1 root root  251, 0 Apr 24 11:14 /dev/hidraw0
+$ sudo chmod g+rw /dev/hidraw0 &amp;&amp; sudo chgrp $USER /dev/hidraw0
+$ ls -l /dev/hidraw0
+crw-rw---- 1 root peter 251, 0 Apr 24 11:14 /dev/hidraw0
+$ ltunify list
+Devices count: 1
+Connected devices:
+idx=1   Mouse   M525
+</pre>
+<p>
+To make this permanent, one could create a udev rule such as <a href=https://git.lekensteyn.nl/ltunify/tree/udev/42-logitech-unify-permissions.rules>42-logitech-unify-permissions.rules</a>.
+<h2 id=conclusion><a href=#conclusion>Conclusion</a></h2>
+<p>
+Logitech has created drivers that provides flawless Linux support for their
+products, but full pairing support was missing. Thanks to tools like usbmon and
+QEMU, I was able to analyse the protocol and relate it with the given HID++ 1.0
+specification. That allowed me to create the <em>ltunify</em> program for Linux
+that provides similar functionality as the official Unifying Software.
+<p>
+Future work on this project could move functionality into a library, that could
+be used to create a graphical user interface for (un)pairing devices. Perhaps
+the <em>hid-logitech-dj</em> kernel module can also be improved to provide an
+API for toggling notifications or unpairing devices. More features can also be
+added to ltunify, for example swapping the F function keys of a keyboard, but
+the main purpose of this tool is to enable users to pair and unpair devices.
+<p>
+Other improvements could be implementing version 2.0 of the HID++ protocol,
+whatever benefits it may give. Since I do not have a device using the HID++ 2.0
+protocol, I did not bother implementing it. If you are looking for a 2.0
+example, UPower has an <a href=http://cgit.freedesktop.org/upower/tree/src/linux/hidpp-device.c>implementation
+of HID++ 2.0 for checking battery levels</a>, contributed by <a href=http://julien.danjou.info/blog/2012/logitech-unifying-upower>Julien
+Danjou</a>. (<strong>Added on 26 April 2013</strong>:) there is another tool
+that I was unaware of although it existed over a half year ago. The graphical
+Python program <a href=http://pwr.github.io/Solaar/>Solaar</a> supports HID++
+2.0 and adds some extra functionality like solar charge status for keyboard and
+swapping FN keys. Definitely worth checking out!
+<p>
+What can other companies learn from this? USB-based protocols are <em>very</em>
+easy to capture and analyse. Given enough time, there will ultimately be a
+program that can use this protocol. Provide sufficient specifications to
+the open-source community, this makes us happy and save time!
+<p>
+The following third-party software have been used for this project:
+<ul>
+<li><a href=http://www.ubuntu.com/ rel=nofollow>Kubuntu 12.04 LTS</a>
+(kernel only)
+<li><a href=https://www.archlinux.org/>Arch Linux</a> (used remotely in a
+chroot and locally as main OS)
+<li>A minimal installation of Windows XP SP3 (source unknown, CD image was lying
+around)
+<li><a href=http://www.qemu.org/>QEMU 1.4</a> (virtual machine with USB
+pass-through)
+<li><a href=http://www.logitech.com/support/unifying rel=nofollow>Logitech Unifying Software 2.10.37 for Windows XP</a>
+</ul>
+<p>
+Related links:
+<ul>
+<li><a href=https://git.lekensteyn.nl/ltunify/>https://git.lekensteyn.nl/ltunify/</a>
+- Git repository containing source code and notes.
+<li><a href=https://git.lekensteyn.nl/ltunify/tree/notes.txt>https://git.lekensteyn.nl/ltunify/tree/notes.txt</a>
+- old notes before discovering the Logitech HID++ specification.
+<li><a href=https://git.lekensteyn.nl/ltunify/tree/registers.txt>https://git.lekensteyn.nl/ltunify/tree/registers.txt</a>
+- overview of (un)documented registers and a description of steps performed by
+the official Logitech Unifying software.
+<li><a href=https://lekensteyn.nl/files/logitech/>https://lekensteyn.nl/files/logitech/</a>
+- directory containing PDF documents like the HID++ specifications.
+<li><a href=http://pwr.github.io/Solaar/>Solaar: a Linux devices manager for
+the Logitech Unifying receiver</a>, written in Python. It has additional
+features for some devices like solar charge status. (added on 26 April 2013)
+</ul>
+<footer>
+Feedback is welcome and can be sent to <a href=mailto:peter@lekensteyn.nl>peter@lekensteyn.nl</a>.
+This document was last modified on 
+<time datetime=2014-05-18>18 May 2014</time>.
+</footer>

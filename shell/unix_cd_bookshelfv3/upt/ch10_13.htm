@@ -1,0 +1,135 @@
+<html><head><title>Copying Directory Trees with tar and Pipes (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch11_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">10.13. Copying Directory Trees with tar and Pipes</h2>
+
+<p><a name="IXT-10-6428" /><a name="IXT-10-6429" /><a name="IXT-10-6430" /><a name="IXT-10-6431" /><a name="IXT-10-6432" />The <b class="emphasis-bold">tar</b>
+(<a href="ch39_02.htm#upt3-CHP-39-SECT-2">Section 39.2</a>) command isn't just
+for tape archives. It can copy files from disk to disk, too. And even
+if your computer has <b class="emphasis-bold">cp -r</b> (<a href="ch10_12.htm#upt3-CHP-10-SECT-12">Section 10.12</a>), there are advantages to using
+<i class="command">tar</i>.
+</p>
+
+<p>The obvious way to copy directories with <i class="command">tar</i> is to
+write them onto a tape archive with relative pathnames -- then
+read back the tape and write it somewhere else on the disk. But
+<i class="command">tar</i> can also write to a Unix pipe -- and read
+from a pipe. This looks like:
+</p>
+
+<blockquote><pre class="code">% <em class="replaceable"><tt>reading-tar</em> <tt class="userinput"><b>|</b></tt> <em class="replaceable">writing-tar</tt></em></pre></blockquote>
+
+<p>with one trick: the
+<em class="replaceable"><tt>writing-tar</tt></em><a name="IXT-10-6433" /> process has a<b class="emphasis-bold">
+different current directory</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>,
+<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) (the place where you want the copy
+made) than the
+<em class="replaceable"><tt>reading-tar</tt></em><a name="IXT-10-6434" />. To do that, run the
+<em class="replaceable"><tt>writing-tar</tt></em> in a <b class="emphasis-bold">subshell</b> (<a href="ch43_07.htm#upt3-CHP-43-SECT-7">Section 43.7</a>), or if
+your <i class="command">tar</i> supports it, use the
+<span class="option">-C</span><a name="IXT-10-6435" /> option.
+</p>
+
+<p>The argument(s) to the <em class="replaceable"><tt>reading-tar</tt></em> can be
+directories or files. Just be sure to use <b class="emphasis-bold">relative pathnames</b> (<a href="ch31_02.htm#upt3-CHP-31-SECT-2">Section 31.2</a>) that don't start with a
+slash -- otherwise, the <em class="replaceable"><tt>writing-tar</tt></em> may
+write the copies in the same place from where the originals came!
+</p>
+
+<p>"How about an example," you ask?
+<a href="ch10_13.htm#upt3-CHP-10-FIG-1">Figure 10-1</a> has one. It copies from the directory
+<em class="filename">/home/jane</em>, with all its files and
+subdirectories. The copy is made in the directory
+<em class="filename">/work/bkup/jane</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>mkdir /work/bkup/jane</b></tt>
+% <tt class="userinput"><b>cd /home/jane</b></tt>
+% <tt class="userinput"><b>tar cf - . | (cd /work/bkup/jane &amp;&amp; tar xvf -)</b></tt></pre></blockquote>
+
+<p>Or, if you want to use <span class="option">-C</span>:</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar cf - . | tar xvf - -C /work/bkup/jane</b></tt></pre></blockquote>
+
+<p>In the subshell version, the
+<tt><b></b></tt><a name="IXT-10-6436" /><a name="IXT-10-6437" /><b class="emphasis-bold">&amp;&amp; operator</b> (<a href="ch35_14.htm#upt3-CHP-35-SECT-14">Section 35.14</a>) tells the shell to start <tt class="literal">tar xvf
+-</tt> only if the previous command (the <tt class="literal">cd</tt>)
+succeeded. That prevents <i class="command">tar</i> writing files into
+the same directory from which it's reading -- if
+the destination directory isn't accessible or you
+flub its pathname. Also, don't use the
+<span class="option">v</span><a name="IXT-10-6438" /> (verbose) option in both
+<i class="command">tar</i>s unless you want to see doubled output; one or
+the other is plenty. I usually put it in the
+<em class="replaceable"><tt>writing-tar</tt></em> to see write progress, as
+that's more interesting to me than how far ahead the
+system has cached the read for me.
+</p>
+
+<a name="upt3-CHP-10-FIG-1" /><div class="figure"><img src="figs/upt3_1001.gif" alt="Figure 10-1" width="441" /></div><h4 class="objtitle">Figure 10-1. Copying /home/jane to /work/bkup with tar</h4>
+
+<a name="ch10-4-fm2xml" /><blockquote><b>WARNING:</b> 
+At least one <i class="command">tar</i> version has a <span class="option">v</span>
+(verbose) option that writes the verbose text to standard output
+instead of standard error! If your <i class="command">tar</i> does that,
+definitely don't use <span class="option">v</span> on the
+<em class="replaceable"><tt>reading-tar</tt></em> (the <i class="command">tar</i>
+that feeds the pipe) -- use <span class="option">v</span> on the
+<em class="replaceable"><tt>writing-tar</tt></em> only.
+</p>
+</blockquote>
+
+<p>You can use other options that your <i class="command">tar</i> might
+have -- such as excluding files or directories -- on the
+<em class="replaceable"><tt>reading-tar</tt></em>, too. Some gotchas:
+</p>
+
+<ul>
+<li>
+<p>Be aware that <b class="emphasis-bold">symbolic links</b> (<a href="ch10_04.htm#upt3-CHP-10-SECT-4">Section 10.4</a>) will be copied exactly. If they point to
+relative pathnames, <b class="emphasis-bold">the copied links might
+point to locations that don't exist</b>
+(<a href="ch10_06.htm#upt3-CHP-10-SECT-6">Section 10.6</a>). You can search for these symbolic
+links with <em class="emphasis">find -type l</em>.
+</p>
+</li>
+
+<li>
+<p>If your system has <b class="emphasis-bold">rsh</b>
+(<a name="IXT-10-6439" /><a name="IXT-10-6440" /><a href="ch01_21.htm#upt3-CHP-1-SECT-21">Section 1.21</a>) or <i class="command">ssh</i>, you can run either
+the <em class="replaceable"><tt>reading-tar</tt></em> or the
+<em class="replaceable"><tt>writing-tar</tt></em> on a remote system. For
+example, to copy a directory to the computer named
+<em class="emphasis">kumquat</em>:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ssh kumquat mkdir /work/bkup/jane</b></tt>
+% <tt class="userinput"><b>tar cf - . | ssh kumquat 'cd /work/bkup/jane &amp;&amp; tar xvf -'</b></tt></pre></blockquote>
+</li>
+</ul>
+
+<p><em class="emphasis">--JP and DJPH</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch10_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch11_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">10.12. Copying Directory Trees with cp -r</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">11. Comparing Files</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

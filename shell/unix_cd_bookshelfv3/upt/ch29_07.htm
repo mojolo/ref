@@ -1,0 +1,159 @@
+<html><head><title>Sourceable Scripts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch29_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch29_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">29.7. Sourceable Scripts</h2>
+
+<p><a name="upt3-IDXTERM-4478" /> <a name="upt3-IDXTERM-4479" />
+<a name="upt3-IDXTERM-4480" /> <a name="upt3-IDXTERM-4481" /> <a name="upt3-IDXTERM-4482" />Aliases
+are a powerful concept in <i class="command">csh</i>. Another great
+capability is <b class="emphasis-bold">shell scripts</b> (<a href="ch01_08.htm#upt3-CHP-1-SECT-8">Section 1.8</a>). Each has its strengths. An alias is just
+right for common sequences of commands, calling a command by a
+different name, and so on. Scripts are great for more flexible
+processing and batch processing. There are limitations to both, and I
+will show a way around them.
+</p>
+
+<p><a name="IXT-29-4409" />The limitation to aliases is that you are
+working pretty much with one command line. Consider this example,
+which manages various stages of changing directories, updating the
+prompt, and so forth:
+</p>
+
+<blockquote><pre class="code">alias pp 'set o2=$cwd; popd; set old=$o2; dir_number; record_dir pp; \\
+  prompt_set; set cd_attempt=(\!*); if ($#cd_attempt &gt; 0) cd $cd_attempt'</pre></blockquote>
+
+<p>Now this works fine for me, and it served me well for a few years and
+thousands of invocations, but it's at the point
+where I start thinking that a script is more suited to the job. This
+brings me to the limitation of scripts.
+</p>
+
+<p><a name="IXT-29-4410" />Shell scripts are great for accomplishing
+some task that might change a file, start a program, etc. They are
+limited by the fact that any changes they make to shell or
+environment variables <b class="emphasis-bold">are not
+visible</b> (<a href="ch24_03.htm#upt3-CHP-24-SECT-3">Section 24.3</a>) to the parent shell
+that started them. In other words, you can write some really cool
+script that will change directories for you if you
+don't touch the keyboard for five seconds, but once
+the script exits, you are still in the same place you started.
+</p>
+
+<p>The answer is to combine the best of both worlds. Consider this:</p>
+
+<blockquote><pre class="code">alias pp 'set cd_attempt=(\!*); source ~/bin/pp_csh'</pre></blockquote>
+
+<p><a name="IXT-29-4411" />We set up
+a variable and source a script. The concept is this: put your
+command-line arguments into a variable and then <b class="emphasis-bold">source</b> (<a name="IXT-29-4412" /><a href="ch35_29.htm#upt3-CHP-35-SECT-29">Section 35.29</a>) a script to
+accomplish something. The difference here is that because you are not
+starting a <b class="emphasis-bold">subshell</b> (<a href="ch24_04.htm#upt3-CHP-24-SECT-4">Section 24.4</a>) for the script, it can do everything an alias
+can and more. This is much like <b class="emphasis-bold">Bourne shell
+functions</b> (<a href="ch29_11.htm#upt3-CHP-29-SECT-11">Section 29.11</a>).
+</p>
+
+<p>Some hints on using this technique:</p>
+
+<dl>
+<dt><i>Naming</i></dt>
+<dd>
+I like to name the script that is doing all of the work after the
+alias, with <em class="emphasis">_csh</em></tt> or <em class="emphasis">.csh</em></tt> at
+the end of its name. I put all of the scripts in my <b class="emphasis-bold">~/bin</b> (<a href="ch07_04.htm#upt3-CHP-7-SECT-4">Section 7.4</a>). [Instead
+of names ending in <em class="emphasis">.csh</em></tt>, I put mine in a
+directory named <em class="filename">~/.lib/csh</em></tt>.
+ <em class="emphasis">-- JP</em></tt>]
+</p>
+</dd>
+
+
+<dt><i>Feedback</i></dt>
+<dd>
+You don't want to execute the script directly. You
+want to source it. Here's a good first line that
+detects this:
+</p>
+<blockquote><pre class="code">#! /bin/echo sorry,try:source</pre></blockquote>
+</dd>
+
+
+<dt><i>Usage statement</i></dt>
+<dd>
+Check the variable that you expect to see from the alias. If it
+isn't there, you can show a usage statement and do a
+<em class="emphasis">goto</em></tt> to the end of the script:
+</p>
+
+<p><tt class="literal">&lt;&lt;</tt> <a href="ch27_16.htm#upt3-CHP-27-SECT-16">Section 27.16</a></p>
+
+<blockquote><pre class="code">if ($#lg_args == 0) then
+    cat &lt;&lt; +++
+usage: lg [-a][-p] pattern [command]
+    -a  lists all (.dot files)
+    -p  pipe resulting list into command
++++
+    goto lg_end
+endif
+   ...
+lg_end:</pre></blockquote>
+</dd>
+
+
+<dt><i>Alias options</i></dt>
+<dd>
+<a name="IXT-29-4413" />You aren't
+limited to what an alias can do, since you are sourcing a script. You
+gain some flexibility here. Here's one way of
+handling options:
+</p>
+<p><tt class="literal">set</tt> <a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a></p>
+
+
+<blockquote><pre class="code">unset ls_arg
+while (! $?ls_arg)
+    switch ("$lg_args[1]")
+        case "-a":
+            set ls_arg="-a"
+            shift lg_args
+        case "-p":
+            set use_pipe
+            shift lg_args
+        default:
+            set ls_arg
+            breaksw
+    endsw
+end</pre></blockquote>
+</dd>
+
+</dl>
+
+<p>Have fun with this! You may find yourself tossing some old aliases
+and rewriting them as sourceable scripts. They're
+also easier to <a name="IXTR3-4513" /> <a name="IXTR3-4514" /> <a name="IXTR3-4515" /> <a name="IXTR3-4516" /> <a name="IXTR3-4517" />maintain. 
+</p>
+
+<p> <em class="emphasis">-- DS</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch29_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch29_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">29.6. zsh Aliases</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">29.8. Avoiding C-Shell Alias Loops</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

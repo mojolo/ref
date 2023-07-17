@@ -1,0 +1,173 @@
+<html><head><title>Quoting and Command-Line Parameters (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch37_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch37_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">37.5. Quoting and Command-Line Parameters</h2>
+
+<p><b class="emphasis-bold">Q:</b> <em class="emphasis"><a name="IXT-37-3113" /><a name="IXT-37-3114" /><a name="IXT-37-3115" />I need to pass a shell script some arguments
+with multiple words. I thought that putting <b class="emphasis-bold">quotes</b> (<a href="ch27_12.htm#upt3-CHP-27-SECT-12">Section 27.12</a>) around
+command-line arguments would group them. The shell script seems to
+ignore the quoting, somehow. Here's a simple
+example:</em>
+</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>cat script</b></tt>
+   ...
+for arg in $*
+do
+    echo "Argument is $arg"
+done
+$ <tt class="userinput"><b>script '1 2 3' 4</b></tt>
+   ...
+Argument is 1
+Argument is 2
+Argument is 3
+Argument is 4</pre></blockquote>
+
+<p><a name="IXT-37-3116" /><b class="emphasis-bold">A:</b>
+This is the way <tt class="literal">$*</tt> is defined to work.
+<tt class="literal">$*</tt> expands to:<a name="IXT-37-3117" />
+</p>
+
+<blockquote><pre class="code">$1 $2</pre></blockquote>
+
+<p>[not <tt class="literal">&lt;"&gt;$1&lt;"&gt; &lt;"&gt;$2&lt;"&gt;</tt>
+ <em class="emphasis">-- JP</em>] if there are two arguments. Hence the
+<i class="command">for</i> loop reads:
+</p>
+<blockquote><pre class="code">for arg in 1 2 3 4</pre></blockquote>
+
+<p>Note that the quotes are gone. What you wanted the shell to see was:</p>
+<blockquote><pre class="code">for arg in '1 2 3' 4</pre></blockquote>
+
+<p>You can't get that, but you can get something that
+is good enough:
+</p>
+
+<p><tt class="literal">"$@"</tt> <a href="ch35_20.htm#upt3-CHP-35-SECT-20">Section 35.20</a></p>
+
+<blockquote><pre class="code">for arg in "$@"</pre></blockquote>
+
+<p><a name="IXT-37-3118" />In effect, <tt class="literal">$@</tt>
+expands to:
+</p>
+<blockquote><pre class="code">$1" "$2</pre></blockquote>
+
+<p>Putting <tt class="literal">""</tt> s around <tt class="literal">$@</tt>, the
+effect is:
+</p>
+<blockquote><pre class="code">for arg in "$1" "$2"</pre></blockquote>
+
+<p><a name="IXT-37-3119" /> <a name="IXT-37-3120" /><a name="IXT-37-3121" /><a name="IXT-37-3122" /><a name="IXT-37-3123" /><a name="IXT-37-3124" /><a name="IXT-37-3125" />Shell quoting is
+unnecessarily complex. The C shell actually has the right idea
+(variables can be set to "word
+lists"; <em class="emphasis">argv</em> is such a list),
+but its defaults and syntax for suppressing them make for an artless
+programming language:
+</p>
+
+<a name="IXT-37-3126" /><blockquote><pre class="code">foreach arg ($argv:q)      # colon q ?!?</pre></blockquote>
+
+<p>For the special case of iterating a shell variable over the argument
+list as it stands at the beginning of the iteration, the Bourne shell
+provides the construct <tt class="literal">for arg</tt>
+<tt class="literal">do</tt> [i.e., no <tt class="literal">in</tt>
+<em class="replaceable"><tt>list </em> <em class="emphasis">-- JP</tt></em>]:
+</p>
+
+<blockquote><pre class="code">for arg
+do echo "Argument is $arg"
+done</pre></blockquote>
+
+<p>The example produces:</p>
+
+<blockquote><pre class="code">Argument is 1 2 3
+Argument is 4</pre></blockquote>
+
+<p><a name="IXT-37-3127" /><tt class="literal">"$@"</tt>
+is still needed for passing argument lists to other programs.
+Unfortunately, since <tt class="literal">$@</tt> is defined as expanding
+to:
+</p>
+<blockquote><pre class="code">$1" "$2...$<em class="replaceable"><tt>n-1</em>" "$<em class="replaceable">n</tt></em></pre></blockquote>
+
+<p>(where <em class="replaceable"><tt>n</tt></em> is the number of arguments), when
+there are no arguments, <tt class="literal">"$@"</tt> expands to
+<tt class="literal">""</tt>, and <tt class="literal">""</tt> produces a single
+argument. [Many Unix vendors considered this a bug and changed it so
+that it produces <em class="emphasis">no</em> arguments.
+ <em class="emphasis">-- JP</em>] The best solution for this is to use,
+for example:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>cat bin/okeeffe</b></tt>
+#! /bin/sh
+exec rsh okeeffe.berkeley.edu -l torek ${1+"$@"}
+%</pre></blockquote>
+
+<p>The construct <tt class="literal">${1+"$@"}</tt> means
+"expand <tt class="literal">$1</tt>, but if
+<tt class="literal">$1</tt> is not defined, use <tt class="literal">"$@"</tt>
+instead." [You don't need this on
+Bourne shells with the "bug fix" I
+mentioned, or on <i class="command">bash</i> <em class="emphasis">et al</em>.
+ <em class="emphasis">-- JP</em>] <a name="IXT-37-3128" />Hence,
+if there are no arguments, we get <tt class="literal">$1</tt> (which is
+nothing and produces no arguments); otherwise, we get
+<tt class="literal">"$@"</tt> (which expands as above).
+<tt class="literal">${</tt><em class="replaceable"><tt>var</em><tt class="literal">+</tt><em class="replaceable">instead</tt></em><tt class="literal">}</tt>
+is one of several <i class="command">sh</i> <b class="emphasis-bold">"expansion
+shortcuts"</b> (<a name="IXT-37-3129" /><a href="ch36_07.htm#upt3-CHP-36-SECT-7">Section 36.7</a>). Another more generally useful one is
+<tt class="literal">${</tt><em class="replaceable"><tt>var-default</tt></em><tt class="literal">}</tt>,
+which expands to <tt class="literal">$</tt><em class="replaceable"><tt>var</tt></em>,
+but if <em class="emphasis">var</em> is not set, to
+<em class="replaceable"><tt>default</tt></em> instead. All of these can be found
+in the manual for <i class="command">sh</i>, which is worth reading
+several times, experimenting as you go.
+</p>
+
+<p><i class="command">bash</i><a name="IXT-37-3130" /> has a variety of similar but
+expanded mechanisms as well, involving a colon before the modifier:
+</p>
+
+<blockquote><pre class="code">foo=${bar:-baz}             <i class="lineannotation">if bar set and non-null, substitute value, else substitute baz...</i>
+fum=${fee:=foe}             <i class="lineannotation">if fee unset or is null, set it to foe, value then substituted...</i>
+fiend=${jeckyll::=hyde}     <i class="lineannotation">set jeckyll to hyde, then substitute value... (zsh only)</i>
+${required?"error"}        <i class="lineannotation">if required set or non-null, substitute its value,
+                                  else return "error" and exit...</i>
+man=${fullmoon:+wolfman}    <i class="lineannotation">if fullmoon set and non-null, substitute wolfman, </i>
+<i class="lineannotation">                                                        else substitute nothing...</i></pre></blockquote>
+
+<p>See the <i class="command">bash</i> manual page's
+section on parameter expansion. <i class="command">ksh</i>,
+<i class="command">pdksh</i>, and <i class="command">zsh</i> also have
+support for the same syntax; <i class="command">zsh</i> has an entire
+manual page devoted to just parameter expansions:
+<em class="emphasis">zshexpn</em>(1). Poke around;
+there's lots of good stuff to explore.
+</p>
+
+<p>--<em class="emphasis">CT and SJC</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch37_04.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch37_06.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">37.4. Stop Syntax Errors in String Tests</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">37.6. How Unix Keeps Time</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

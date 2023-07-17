@@ -1,0 +1,200 @@
+<html><head><title>Managing Groups (Mac OS X for Unix Geeks)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Brian Jepson and Ernest E. Rothman" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00356-0" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Mac OS X for Unix Geeks" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Mac OS X for Unix Geeks" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.7. Managing Groups</h2>
+
+<p><a name="mosxgeeks-IDXTERM-219" />NetInfo
+stores information about groups in its <em class="filename">/groups</em>
+directory. This is different from the <em class="filename">/etc/group</em>
+file, which is consulted only in single-user mode.
+</p>
+
+<p>To list all of the group IDs (GIDs) and group names for the local
+domain, invoke <em class="filename">nireport </em>with<em class="filename">
+</em>the NetInfo domain (<em class="filename">.</em>, the local
+domain), the directory (<em class="filename">/groups</em>), and the
+properties you want to inspect--in this case,
+<em class="filename">gid</em> and <em class="filename">name</em>:
+</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">nireport . /groups gid name</b>
+-2      nobody
+-1      nogroup
+0       wheel
+1       daemon
+2       kmem
+3       sys
+4       tty
+5       operator
+6       mail
+7       bin
+20      staff
+25      smmsp
+31      guest
+45      utmp
+66      uucp
+68      dialer
+69      network
+70      www
+74      mysql
+75      sshd
+80      admin
+99      unknown</pre></blockquote>
+
+
+
+<a name="ch03-35-fm2xml" /><blockquote><b>TIP:</b> 
+Although the flat file format is called <em class="filename">group</em>
+(after the <em class="filename">/etc/group</em> file), the NetInfo group
+directory is <em class="filename">/groups</em>. If you forget that last
+<em class="filename">s</em>, NetInfo will look for the wrong directory.
+</p>
+</blockquote>
+
+<a name="mosxgeeks-CHP-3-SECT-7.1" /><div class="sect2">
+<h3 class="sect2">3.7.1. Creating a Group with niload</h3>
+
+<p>The <em class="filename">niload</em><a name="IXT-3-405" /> utility can be used to read the flat
+file format used by <em class="filename">/etc/group</em>
+(<tt class="literal">name:password:gid:members</tt>). To add a new group,
+you can create a file that adheres to that format, and load it with
+<em class="filename">niload</em>. For ad hoc work, you can use a here
+document rather than a separate file:
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">niload group . &lt;&lt;EOF</b>
+? <b class="emphasis-bold">writers:*:1001:</b>
+? <b class="emphasis-bold">EOF</b></pre></blockquote>
+
+<a name="mosxgeeks-CHP-3-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Here Documents</h4>
+
+<p>A <a name="IXT-3-406" />here
+document is a shell quoting syntax that allows you to send data to
+standard input as though it had come in from a file. You can use this
+syntax interactively from the command line or in a shell script. The
+<tt class="literal">EOF</tt> tag, shown in the previous example, can be any
+text string. The here document starts with
+<tt class="literal">&lt;&lt;STRING</tt> and ends when
+<tt class="literal">STRING</tt> appears on a line by itself. For example,
+you can sort a bunch of words with here documents. (The
+<tt class="literal">?</tt> character is supplied by the shell to let you
+know it is expecting input.)
+</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">sort &lt;&lt;WORDS</b>
+? <b class="emphasis-bold">gamma</b>
+? <b class="emphasis-bold">beta</b>
+? <b class="emphasis-bold">alpha</b>
+? <b class="emphasis-bold">omega</b>
+? <b class="emphasis-bold">WORDS</b>
+alpha
+beta
+gamma
+omega</pre></blockquote>
+</td></tr></table><p></blockquote>
+
+</div>
+<a name="mosxgeeks-CHP-3-SECT-7.2" /><div class="sect2">
+<h3 class="sect2">3.7.2. Creating a Group with nicl</h3>
+
+<p>To create a group with
+<em class="filename">nicl</em><a name="IXT-3-407" />, you'll need to create
+a directory under <em class="filename">/groups</em> and set the
+<em class="filename">gid</em> and <em class="filename">passwd</em> properties.
+If you want a password, it must be encrypted with <tt class="literal">crypt(
+)</tt>. If you don't want a group password, use
+an asterisk instead. (Be sure to quote the <tt class="literal">*</tt> so
+that the shell does not attempt to expand it.) The following creates
+a group named <em class="filename">writers</em> as GID 5005 with no
+password and no members:
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">nicl / create /groups/writers gid 5005</b>
+# <b class="emphasis-bold">nicl / create /groups/writers passwd '*'</b></pre></blockquote>
+</div>
+<a name="mosxgeeks-CHP-3-SECT-7.3" /><div class="sect2">
+<h3 class="sect2">3.7.3. Adding Users to a Group</h3>
+
+<p>You can add users to the group by appending values to the
+<em class="filename">users</em> property with
+<em class="filename">nicl</em>'s
+<em class="filename">-merge</em> switch at the command line (or by using
+the <em class="filename">merge</em> command interactively). If the
+<em class="filename">users</em> property does not exist,
+<em class="filename">nicl</em> creates it. If the users are already part
+of the group, they are not added to the list (contrast this with the
+<em class="filename">-append</em> command, which can result in the same
+user being added more than once if the command is invoked multiple
+times).
+</p>
+
+<blockquote><pre class="code"># <b class="emphasis-bold">nicl / -merge /groups/writers users bjepson rothman</b></pre></blockquote>
+
+
+<a name="ch03-41-fm2xml" /><blockquote><b>TIP:</b> 
+To give someone administrative privileges, add that user to the
+<em class="filename">admin</em> group
+(<em class="filename">/groups/admin</em>). This gives him or her the
+ability to use <em class="filename">sudo</em> and install software that
+requires such privileges.
+</p>
+</blockquote>
+
+</div>
+<a name="mosxgeeks-CHP-3-SECT-7.4" /><div class="sect2">
+<h3 class="sect2">3.7.4. Listing Groups with nidump</h3>
+
+<p>Use <em class="filename">nidump</em><a name="IXT-3-408" /> to confirm that the new group was
+created correctly. To list groups with <em class="filename">nidump</em>,
+pass in the format (in this case, the <em class="filename">group</em>
+file) and the domain (<em class="filename">.</em>, the local domain).
+</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">nidump group . | grep writers</b>
+writers:*:5005:bjepson,rothman</pre></blockquote>
+
+<p>Because you can use <em class="filename">nireport</em> to dump any NetInfo
+directory, you could also use it to see this information:
+</p>
+
+<blockquote><pre class="code">% <b class="emphasis-bold">nireport . /groups name passwd gid users | grep writers</b>
+writers *       5005    bjepson,rothman</pre></blockquote>
+
+</div>
+<a name="mosxgeeks-CHP-3-SECT-7.5" /><div class="sect2">
+<h3 class="sect2">3.7.5. Deleting a Group</h3>
+
+<p>To delete a
+<a name="IXT-3-409" />group,
+use <em class="filename">nicl</em>'s -<em class="filename">delete
+</em>switch. Be careful with this switch, since it will delete
+everything in and below the specified NetInfo directory:
+</p>
+
+<a name="IXTR3-438" /><blockquote><pre class="code"># <b class="emphasis-bold">nicl / -delete /groups/writers</b></pre></blockquote>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3.6. NetInfo Command Reference</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.8. Managing Users and Passwords</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

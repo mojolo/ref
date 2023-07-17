@@ -1,0 +1,160 @@
+<html><head><title>Sort Fields: How sort Sorts (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch22_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch22_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">22.2. Sort Fields: How sort Sorts</h2>
+
+<p><a name="IXT-22-1536" /><a name="IXT-22-1537" />Unless <a name="upt3-IDXTERM-3165" />you tell it otherwise,
+<i class="command">sort</i> divides each line into fields at whitespace
+(blanks or tabs), and sorts the lines by field, from left to right.
+</p>
+
+<p>That is, it sorts on the basis of field 0 (leftmost), but when the
+leftmost fields are the same, it sorts on the basis of field 1, and
+so on. This is hard to put into words, but it's
+really just common sense. Suppose your office inventory manager
+created a file like this:
+</p>
+
+<blockquote><pre class="code">supplies     pencils  148
+furniture    chairs   40
+kitchen      knives   22
+kitchen      forks    20
+supplies     pens     236
+furniture    couches  10
+furniture    tables   7
+supplies     paper    29</pre></blockquote>
+
+<p>You'd want all the supplies sorted into categories,
+and within each category, you'd want them sorted
+alphabetically:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sort supplies</b></tt>
+furniture    chairs   40
+furniture    couches  10
+furniture    tables   7
+kitchen      forks    20
+kitchen      knives   22
+supplies     paper    29
+supplies     pencils  148
+supplies     pens     236</pre></blockquote>
+
+<p>Of course, you don't always want to sort from left
+to right. The command-line option <span class="option">+n</span> tells
+<i class="command">sort</i> to start sorting on field
+<em class="emphasis">n</em>; <span class="option">-n</span> tells
+<i class="command">sort</i> to stop sorting on field
+<em class="emphasis">n</em>. Remember (again) that <i class="command">sort</i>
+counts fields from left to right, starting with 0.<a href="#FOOTNOTE-66">[66]</a> Here's an
+example. We want to sort a list of telephone numbers of authors,
+presidents, and blues singers:
+</p><blockquote class="footnote"> <a name="FOOTNOTE-66" /><p> [66]I
+harp on this because I always get confused and have to look it up in
+the manual page.</p> </blockquote>
+
+<blockquote><pre class="code">Robert M Johnson      344-0909
+Lyndon B Johnson      933-1423
+Samuel H Johnson      754-2542
+Michael K Loukides    112-2535
+Jerry O Peek          267-2345
+Timothy F O'Reilly    443-2434</pre></blockquote>
+
+<p>According to standard "telephone book
+rules," we want these names sorted by last name,
+first name, and middle initial. We don't want the
+phone number to play a part in the sorting. So we want to start
+sorting on field 2, stop sorting on field 3, continue sorting on
+field 0, sort on field 1, and (just to make sure) stop sorting on
+field 2 (the last name). We can code this as follows:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sort +2 -3 +0 -2 phonelist</b></tt>
+Lyndon B Johnson      933-1423
+Robert M Johnson      344-0909
+Samuel H Johnson      754-2542
+Michael K Loukides    112-2535
+Timothy F O'Reilly    443-2434
+Jerry O Peek          267-2345</pre></blockquote>
+
+<p>A few notes:</p>
+
+<ul><li>
+<p>We need the <span class="option">-3</span> option to prevent
+<i class="command">sort</i> from sorting on the telephone number after
+sorting on the last name. Without <span class="option">-3</span>, the
+"Robert Johnson" entry would appear
+before "Lyndon Johnson" because it
+has a lower phone number.
+</p>
+</li><li>
+<p>We don't need to state <span class="option">+1</span>
+explicitly. Unless you give an explicit
+"stop" field, <span class="option">+1</span>
+is implied after <span class="option">+0</span>.
+</p>
+</li><li>
+<p>If two names are completely identical, we probably
+don't care what happens next. However, just to be
+sure that something unexpected doesn't take place,
+we end the option list with <span class="option">-2</span>, which says,
+"After sorting on the middle initial,
+don't do any further sorting."
+</p>
+</li></ul>
+<p>There are a couple of variations that are worth mentioning. You may
+never need them unless you're really serious about
+sorting data files, but it's good to keep them in
+the back of your mind. First, you can add any
+"collation" operations (discard
+blanks, numeric sort, etc.) to the end of a field specifier to
+describe how you want that field sorted. Using our previous example,
+let's say that if two names <em class="emphasis">are</em>
+identical, you want them sorted in numeric phone number order. The
+following command does the trick:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>sort +2 -3 +0 -2 +3n phonelist</b></tt></pre></blockquote>
+
+<p>The <span class="option">+3n</span> option says "do a numeric
+sort on the fourth field." If
+you're worried about initial blanks (perhaps some of
+the phone numbers have area codes), use <span class="option">+3nb</span>.
+</p>
+
+<p>Second, you can specify individual columns within any field for
+sorting, using the notation <span class="option">+n.c</span>, where
+<em class="emphasis">n</em> is a field number, and <em class="emphasis">c</em>
+is a character position within the field. Likewise, the notation
+<span class="option">-n.c</span> says "stop sorting at the
+character before character <em class="emphasis">c</em>."
+If you're counting characters, be sure to use the
+<span class="option">-b</span> (ignore whitespace) option -- otherwise, it
+will be very difficult to figure out what character
+you're counting.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch22_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch22_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">22. Sorting</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">22.3. Changing the sort Field Delimiter</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

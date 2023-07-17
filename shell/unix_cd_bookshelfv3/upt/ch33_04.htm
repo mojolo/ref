@@ -1,0 +1,131 @@
+<html><head><title>What if a Wildcard Doesn't Match? (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch33_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">33.4. What if a Wildcard Doesn't Match?</h2>
+
+<p><a name="IXT-33-3870" /><a name="IXT-33-3871" />I ran
+into a strange situation the other day. I was compiling a program
+that was <a name="IXT-33-3872" />core dumping. At some
+point, I decided to delete the object files and the
+<em class="filename">core</em> file, and start over, so I gave the
+command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm *.o core</b></tt></pre></blockquote>
+
+<p>It works as expected most of the time, except when no object files
+exist. (I don't remember why I did this, but it was
+probably by using <b class="emphasis-bold">!!</b> (<a href="ch30_08.htm#upt3-CHP-30-SECT-8">Section 30.8</a>) when I knew there weren't
+any <em class="emphasis">.o</em>'s around.) In this case,
+<a name="IXT-33-3873" />you get <tt class="literal">No match</tt>,
+and the <em class="emphasis">core</em> file is not deleted.
+</p>
+
+<p><a name="IXT-33-3874" />It
+<a name="IXT-33-3875" />turns out, for C shell
+users, that if none of the wildcards can be expanded, you get a
+<tt class="literal">No match</tt> error. It doesn't matter
+that there's a perfectly good match for other
+name(s). That's because, when <i class="command">csh</i>
+can't match a wildcard, it aborts and prints an
+error -- it won't run the command. If you create
+one <em class="emphasis">.o</em> file or remove the <tt class="literal">*.o</tt>
+from the command line, <em class="emphasis">core</em> will disappear
+happily.
+</p>
+
+<p><a name="IXT-33-3876" />On the other hand, if the
+Bourne shell can't match a wildcard, it just passes
+the unmatched wildcard and other filenames:
+</p>
+
+<blockquote><pre class="code">*.o core</pre></blockquote>
+
+<p>to the command (in this case, to <i class="command">rm</i>) and lets the
+command decide what to do with it. So, with Bourne shell, what
+happens will depend on what your <i class="command">rm</i> command does
+when it sees the literal characters <tt class="literal">*.o</tt>.
+</p>
+
+<p>The <a name="IXT-33-3877" />Korn shell works like the Bourne shell.
+</p>
+
+<p>You can make <i class="command">csh</i> and
+<i class="command">tcsh</i><a name="IXT-33-3878" /> act a lot
+like <i class="command">sh</i> (and <i class="command">ksh</i>) by setting
+the shell's <em class="emphasis">nonomatch</em> option.
+Without <em class="emphasis">nonomatch</em> set, the shell sees a
+nonmatching wildcard and never runs <i class="command">ls</i> at all.
+Then I set <em class="emphasis">nonomatch</em> and the shell passes the
+unmatched wildcard on to <i class="command">ls</i>, which prints its own
+error message:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>ls a*</b></tt>
+ls: No match.
+% <tt class="userinput"><b>set nonomatch</b></tt>
+% <tt class="userinput"><b>ls a*</b></tt>
+ls: a*: No such file or directory</pre></blockquote>
+
+<p>In <i class="command">bash</i><a name="IXT-33-3879" /> Version 1, the option
+<em class="emphasis">allow_null_glob_expansion</em> converts nonmatching
+wildcard patterns into the null string. Otherwise, the wildcard is
+left as is without expansion. Here's an example with
+<b class="emphasis-bold">echo</b> (<a href="ch27_05.htm#upt3-CHP-27-SECT-5">Section 27.5</a>),
+which simply shows the arguments that it gets from the shell. In the
+directory where I'm running this example, there are
+no names starting with <em class="emphasis">a</em>, but there are two
+starting with <em class="emphasis">s</em>. In the first case below,
+<em class="emphasis">allow_null_glob_expansion</em> isn't
+set, so the shell passes the unmatched <tt class="literal">a*</tt> to
+<i class="command">echo</i>. After setting
+<em class="emphasis">allow_null_glob_expansion</em>, the shell removes the
+unmatched <tt class="literal">a*</tt> before it passes the results to
+<i class="command">echo</i>:
+</p>
+
+<blockquote><pre class="code">bash$ <tt class="userinput"><b>echo a* s*</b></tt>
+a* sedscr subdir
+bash$ <tt class="userinput"><b>allow_null_glob_expansion=1</b></tt>
+bash$ <tt class="userinput"><b>echo a* s*</b></tt>
+sedscr subdir</pre></blockquote>
+
+<p><i class="command">bash</i> Version 2 leaves nonmatching wildcard
+patterns as they are unless you've set the
+shell's <em class="emphasis">nullglob</em> option
+(<tt class="literal">shopt -s nullglob</tt>). The
+<em class="emphasis">nullglob</em> option does the same thing that
+<tt class="literal">allow_null_glob_expansion=1</tt> does in
+<i class="command">bash</i> version 1.
+</p>
+
+<p><i class="command">zsh</i><a name="IXT-33-3880" /> gives you all of those choices. See the
+options <em class="emphasis">CSH_NULL_GLOB</em>,
+<em class="emphasis">NOMATCH</em> and <em class="emphasis">NULL_GLOB</em>.
+</p>
+
+<p><em class="emphasis">--ML and JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch33_03.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch33_05.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">33.3. Who Handles Wildcards?</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">33.5. Maybe You Shouldn't Use Wildcards in Pathnames</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

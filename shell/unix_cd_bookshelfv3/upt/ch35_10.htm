@@ -1,0 +1,93 @@
+<html><head><title>Test String Values with Bourne-Shell case (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch35_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">35.10. Test String Values with Bourne-Shell case</h2>
+
+<p><a name="IXT-35-3597" />Each <a name="upt3-IDXTERM-5514" />time you type a
+<a name="IXT-35-3598" />command line at a shell prompt, you can
+see what happens and decide what command to run next. But a shell
+script needs to make decisions like that itself. A
+<i class="command">case</i> statement helps the script make decisions. A
+<i class="command">case</i> statement compares a string (usually taken
+from a <b class="emphasis-bold">shell or environment variable</b>
+(<a href="ch35_09.htm#upt3-CHP-35-SECT-9">Section 35.9</a>, <a href="ch35_03.htm#upt3-CHP-35-SECT-3">Section 35.3</a>)) to one
+or more patterns. The patterns can be simple strings (words, digits,
+etc.) or they can be <b class="emphasis-bold">case wildcard
+expressions</b> (<a href="ch35_11.htm#upt3-CHP-35-SECT-11">Section 35.11</a>). When the
+<i class="command">case</i> statement finds a pattern that matches the
+string, it executes one or more commands.
+</p>
+
+<p>Here's an example that tests your <b class="emphasis-bold">TERM</b> (<a name="IXT-35-3599" /><a href="ch05_02.htm#upt3-CHP-5-SECT-2">Section 5.2</a>)
+environment variable. If you're using a vt100 or
+tk4023 terminal, it runs a command to send some characters to your
+terminal. If you aren't on either of those, it
+prints an error and quits:
+</p>
+
+<p><tt class="literal">exit</tt> <a href="ch35_16.htm#upt3-CHP-35-SECT-16">Section 35.16</a></p>
+
+<blockquote><pre class="code">+case "$TERM" in
+vt100 echo 'ea[w' | tr 'eaw' '\033\001\027' ;;
+tk4023)  echo "*[p23" ;;
+*)  # Not a VT100 or tk4023.  Print error message:
+    echo "progname: quitting: you aren't on a VT100 or tk4023." 1&gt;&amp;2
+    exit
+    ;;
+esac</pre></blockquote>
+
+<p>Here are more details about how this works. The statement compares
+the string between the words <tt class="literal">case</tt> and
+<tt class="literal">in</tt> to the strings at the left-hand edge of the
+lines ending with a <tt class="literal">)</tt> (right parenthesis)
+character. If it matches the first case (in this example, if
+it's the <tt class="literal">vt100</tt>), the command up
+to the <tt class="literal">;;</tt> is executed. The <tt class="literal">;;</tt>
+means "jump to the
+<tt class="literal">esac</tt>" (<i class="command">esac</i> is
+"case" spelled backwards). You can
+put as many commands as you want before each <tt class="literal">;;</tt>,
+but put each command on a separate line (or separate commands on a
+line with <b class="emphasis-bold">semicolons</b> (<a href="ch28_16.htm#upt3-CHP-28-SECT-16">Section 28.16</a>)).<a name="IXT-35-3600" />
+</p>
+
+<p>If the first pattern doesn't match, the shell tries
+the next case -- here, <em class="emphasis">tk4023</em>. As above, a
+match runs the command and jumps to the <i class="command">esac</i>. No
+match? The next pattern is the wildcard <tt class="literal">*</tt>. It
+matches any answer other than <em class="emphasis">vt100</em> or
+<em class="emphasis">tk4023</em> (such as <i class="command">xterm</i> or an
+empty string).
+</p>
+
+<p>You can use as many patterns as you want to. The first one that
+matches is used. It's okay if none of them match.
+The style doesn't matter much. Pick one
+that's readable and be consistent.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch35_09.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch35_11.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">35.9. Shell Variables</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">35.11. Pattern Matching in case Statements</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

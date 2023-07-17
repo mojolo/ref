@@ -1,0 +1,527 @@
+<html><head><title>Expressions (sed & awk, Second Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Dale Dougherty and Arnold Robbins" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="1-56592-225-5" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="sed &amp; awk, Second Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="sed &amp; awk" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="sed &amp; awk" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch07_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">7.6. Expressions</h2>
+
+<p>
+<a name="ch07.exp" />
+<a name="IXT-7-265841" />
+The use of expressions in which you can store, manipulate, and retrieve
+data is quite different from anything you can do in sed, yet it is a
+common feature of most programming languages.</p>
+
+<p>An expression is evaluated and returns a value.  An expression
+consists of any combination of numeric and string constants,
+variables, operators, functions, and regular expressions.  We covered
+regular expressions in detail in <a href="ch02_01.htm">Chapter 2, "Understanding
+Basic Operations"</a>, and
+they are summarized in <a href="appb_01.htm">Appendix B</a>.  Functions will be discussed fully
+in <a href="ch09_01.htm">Chapter 9, "Functions"</a>.  In this section, we will look at
+expressions consisting of constants, variables, and operators.</p>
+
+<p>
+<a name="IXT-7-265842" />
+There are two types of constants: string or
+numeric (<b class="emphasis-bold">"red"</b>
+or <b class="emphasis-bold">1</b>).  A string must be quoted in
+an expression.  Strings can make use of the escape sequences listed in
+<a href="ch07_06.htm#sedawk-ch-7-tab-1">Table 7.1</a>.
+<a name="IXT-7-265843" />
+<a name="IXT-7-265844" />
+<a name="IXT-7-265845" /></p>
+
+<a name="sedawk-ch-7-tab-1" /><h4 class="objtitle">Table 7.1. Escape Sequences</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Sequence</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>\a</td>
+<td>Alert character, usually ASCII BEL character</td>
+</tr>
+
+<tr>
+<td>\b</td>
+<td>Backspace</td>
+</tr>
+
+<tr>
+<td>\f</td>
+<td>Formfeed</td>
+</tr>
+
+<tr>
+<td>\n</td>
+<td>Newline</td>
+</tr>
+
+<tr>
+<td>\r</td>
+<td>Carriage return</td>
+</tr>
+
+<tr>
+<td>\t</td>
+<td>Horizontal tab</td>
+</tr>
+
+<tr>
+<td>\v</td>
+<td>Vertical tab</td>
+</tr>
+
+<tr>
+<td>\<em class="replaceable"><tt>ddd</tt></em></td>
+<td>Character represented as 1 to 3 digit octal value
+<a name="IXT-7-265846" />
+<a name="IXT-7-265847" />
+<a name="IXT-7-265848" /></td>
+</tr>
+
+<tr>
+<td>\x<em class="emphasis">hex</em>
+<a name="IXT-7-265849" /></td>
+<td>Character represented as hexadecimal value<a href="#FOOTNOTE-42">[42]</a></td>
+</tr>
+
+<tr>
+<td>\<em class="emphasis">c</em></td>
+<td>Any literal character
+<em class="emphasis">c</em> (e.g., <b class="emphasis-bold">\"</b> for <b class="emphasis-bold">"</b>)<a href="#FOOTNOTE-43">[43]</a></td>
+</tr>
+
+
+</table><p>
+<blockquote>
+<a name="FOOTNOTE-42" /><p> [42]POSIX does not provide "\x", but it is commonly available.</p>
+
+<p>
+
+<a name="FOOTNOTE-43" /><p> [43] Like ANSI C, POSIX leaves
+purposely undefined what you get when you put a backslash before any
+character not listed in the table. In most awks, you just get that
+character.</p>
+
+</blockquote>
+
+<p>
+<a name="IXT-7-265850" />
+<a name="IXT-7-265851" />
+A <em class="emphasis">variable</em> is an identifier that references a
+value.  To define a variable, you only have to name it and assign it a
+value.  The name can only contain letters, digits, and underscores,
+and may not start with a digit.  Case distinctions in variable names
+<a name="IXT-7-265852" />
+are important: <b class="emphasis-bold">Salary</b> and 
+<b class="emphasis-bold">salary</b> are two different variables.  Variables
+are not declared; you do not have to tell awk what
+<em class="emphasis">type</em> of value will be stored in a variable.  Each
+variable has a string value and a numeric value, and awk uses the
+appropriate value based on the context of the expression.  (Strings
+that do not consist of numbers have a numeric value of 0.)  Variables
+do not have to be initialized; awk automatically initializes
+
+them to
+the empty string, which acts like 0 if used as a number.  The
+following expression assigns a value to <b class="emphasis-bold">x</b>:</p>
+
+<blockquote><pre class="code">x = 1</pre></blockquote>
+
+<p><b class="emphasis-bold">x</b> is the name of the variable, <b class="emphasis-bold">=</b> is an assignment
+operator, and 1 is a numeric constant.</p>
+
+<p>The following expression
+assigns the string "Hello" to the variable <b class="emphasis-bold">z</b>:</p>
+
+<blockquote><pre class="code">z = "Hello"</pre></blockquote>
+
+<p>
+<a name="IXT-7-265853" />
+<a name="IXT-7-265854" />
+<a name="IXT-7-265855" />
+A space is the string concatenation operator.  The
+expression:</p>
+
+<blockquote><pre class="code">z = "Hello" "World"</pre></blockquote>
+
+<p>concatenates the two strings and
+assigns "HelloWorld" to the variable <b class="emphasis-bold">z</b>.</p>
+
+<p>The dollar sign ($) operator is used to reference fields.
+The following expression assigns the value of the first 
+field of the current input record to the variable <b class="emphasis-bold">w</b>:</p>
+
+<blockquote><pre class="code">w = $1</pre></blockquote>
+
+<p>A variety of operators can be used in expressions.
+Arithmetic operators are listed in <a href="ch07_06.htm#sedawk-ch-7-tab-2">Table 7.2</a>.
+<a name="IXT-7-265856" />
+<a name="IXT-7-265857" />
+<a name="IXT-7-265858" /></p>
+
+<a name="sedawk-ch-7-tab-2" /><h4 class="objtitle">Table 7.2. Arithmetic Operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Operator</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>+</td>
+<td>Addition
+<a name="IXT-7-265859" />
+<a name="IXT-7-265860" />
+<a name="IXT-7-265861" /></td>
+</tr>
+
+<tr>
+<td>-</td>
+<td>Subtraction
+<a name="IXT-7-265862" />
+<a name="IXT-7-265863" />
+<a name="IXT-7-265864" /></td>
+</tr>
+
+<tr>
+<td>*</td>
+<td>Multiplication
+<a name="IXT-7-265865" />
+<a name="IXT-7-265866" />
+<a name="IXT-7-265867" /></td>
+</tr>
+
+<tr>
+<td>/</td>
+<td>Division
+<a name="IXT-7-265868" />
+<a name="IXT-7-265869" />
+<a name="IXT-7-265870" /></td>
+</tr>
+
+<tr>
+<td>%</td>
+<td>Modulo
+<a name="IXT-7-265871" />
+<a name="IXT-7-265872" />
+<a name="IXT-7-265873" /></td>
+</tr>
+
+<tr>
+<td>^</td>
+<td>Exponentiation
+<a name="IXT-7-265874" />
+<a name="IXT-7-265875" />
+<a name="IXT-7-265876" />
+<a name="IXT-7-265877" /></td>
+</tr>
+
+<tr>
+<td>**</td>
+<td>Exponentiation<a href="#FOOTNOTE-44">[44]</a>
+<a name="IXT-7-265878" />
+<a name="IXT-7-265879" />
+<a name="IXT-7-265880" /></td>
+</tr>
+
+
+</table><p>
+
+<a name="FOOTNOTE-44" /><p> [44]This is a common extension. It is not in the POSIX standard, and often
+not in the system documentation, either. Its use is thus nonportable.</p>
+
+</blockquote>
+
+<p>Once a variable has been assigned a value, that value can be
+referenced using the name of the variable.  The following expression
+adds 1 to the value of <b class="emphasis-bold">x</b> and assigns it
+to the variable <b class="emphasis-bold">y</b>:</p>
+
+<blockquote><pre class="code">y = x + 1</pre></blockquote>
+
+<p>So, evaluate <b class="emphasis-bold">x</b>, add 1 to it, and put the result
+into the variable <b class="emphasis-bold">y</b>.
+The statement:</p>
+
+<blockquote><pre class="code">print y</pre></blockquote>
+
+<p>prints the value of <b class="emphasis-bold">y</b>.  If the following sequence of 
+statements appears in a script:</p>
+
+<blockquote><pre class="code">x = 1
+y = x + 1
+print y</pre></blockquote>
+
+<p>then the value of <b class="emphasis-bold">y</b> is 2.</p>
+
+<p>We could reduce these three statements to two:</p>
+
+<blockquote><pre class="code">x = 1
+print x + 1</pre></blockquote>
+
+<p>Notice, however, that after the <b class="emphasis-bold">print</b> statement the
+value of <b class="emphasis-bold">x</b> is still 1.  We didn't
+change the value of <b class="emphasis-bold">x</b>; we simply added
+1 to it and printed that value.  In other words, if a third statement
+<b class="emphasis-bold">print x</b> followed, it would output 1.  If, in fact,
+we wished to accumulate the value in <b class="emphasis-bold">x</b>,
+we could use an assignment operator <b class="emphasis-bold">+=</b>.  This
+operator combines two operations; it adds 1 to 
+<b class="emphasis-bold">x</b> and assigns the new value to 
+<b class="emphasis-bold">x</b>.  <a href="ch07_06.htm#sedawk-ch-7-tab-3">Table 7.3</a> lists the
+assignment operators used in awk expressions.
+<a name="IXT-7-265881" />
+<a name="IXT-7-265882" /></p>
+
+<a name="sedawk-ch-7-tab-3" /><h4 class="objtitle">Table 7.3. Assignment Operators</h4><table border="1" cellpadding="3">
+
+<tr>
+<th>Operator</th>
+<th>Description</th>
+</tr>
+
+
+
+
+<tr>
+<td>++</td>
+<td>Add 1 to variable.
+<a name="IXT-7-265883" />
+<a name="IXT-7-265884" />
+<a name="IXT-7-265885" /></td>
+</tr>
+
+<tr>
+<td>--</td>
+<td>Subtract 1 from variable.
+<a name="IXT-7-265886" />
+<a name="IXT-7-265887" />
+<a name="IXT-7-265888" /></td>
+</tr>
+
+<tr>
+<td>+=</td>
+<td>Assign result of addition.
+<a name="IXT-7-265889" />
+<a name="IXT-7-265890" /></td>
+</tr>
+
+<tr>
+<td>-=</td>
+<td>Assign result of subtraction.
+<a name="IXT-7-265891" />
+<a name="IXT-7-265892" /></td>
+</tr>
+
+<tr>
+<td>*=</td>
+<td>Assign result of multiplication.
+<a name="IXT-7-265893" />
+<a name="IXT-7-265894" /></td>
+</tr>
+
+<tr>
+<td>/=</td>
+<td>Assign result of division.
+<a name="IXT-7-265895" />
+<a name="IXT-7-265896" /></td>
+</tr>
+
+<tr>
+<td>%=</td>
+<td>Assign result of modulo.
+<a name="IXT-7-265897" />
+<a name="IXT-7-265898" /></td>
+</tr>
+
+<tr>
+<td>^=</td>
+<td>Assign result of exponentiation.
+<a name="IXT-7-265899" />
+<a name="IXT-7-265900" /></td>
+</tr>
+
+<tr>
+<td>**=
+<a name="IXT-7-265901" />
+<a name="IXT-7-265902" /></td>
+<td>Assign result of exponentiation.<a href="#FOOTNOTE-45">[45]</a></td>
+</tr>
+
+
+</table><p>
+
+<a name="FOOTNOTE-45" /><p> [45]As with "**", this is a common extension, which is also nonportable.</p>
+
+</blockquote>
+
+<p>Look at the following example, which counts each 
+blank line in a file.</p>
+
+<blockquote><pre class="code"># Count blank lines.
+/^$/ { 
+	print x += 1 
+     }</pre></blockquote>
+
+<p>Although we didn't initialize the value of <b class="emphasis-bold">x</b>,
+we can safely assume that its value is 0
+up until the first blank line is encountered.
+The expression "x += 1" 
+is evaluated each time
+a blank line is matched and the value of <b class="emphasis-bold">x</b> is
+incremented by 1. The <b class="emphasis-bold">print</b> statement prints the value 
+returned by the expression. 
+Because we execute the <b class="emphasis-bold">print</b> statement for every blank line,
+we get a running count of blank lines.</p>
+
+<p>There are different ways to write expressions, some more terse
+than others.  The expression "x += 1" is 
+more concise than the following
+equivalent expression:</p>
+
+<blockquote><pre class="code">x = x + 1</pre></blockquote>
+
+<p>But neither of these expressions is as terse as the following
+expression:</p>
+
+<blockquote><pre class="code">++x</pre></blockquote>
+
+<p>
+<a name="IXT-7-265903" />
+<a name="IXT-7-265904" />
+<a name="IXT-7-265905" />
+<a name="IXT-7-265906" />
+<a name="IXT-7-265907" />
+<a name="IXT-7-265908" />
+"++" is the increment operator.  ("--" is the decrement operator.)  
+Each time the expression is evaluated the value of the variable
+is incremented by one.  The increment and decrement operators
+can appear on either side of the operand, as <em class="emphasis">prefix</em>
+or <em class="emphasis">postfix</em> operators.  The position has a different effect. 
+<a name="IXT-7-265909" />
+<a name="IXT-7-265910" />
+<a name="IXT-7-265911" /></p>
+
+<blockquote><pre class="code">++x	<i class="lineannotation">Increment x before returning value (prefix)</i>
+x++	<i class="lineannotation">Increment x after returning value (postfix)</i></pre></blockquote>
+
+<p>For instance, if our example was written:</p>
+
+<blockquote><pre class="code">/^$/ { 
+	print x++
+     }</pre></blockquote>
+
+<p>When the
+first blank line is matched, the expression returns
+the value "0"; the second blank line returns "1", and so on.  
+If we put the increment operator before 
+<b class="emphasis-bold">x</b>, then the first time the expression is evaluated,
+it will return "1."</p>
+
+<p>Let's implement that expression in our example.
+In addition, instead of printing a count each time a blank
+line is matched, we'll accumulate the count as the value of <b class="emphasis-bold">x</b>
+and print only the total number of blank lines.
+The <b class="emphasis-bold">END</b> pattern is the place to put the <b class="emphasis-bold">print</b>
+that displays the value of <b class="emphasis-bold">x</b> after the last input line is read.</p>
+
+<blockquote><pre class="code"># Count blank lines.
+/^$/ { 
+	++x
+}
+END {
+	print x
+}</pre></blockquote>
+
+<p>Let's try it on the sample file that 
+has three blank lines in it.</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f awkscr test</b></tt>
+3</pre></blockquote>
+
+<p>The script outputs the number of blank lines.</p>
+
+<a name="sedawk-ch-7-sect-6.1" /><div class="sect2">
+<h3 class="sect2">7.6.1. Averaging Student Grades</h3>
+
+<p>Let's look at another example, one in which we sum a series of
+student grades and then calculate the average.  Here's what
+the input file looks like:</p>
+
+<blockquote><pre class="code">john 85 92 78 94 88
+andrea 89 90 75 90 86
+jasper 84 88 80 92 84</pre></blockquote>
+
+<p>There are five grades following the student's name.
+Here is the script that will give us each student's
+average:</p>
+
+<blockquote><pre class="code"># average five grades 
+{ total = $2 + $3 + $4 + $5 + $6
+  avg = total / 5
+  print $1, avg }</pre></blockquote>
+
+<p>This script adds together fields 2 through 6 to get
+the sum total of the five grades.
+The value of <b class="emphasis-bold">total</b> is divided by 5 and assigned
+to the variable <b class="emphasis-bold">avg</b>.  ("/" is the operator for
+division.)  The <b class="emphasis-bold">print</b> statement
+outputs the student's name and average.
+Note that we could have skipped the assignment of <b class="emphasis-bold">avg</b>
+and instead calculated the average as part of the <b class="emphasis-bold">print</b>
+statement, as follows:</p>
+
+<blockquote><pre class="code">print $1, total / 5</pre></blockquote>
+
+<p>This script shows how easy it is
+to write programs in awk.  
+Awk parses the input into fields and records.
+You are spared having to read individual characters and declaring data
+types.  Awk does this for you, automatically.</p>
+
+<p>Let's see a sample run of the script that calculates student
+averages:</p>
+
+<blockquote><pre class="code">$ <tt class="userinput"><b>awk -f grades.awk grades</b></tt>
+john 87.4
+andrea 86
+jasper 85.6</pre></blockquote>
+
+<p>
+</p>
+</div>
+
+
+
+
+<a name="IXT-7-265912" />
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch07_05.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch07_07.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">7.5. Records and Fields</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">7.7. System Variables</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

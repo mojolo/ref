@@ -1,0 +1,91 @@
+<html><head><title>Using GNU tar with a Remote Tape Drive (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch38_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">38.8. Using GNU tar with a Remote Tape Drive</h2>
+
+<p><a name="IXT-38-3004" /><a name="IXT-38-3005" /><a name="IXT-38-3006" /><a name="IXT-38-3007" /><a name="IXT-38-3008" /><a name="IXT-38-3009" />If you're using GNU
+<i class="command">tar</i>, you can
+<a name="IXT-38-3010" />probably ignore the tips in
+<a href="ch38_07.htm#upt3-CHP-38-SECT-7">Section 38.7</a> about using a tape drive on a
+remote system. GNU <i class="command">tar</i> makes it easy to access a
+remote drive via <i class="command">rsh</i> or a similar command like
+<i class="command">ssh</i>.
+</p>
+
+<p>When referring to a local host, the GNU <i class="command">tar</i>
+<span class="option">f</span> option takes a plain filename like
+<em class="emphasis">foo.tar</em> or a device name like
+<em class="emphasis">/dev/rmt0</em>. If you put a colon (:) before that
+name, though, you can prepend a remote hostname -- and,
+optionally, a username. For example, to get a table of contents of
+the tape on the drive <em class="emphasis">/dev/rmt8</em> on the remote
+host <em class="emphasis">server2</em>, logging into
+<em class="emphasis">server2</em> as yourself, type:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar tf server2:/dev/rmt8</b></tt></pre></blockquote>
+
+<p>To specify a different username than the one on your local host, add
+it with an <tt class="literal">@</tt> before the hostname. (This assumes
+you're allowed to connect to the remote host without
+a password -- because there's a
+<em class="emphasis">.rhosts</em> file on the remote system, for
+instance.) For example, to connect to <em class="emphasis">server2</em> as
+<em class="emphasis">heather</em> and extract the files
+<em class="emphasis">reports/products.sgml</em> and
+<em class="emphasis">reports/services.sgml</em> from
+<em class="emphasis">/dev/rmt8</em>:
+</p>
+
+<p><tt class="literal">{ }</tt> <a href="ch28_04.htm#upt3-CHP-28-SECT-4">Section 28.4</a></p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar xf</b></tt>
+<tt class="userinput"><b>heather@server2:/dev/rmt8 reports/{products,services}.sgml</b></tt></pre></blockquote>
+
+<p>By default, GNU <i class="command">tar</i> uses <i class="command">rsh</i>,
+<i class="command">remsh</i>, or <i class="command">nsh</i> to access the
+remote machine, though that can be changed when
+<i class="command">tar</i> is built and installed on your host. If you
+want another access command, like <i class="command">ssh</i>, you can set
+that with the <span class="option">- -rsh-command</span> option. The next
+example gets the contents of the archive on the drive
+<em class="emphasis">/dev/rmt8</em> from the host
+<em class="emphasis">capannole.it</em> using <i class="command">ssh</i>. Note
+that <i class="command">tar</i> doesn't check your
+<b class="emphasis-bold">search path</b> (<a href="ch27_06.htm#upt3-CHP-27-SECT-6">Section 27.6</a>) for the <em class="emphasis">rsh-command</em>; you
+have to give its absolute pathname (which you can get with a command
+like <b class="emphasis-bold">which</b> (<a href="ch02_06.htm#upt3-CHP-2-SECT-6">Section 2.6</a>)): 
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>tar -x --file=capannole.it:/dev/rmt8</b></tt>
+<tt class="userinput"><b>--rsh-command=/usr/bin/ssh</b></tt></pre></blockquote>
+
+<p>On the other hand, if you need to use a local filename with a colon
+in it, add the <span class="option">- -force-local</span> option.
+</p>
+
+<p> <em class="emphasis">-- JP</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch38_07.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch38_09.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">38.7. Using tar to a Remote Tape Drive</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">38.9. On-Demand Incremental Backups of a Project</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

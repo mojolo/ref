@@ -1,0 +1,462 @@
+<html><head><title>Interruptable gets with wget (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch40_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch40_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">40.7. Interruptable gets with wget</h2>
+
+<p><a name="upt3-IDXTERM-6540" /> <a name="upt3-IDXTERM-6541" /> <a name="upt3-IDXTERM-6542" />
+<a name="upt3-IDXTERM-6543" />The GNU utility <a name="upt3-IDXTERM-6544" /><em class="emphasis">wget</em> can be used to
+access files through the Internet using
+<a name="IXT-40-2789" />HTTP, HTTPS, or FTP. The best thing
+about the utility is that if the process is interrupted and started
+again, it continues from where it left off.
+</p>
+
+<p> <img src="figs/www.gif" alt="Figure " width="25" /> Go to <a href="http://examples.oreilly.com/upt3">http://examples.oreilly.com/upt3</a> for more information on: wget</p>
+
+<p>The <em class="emphasis">wget</em> utility is installed by default in a
+lot of systems, but if you can't find it, it can be
+downloaded from GNU, at <a href="http://www.gnu.org/software/wget/wget.html">http://www.gnu.org/software/wget/wget.html</a>.
+</p>
+
+<p>The basic syntax for <em class="emphasis">wget</em> is very simple: type
+<tt class="literal">wget</tt> followed by the URL of the file or files
+you're trying to download:
+</p>
+
+<blockquote><pre class="code">wget http://www.<em class="replaceable"><tt>somefile</em>.com/<em class="replaceable">somefile</tt></em>.htm
+wget ftp://www.<em class="replaceable"><tt>somefile</em>.com/<em class="replaceable">somefile</tt></em></pre></blockquote>
+
+<p>The file is downloaded and saved and a status is printed out to the
+screen:
+</p>
+
+<blockquote><pre class="code">--16:51:58--  http://dynamicearth.com:80/index.htm
+           =&gt; `index.htm'
+Connecting to dynamicearth.com:80... connected!
+HTTP request sent, awaiting response... 200 OK
+Length: 9,144 [text/html]
+
+    0K -&gt; ........                                               [100%]
+
+16:51:58 (496.09 KB/s) - `index.htm' saved [9144/9144]</pre></blockquote>
+
+<p><a name="IXT-40-2790" />The
+default use of <em class="emphasis">wget</em> downloads the file into your
+current location. If the download is interrupted, by default
+<em class="emphasis">wget</em> does not resume at the point of
+interruption. You need to specify an option for this behavior. The
+<em class="emphasis">wget</em> options can be found in <a href="ch40_07.htm#upt3-CHP-40-TABLE-2">Table 40-2</a>. Short and long forms of each option are
+specified, and options that don't require input can
+be grouped together:
+</p>
+
+<blockquote><pre class="code">&gt; wget -drc URL</pre></blockquote>
+
+<p>For those options that do require an input, you
+don't have to separate the option and the input with
+whitespace:
+</p>
+
+<blockquote><pre class="code">&gt; wget -ooutput.file URL</pre></blockquote>
+
+<a name="upt3-CHP-40-TABLE-2" /><h4 class="objtitle">Table 40-2. wget options </h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>
+<p>Option</p>
+</th>
+<th>
+<p>Purpose</p>
+</th>
+<th>
+<p>Examples</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">-V</tt></p>
+</td>
+<td>
+<p>Get version of wget</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -V</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-h</tt> or <tt class="literal">--help</tt></p>
+</td>
+<td>
+<p>Get listing of wget options</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -help</pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-b</tt> or <tt class="literal">--background</tt></p>
+</td>
+<td>
+<p>Got to background after start</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -b <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-e</tt> or
+<tt class="literal">--execute=</tt><em class="replaceable"><tt>COMMAND</tt></em>
+</p>
+</td>
+<td>
+<p>Execute command</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -e COMMAND <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-o</tt> or
+<tt class="literal">--output-file=</tt><em class="replaceable"><tt>file</tt></em>
+</p>
+</td>
+<td>
+<p>Log messages to file</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -o <em class="replaceable"><tt>filename url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-a</tt> or
+<tt class="literal">--append-output=</tt><em class="replaceable"><tt>file</tt></em>
+</p>
+</td>
+<td>
+<p>Appends to log file</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -a <em class="replaceable"><tt>filename url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-d</tt> or <tt class="literal">--debug</tt></p>
+</td>
+<td>
+<p>Turn on debug output</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -d <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-q</tt> or <tt class="literal">--quiet</tt></p>
+</td>
+<td>
+<p>Turn off wget's output</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -q <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-v</tt> or <tt class="literal">--verbose</tt></p>
+</td>
+<td>
+<p>Turn on verbose output</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -v <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-nv</tt> or <tt class="literal">-non-verbose</tt></p>
+</td>
+<td>
+<p>Turn off verbose output</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -nv <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-i</tt> or
+<tt class="literal">--input-file=</tt><em class="replaceable"><tt>file</tt></em>
+</p>
+</td>
+<td>
+<p>Read urls from file</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -I <em class="replaceable"><tt>inputfile</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-F</tt> or <tt class="literal">--force-html</tt></p>
+</td>
+<td>
+<p>Force input to be treated as HTML</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -F <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-t</tt> or
+<tt class="literal">--tries=</tt><em class="replaceable"><tt>number</tt></em>
+</p>
+</td>
+<td>
+<p>Number of re-tries to get file</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -t 3 <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-O</tt> or
+-<tt class="literal">-output-document=</tt><em class="replaceable"><tt>file</tt></em>
+</p>
+</td>
+<td>
+<p>Forces all documents into specified</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -O <em class="replaceable"><tt>savedfile</em> -i <em class="replaceable">inputfile</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-nc</tt> or <tt class="literal">--no-clobber</tt></p>
+</td>
+<td>
+<p>Don't clobber existing file</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -nc <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-c</tt> or <tt class="literal">--continue</tt></p>
+</td>
+<td>
+<p>Continue getting file</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -c <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">--dot-style=</tt><em class="replaceable"><tt>style</tt></em></p>
+</td>
+<td>
+<p>Retrieval indicator</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -dot-style=binary <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-N</tt> or <tt class="literal">--timestamping</tt></p>
+</td>
+<td>
+<p>Turn on time-stamping</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -N <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-S</tt> or <tt class="literal">--server-response</tt></p>
+</td>
+<td>
+<p>Print HTTP headers, FTP responses</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -S <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">--spider</tt></p>
+</td>
+<td>
+<p>Wget behaves as a web spider, doesn't download</p>
+</td>
+<td>
+<blockquote><pre class="code">wget --spider <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-T</tt> or
+<tt class="literal">--timeout=</tt><em class="replaceable"><tt>seconds</tt></em>
+</p>
+</td>
+<td>
+<p>Set the time out</p>
+</td>
+<td>
+<blockquote><pre class="code">-wget -T 30 <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-w</tt> or
+<tt class="literal">--wait=</tt><em class="replaceable"><tt>seconds</tt></em>
+</p>
+</td>
+<td>
+<p>Wait specified number of seconds</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -w 20 <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-Y</tt> or
+<tt class="literal">--proxy=</tt><em class="replaceable"><tt>on/off</tt></em>
+</p>
+</td>
+<td>
+<p>Turn proxy on or off</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -Y on <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-Q</tt> or
+<tt class="literal">--quota=</tt><em class="replaceable"><tt>quota</tt></em>
+</p>
+</td>
+<td>
+<p>Specify download quota size</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -Q2M <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-nd</tt> or <tt class="literal">--no-directories</tt></p>
+</td>
+<td>
+<p>Do not create directories in recursive download</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -nd <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-x</tt> or  -- force-directories</p>
+</td>
+<td>
+<p>Opposite of -nd</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -x <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-nh</tt> or <tt class="literal">--no-host-directories</tt></p>
+</td>
+<td>
+<p>Disable host-prefixed directories</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -nh <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">--cut-dirs=</tt><em class="replaceable"><tt>number</tt></em></p>
+</td>
+<td>
+<p>Ignore number directories</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -cur-dirs=3 <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">-P</tt> or
+<tt class="literal">--directory-prefix=</tt><em class="replaceable"><tt>prefix</tt></em>
+</p>
+</td>
+<td>
+<p>Set directory to prefix</p>
+</td>
+<td>
+<blockquote><pre class="code">wget -P test <em class="replaceable"><tt>url</tt></em></pre></blockquote>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">--http-user=</tt><em class="replaceable"><tt>user</tt></em>
+<tt class="literal">--http-passwd=</tt><em class="replaceable"><tt>passwd</tt></em>
+</p>
+</td>
+<td>
+<p>Set username and password</p>
+</td>
+<td>
+<blockquote><pre class="code">wget --http-user=<em class="replaceable"><tt>user</em> --http-passwd=<em class="replaceable">password</em> <em class="replaceable">url</tt></em></pre></blockquote>
+</td>
+</tr>
+
+</table><p>
+
+<p><em class="emphasis"><a name="IXTR3-2826" /> <a name="IXTR3-2827" /> <a name="IXTR3-2828" /> <a name="IXTR3-2829" /> -- SP<a name="IXTR3-2830" /></em>
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch40_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch40_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">40.6. Installing Software with Debian's Apt-Get</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">40.8. The curl Application and One-Step GNU-Darwin Auto-Installer for OS X</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

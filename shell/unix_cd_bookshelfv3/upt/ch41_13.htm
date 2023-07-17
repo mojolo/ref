@@ -1,0 +1,206 @@
+<html><head><title>Perl and the Internet (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch42_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">41.13. Perl and the Internet</h2>
+
+<p>Because Perl supports Berkeley sockets, all kinds of networking tasks
+can be automated with Perl. Below are some common idioms to show you
+what is possible with Perl and a little elbow grease.
+</p>
+
+<a name="upt3-CHP-41-SECT-13.1" /><div class="sect2">
+<h3 class="sect2">41.13.1. Be Your Own Web Browser with LWP</h3>
+
+<p>The suite of classes that handle all the aspects of HTTP are
+collectively known as LWP (for libwww-perl library). If your Perl
+installation doesn't currently have LWP, you can
+easily install it with the <b class="emphasis-bold">CPAN
+module</b> (<a href="ch41_11.htm#upt3-CHP-41-SECT-11">Section 41.11</a>) like this:
+</p>
+
+<blockquote><pre class="code"># perl -MCPAN -e 'install Bundle::LWP'</pre></blockquote>
+
+<p>If you also included an X widget library such as Tk, you could create
+a graphic web browser in Perl (an example of this comes with the Perl
+Tk library). However, you don't need all of that if
+you simply want to grab a file from a web server:
+</p>
+
+<blockquote><pre class="code">use LWP::Simple;
+my $url = "http://slashdot.org/slashdot.rdf";
+getstore($url, "s.rdf");</pre></blockquote>
+
+<p>This example grabs the Rich Site Summary file from the popular tech
+news portal, Slashdot, and saves it to a local file called
+<em class="filename">s.rdf</em>. In fact, you don't even
+need to bother with a full-fledged script:
+</p>
+
+<blockquote><pre class="code">$ perl -MLWP::Simple -e 'getstore("http://slashdot.org/slashdot.rdf", "s.rdf")'</pre></blockquote>
+
+<p>Sometimes you want to process a web page to extract information from
+it. Here, the title of the page given by the URL given on the command
+line is extracted and reported:
+</p>
+
+<blockquote><pre class="code">use LWP::Simple;
+use HTML::TokeParser;
+
+$url = $ARGV[0] || 'http://www.oreilly.com';
+$content = get($url);
+die "Can't fetch page: halting\n" unless $content;
+
+$parser = HTML::TokeParser-&gt;new(\$content);
+$parser-&gt;get_tag("title");
+$title = $parser-&gt;get_token;
+print $title-&gt;[1], "\n" if $title;</pre></blockquote>
+
+<p>After bringing in the library to fetch the web page (LWP::Simple) and
+the one that can parse HTML (HTML::TokeParser), the command line is
+inspected for a user-supplied URL. If one isn't
+there, a default URL is used. The <tt class="literal">get</tt> function,
+imported implicitly from LWP::Simple, attempts to fetch the URL. If
+it succeeds, the whole page is kept in memory in the scalar
+<tt class="literal">$content</tt>. If the fetch fails,
+<tt class="literal">$content</tt> will be empty, and the script halts. If
+there's something to parse, a reference to the
+content is passed into the HTML::TokeParser object constructor.
+HTML::TokeParser deconstructs a page into individual HTML elements.
+Although this isn't the way most people think of
+HTML, it does make it easier for both computers and programmers to
+process web pages. Since nearly every web page has only one
+<tt class="literal">&lt;title&gt;</tt> tag, the parser is instructed to
+ignore all tokens until it finds the opening
+<tt class="literal">&lt;title&gt;</tt> tag. The actual title string is a
+text string and fetching that piece requires getting the next token.
+The method <tt class="literal">get_token</tt> returns an array reference of
+various sizes depending on the kind of token returned (see the
+HTML::TokeParse manpage for details). In this case, the desired
+element is the second one.
+</p>
+
+<p>One important word of caution: these scripts are very simple web
+crawlers, and if you plan to be grabbing a lot of pages from a web
+server you don't own, you should do more research
+into how to build polite web robots. See
+O'Reilly's <em class="citetitle">Perl &amp;
+LWP</em>.
+</p>
+
+</div>
+<a name="upt3-CHP-41-SECT-13.2" /><div class="sect2">
+<h3 class="sect2">41.13.2. Sending Mail with Mail::Sendmail</h3>
+
+<p>Often, you may find it necessary to send an email reminder from a
+Perl script. You could do this with sockets only, handling the whole
+SMTP protocol in your code, but why bother? Someone has already done
+this for you. In fact, there are several SMTP modules on CPAN, but
+the easiest one to use for simple text messages is Mail::Sendmail.
+Here's an example:
+</p>
+
+<blockquote><pre class="code">use Mail::Sendmail;
+
+my %mail = (
+                Subject =&gt; "About your disk quota"
+                To      =&gt; "jane@hostname.com, fred@hostname.com"
+                From    =&gt; "admin@hostname.com",
+                Message =&gt; "You've exceeded your disk quotas",
+                smtp    =&gt; "smtp-mailhost.hostname.com",
+           );
+
+sendmail(%mail) or die "error: $Mail::Sendmail::error";
+print "done\a\n";</pre></blockquote>
+
+<p>Since most readers will be familiar with the way email works, this
+module should be fairly easy to adapt to your own use. The one field
+that may not be immediately clear is <tt class="literal">smtp</tt>. This
+field should be set to the hostname or IP address of a machine that
+will accept SMTP relay requests from the machine on which your script
+is running. With the proliferation of email viruses of mass
+destruction, mail administrators don't usually allow
+their machines to be used by unknown parties. Talk to your local
+system administrator to find a suitable SMTP host for your needs.
+</p>
+
+</div>
+<a name="upt3-CHP-41-SECT-13.3" /><div class="sect2">
+<h3 class="sect2">41.13.3. CGI Teaser</h3>
+
+<p>What Perl chapter would be complete without some mention of CGI? The
+Common Gateway Interface is a standard by which web servers, like
+Apache, allow external programs to interact with web clients. The
+details of CGI can be found in
+O'Reilly's <em class="citetitle">CGI Programming with Perl</em>, but the code below uses the
+venerable CGI module to create a simple form and display the results
+after the user has hit the submit button. You will need look through
+your local web server's configuration files to see
+where such a script needs to be in order for it to work.
+Unfortunately, that information is very system-dependent.
+</p>
+
+<blockquote><pre class="code">use CGI;
+
+$cgi  = CGI-&gt;new;
+$name = $cgi-&gt;param("usrname");
+
+print
+  $cgi-&gt;header, $cgi-&gt;start_html,
+  $cgi-&gt;h1("My First CGI Program");
+
+if( $name ){
+  print $cgi-&gt;p("Hello, $name");
+}
+
+print
+  $cgi-&gt;start_form,
+  $cgi-&gt;p("What's your name: "), $cgi-&gt;textfield(-name =&gt; "usrname"),
+  $cgi-&gt;submit, $cgi-&gt;end_form,
+  $cgi-&gt;end_html;</pre></blockquote>
+
+<p>CGI scripts are unlike other scripts with which you are probably more
+familiar, because these programs have a notion of programming state.
+In other words, when the user first accesses this page,
+<tt class="literal">$name</tt> will be empty and a blank form with a text
+box will be displayed. When the user enters something into that
+textbox and submits the form, the user's input will
+be stored under the key <tt class="literal">usrname</tt>. After the user
+presses the form's submit button, the values of that
+form are available through the CGI method <tt class="literal">param</tt>.
+Here, the desired value is stored under the key
+<tt class="literal">usrname</tt>. If this value is populated, a simple
+message is displayed before showing the form again.
+</p>
+
+<p>Now you have nearly all the tools necessary to create your own
+Internet search engine. I leave the details of creating a massive
+data storage and retrieval system needed to catalog millions of web
+pages as an exercise for the reader.<a name="IXTR3-2698" /> 
+</p>
+
+<p> <em class="emphasis">-- JJ</em></p>
+
+</div>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_12.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch42_01.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">41.12. Make Custom grep Commands (etc.) with Perl</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">42. Python</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

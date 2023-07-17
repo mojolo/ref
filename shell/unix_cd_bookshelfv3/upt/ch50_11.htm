@@ -1,0 +1,140 @@
+<html><head><title>Juggling Permissions (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch50_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch50_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">50.11. Juggling Permissions</h2>
+
+<p><a name="IXT-50-1096" /><a name="IXT-50-1097" />Like any security feature, Unix
+permissions occasionally get in your way. When you want to let people
+use your apartment, you have to make sure you can get them a key; and
+when you want to let someone into your files, you have to make sure
+they have read and write access.
+</p>
+
+<p>In the ideal world, each file would have a list of users who can
+access it, and the file's owner could just add or
+delete users from that list at will. Some secure versions of Unix are
+configured this way, but standard Unix systems don't
+provide that degree of control. Instead, we have to know how to
+juggle Unix file permissions to achieve our ends.
+</p>
+
+<p>For example, suppose I have a file called <em class="emphasis">ch01</em>
+that I want edited by another user, <em class="emphasis">joe</em>. I tell
+him that the file is <em class="emphasis">/books/ptools/ch01</em>, but he
+reports to me that he can't access it.
+</p>
+
+<blockquote><pre class="code">joe % <tt class="userinput"><b>cd /books/ptools</b></tt>
+joe % <tt class="userinput"><b>more ch01</b></tt>
+ch01: Permission denied</pre></blockquote>
+
+<p>The reason <em class="emphasis">joe</em> can't read the
+file is that it is set to be readable only by me.
+<em class="emphasis">joe</em> can check the permissions on the file using
+the <span class="option">-l</span> option to the <i class="command">ls</i> command:
+<a name="IXT-50-1098" />
+</p>
+
+<blockquote><pre class="code">joe % <tt class="userinput"><b>ls -l ch01</b></tt>
+-rw-------  1 lmui       13727 Sep 21 07:43 ch01</pre></blockquote>
+
+<p><em class="emphasis">joe</em> asks me (<em class="emphasis">lmui</em>) to give
+him read and write permission on the file. Only the file owner and
+<em class="emphasis">root</em> can change permission for a file. Now,
+what's the best way to give <em class="emphasis">joe</em>
+access to <em class="emphasis">ch01</em>?
+</p>
+
+<p>The fastest and most sure-fire way to give another user permission is
+to extend read and write permission to everyone:
+</p>
+
+<blockquote><pre class="code">lmui % <tt class="userinput"><b>chmod 666 ch01</b></tt>
+lmui % <tt class="userinput"><b>ls -l ch01</b></tt>
+-rw-rw-rw-  1 lmui       13727 Sep 21 07:43 ch01</pre></blockquote>
+
+<p>But this is sort of like leaving your front door wide open so your
+cat can get in and out. It's far better to extend
+read and write access to a common group instead of to the entire
+world. I try to give <em class="emphasis">joe</em> access to the file by
+giving group read and write access:
+</p>
+
+<blockquote><pre class="code">lmui % <tt class="userinput"><b>chmod 660 ch01</b></tt>
+lmui % <tt class="userinput"><b>ls -l ch01</b></tt>
+-rw-rw----  1 lmui       13727 Sep 21 07:43 ch01</pre></blockquote>
+
+<p>But <em class="emphasis">joe</em> reports that it still
+doesn't work:
+</p>
+
+<blockquote><pre class="code">joe % <tt class="userinput"><b>more ch01</b></tt>
+ch01: Permission denied</pre></blockquote>
+
+<p>What happened? Well, I gave read and write permission to the
+file's group, but <em class="emphasis">joe</em>
+doesn't belong to that group. You can find out the
+group a file belongs to using the <span class="option">-lg</span> option to
+<i class="command">ls</i>. <a name="IXT-50-1099" /><a name="IXT-50-1100" />(This is the default on many systems
+when you type <tt class="literal">ls -l</tt>. Other systems are different.
+For instance, the GNU <i class="command">ls</i> command ignores
+<span class="option">-g</span> and has a <span class="option">-G</span> option for when you
+don't want to see the group name.)
+</p>
+
+<blockquote><pre class="code">joe % <tt class="userinput"><b>ls -lg ch01</b></tt>
+-rw-rw----  1 lmui     power          13727 Sep 21 07:43 ch01</pre></blockquote>
+
+<p><a name="IXT-50-1101" />You can use
+the <b class="emphasis-bold">groups command</b> (<a href="ch49_06.htm#upt3-CHP-49-SECT-6">Section 49.6</a>) to find out what groups a user belongs to:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>groups joe</b></tt>
+joe : authors ora
+% <tt class="userinput"><b>groups lmui</b></tt>
+lmui : authors power wheel ora</pre></blockquote>
+
+<p>The <em class="emphasis">ch01</em> file belongs to group
+<em class="emphasis">power</em>. <em class="emphasis">joe</em>
+isn't a member of this group, but both
+<em class="emphasis">lmui</em> and <em class="emphasis">joe</em> are in the
+<em class="emphasis">authors</em> group. To give <em class="emphasis">joe</em>
+access to the file <em class="emphasis">ch01</em>, therefore, I need to
+put the file in group <em class="emphasis">authors</em>. To do that, I use
+the <b class="emphasis-bold">chgrp</b> (<a href="ch01_17.htm#upt3-CHP-1-SECT-17">Section 1.17</a>) command:
+</p>
+
+<blockquote><pre class="code">lmui % <tt class="userinput"><b>chgrp authors ch01</b></tt>
+lmui % <tt class="userinput"><b>ls -lg ch01</b></tt>
+-rw-rw----  1 lmui     authors        13727 Sep 21 07:43 ch01</pre></blockquote>
+
+<p>Now <em class="emphasis">joe</em> can read and write the file. (On some
+systems, he may need to run <b class="emphasis-bold">newgrp</b>
+(<a href="ch49_04.htm#upt3-CHP-49-SECT-4">Section 49.4</a>) first.)
+</p>
+
+<p> <em class="emphasis">-- LM</em></p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch50_10.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch50_12.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">50.10. A Directory That People Can Access but Can't List</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">50.12. File Verification with md5sum</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

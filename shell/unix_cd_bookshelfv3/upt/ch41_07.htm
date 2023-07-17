@@ -1,0 +1,275 @@
+<html><head><title>Perl Boot Camp, Part 4: Pattern Matching (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch41_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">41.7. Perl Boot Camp, Part 4: Pattern Matching</h2>
+
+<p><a name="upt3-IDXTERM-6796" /> <a name="upt3-IDXTERM-6797" />Perl is
+<a name="IXT-41-2649" />excellent at finding patterns in text.
+It does this with regular expressions, similar to the ones used by
+<i class="command">grep</i> and <i class="command">awk</i>. Any scalar can be
+matched against a regular expression with the matching
+<a name="IXT-41-2650" />binding operator,<a name="IXT-41-2651" /> <tt class="literal">=~</tt>. For example:
+</p>
+
+<blockquote><pre class="code">if( $user =~ /jjohn/ ){
+  print "I know you";
+}</pre></blockquote>
+
+<p>Without the matching binding operator, regular expressions match
+against the current value of <tt class="literal">$_</tt>. For example:
+</p>
+
+<blockquote><pre class="code">while (&lt;&gt;) {
+  if (/quit/i) {
+    print "Looks like you want out.\n";
+    last;
+  }
+}</pre></blockquote>
+
+<p>In this code, each line of input is examined for the character
+sequence <tt class="literal">quit</tt>. The <tt class="literal">/i</tt> modifier
+at the end of the regular expression makes the matching
+case-insensitive (i.e., <tt class="literal">Quit</tt> matches as well as
+<tt class="literal">qUIT</tt>).
+</p>
+
+<p>As with regular expressions in other utilities, Perl attempts to find
+the leftmost and longest match for your pattern against a given
+string. Patterns are made up of characters (which normally match
+themselves) and special metacharacters, including those found in
+<a href="ch41_07.htm#upt3-CHP-41-TABLE-8">Table 41-8</a>.
+</p>
+
+<a name="upt3-CHP-41-TABLE-8" /><h4 class="objtitle">Table 41-8. Common Perl regular expression metacharacters </h4><table border="1" cellpadding="3">
+
+
+
+<tr>
+<th>
+<p>Operator</p>
+</th>
+<th>
+<p>Description</p>
+</th>
+</tr>
+
+
+<tr>
+<td>
+<p><tt class="literal">^</tt><a name="IXT-41-2654" />
+</p>
+</td>
+<td>
+<p>Pattern must match at the beginning of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">$</tt><a name="IXT-41-2655" />
+</p>
+</td>
+<td>
+<p>Pattern must match at the end of the line.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">.</tt><a name="IXT-41-2656" />
+</p>
+</td>
+<td>
+<p>Match any character (expect the newline).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>pat1</em><a name="IXT-41-2657" /><a name="IXT-41-2658" /><tt class="literal">|</tt><em class="replaceable">pat2</tt></em>
+</p>
+</td>
+<td>
+<p>Alternation: match the pattern on either the left or right.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">(</tt><a name="IXT-41-2659" /><em class="replaceable"><tt>pattern</tt></em><tt class="literal">)</tt>
+</p>
+</td>
+<td>
+<p>Group this pattern together as one (good for quantifiers and
+capturing).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">[</tt><a name="IXT-41-2660" /> <a name="IXT-41-2661" /><em class="replaceable"><tt>synbols</tt></em><tt class="literal">]</tt>
+</p>
+</td>
+<td>
+<p>Define a new character class: any of the symbols given can match one
+character of input (e.g. <tt class="literal">/[aeiou]/</tt> matches a
+string with at least one regular vowel).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\w</tt><a name="IXT-41-2662" />
+</p>
+</td>
+<td>
+<p>Match a letter, number and underscore.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\d</tt><a name="IXT-41-2663" />
+</p>
+</td>
+<td>
+<p>Match a number.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><tt class="literal">\s</tt><a name="IXT-41-2664" /><a name="IXT-41-2665" />
+</p>
+</td>
+<td>
+<p>Match a whitespace character: space, tab, \n, \r.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>pattern</tt></em><tt class="literal">*</tt><a name="IXT-41-2666" />
+</p>
+</td>
+<td>
+<p>Match 0 or more consecutive occurences of
+<em class="replaceable"><tt>pattern</tt></em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>pattern</tt></em><tt class="literal">+</tt><a name="IXT-41-2667" />
+</p>
+</td>
+<td>
+<p>Match 1 or more consecutive occurrences of
+<em class="replaceable"><tt>pattern</tt></em>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em class="replaceable"><tt>pattern</tt></em><tt class="literal">?</tt><a name="IXT-41-2668" />
+</p>
+</td>
+<td>
+<p>Optionally match <em class="replaceable"><tt>pattern</tt></em>.</p>
+</td>
+</tr>
+
+</table><p>
+
+<p>A very common task for which regular expressions are used is
+extracting specific information from a line of text. Suppose you
+wanted to get the first dotted quad that appears in this
+<i class="command">ifconfig</i> command:
+</p>
+
+<blockquote><pre class="code">$ ifconfig eth0
+eth0      Link encap:Ethernet  HWaddr 00:A0:76:C0:1A:E1
+          inet addr:192.168.1.50  Bcast:192.168.1.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:365079 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:426050 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:3844 txqueuelen:100
+          Interrupt:9 Base address:0x300</pre></blockquote>
+
+<p><a name="IXT-41-2669" />The output of a
+command can be captured into an array using the backtick operator.
+Each line of the command's output will be an element
+of the array. One way to extract the IP address from that line is
+with the following code:
+</p>
+
+<blockquote><pre class="code">my @ifconfig = `/sbin/ifconfig eth0`;
+for (@ifconfig) {
+  if ( /(\d+\.\d+\.\d+\.\d+)/ ) {
+    print "Quad: $1\n";
+    last;
+  }
+}</pre></blockquote>
+
+<p><a name="IXT-41-2670" />This
+regular expression looks for one or more digits
+(<tt class="literal">\d+</tt>) followed by a literal dot (rather than the
+regular expression metacharacter), followed by two more digit/dot
+pairs, followed by one or more digits. If this pattern is found in
+the current line, the part that was matched is captured (thanks to
+the parentheses) into the special variable <tt class="literal">$1</tt>. You
+can capture more patterns in a regular expression with more
+parentheses. Each captured text appears in a sequential higher scalar
+(i.e., the next paren-captured match will be <tt class="literal">$2</tt>).
+</p>
+
+<p>Sometimes, you need to find all the matches for your pattern in a
+given string. This can be done with the
+<tt class="literal">/g</tt><a name="IXT-41-2671" /> <a name="IXT-41-2672" /> regular expression modifier. If you
+wanted to find all the dotted quads in the
+<i class="command">ifconfig</i> output, you could use the following code:
+</p>
+
+<blockquote><pre class="code">my @ifconfig = `/sbin/ifconfig eth0`;
+for (@ifconfig) {
+    while( /(\d+\.\d+\.\d+\.\d+)/g ){
+        print "Quad: $1\n";
+    }
+}</pre></blockquote>
+
+<p>Here, the <em class="emphasis">if</em> block is replaced with a
+<em class="emphasis">while</em><a name="IXT-41-2673" /> loop. This is important for
+<tt class="literal">/g</tt> to work as expected. If the current line has
+something that looks like a dotted quad, that value is capture in
+<tt class="literal">$1</tt>, just as before. However, the
+<tt class="literal">/g</tt> modifier remembers where in the string it made
+the last match and looks after that point for another one.
+</p>
+
+<p>Perl's regular expression support has set the
+standard for other langauges. As such, it is impossible to give a
+comprehensive guide to Perl regular expressions here, but see
+O'Reilly's <em class="citetitle">Mastering
+Regular Expressions</em> or the <em class="emphasis">perlre</em>
+manpage.
+</p>
+
+<p> <em class="emphasis">-- JJ<a name="IXTR3-2696" /> <a name="IXTR3-2697" /></em> 
+</p>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch41_06.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch41_08.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">41.6. Perl Boot Camp, Part 3: Branching and Looping</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">41.8. Perl Boot Camp, Part 5: Perl Knows Unix</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

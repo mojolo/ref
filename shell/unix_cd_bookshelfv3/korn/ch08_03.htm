@@ -1,0 +1,766 @@
+<html><head><title>Signals (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">8.3. Signals</h2>
+
+<p>
+<a name="korn2-IDXTERM-1629" />
+<a name="IXT-8-288038" />
+<a name="IXT-8-288039" />
+
+We said earlier that typing CTRL-Z to suspend a job is similar to
+typing CTRL-C to stop a job, except that you can resume the job later.
+They are actually similar in a deeper way: both are particular cases
+of the act of sending a <em class="emphasis">signal</em> to a process.
+</p>
+
+<p>
+
+A signal is a message that one process
+sends to another when some abnormal
+event takes place or when it wants the other process to do something.
+Most often, a process sends a signal to a subprocess it created.
+You're undoubtedly already comfortable with the idea that one process
+can communicate with another through an I/O pipeline; think of a signal
+as another way for processes to communicate with each other.
+<a name="IXT-8-288040" />
+(In fact, any textbook on operating systems will tell you that both
+are examples of the general concept of <em class="emphasis">interprocess communication</em>,
+or IPC.)<a href="#FOOTNOTE-117">[117]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-117" /><p> [117]
+
+<a name="IXT-8-288041" />
+
+Pipes and signals were the only IPC mechanisms in early versions of
+Unix. More modern versions have additional
+mechanisms, such as sockets, named pipes, and shared memory.
+<a name="IXT-8-288042" />
+Named pipes are accessible to shell programmers through the <em class="emphasis">mkfifo</em>(1)
+command, which is beyond the scope of this book.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-8-288043" />
+<a name="IXT-8-288044" />
+<a name="IXT-8-288045" />
+
+Depending on the version of Unix, there are two or three dozen
+types of signals, including a few that can be used for whatever purpose
+a programmer wishes. Signals have numbers (from 1 to the number of
+signals the system supports) and names; we'll use the latter. You can get
+a list of all the signals on your system
+by typing <tt class="literal">kill -l</tt>. Bear in mind, when you write shell code
+involving signals, that signal names are more portable to other
+versions of Unix than signal numbers.
+</p>
+
+<a name="korn2-CHP-8-SECT-3.1" /><div class="sect2">
+<h3 class="sect2">8.3.1. Control-Key Signals</h3>
+
+<p>
+<a name="korn2-IDXTERM-1638" />
+<a name="korn2-IDXTERM-1639" />
+<a name="IXT-8-288046" />
+<a name="IXT-8-288047" />
+<a name="IXT-8-288048" />
+
+When you type CTRL-C, you tell the shell to send the INT (for "interrupt")
+signal to the current job; CTRL-Z sends TSTP (for "terminal
+stop"). You can also send the current job a QUIT signal
+by typing CTRL-\ (control-backslash);
+this is sort of like a "stronger" version of CTRL-C.<a href="#FOOTNOTE-118">[118]</a>
+You would normally
+use CTRL-\ when (and <em class="emphasis">only</em> when) CTRL-C doesn't work.
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-118" /><p> [118]
+<a name="IXT-8-288049" />
+CTRL-\ can also cause the running program to leave a file
+called <em class="emphasis">core</em> in the program's
+current directory. This file contains an image of the process to which
+you sent the signal; a programmer could use it to help debug
+the program that was running. The file's name is a (very) old-fashioned
+term for a computer's memory. Other signals leave these "core dumps"
+as well; you should feel free to delete them unless a systems programmer
+tells you otherwise.
+</p>
+</blockquote>
+
+<p>
+<a name="IXT-8-288050" />
+<a name="IXT-8-288051" />
+<a name="IXT-8-288052" />
+<a name="IXT-8-288053" />
+
+As we'll see soon,
+there is also a "panic" signal called KILL that you can send to a process
+when even CTRL-\ doesn't work. But it isn't attached to any control key,
+which means that you can't use it to stop the currently running process.
+INT, TSTP, and QUIT are the only signals you can use with control keys
+(although some systems have additional control-key signals).
+</p>
+
+<p>
+<a name="IXT-8-288054" />
+You can customize the control keys used to send signals with options
+of the <em class="emphasis">stty</em>(1) command. These vary from system to system -- consult
+your man page for the command -- but the usual syntax is
+<tt class="literal">stty</tt> <em class="replaceable"><tt>signame char</tt></em>.
+<em class="emphasis">signame</em> is a name for the signal
+that, unfortunately, is often not the same as the names we use
+here.
+<a href="ch01_09.htm#korn2-CHP-1-TABLE-7">Table 1-7</a> in <a href="ch01_01.htm">Chapter 1</a>
+lists <em class="emphasis">stty</em> names for signals and tty-driver actions
+found on all modern versions of Unix. <em class="emphasis">char</em> is the control character,
+which you can give in the same notation we use. For example,
+to set your INT key to CTRL-X on most systems, use:
+</p>
+
+<p>
+<blockquote><pre class="code">
+stty intr ^X
+</pre></blockquote>
+</p>
+
+<p>
+Now that we've told you how to do this, we should add that we don't
+recommend it. Changing your signal keys could lead to trouble if
+someone else has to stop a runaway process on your machine.
+
+</p>
+
+<p>
+Most of the other signals are used by the operating system to advise
+processes of error conditions, like a bad machine code instruction, bad
+memory address, division by zero, or other events
+such as input being available on a file descriptor
+or a timer ("alarm" in Unix terminology) going off.
+The remaining signals are used for esoteric error conditions that are
+of interest only to low-level systems programmers;
+newer versions of Unix have more and more arcane signal types.
+<a name="IXTR3-342" />
+<a name="IXTR3-343" />
+
+</p>
+</div>
+
+
+
+
+<a name="korn2-CHP-8-SECT-3.2" /><div class="sect2">
+<h3 class="sect2">8.3.2. kill</h3>
+
+<p>
+<a name="korn2-IDXTERM-1651" />
+You can use the built-in shell command <em class="emphasis">kill</em> to send a
+signal to any process you've created -- not just the currently running job.
+<em class="emphasis">kill</em> takes as argument the process ID, job number, or command name
+of the process to which you want to
+send the signal.
+<a name="IXT-8-288055" />
+
+By default, <em class="emphasis">kill</em> sends the TERM ("terminate") signal,
+which usually has the same effect as the INT signal that you send with
+CTRL-C. But you can specify a different signal by using
+the <em class="emphasis">-s</em> option and
+the signal name, or the <em class="emphasis">-n</em> option
+and a signal number.
+</p>
+
+<p>
+<em class="emphasis">kill</em> is so named because of the nature of the default TERM signal,
+but there is another reason, which has to do with the way Unix handles
+signals in general. The full details are too complex to go into here,
+but the following explanation should suffice.
+</p>
+
+<p>
+Most signals cause a process that receives them to roll over and die;
+therefore, if you send any one of these signals, you "kill" the process
+that receives it.
+However, programs can be set up to "trap" specific signals and take
+some other action.
+
+For example, a text editor would do well to save the file being
+edited before terminating
+when it receives a signal such as INT, TERM, or QUIT. Determining
+what to do when various signals come in is part of the fun of Unix
+systems programming.
+</p>
+
+<p>
+<a name="korn2-IDXTERM-1653" />
+<a name="korn2-IDXTERM-1654" />
+<a name="IXT-8-288056" />
+
+Here is an example of <em class="emphasis">kill</em>. Say you have a <em class="emphasis">fred</em>
+process in the background, with process ID 480 and
+job number 1, that needs to be stopped.
+You would start with this command:
+</p>
+
+<p>
+<blockquote><pre class="code">
+kill %1
+</pre></blockquote>
+</p>
+
+<p>
+If you were successful, you would see a message like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+[1] + Terminated                fred &amp;
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-8-288057" />
+<a name="IXT-8-288058" />
+
+If you don't see this, then the TERM signal failed to terminate the job.
+The next step would be to try QUIT:
+</p>
+
+<p>
+<blockquote><pre class="code">
+kill -s QUIT %1
+</pre></blockquote>
+</p>
+
+<p>
+If that worked, you would see this message:
+</p>
+
+<p>
+<blockquote><pre class="code">
+[1] + Quit(coredump)           fred &amp;
+</pre></blockquote>
+</p>
+
+<p>
+The shell indicates the signal that killed the program ("Quit")
+and the fact that it produced a <em class="emphasis">core</em> file.
+When a program exits normally, the exit status it returns to the shell
+is a value between 0 and 255.
+When a program dies from having been sent a signal, it exits, not with a status value
+of its own choosing, but rather with the status 256+<em class="emphasis">N</em>,
+where <em class="emphasis">N</em> is the number of the signal it received.
+(With <em class="emphasis">ksh88</em> and most other shells,
+normal exit statuses are between 0 and 127, and the "death by signal"
+exit status is 128+<em class="emphasis">N</em>. Caveat emptor.)
+</p>
+
+<p>
+If even QUIT doesn't work, the last-ditch method would be to use
+KILL:
+</p>
+
+<p>
+<blockquote><pre class="code">
+kill -s KILL %1
+</pre></blockquote>
+</p>
+
+<p>
+(Notice how this has the flavor of "yelling" at the runaway process.)
+This produces the message:
+</p>
+
+<p>
+<blockquote><pre class="code">
+[1] + Killed                    fred &amp;
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-344" />
+<a name="IXTR3-345" />
+It is impossible for a process to trap a KILL signal -- the operating
+system should terminate the process immediately and
+unconditionally. If it doesn't,
+then either your process is in one of the "funny states" that we'll
+see later in this chapter, or (far less likely) there's a bug
+in your version of Unix.
+</p>
+
+<p>
+On job-control systems, there is an additional uncatchable signal: STOP.
+This is like TSTP, in that it suspends the targeted job.  But unlike
+TSTP, it cannot be caught or ignored.  It is a more drastic signal
+than TSTP, but less so than QUIT or TERM, since a stopped job may still
+be continued with <em class="emphasis">fg</em> or <em class="emphasis">bg</em>.
+The Korn shell provides<?troff .ne 10?> the predefined alias <tt class="literal">stop='kill -s STOP'</tt>
+to make stopping jobs easier.
+</p>
+
+<p>
+<a href="ch08_03.htm#korn2-CHP-8-SIDEBAR-1">Task 8-1</a>
+is another example of how to use the <em class="emphasis">kill</em> command.
+</p>
+
+<a name="korn2-CHP-8-SIDEBAR-1" /><blockquote><table border="1" cellpadding="6"><tr><td>
+<h4 class="objtitle">Task 8-1</h4>
+
+<p>
+<a name="IXT-8-288059" />
+
+
+Write a function called <em class="emphasis">killalljobs</em> that kills all background
+jobs.<a href="#FOOTNOTE-119">[119]</a>
+</p>
+
+<blockquote class="footnote">
+<a name="FOOTNOTE-119" /><p> [119]
+To test your understanding of how the shell works, answer this question:
+why can't this be done as a separate script?
+</p>
+</blockquote></td></tr></table><p></blockquote>
+<p>
+The solution to this task is simple, relying on <tt class="literal">jobs -p</tt>:
+<a name="IXT-8-288060" />\<a name="IXT-8-288061" />
+
+</p>
+
+<p>
+<blockquote><pre class="code">
+function killalljobs {
+    kill "$@" $(jobs -p)
+}
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-8-288062" />
+<a name="IXT-8-288063" />
+<a name="IXT-8-288064" />
+
+You may be tempted to use the KILL signal immediately, instead of
+trying TERM (the default) and QUIT first. Don't do this. TERM and
+QUIT are designed to give a process the chance to clean up before
+exiting, whereas KILL will stop the process, wherever it may be in its
+computation. <em class="emphasis">Use KILL only as a last resort.</em>
+</p>
+
+<p>
+You can use the <em class="emphasis">kill</em> command with any process
+you create, not just jobs in the background of your current shell. For
+example, if you use a windowing system, then you may have several terminal
+windows, each of which runs its own shell. If one shell is running a
+process that you want to stop, you can <em class="emphasis">kill</em> it
+from another window -- but you can't refer to it with a job number
+because it's running under a different shell.  You must instead use its
+process ID.
+<a name="IXTR3-346" />
+<a name="IXTR3-347" />
+<a name="IXTR3-348" />
+
+</p>
+</div>
+
+
+
+
+<a name="korn2-CHP-8-SECT-3.3" /><div class="sect2">
+<h3 class="sect2">8.3.3. ps</h3>
+
+<p>
+<a name="korn2-IDXTERM-1669" />
+This is probably the only situation in which a casual user would need
+to know the ID of a process. The command <em class="emphasis">ps</em>(1) gives you this
+information; however, it can give you lots of extra information
+that you must wade through as well.
+</p>
+
+<p>
+<em class="emphasis">ps</em> is a complex command. It takes many options, some of which
+differ from one version of Unix to another. To add to the confusion,
+you may need different options on different Unix versions to get the
+same information!
+<a name="IXT-8-288065" />
+
+We will use options available on the two major types
+of Unix systems, those derived from System V (such as most of the
+versions for Intel x86 PCs, as well as Solaris, IBM's AIX and
+Hewlett-Packard's HP-UX) and BSD (Compaq's Ultrix, SunOS 4.x, and also GNU/Linux). If you
+aren't sure which kind of Unix
+version you have, try the System V options first.
+</p>
+
+<p>
+You can invoke <em class="emphasis">ps</em> in its simplest form without any options.
+In this case, it prints a line of information about the current
+login shell and any processes running under it (i.e., background jobs).
+
+For example, if you invoked three background jobs, as we saw earlier in
+the chapter, <em class="emphasis">ps</em> on System V-derived versions of Unix
+would produce output that looks something like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+   PID TTY      TIME COMD
+   146 pts/10   0:03 ksh
+  2349 pts/10   0:03 fred
+  2367 pts/10   0:17 bob
+  2387 pts/10   0:06 george
+  2389 pts/10   0:09 dave
+  2390 pts/10   0:00 ps
+</pre></blockquote>
+</p>
+
+<p>
+
+The output on BSD-derived systems looks like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+   PID TT STAT  TIME COMMAND
+   146 10 S     0:03 /bin/ksh -i
+  2349 10 R     0:03 fred
+  2367 10 D     0:17 bob
+  2387 10 S     0:06 george
+  2389 10 R     0:09 dave
+  2390 10 R     0:00 ps
+</pre></blockquote>
+</p>
+
+<p>
+(You can ignore the STAT column.)
+<a name="IXT-8-288066" />
+<a name="IXT-8-288067" />
+
+This is a bit like the <em class="emphasis">jobs</em> command. PID is the process ID;
+TTY (or TT) is the terminal (or pseudo-terminal, if you are using a windowing
+system) the process was invoked from; TIME is the amount of processor time
+(not real or "wall clock" time) the process has used so far; COMD
+(or COMMAND) is the command. Notice that the BSD version includes
+the command's arguments, if any;
+also notice that the first line reports on the
+parent shell process, and in the last line, <em class="emphasis">ps</em> reports on itself.
+</p>
+
+<p>
+<em class="emphasis">ps</em> without arguments lists all processes started from the
+current terminal or pseudo-terminal. But since <em class="emphasis">ps</em> is not a shell
+command, it doesn't
+correlate process IDs with the shell's job numbers. It also doesn't
+help you find the ID of the runaway process in another shell window.
+</p>
+
+<p>
+To get this information, use <em class="emphasis">ps -a</em> (for "all");
+this lists information on a different set of processes, depending on
+your Unix version.
+</p>
+
+<p>
+
+</p>
+
+<a name="korn2-CHP-8-SECT-3.3.1" /><div class="sect3">
+<h3 class="sect3">8.3.3.1. System V</h3>
+
+<p>
+<a name="IXT-8-288068" />
+<a name="IXT-8-288069" />
+
+Instead of listing all of those that were started under a specific
+terminal,
+<em class="emphasis">ps -a</em> on System V-derived systems
+lists all processes associated with any terminal
+that aren't group leaders.
+
+For our purposes, a "group leader"
+is the parent shell of a terminal or window. Therefore, if you are
+using a windowing system, <em class="emphasis">ps -a</em> lists all jobs started
+in all windows (by all users), but not their parent shells.
+</p>
+
+<p>
+Assume that, in the above example, you have only one terminal or
+window. Then <em class="emphasis">ps -a</em> prints the same output as plain <em class="emphasis">ps</em>
+except for the first line, since that's the parent shell.
+This doesn't seem to be very useful.
+</p>
+
+<p>
+But consider what
+happens when you have multiple windows open.
+
+Let's say you have
+three windows, all running terminal emulators like <em class="emphasis">xterm</em>
+for the X Window System.
+You start background jobs <em class="emphasis">fred</em>, <em class="emphasis">dave</em>,
+and <em class="emphasis">bob</em> in windows
+with pseudo-terminal numbers 1, 2, and 3, respectively. This situation
+is shown in <a href="ch08_03.htm#korn2-CHP-8-FIG-1">Figure 8-1</a>.
+</p>
+
+<a name="korn2-CHP-8-FIG-1" /><div class="figure"><img src="figs/ksh2.0801.gif" alt="Figure 8-1" width="342" /></div><h4 class="objtitle">Figure 8-1. Background jobs in multiple windows</h4>
+
+<p>
+Assume you are in the uppermost window. If you type <tt class="literal">ps</tt>, you see
+something like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+   PID TTY      TIME COMD
+   146 pts/1    0:03 ksh
+  2349 pts/1    0:03 fred
+  2390 pts/1    0:00 ps
+</pre></blockquote>
+</p>
+
+<p>
+But if you type <tt class="literal">ps -a</tt>, you see this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+   PID TTY      TIME COMD
+  2349 pts/1    0:03 fred
+  2367 pts/2    0:17 bob
+  2389 pts/3    0:09 dave
+  2390 pts/1    0:00 ps
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXT-8-288070" />
+<a name="IXT-8-288071" />
+<a name="IXTR3-349" />
+
+Now you should see how <em class="emphasis">ps -a</em> can help you track down a runaway
+process. If it's <em class="emphasis">dave</em>, you can type <tt class="literal">kill 2389</tt>.
+If that doesn't work, try <tt class="literal">kill -s QUIT 2389</tt>, or in the worst case,
+<tt class="literal">kill -s KILL 2389</tt>.
+<a name="IXTR3-350" />
+
+</p>
+</div>
+
+
+<a name="korn2-CHP-8-SECT-3.3.2" /><div class="sect3">
+<h3 class="sect3">8.3.3.2. BSD</h3>
+
+<p>
+<a name="IXT-8-288072" />
+
+On BSD-derived systems,<a href="#FOOTNOTE-120">[120]</a>
+<em class="emphasis">ps -a</em> lists all jobs that were started
+on any terminal; in other words, it's a bit like concatenating the
+the results of plain <em class="emphasis">ps</em> for every user on the system.
+<a name="IXT-8-288073" />
+Given the above scenario, <em class="emphasis">ps -a</em> will show you all processes
+that the System V version shows, plus the group leaders (parent shells).
+<a name="IXTR3-351" />
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-120" /><p> [120]
+<em class="emphasis">ps</em> on GNU/Linux systems acts like
+the BSD version.
+</p>
+</blockquote>
+
+<p>
+Unfortunately, <em class="emphasis">ps -a</em> (on any version of Unix)
+will not report processes that are in
+certain pathological conditions where they "forget" things
+like what shell invoked them and what terminal they belong to.
+<a name="IXT-8-288074" />
+<a name="IXT-8-288075" />
+<a name="IXT-8-288076" />
+Such processes have colorful names (zombies, orphans) that
+are actually used in Unix technical literature, not just informally
+by professional systems programmers. If you have a serious runaway process problem,
+it's possible that the process has entered one of these states.
+</p>
+
+<p>
+Let's not worry about why or how a process gets this way.
+All you need to understand is that the process doesn't show up when
+you type <tt class="literal">ps -a</tt>.
+
+You need another option to <em class="emphasis">ps</em> to see it:
+on System V, it's <em class="emphasis">ps -e</em> ("everything"), whereas on BSD, it's
+<em class="emphasis">ps -ax</em>.
+</p>
+
+<p>
+<a name="IXT-8-288077" />
+
+These options tell <em class="emphasis">ps</em> to list processes that either weren't
+started from terminals or "forgot" what terminal they were
+started from. The former category includes lots of
+processes that you probably didn't even know existed: these
+include basic processes that run the system and so-called
+<em class="emphasis">daemons</em> (pronounced "demons") that handle system services
+like mail, printing, network file systems, etc.
+</p>
+
+<p>
+<a name="IXT-8-288078" />
+<a name="IXT-8-288079" />
+
+In fact, the output of <em class="emphasis">ps -e</em>
+or <em class="emphasis">ps -ax</em> is an excellent
+source of education about Unix system internals, if you're curious
+about them.
+
+Run the command on your system and, for each line of
+the listing that looks interesting,
+invoke <em class="emphasis">man</em> on the process name or look it up in the
+Unix Programmer's Manual for your system.
+</p>
+
+<p>
+User shells and processes are listed at the very bottom of
+<em class="emphasis">ps -e</em> or <em class="emphasis">ps -ax</em> output;
+this is where you should look for runaway processes. Notice
+that many processes in the listing have <tt class="literal">?</tt> instead of
+a terminal. Either these aren't supposed to have one (such as the
+basic daemons) or they're runaways.
+Therefore it's likely that if <em class="emphasis">ps -a</em> doesn't find a process
+you're trying to kill, <em class="emphasis">ps -e</em> (or <em class="emphasis">ps -ax</em>)
+will list it with <tt class="literal">?</tt> in the TTY (or TT) column. You can determine
+which process you want by looking at the COMD (or COMMAND) column.
+<a name="IXTR3-352" />
+<a name="IXTR3-353" />
+<a name="IXTR3-354" />
+<a name="IXTR3-355" />
+<a name="IXTR3-356" />
+</p>
+</div>
+</div>
+
+<a name="korn2-CHP-8-SECT-3.4" /><div class="sect2">
+<h3 class="sect2">8.3.4. kill: The Full Story</h3>
+
+<p>
+<a name="IXT-8-288080" />
+The <em class="emphasis">kill</em> command is really misnamed.
+It should have been called <em class="emphasis">sendsignal</em> or
+something similar, since it sends signals to processes.
+(The name in fact derives from the <em class="emphasis">kill</em>(2)
+system call, which the <em class="emphasis">kill</em> command uses
+to send signals, and<?troff .ne 10?> which is similarly misnamed.)
+</p>
+
+<p>
+As we saw earlier, <em class="emphasis">kill -l</em> gives you the full list
+of available signal names on your system.  
+The behavior of the built-in version of <em class="emphasis">kill</em> has been considerably
+rationalized in <em class="emphasis">ksh93</em>.
+The options and what they do are summarized in
+<a href="ch08_03.htm#korn2-CHP-8-TABLE-2">Table 8-2</a>.
+</p>
+
+<a name="korn2-CHP-8-TABLE-2" /><h4 class="objtitle">Table 8-2. Options for kill</h4><table border="1" cellpadding="3">
+
+
+
+
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+
+
+
+<tr>
+<td><tt class="literal">kill</tt> <em class="replaceable"><tt>job</tt></em> ...</td>
+<td><p>
+Send the TERM signal to each named <em class="emphasis">job</em>.
+This is the normal usage.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">kill -l</tt></td>
+<td><p>
+List the names of all supported signals.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">kill -l</tt> <em class="replaceable"><tt>signal</tt></em> ...</td>
+<td><p>
+When <em class="emphasis">signal</em> is a number, print its name. If it's a
+name, print its number.  If <em class="emphasis">signal</em> is a number
+greater than 256, it's treated as an exit status.  The shell subtracts
+256 and prints the corresponding signal.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">kill -s</tt> <em class="replaceable"><tt>signal-name job</tt></em> ...</td>
+<td><p>
+Send the signal named by <em class="emphasis">signal-name</em> to each given <em class="emphasis">job</em>.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">kill -n</tt> <em class="replaceable"><tt>signal-number job</tt></em> ...</td>
+<td><p>
+Send the numeric signal given by the <em class="emphasis">signal-number</em>
+to each given <em class="emphasis">job</em>.
+</p></td>
+</tr>
+
+<tr>
+<td><tt class="literal">kill -</tt><em class="replaceable"><tt>signal job</tt></em> ...</td>
+<td><p>
+Send the signal specified by <em class="emphasis">signal</em> to each given <em class="emphasis">job</em>.
+<em class="emphasis">signal</em> may be either a number or a signal name.
+This form is considered to be obsolete; it is provided for compatibility
+with <em class="emphasis">ksh88</em> and the external <em class="emphasis">kill</em>(1)
+command.
+</p></td>
+</tr>
+
+
+</table><p>
+
+<p>
+One place to take advantage of <em class="emphasis">kill</em>'s ability to turn
+a number into a name is in issuing diagnostics.  When a job dies due to a signal,
+the exit status is 256 plus the signal number.  Thus, you might use code like this
+to produce a meaningful diagnostic from within a script:
+</p>
+
+<blockquote><pre class="code">
+es=$?        # save exit status
+if ((es &gt;= 256)); then
+    print job received signal $(kill -l $((es - 256)) )
+fi
+</pre></blockquote>
+
+</div>
+
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch08_02.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch08_04.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">8.2. Job Control</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">8.4. trap</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

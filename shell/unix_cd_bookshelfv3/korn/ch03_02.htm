@@ -1,0 +1,412 @@
+<html><head><title>Aliases (Learning the Korn Shell, 2nd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Arnold Robbins and Bill Rosenblatt" /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00195-9" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="Learning the Korn Shell, 2nd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Book Home" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Book Title" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch03_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+
+<h2 class="sect1">3.2. Aliases</h2>
+
+<p>
+<a name="korn2-IDXTERM-537" />
+<a name="IXT-3-287328" />
+
+
+Perhaps the easiest and most popular type of customization is
+the <em class="emphasis">alias</em>, which is a synonym for a command or command string.
+This is one of several Korn shell features that were appropriated from
+the C shell.<a href="#FOOTNOTE-35">[35]</a>
+You define an alias by entering (or adding to your <em class="emphasis">.profile</em>)
+a line with the following form:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-35" /><p> [35]
+C shell users should note that
+the Korn shell's alias feature does not support arguments in alias
+expansions, as C shell aliases do.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+alias <em class="replaceable"><tt>new</em>=<em class="replaceable">original</tt></em>
+</pre></blockquote>
+</p>
+
+<p>
+(Notice that there are no spaces on either side of the equal
+sign (<tt class="literal">=</tt>); this is required syntax.) The
+<em class="emphasis">alias</em> command defines <em class="emphasis">new</em> to be an
+alias for <em class="emphasis">original</em>; whenever
+you type <tt class="literal">new</tt>, the Korn shell substitutes
+<tt class="literal">original</tt> internally.
+(You cannot use any of the shell's special characters,
+such as <tt class="literal">*</tt>, <tt class="literal">$</tt>, <tt class="literal">=</tt>,
+and so on, in alias names.)
+</p>
+
+<p>
+There are a few basic ways to use an alias. The first, and simplest,
+is as a more mnemonic name for an existing command.  Many
+commonly used Unix commands have names that are poor mnemonics and
+therefore are excellent candidates for aliasing; the classic example
+is:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias search=grep
+</pre></blockquote>
+</p>
+
+<p>
+<em class="emphasis">grep</em>, the Unix file-searching utility,
+derives its name from the command "g/re/p" in the original
+<em class="emphasis">ed</em> text editor,
+which does essentially the
+same thing as <em class="emphasis">grep</em>.
+(The regular expression matching code was
+carved out of <em class="emphasis">ed</em> to make a separate program.)<a href="#FOOTNOTE-36">[36]</a>
+This acronym may mean something to a computer scientist but probably not to the
+office administrator who has to find <tt class="literal">Fred</tt> in a list of phone
+numbers. If you have to find <tt class="literal">Fred</tt>, and you have the word
+<em class="emphasis">search</em> defined as an alias for <em class="emphasis">grep</em>,
+you can type:
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-36" /><p> [36]
+Thanks to Dennis Ritchie and Brian Kernighan of Bell Labs
+for verifying this for me.  ADR.
+</p>
+</blockquote>
+
+<p>
+<blockquote><pre class="code">
+search Fred phonelist
+</pre></blockquote>
+</p>
+
+<p>
+Another popular alias eschews <em class="emphasis">exit</em> in favor of a more
+widely used command for ending a login session:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias logout=exit
+</pre></blockquote>
+</p>
+
+<p>
+
+<a name="IXT-3-287329" />
+If you are a C shell user, you may be used to having a <em class="emphasis">.logout</em>
+file of commands that the shell executes just before you log out.
+The Korn shell doesn't have this feature as such, but you can mimic
+it quite easily using an alias:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias logout='. ~/.ksh_logout; exit'
+</pre></blockquote>
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+This executes the commands in the file <em class="emphasis">.ksh_logout</em>
+in your home directory and then logs you out.
+<a name="IXT-3-287330" />
+
+<a name="IXT-3-287331" />
+The semicolon acts as a
+statement separator, allowing you to have more than one
+command on the same line.
+</p>
+
+<p>
+Notice the quotes around the full value of the alias;
+these are necessary if the string being aliased consists of
+more than one word.<a href="#FOOTNOTE-37">[37]</a>
+</p><blockquote class="footnote">
+<a name="FOOTNOTE-37" /><p> [37]
+This contrasts with C shell aliases, in which the quotes aren't
+required.
+</p>
+</blockquote>
+
+<p>
+You might want the file <em class="emphasis">.ksh_logout</em> to "clean up" your history files,
+as we discussed in the last chapter. Recall that we created history
+files with names like <em class="emphasis">.hist.42</em>, which guarantees a unique name
+for every serial line or window. To remove these files when the shells exit, just put
+this line in your <em class="emphasis">.ksh_logout</em> file:
+</p>
+
+<p>
+<blockquote><pre class="code">
+rm ~/.hist.*
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-114" />
+
+Some people who aren't particularly good typists like to use aliases
+for typographical errors they make often. For example:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias emcas=emacs
+alias mali=mail
+alias gerp=grep
+</pre></blockquote>
+</p>
+
+<p>
+This can be handy, but we feel you're probably better off suffering with
+the error message and getting the correct spelling under your
+fingers.
+
+Another common way to use an alias is as a shorthand for a longer
+command string. For example, you may have a directory to which you
+need to go often. It's buried deeply in your directory hierarchy, so
+you want to set up an alias that will allow you to <em class="emphasis">cd</em> there
+without typing (or even remembering) the entire pathname:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias cdcm='cd ~/work/projects/devtools/windows/confman'
+</pre></blockquote>
+</p>
+
+<p>
+As before, the quotes around the full <em class="emphasis">cd</em> command
+are needed, because the string being aliased has more than one word.
+</p>
+
+<p>
+<a name="IXT-3-287332" />
+<a name="IXT-3-287333" />
+
+As another example, a useful option to the <em class="emphasis">ls</em> command
+is <em class="emphasis">-F</em>:
+it puts a slash (<tt class="literal">/</tt>) after directory files and an asterisk (<tt class="literal">*</tt>) after
+executable files.
+(Depending on your system, it may append other characters after other
+kinds of files as well.)
+Since typing a dash followed by a capital letter
+is inconvenient, many people like to define an alias like this:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias lf='ls -F'
+</pre></blockquote>
+</p>
+
+<p>
+A few things about aliases are important to remember.
+First, the Korn shell makes a textual
+substitution of the alias for that which it is aliasing; it may help to imagine
+<em class="emphasis">ksh</em> passing your command through a text
+editor or word processor and issuing a "change" or "substitute"
+command before interpreting and executing it.
+</p>
+
+<p>
+<a name="IXT-3-287334" />
+This, in turn, means that any special characters
+(such as wildcards like <tt class="literal">*</tt> and <tt class="literal">?</tt>) that result
+when the alias is expanded are interpreted properly by the shell.
+This leads to an
+important corollary: wildcards and other special
+characters cannot be used in the names of aliases, i.e., on the
+left side of the equal sign.
+For example, to make it easier
+to print all of the files in your directory, you could define
+the alias:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias printall='pr * | lp'
+</pre></blockquote>
+</p>
+
+<p>
+<a name="IXTR3-115" />
+<a name="korn2-IDXTERM-547" />
+Second, keep in mind that aliases are recursive,
+which means that it is possible to alias an alias. A legitimate
+objection to the previous example is that the alias, while mnemonic,
+is too long and doesn't save enough typing. If we want to keep this
+alias but add a shorter abbreviation, we could define:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias pa=printall
+</pre></blockquote>
+</p>
+
+<p>
+Recursive aliasing makes it possible to set up an "infinite loop"
+of definitions, wherein an alias ends up (perhaps after several
+lookups) being defined as itself. For example, the command:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias ls='ls -l'
+</pre></blockquote>
+</p>
+
+<p>
+sets up a possible infinite loop. Luckily, the shell has a mechanism
+to guard against such dangers. The above command works as
+expected (typing <tt class="literal">ls</tt> produces a long list with permissions,
+sizes, owners, etc.). Even more pathological situations work, such as these:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias listfile=ls
+alias ls=listfile
+</pre></blockquote>
+</p>
+
+<p>
+If you type <em class="emphasis">listfile</em>, <em class="emphasis">ls</em> runs.
+<a name="IXTR3-116" />
+</p>
+
+<p>
+Aliases can only be used for
+the beginning of a command string -- albeit with certain
+exceptions. In the <em class="emphasis">cd</em>
+example above, you might want to define an alias for the
+directory name alone, not for the entire command.
+But if you define:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias cm=work/projects/devtools/windows/confman
+</pre></blockquote>
+</p>
+
+<p>
+and then type <tt class="literal">cd cm</tt>, the Korn shell will probably print
+a message like <tt class="literal">ksh: cd: cm: [No such file or directory]</tt>.
+</p>
+
+<p>
+An obscure, rather ugly feature of the Korn shell's alias facility -- one
+not present in the analogous C shell feature -- provides
+a way around this problem. If the value of an alias
+(the right side of the equal sign) ends in a space or a tab, then the
+Korn shell tries to do alias substitution on
+the next word on the command line. To make the value of
+an alias end in a space, you need to surround it with quotes.
+</p>
+
+<?troff .Nd 10?>
+
+<p>
+This feature exists so that it is possible to have aliases for commands
+that themselves run other commands, such as <em class="emphasis">nohup</em>
+and <em class="emphasis">nice</em>.  For example, <em class="emphasis">nohup</em> is
+aliased to <tt class="literal">'nohup '</tt>.  That way, when you type:
+</p>
+
+<blockquote><pre class="code">
+nohup my_favorite_alias somefile
+</pre></blockquote>
+
+<p>
+the shell will expand <em class="emphasis">my_favorite_alias</em> just as it would
+when typed without the preceding <em class="emphasis">nohup</em> command.
+(The <em class="emphasis">nohup</em> command is described in <a href="ch08_01.htm">Chapter 8</a>.)
+</p>
+
+<p>
+Here is how you would use this capability to allow aliases
+for directory names, at least for use with the <em class="emphasis">cd</em>
+command:
+</p>
+
+<p>
+<blockquote><pre class="code">
+alias cd='cd '
+</pre></blockquote>
+</p>
+
+<p>
+This causes the Korn shell to search for an alias for the
+directory name argument to <em class="emphasis">cd</em>,
+which in the previous example would enable it to expand the
+alias <em class="emphasis">cm</em> correctly.
+<a name="IXTR3-117" />
+</p>
+
+<p>
+The Korn shell provides an efficiency feature called "tracked aliases."
+We delay discussion of these until <a href="ch03_04.htm#korn2-CHP-3-SECT-4.2.8">Section 3.4.2.8</a>.
+Also, a number of aliases are predefined by the shell; they are listed in
+<a href="appb_01.htm">Appendix B</a>.
+</p>
+
+<p>
+<a name="IXT-3-287335" />
+Finally, there are a few useful adjuncts to the basic <em class="emphasis">alias</em> command.
+If you type <tt class="literal">alias</tt> <em class="replaceable"><tt>name</tt></em> without
+an equal sign (<tt class="literal">=</tt>) and
+value, the shell prints the alias's value or
+<em class="replaceable"><tt>name</tt></em><tt class="literal">: alias not found</tt>
+if it is undefined. If you type
+<tt class="literal">alias</tt> without any arguments, you get
+a list of all the aliases you have defined as
+well as several that are built-in.
+If you type <tt class="literal">alias -p</tt>, the shell prints all your
+aliases, with each one preceded by the <tt class="literal">alias</tt> keyword.
+This is useful for saving all your aliases in a way that allows them to be re-read by
+the shell at a later time.
+<a name="IXT-3-287336" />
+<a name="IXT-3-287337" />
+The command <tt class="literal">unalias</tt> <em class="replaceable"><tt>name</tt></em>
+removes any alias definition for its argument.
+If you type <tt class="literal">unalias -a</tt>, the shell removes all aliases.
+</p>
+
+<p>
+Aliases are very handy for creating a comfortable environment,
+but they are really just kid stuff compared to more advanced
+customization techniques like scripts and functions, which we
+will see in the next chapter. These give you everything aliases do plus
+much more, so if you become proficient at them, you may find that
+you don't need aliases anymore. However, aliases are ideal for
+novices who find Unix to be a rather forbidding place, full of
+terseness and devoid of good mnemonics.
+<a name="IXTR3-118" />
+</p>
+
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch03_01.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch03_03.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">3. Customizing Your Environment</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">3.3. Options</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+</map>
+
+</body></html>

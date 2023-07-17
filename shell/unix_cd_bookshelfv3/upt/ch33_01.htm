@@ -1,0 +1,132 @@
+<html><head><title>Wildcards (Unix Power Tools, 3rd Edition)</title><link rel="stylesheet" type="text/css" href="../style/style1.css" />
+
+<meta name="DC.Creator" content="Shelley Powers, Jerry Peek, Tim O'Reilly, Mike Loukides and  " /><meta name="DC.Format" content="text/xml" scheme="MIME" /><meta name="DC.Language" content="en-US" /><meta name="DC.Publisher" content="O'Reilly &amp; Associates, Inc." /><meta name="DC.Source" scheme="ISBN" content="0-596-00330-7" /><meta name="DC.Subject.Keyword" content="stuff" /><meta name="DC.Title" content="UNIX Power Tools, 3rd Edition" /><meta name="DC.Type" content="Text.Monograph" />
+
+</head><body bgcolor="#ffffff">
+
+<img src="gifs/smbanner.gif" usemap="#banner-map" border="0" alt="Unix Power Tools" /><map name="banner-map"><area shape="rect" coords="1,-2,616,66" href="index.htm" alt="Unix Power Tools" /><area shape="rect" coords="629,-11,726,25" href="jobjects/fsearch.htm" alt="Search this book" /></map>
+
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_21.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228" /><td align="right" valign="top" width="228"><a href="ch33_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr></table></div>
+
+
+<h1 class="chapter">Chapter 33. Wildcards</h1>
+<div class="htmltoc"><h4 class="tochead">Contents:</h4><p>
+<a href="ch33_01.htm#sect1">File-Naming Wildcards</a><br />
+<a href="ch33_02.htm">Filename Wildcards in a Nutshell</a><br />
+<a href="ch33_03.htm">Who Handles Wildcards?</a><br />
+<a href="ch33_04.htm">What if a Wildcard Doesn't Match?</a><br />
+<a href="ch33_05.htm">Maybe You Shouldn't Use Wildcards in Pathnames</a><br />
+<a href="ch33_06.htm">Getting a List of Matching Files with grep -l</a><br />
+<a href="ch33_07.htm">Getting a List of Nonmatching Files</a><br />
+<a href="ch33_08.htm">nom: List Files That Don't Match a Wildcard</a><br /></p></div><div class="sect1"><a name="upt3-CHP-33-SECT-1" />
+<h2 class="sect1"><a name="sect1" />33.1. File-Naming Wildcards</h2>
+
+<p><b class="emphasis-bold">Wildcards</b> <a name="upt3-IDXTERM-5106" />
+<a name="upt3-IDXTERM-5107" /> <a name="upt3-IDXTERM-5108" />(<a href="ch01_13.htm#upt3-CHP-1-SECT-13">Section 1.13</a>)
+<a name="IXT-33-3827" />are the
+shell's way of abbreviating filenames. Just as in
+poker, where a wildcard is a special card that can match any card in
+the deck, filename wildcards are capable of matching letters or
+groups of letters in the alphabet. Rather than typing a long filename
+or a long chain of filenames, a wildcard lets you provide parts of
+names and then use some "wildcard
+characters" for the rest. For example, if you want
+to delete all files whose names end in <em class="emphasis">.o</em>, you
+can give the following command:
+</p>
+
+<blockquote><pre class="code">% <tt class="userinput"><b>rm *.o</b></tt></pre></blockquote>
+
+<p>You don't have to list every filename.</p>
+
+<p>I'm sure you already know that wildcards are useful
+in many situations. If not, they are summarized in <a href="ch33_02.htm#upt3-CHP-33-SECT-2">Section 33.2</a>. Here are a few of my favorite wildcard
+applications:
+</p>
+
+<ul><li>
+<p>If you remember part of a filename, but not the whole name, you can
+use wildcards to help you find it. If I have a file on genetics saved
+in a directory with several hundred other files, a command like:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>ls *gene*</b></tt></pre></blockquote>
+
+<p>will often find what I want. It's quicker and easier
+than <b class="emphasis-bold">find</b> (<a href="ch09_01.htm#upt3-CHP-9-SECT-1">Section 9.1</a>). 
+</p>
+</li><li>
+<p>Wildcards are a natural when you want to work with groups of files.
+If I have a general purpose directory that's full of
+filenames ending in <em class="emphasis">.c</em> and
+<em class="emphasis">.h</em>, I can make new subdirectories and use
+wildcards to move the files easily:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>mkdir c h</b></tt>
+% <tt class="userinput"><b>mv *.c c</b></tt>
+</pre></blockquote>
+</li>
+<li>
+<p>Wildcards often help you to work with files with inconvenient
+characters in their names. Let's say you have a file
+named
+<tt class="literal">abc</tt><em class="replaceable"><tt>x</tt></em><tt class="literal">e</tt>,
+where <em class="replaceable"><tt>x</tt></em> is some unknown control character.
+You can delete or rename that file by using the wildcarded name
+<tt class="literal">abc?e</tt>. (When you do this, be careful that your
+wildcard doesn't match more than you intend, perhaps
+by running an <i class="command">ls</i> using the pattern first.)
+</p>
+</li><li>
+<p><a name="IXT-33-3828" /><a name="IXT-33-3829" />Wildcards can appear in any component of a
+pathname. This can often be used to your advantage. For example,
+let's say that you have a directory named
+<em class="filename">/work</em>, split into subdirectories for a dozen
+different projects. For each project, you have a schedule, in a file
+called (obviously enough) <em class="filename">schedule.txt</em>. You can
+print all the schedules with a command like:
+</p>
+<blockquote><pre class="code">% <tt class="userinput"><b>lpr /work/*/schedule.txt</b></tt></pre></blockquote>
+
+<p>(However, you can occasionally <b class="emphasis-bold">run into
+problems</b> (<a href="ch33_05.htm#upt3-CHP-33-SECT-5">Section 33.5</a>).)
+</p>
+</li></ul>
+<p><a name="IXT-33-3830" />It's
+a common misconception, particularly among new users, that
+application programs and utilities have something to do with
+wildcards. Given a command like <tt class="literal">grep ident *.c</tt>,
+many users think that <i class="command">grep</i> handles the
+<tt class="literal">*</tt> and looks to see which files have names that end
+in <em class="emphasis">.c</em>. If you're at all
+familiar with Unix's workings,
+you'll realize that this is the wrong picture. The
+shell interprets wildcards. That is, the shell figures out which
+files have names ending in <em class="emphasis">.c</em>, puts them in a
+list, puts that list on the command line, and then hands that command
+line to <i class="command">grep</i>. As it processes the command line,
+the shell turns <tt class="literal">grep ident *.c</tt> into <tt class="literal">grep
+ident file1.c file2.c...</tt>.
+</p>
+
+<p>Since there are several shells, one might think (or fear!) that there
+should be several different sets of wildcards. Fortunately, there
+aren't. The basic wildcards work the same for all
+shells.
+</p>
+
+<p> <em class="emphasis">-- ML</em></p>
+
+</div>
+
+<hr width="684" align="left" />
+<div class="navbar"><table width="684" border="0"><tr><td align="left" valign="top" width="228"><a href="ch32_21.htm"><img src="../gifs/txtpreva.gif" alt="Previous" border="0" /></a></td><td align="center" valign="top" width="228"><a href="index.htm"><img src="../gifs/txthome.gif" alt="Home" border="0" /></a></td><td align="right" valign="top" width="228"><a href="ch33_02.htm"><img src="../gifs/txtnexta.gif" alt="Next" border="0" /></a></td></tr><tr><td align="left" valign="top" width="228">32.21. Pattern Matching Quick Reference with Examples</td><td align="center" valign="top" width="228"><a href="index/index.htm"><img src="../gifs/index.gif" alt="Book Index" border="0" /></a></td><td align="right" valign="top" width="228">33.2. Filename Wildcards in a Nutshell</td></tr></table></div>
+<hr width="684" align="left" />
+
+<img src="../gifs/navbar.gif" usemap="#library-map" border="0" alt="Library Navigation Links" />
+<p><p><font size="-1"><a href="copyrght.htm">Copyright &copy; 2003</a> O'Reilly &amp; Associates. All rights reserved.</font></p>
+
+<map name="library-map">
+<area shape="rect" coords="1,0,88,96" href="../index.htm"><area shape="rect" coords="90,0,165,96" href="../upt/index.htm"><area shape="rect" coords="168,1,253,107" href="../mac/index.htm"><area shape="rect" coords="255,0,335,97" href="../korn/index.htm"><area shape="rect" coords="337,0,415,109" href="../unixnut/index.htm"><area shape="rect" coords="417,0,512,122" href="../sedawk/index.htm"><area shape="rect" coords="514,0,605,105" href="../lunix/index.htm"><area shape="rect" coords="611,2,694,121" href="../vi/index.htm">
+      </map>
+
+</body></html>
